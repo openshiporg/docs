@@ -6,7 +6,7 @@ export const getStaticProps = ({ params }) => {
     .then(({ shops }) => {
       return {
         props: {
-          // We add an `ssg` field to the page props,
+          // We add an `ssg` field to the page props
           // which will be provided to the Nextra `useSSG` hook.
           ssg: {
             shops,
