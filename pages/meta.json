@@ -3,5 +3,6 @@
   "deployment": "Deployment",
   "how-to-guides": "How-to guides",
   "shops": "Shops",
-  "channels": "Channels"
+  "channels": "Channels",
+  "api-reference": "GraphQL API"
 }
