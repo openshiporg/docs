@@ -1,0 +1,1105 @@
+import { List, Badge, Text, Code as CodeBlock } from '@mantine/core';
+import { Papercups } from "@papercups-io/chat-widget";
+import { Steps } from "../../components/Steps";
+import { PlatformAdder } from "../../components/PlatformAdder"
+import { Callout } from "../../components/Callout"
+import { KeyPopper } from "../../components/KeyPopper"
+
+# Create a custom channel
+
+<Callout
+  mt="sm"
+  color="blue"
+  title="Creating custom channels requires some programming knowledge."
+  body={<Text size="sm">Need us to make you a custom channel? <Text variant="link" component="a" size="sm" onClick={Papercups.toggle} style={{ cursor: "pointer" }}>Get in touch  &#8594;</Text></Text>}
+/>
+
+Openship supports some fulfillment channels out of the box like Shopify, but also works with custom channels. 
+
+Custom channels, like all channels, consist of 4 endpoints:
+
+<Steps
+  steps={[
+    {
+      text: "Search products endpoint",
+      href: "#search-products-endpoint",
+      badge: { text: "required", color: "red" },
+    },
+    {
+      text: "Create purchase endpoint",
+      href: "#create-purchase-endpoint",
+      badge: { text: "required", color: "red" },
+    },
+    {
+      text: "Create tracking endpoint",
+      href: "#create-tracking-endpoint",
+      badge: { text: "required", color: "red" },
+    },
+    {
+      text: "Cancel purchase endpoint",
+      href: "#cancel-purchase-endpoint",
+      badge: { text: "required", color: "red" },
+    },
+  ]}
+/>
+
+<CH.Scrollycoding>
+
+## Search products endpoint
+
+<Callout
+  mt="sm"
+  color="indigo"
+  body="This function will allow Openship to search shop products and create matches."
+/>
+
+**1.** Let's start with a function that returns an array of products. You can `fetch` these products from a CMS, Google Sheet, or any platform. Each product in the array will have 5 values:
+
+- **image**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>product image
+- **title**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>product title
+- **productId**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>product identifier
+- **variantId**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>variant product identifier, if none send 0
+- **price**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>product price
+- **availableForSale**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>boolean</Badge>true if item is available
+
+<Callout
+  color="blue"
+  title="Please note that each variant needs to be a different product in the array."
+  body="For example, if you have a red and black pocket book, each will need to be a
+  separate product with different variantIds."
+/>
+
+```js api/search-products.js
+export default async (req, res) => {
+  const allProducts = [
+    {
+      image: "https://example.com/book.jpeg",
+      title: "Pocket Book",
+      productId: "887262",
+      variantId: "0",
+      price: "9.99",
+      availableForSale: true,
+    },
+  ];
+  return res
+    .status(200)
+    .json({ products: allProducts });
+}
+```
+
+---
+
+<br />
+
+**2.** Openship will send some attributes to the endpoint:
+
+- **accessToken**: access token to verify the request
+- **searchEntry**: search products based on this value
+- **productId**: product identifier
+- **variantId**: product variant identifier
+
+Let's put these values to use.
+
+```js api/search-products.js focus=2:7
+export default async (req, res) => {
+  const {
+    accessToken,
+    searchEntry,
+    productId,
+    variantId,
+  } = req.query;
+  const allProducts = [
+    {
+      image: "https://example.com/book.jpeg",
+      title: "Pocket Book",
+      productId: "887262",
+      variantId: "0",
+      price: "9.99",
+      availableForSale: true,
+    },
+  ];
+  return res
+    .status(200)
+    .json({ products: allProducts });
+}
+
+```
+
+---
+
+<br />
+
+**3.** First, we check this access token against our `.env` file to make the user has been granted access.
+
+```js api/search-products.js focus=8:12
+export default async (req, res) => {
+  const {
+    accessToken,
+    searchEntry,
+    productId,
+    variantId,
+  } = req.query;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  const allProducts = [
+    {
+      image: "https://example.com/book.jpeg",
+      title: "Pocket Book",
+      productId: "887262",
+      variantId: "0",
+      price: "9.99",
+      availableForSale: true,
+    },
+  ];
+  return res
+    .status(200)
+    .json({ products: allProducts });
+};
+```
+
+---
+
+<br />
+
+**4.** Next, let's check if the search entry parameter exists and if so, filter our products based on that value.
+
+```js api/search-products.js focus=23:28
+export default async (req, res) => {
+  const {
+    accessToken,
+    searchEntry,
+    productId,
+    variantId,
+  } = req.query;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  const allProducts = [
+    {
+      image: "https://example.com/book.jpeg",
+      title: "Pocket Book",
+      productId: "887262",
+      variantId: "0",
+      price: "9.99",
+      availableForSale: true,
+    },
+  ];
+  if (searchEntry) {
+    const products = allProducts.filter((product) =>
+      product.title.includes(searchEntry)
+    );
+    return res.status(200).json({ products });
+  }
+  return res
+    .status(200)
+    .json({ products: allProducts });
+};
+
+```
+
+---
+
+<br />
+
+**5.** Next, let's check if the productId and variantId exist. If so, filter allProducts based on these values. If no products are found after filtering, return an error.
+
+```js api/search-products.js focus=29:41
+export default async function handler(req, res) {
+  const {
+    accessToken,
+    searchEntry,
+    productId,
+    variantId,
+  } = req.query;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  const allProducts = [
+    {
+      image: "https://example.com/book.jpeg",
+      title: "Pocket Book",
+      productId: "887262",
+      variantId: "0",
+      price: "9.99",
+      availableForSale: true,
+    },
+  ];
+  if (searchEntry) {
+    const products = allProducts.filter((product) =>
+      product.title.includes(searchEntry)
+    );
+    return res.status(200).json({ products });
+  }
+  if (productId && variantId) {
+    const products = allProducts.filter(
+      (product) =>
+        product.productId === productId &&
+        product.variantId === variantId
+    );
+    if (products.length > 0) {
+      return res.status(200).json({ products });
+    }
+    return res
+      .status(400)
+      .json({ error: "Not found" });
+  }
+  return res
+    .status(200)
+    .json({ products: allProducts });
+}
+```
+
+</CH.Scrollycoding>
+<CH.Scrollycoding>
+
+## Create purchase endpoint
+
+<Callout
+  mt="sm"
+  color="indigo"
+  body="This is the function Openship will use to create purchase orders this channel."
+/>
+
+**1.** Openship will use this create purchase function to create purchases on the channel. Openship sends the following attributes to the endpoint:
+
+- **accessToken**: access token to verify the request
+- **email**: email connected to the Openship account
+- **metafields**: channel-specific fields
+- **cartItems**: products that need to be fulfilled
+  <List>
+    <List.Item>*productId*: product identifier</List.Item>
+    <List.Item>*variantId*: product variant identifier</List.Item>
+    <List.Item>*name*: product title</List.Item>
+    <List.Item>*quantity*: quantity of product to ship</List.Item>
+    <List.Item>*price*: product cost</List.Item>
+  </List>
+- **address**: shipping address
+  <List>
+    <List.Item>*first_name*</List.Item>
+    <List.Item>*last_name*</List.Item>
+    <List.Item>*streetAddress1*</List.Item>
+    <List.Item>*streetAddress2*</List.Item>
+    <List.Item>*city*</List.Item>
+    <List.Item>*state*</List.Item>
+    <List.Item>*zip*</List.Item>
+    <List.Item>*state*</List.Item>
+    <List.Item>*country*</List.Item>
+  </List>
+
+Let's put these values to use.
+
+```js api/create-purchase.js focus=2:27
+export default async (req, res) => {
+  const {
+    accessToken,
+    email,
+    metafields: {
+      [key]: value
+    },
+    cartItems: [
+      {
+        productId,
+        variantId,
+        name,
+        quantity,
+        price,
+      },
+    ],
+    address: {
+      first_name,
+      last_name,
+      streetAddress1,
+      streetAddress2,
+      city,
+      state,
+      zip,
+      country,
+    },
+  } = req.body;
+};
+```
+
+---
+
+<br />
+**2.** First, we check this access token against our `.env` file to make the user has been granted access.
+
+```js api/create-purchase.js focus=28:32
+export default async (req, res) => {
+  const {
+    accessToken,
+    email,
+    metafields: {
+      [key]: value
+    },
+    cartItems: [
+      {
+        productId,
+        variantId,
+        name,
+        quantity,
+        price,
+      },
+    ],
+    address: {
+      first_name,
+      last_name,
+      streetAddress1,
+      streetAddress2,
+      city,
+      state,
+      zip,
+      country,
+    },
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+};
+```
+---
+
+<br />
+
+**3.** Using this information, we can create a purchase on Shopify, Google Sheets, CMS, or any existing platform. Let's keep it simple and send an email with the purchase information to our supplier:
+
+- First, let's create the email content using the address and products from our request body
+
+```js api/create-purchase.js focus=34:61
+export default async (req, res) => {
+  const {
+    accessToken,
+    email,
+    metafields: {
+      [key]: value
+    },
+    cartItems: [
+      {
+        productId,
+        variantId,
+        name,
+        quantity,
+        price,
+      },
+    ],
+    address: {
+      first_name,
+      last_name,
+      streetAddress1,
+      streetAddress2,
+      city,
+      state,
+      zip,
+      country,
+    },
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const newPurchaseId = Date.now().toString();
+    let cartItemsHtml = "";
+    cartItems.forEach((c) => {
+      cartItemsHtml += `
+          <p>Title: ${c.name}</p>
+          <p>Product Id: ${c.productId}</p>
+          <p>Variant Id: ${c.variantId}</p>
+          <p>Quantity: ${c.quantity}</p>
+          <p>Price: ${c.price}</p>
+          <p>______________________________</p>
+        `;
+    });
+    const html = `
+        <div>
+          <h2>purchase ${newPurchaseId}</h2>
+          <p>Shipping Address</p>
+          <p>${first_name}${" "}${last_name}</p>
+          <p>${streetAddress1}</p>
+          <p>${streetAddress2}</p>
+          <p>${city}</p>
+          <p>${state}</p>
+          <p>${zip}</p>
+          <p>${country}</p>
+          <p>Products to ship</p>
+          <p>______________________________</p>
+          ${cartItemsHtml}
+        </div>
+      `;
+  } catch {
+  }
+};
+```
+---
+- Next, we'll use the ``nodemailer`` package and the [ethereal.email](https://ethereal.email) service to send a test email. If the purchase is created successfully, we return 2 values:
+  <List>
+    <List.Item>**purchaseId**:<Badge mx="xs" size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>purchase ID of the newly created purchase (in this case, we just get the current time in milliseconds)</List.Item>
+    <List.Item>**url**:<Badge mx="xs" size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>link to an purchase confirmation page</List.Item>
+  </List> 
+
+```js api/create-purchase.js focus=64:81
+import { createTransport, getTestMessageUrl } from "nodemailer";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    email,
+    metafields: {
+      [key]: value
+    },
+    cartItems: [
+      {
+        productId,
+        variantId,
+        name,
+        quantity,
+        price,
+      },
+    ],
+    address: {
+      first_name,
+      last_name,
+      streetAddress1,
+      streetAddress2,
+      city,
+      state,
+      zip,
+      country,
+    },
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const newPurchaseId = Date.now().toString();
+    let cartItemsHtml = "";
+    cartItems.forEach((c) => {
+      cartItemsHtml += `
+          <p>Title: ${c.name}</p>
+          <p>Product Id: ${c.productId}</p>
+          <p>Variant Id: ${c.variantId}</p>
+          <p>Quantity: ${c.quantity}</p>
+          <p>Price: ${c.price}</p>
+          <p>______________________________</p>
+        `;
+    });
+    const html = `
+        <div>
+          <h2>purchase ${newPurchaseId}</h2>
+          <p>Shipping Address</p>
+          <p>${first_name}${" "}${last_name}</p>
+          <p>${streetAddress1}</p>
+          <p>${streetAddress2}</p>
+          <p>${city}</p>
+          <p>${state}</p>
+          <p>${zip}</p>
+          <p>${country}</p>
+          <p>Products to ship</p>
+          <p>______________________________</p>
+          ${cartItemsHtml}
+        </div>
+      `;
+    const transport = createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      auth: {
+        user: "marcellus.gutmann@ethereal.email",
+        pass: "KXWMwWjS3nXBd7xYyM",
+      },
+    });
+    const purchaseEmail = await transport.sendMail({
+      to: "yoursupplier@awesome.com",
+      from: email,
+      subject: `purchase ${newPurchaseId}`,
+      html,
+    });
+    return res.status(200).json({
+      purchaseId: newPurchaseId,
+      url: getTestMessageUrl(purchaseEmail),
+    });
+  } catch {
+  }
+};
+```
+---
+
+<br />
+
+**4.** Lastly, if purchase creation fails, we return an error.
+
+```js api/create-purchase.js focus=82:86
+import { createTransport, getTestMessageUrl } from "nodemailer";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    email,
+    metafields: {
+      [key]: value
+    },
+    cartItems: [
+      {
+        productId,
+        variantId,
+        name,
+        quantity,
+        price,
+      },
+    ],
+    address: {
+      first_name,
+      last_name,
+      streetAddress1,
+      streetAddress2,
+      city,
+      state,
+      zip,
+      country,
+    },
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const newPurchaseId = Date.now().toString();
+    let cartItemsHtml = "";
+    cartItems.forEach((c) => {
+      cartItemsHtml += `
+          <p>Title: ${c.name}</p>
+          <p>Product Id: ${c.productId}</p>
+          <p>Variant Id: ${c.variantId}</p>
+          <p>Quantity: ${c.quantity}</p>
+          <p>Price: ${c.price}</p>
+          <p>______________________________</p>
+        `;
+    });
+    const html = `
+        <div>
+          <h2>purchase ${newPurchaseId}</h2>
+          <p>Shipping Address</p>
+          <p>${first_name}${" "}${last_name}</p>
+          <p>${streetAddress1}</p>
+          <p>${streetAddress2}</p>
+          <p>${city}</p>
+          <p>${state}</p>
+          <p>${zip}</p>
+          <p>${country}</p>
+          <p>Products to ship</p>
+          <p>______________________________</p>
+          ${cartItemsHtml}
+        </div>
+      `;
+    const transport = createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      auth: {
+        user: "marcellus.gutmann@ethereal.email",
+        pass: "KXWMwWjS3nXBd7xYyM",
+      },
+    });
+    const purchaseEmail = await transport.sendMail({
+      to: "yoursupplier@awesome.com",
+      from: email,
+      subject: `purchase ${newPurchaseId}`,
+      html,
+    });
+    return res.status(200).json({
+      purchaseId: newPurchaseId,
+      url: getTestMessageUrl(purchaseEmail),
+    });
+  } catch {
+    return res.status(400).json({
+      error: "purchase creation failed.",
+    });
+  }
+};
+```
+
+</CH.Scrollycoding>
+
+## Create tracking endpoint
+
+Once an purchase is created using the function above, the channel has to create tracking details on Openship. To do this, we must first get the API key from Openship. On the left sidebar, you'll see the key icon.
+
+<KeyPopper/>
+
+After generating a key, add this to your ``.env`` file as ``OPENSHIP_KEY``. Since we'll be using Openship's GraphQL API, we'll also add ``OPENSHIP_DOMAIN`` to the ``.env`` file. 
+
+This is how the ``.env`` file looks so far:
+
+- **ACCESS_TOKEN**: access token to verify the request
+- **OPENSHIP_DOMAIN**: domain where your Openship API can be accessed (normally ends in ``/api/graphql``)
+- **OPENSHIP_KEY**: API key created on your Openship instance
+
+<Callout
+  color="blue"
+  title="Openship Cloud"
+  body={
+    <span>
+      If you're using Openship Cloud, it will look like https://
+      <Text component="span" size="sm" weight={600} underline>
+        domain
+      </Text>
+      .myopenship.com. Replace{" "}
+      <Text component="span" size="sm" weight={600} underline>
+        domain
+      </Text>{" "}
+      with the one you chose when signing up.
+    </span>
+  }
+/>
+
+``` shell .env
+ACCESS_TOKEN=supersecretpassword
+OPENSHIP_DOMAIN=https://myshop.myopenship.com/api/graphql
+OPENSHIP_KEY=bc5394008c83802e
+```
+---
+
+<CH.Scrollycoding>
+
+<br />
+
+**1.** Let's start creating our create-tracking function. First, we'll get these 4 values from the request body:
+<List ml="sm">
+  <List.Item>**accessToken**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>access token to verify the request</List.Item>
+  <List.Item>**purchaseId**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>purchase ID of the newly created purchase </List.Item>
+  <List.Item>**trackingNumber**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>shipping tracking number</List.Item>
+  <List.Item>**trackingCompany**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>shipping tracking company</List.Item>
+</List> 
+
+We'll check the accessToken against ``ACCESS_TOKEN`` variable that's in our ``.env`` file.
+
+```js api/create-tracking.js focus=4:15
+
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+    trackingNumber,
+    trackingCompany,
+  } = req.body;
+
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+};
+
+
+```
+
+---
+
+<br />
+
+**2.** To make requests to Openship's GraphQL API, we'll use the ``gql`` and ``request`` imports from the ``graphql-request`` package.
+
+We'll use ``OPENSHIP_DOMAIN`` as the url and pass ``OPENSHIP_KEY`` a header named ``x-api-key``.
+
+```js api/create-tracking.js focus=17:22
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+    trackingNumber,
+    trackingCompany,
+  } = req.body;
+
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const trackingDetails = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+    });
+  } catch {
+  }
+};
+
+```
+
+---
+
+<br />
+
+**3.** Let's create the mutation which will add the tracking details on Openship. We'll pass the mutation under document and pass the values from the request body as variables.
+
+```js api/create-tracking.js focus=21:36
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+    trackingNumber,
+    trackingCompany,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const trackingDetails = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation (
+          $data: TrackingDetailCreateInput!
+        ) {
+          createTrackingDetail(data: $data) {
+            id
+          }
+        }
+      `,
+      variables: {
+        data: {
+          trackingCompany,
+          trackingNumber,
+          purchaseId,
+        },
+      },
+    });
+  } catch {
+  }
+};
+```
+---
+
+<br />
+
+**4.** Lastly, if tracking creation is successful, we'll return the tracking information.
+
+```js api/create-tracking.js focus=38:40
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+    trackingNumber,
+    trackingCompany,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const trackingDetails = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation (
+          $data: TrackingDetailCreateInput!
+        ) {
+          createTrackingDetail(data: $data) {
+            id
+          }
+        }
+      `,
+      variables: {
+        data: {
+          trackingCompany,
+          trackingNumber,
+          purchaseId,
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ trackingDetails });
+  } catch {
+  }
+};
+```
+---
+
+<br/>
+
+**5.** We'll also catch any errors if tracking creation fails.
+
+```js api/create-tracking.js focus=42:44
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+    trackingNumber,
+    trackingCompany,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const trackingDetails = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation (
+          $data: TrackingDetailCreateInput!
+        ) {
+          createTrackingDetail(data: $data) {
+            id
+          }
+        }
+      `,
+      variables: {
+        data: {
+          trackingCompany,
+          trackingNumber,
+          purchaseId,
+        },
+      },
+    });
+    return res
+      .status(200)
+      .json({ trackingDetails });
+  } catch {
+    return res.status(400).json({
+      error: "Tracking creation failed.",
+    });
+  }
+};
+```
+
+</CH.Scrollycoding>
+
+## Cancel purchase endpoint
+
+Purchases can also be cancelled. This is useful if an item is out of stock, damaged, lost, or for any reason that would prevent a purchase order from being fulfilled. When a purchase is cancelled, the connected order will be marked as ``PENDING`` so that it can be fulfilled again.
+
+
+<CH.Scrollycoding>
+
+<br />
+
+**1.** Let's start creating our cancel-purchase function. First, we'll get these 2 values from the request body:
+<List ml="sm">
+  <List.Item>**accessToken**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>access token to verify the request</List.Item>
+  <List.Item>**purchaseId**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>purchase ID that needs to be cancelled</List.Item>
+</List> 
+
+We'll check the accessToken against ``ACCESS_TOKEN`` variable that's in our ``.env`` file.
+
+```js api/cancel-purchase.js focus=2:10
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+};
+
+```
+
+---
+
+<br />
+
+**2.** We'll use the same function as before to access Openship's GraphQL API.
+
+```js api/cancel-purchase.js focus=14:19
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const cancelledPurchase = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+    });
+  } catch {
+  }
+};
+
+```
+
+---
+
+<br />
+
+**3.** This time, we'll call the ``cancelPurchase`` mutation and pass the purchaseId as the variable. 
+
+```js api/cancel-purchase.js focus=19:26
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const cancelledPurchase = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation ($purchaseId: String!) {
+          cancelPurchase(purchaseId: $purchaseId) {
+            id
+          }
+        }
+      `,
+      variables: { purchaseId },
+    });
+  } catch {
+  }
+};
+```
+---
+
+<br />
+
+**4.** Lastly, if the purchase cancellation is successful, we'll return the response.
+
+```js api/cancel-purchase.js focus=28:30
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const cancelledPurchase = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation ($purchaseId: String!) {
+          cancelPurchase(purchaseId: $purchaseId) {
+            id
+          }
+        }
+      `,
+      variables: { purchaseId },
+    });
+    return res
+      .status(200)
+      .json({ cancelledPurchase });
+  } catch {
+  }
+};
+```
+---
+
+<br/>
+
+**5.** We'll also catch any errors if purchase cancellation fails.
+
+```js api/cancel-purchase.js focus=32:34
+import { request, gql } from "graphql-request";
+
+export default async (req, res) => {
+  const {
+    accessToken,
+    purchaseId,
+  } = req.body;
+  if (process.env.ACCESS_TOKEN !== accessToken) {
+    return res
+      .status(403)
+      .json({ error: "Denied" });
+  }
+  try {
+    const cancelledPurchase = await request({
+      url: process.env.OPENSHIP_DOMAIN,
+      requestHeaders: {
+        "x-api-key": process.env.OPENSHIP_KEY,
+      },
+      document: gql`
+        mutation ($purchaseId: String!) {
+          cancelPurchase(purchaseId: $purchaseId) {
+            id
+          }
+        }
+      `,
+      variables: { purchaseId },
+    });
+    return res
+      .status(200)
+      .json({ cancelledPurchase });
+  } catch {
+    return res.status(400).json({
+      error: "Purchase cancellation failed.",
+    });
+  }
+};
+```
+
+</CH.Scrollycoding>
+
+## Deploying the channel
+
+Now that we have our functions built, we have to deploy them. We'll keep it simple and add these functions to a [Next.js](https://nextjs.org) application as [API Routes](https://nextjs.org/docs/api-routes/introduction). This is a good starting place when building your own channel. Check out the CodeSandbox below to customize it and make it your own.
+
+<iframe src="https://codesandbox.io/embed/github/openshiporg/openship-channel/tree/master/?codemirror=1&fontsize=14&hidenavigation=0&module=/pages/api/search-products.js,/pages/api/create-purchase.js,/pages/api/create-tracking.js,/pages/api/cancel-purchase.js&theme=dark&view=editor" style={{ width: '100%', height: '600px', overflow: 'hidden', background: 'rgb(21, 21, 21)', marginTop: "30px", bpurchaseRadius: "5px" }} title="SWR - Optimistic UI" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-autoplay allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts" />
+
+When you're finished customizing, you can deploy the application to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any platform that supports ``node.js``.
+
+We have already deployed the demo channel we just made. To test it, add the channel and choose DEMO under the channel type.
+
+<PlatformAdder />
+
+Deploy this channel yourself on Vercel:
+
+[![](https://vercel.com/button)](https://vercel.com/import/git?s=https%3A%2F%2Fgithub.com%2Fopenshiporg%2Fopenship-channel&c=1)

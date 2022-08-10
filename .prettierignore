@@ -1,0 +1,5 @@
+node_modules/
+coverage/
+public/
+create-custom-channel.mdx
+create-custom-shop.mdx

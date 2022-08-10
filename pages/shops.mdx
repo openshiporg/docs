@@ -1,0 +1,25 @@
+import { ShopCards } from "../components/ShopCards";
+
+export const getStaticProps = ({ params }) => {
+  return fetch(`https://openship.up.railway.app/api/get-shops`)
+    .then((res) => res.json())
+    .then(({ shops }) => {
+      return {
+        props: {
+          // We add an `ssg` field to the page props,
+          // which will be provided to the Nextra `useSSG` hook.
+          ssg: {
+            shops,
+          },
+        },
+        // The page will be considered as stale and regenerated every 60 seconds.
+        // revalidate: 60,
+      };
+    });
+};
+
+# Introduction
+
+Shops represent online stores where your customers place orders. This includes e-commerce platforms, marketplaces, and even [custom shops](/how-to-guides/create-custom-shop).
+
+<ShopCards />
