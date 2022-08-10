@@ -1,5 +1,5 @@
 export default {
-  repository: "",
+  repository: "openshiporg/docs",
   // docsRepository: '',
   titleSuffix: " – Openship",
   logo: (

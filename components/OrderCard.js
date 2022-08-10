@@ -31,7 +31,7 @@ export function OrderCard({ title, order, lineItems, tracking, color }) {
             shadow="xs"
           >
             <Box px={4} pb={4}>
-              <Stack spacing={0} pr={30} sx={{ flexWrap: "wrap" }}>
+              <Stack spacing={0} sx={{ flexWrap: "wrap" }}>
                 <Text
                   color={
                     theme.colorScheme === "light"
@@ -82,7 +82,9 @@ export function OrderCard({ title, order, lineItems, tracking, color }) {
               }}
               // shadow="xs"
               mt={5}
-              p={5}
+              pl={5}
+              py={5}
+              pr="md"
             >
               <Group spacing="xs">
                 <ThemeIcon
