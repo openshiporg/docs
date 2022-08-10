@@ -1,6 +1,6 @@
 export default {
-  projectLink: 'https://github.com/openshiporg/openship',
-  docsRepositoryBase: 'https://github.com/openshiporg/openship/blob/main',  // docsRepository: '',
+  projectLink: 'https://github.com/openshiporg/docs',
+  docsRepositoryBase: 'https://github.com/openshiporg/docs/blob/main',  // docsRepository: '',
   titleSuffix: " – Openship",
   logo: (
     <>
