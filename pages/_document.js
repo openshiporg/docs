@@ -13,7 +13,7 @@ export default class _Document extends Document {
         <Head>
           <Script
             src="https://stats.openship.org/umami.js"
-            data-website-id="3a416c79-2b14-4ed8-b148-994137e3f6a7"
+            data-website-id="8771e503-7249-43f4-a175-0a7a7060ab3f"
             strategy="lazyOnload"
           />
         </Head>
