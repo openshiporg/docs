@@ -1,5 +1,6 @@
 import Document, { Head, Html, Main, NextScript } from "next/document";
 import { createGetInitialProps } from "@mantine/next";
+import Script from "next/script";
 
 const getInitialProps = createGetInitialProps();
 
@@ -10,11 +11,10 @@ export default class _Document extends Document {
     return (
       <Html lang="en">
         <Head>
-          <script
-            async
-            defer
-            data-website-id="3a416c79-2b14-4ed8-b148-994137e3f6a7"
+          <Script
             src="https://stats.openship.org/umami.js"
+            data-website-id="3a416c79-2b14-4ed8-b148-994137e3f6a7"
+            strategy="lazyOnload"
           />
         </Head>
         <body>
