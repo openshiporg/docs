@@ -12,7 +12,10 @@ export const Video = ({ videoId }) => {
         <Box sx={{ aspectRatio: "16 / 9", width: "100%" }}>
           <Box
             component="video"
-            sx={{ border: `4px solid ${theme.colors.dark[7]}`, borderRadius: 4 }}
+            sx={{
+              border: `4px solid ${theme.colors.dark[7]}`,
+              borderRadius: 4,
+            }}
             width="100%"
             poster="https://brief.cleanshot.cloud/media/12376/TNqapKGuK8n35bMpMWXMRHHeCsugPIrBwf261XKg.mp4?"
             controls
@@ -160,7 +163,7 @@ export const Video = ({ videoId }) => {
                 cursor: "pointer",
                 position: "relative",
                 width: 70,
-                color: theme.colors.blue[7],
+                color: theme.colors.blue[9],
               }}
             >
               <svg
@@ -175,7 +178,13 @@ export const Video = ({ videoId }) => {
                 />
               </svg>
             </Box>
-            <Text color="white" sx={{ fontSize: 30 }} weight={600} mt="xl">
+            <Text
+              variant="gradient"
+              gradient={{ from: "#9a6a39", to: "#eeba7e", deg: 45 }}
+              sx={{ fontSize: 36 }}
+              weight={600}
+              mt="xl"
+            >
               ...in 4 minutes
             </Text>
           </Stack>
