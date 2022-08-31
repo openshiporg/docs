@@ -13,6 +13,7 @@ import {
   Collapse,
   Box,
   useMantineTheme,
+  Badge,
 } from "@mantine/core";
 import { useSSG } from "nextra/ssg";
 import { PlatformCard } from "./PlatformCard";
@@ -21,12 +22,27 @@ import { IconAlertCircle } from "@tabler/icons";
 import { Prism } from "@mantine/prism";
 import { Callout } from "./Callout";
 import { Papercups } from "@papercups-io/chat-widget";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import Image from "next/image";
 
 export const ChannelCards = () => {
   const { channels } = useSSG();
   const [channelIndex, setChannelIndex] = useState(null);
   const [showAlert, setShowAlert] = useState(true);
   const theme = useMantineTheme();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady || !router.query.install) return;
+    const paramChannel = channels.findIndex(
+      ({ type }) => type === router.query.install
+    );
+    if (paramChannel !== "-1") {
+      setChannelIndex(paramChannel);
+    }
+  }, [router.isReady, router.query.install]);
 
   const InstallationGuides = {
     Shopify: (
@@ -38,12 +54,12 @@ export const ChannelCards = () => {
         <Accordion
           iconPosition="right"
           styles={(theme) => ({
-            label: { fontSize: 14, fontWeight: 500, lineHeight: 1.2 },
+            label: { fontSize: 16, fontWeight: 400, lineHeight: 1.2 },
             item: { fontSize: 14 },
-            itemOpened: {
-              backgroundColor:
-                theme.colors.gray[theme.colorScheme === "dark" ? 9 : 0],
-            },
+            // itemOpened: {
+            //   backgroundColor:
+            //     theme.colors.gray[theme.colorScheme === "dark" ? 9 : 0],
+            // },
           })}
         >
           <Accordion.Item label="Install the Openship app on the Shopify App Store">
@@ -129,15 +145,24 @@ export const ChannelCards = () => {
             label="Create a custom app on your shop admin and add the credentials on
                 Openship"
           >
-            Shopify has a great guide on how to create a custom app{" "}
-            <a
-              href="https://help.shopify.com/en/manual/apps/custom-apps"
-              rel="noopener noreferrer"
-              target="_blank"
+            To create a custom app on Shopify, go to:
+            <br />
+            <br />
+            <Code>https://your-domain.myshopify.com/admin/settings/apps</Code>
+            <br />
+            <br />
+            And follow the video below:
+            <Box
+              component="video"
+              poster="https://brief.cleanshot.cloud/media/12376/bHlxZm0vWEjityBqRRVZnFAOiJywzRut1jsH3Zd6.mp4?"
+              controls
+              mt="md"
             >
-              here
-            </a>
-            .
+              <source
+                src="https://media.cleanshot.cloud/media/12376/bHlxZm0vWEjityBqRRVZnFAOiJywzRut1jsH3Zd6.mp4?Expires=1661938158&Signature=M6zTL~HgOVeE0H5tipAIJUS3Kt-uS4Jgjk4l3jbm4tNGSrC6qv-2nZMqN1IpQJ1R6ZWpCsLTG7LvMuuFn0-7jWLdu4-LNZHiOMLfCh7GG7PKIHqvtRui-1ueehTi~ZJhYsMFirr3uQ8fkdp4Y3~V7n4u1ILmoLfNVRuL1Fv7QLit1oLENKtTb2cVCGhTgjKUsUuvj2II99BcjrfxoBhGFXOB1eAg5W1r5Tb2T1xPiIwvwHqlQQWiATVRF6ig~hnGfpufJE70-EkAqoIx~KaEhOJtMYbeirtVVLtt15YU~jONvEKq-8is6tcFponA4bO8-ohY4MpSBoK2FsSl8zjXNQ__&Key-Pair-Id=K269JMAT9ZF4GZ"
+                type="video/mp4"
+              />
+            </Box>
             <br />
             <br />
             When setting the API scopes, these are the ones Openship needs
@@ -145,18 +170,18 @@ export const ChannelCards = () => {
             <br />
             <Stack mt="sm" spacing="xs">
               {[
-                "write_orders",
-                "write_products",
                 "read_orders",
+                "write_orders",
                 "read_products",
+                "write_products",
                 "read_fulfillments",
                 "write_fulfillments",
                 "write_draft_orders",
+                "read_draft_orders",
                 "read_assigned_fulfillment_orders",
                 "write_assigned_fulfillment_orders",
                 "read_merchant_managed_fulfillment_orders",
                 "write_merchant_managed_fulfillment_orders",
-                "read_shopify_payments_disputes",
               ].map((scope) => (
                 <Box>
                   <Code>{scope}</Code>
@@ -164,12 +189,8 @@ export const ChannelCards = () => {
               ))}
             </Stack>
             <br />
-            Once the custom app is created, Shopify will give you the option to
-            install it on your shop. After you install it, you will need the
-            Admin API access token. Shopify will only reveal it to you once.
-            <br />
-            <br />
-            Once you have it, add a channel on Openship, choose
+            Once you have the Admin API access token copied, add a channel on
+            Openship, choose
             <Code>SHOPIFY CUSTOM</Code> as the channel type, choose a channel
             name, put your shopify domain as the domain, and Admin API access
             token under access token.
@@ -262,7 +283,17 @@ CHANNEL_SHOPIFY_SECRET=API_secret_key`}
       <Modal
         opened={channels[channelIndex]}
         onClose={() => setChannelIndex(null)}
-        title={`Adding a ${channels[channelIndex]?.type} channel`}
+        title={
+          <Group align="center">
+            <Text weight={500} size="lg">
+              Adding a {channels[channelIndex]?.type} channel
+            </Text>
+            <Badge radius="xs" size="sm" variant="outline" mt={2}>
+              3 Options
+            </Badge>
+          </Group>
+        }
+        size="lg"
       >
         {InstallationGuides[channels[channelIndex]?.type]}
       </Modal>

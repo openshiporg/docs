@@ -13,6 +13,7 @@ import {
   Collapse,
   Box,
   useMantineTheme,
+  Badge,
 } from "@mantine/core";
 import { useSSG } from "nextra/ssg";
 import { PlatformCard } from "./PlatformCard";
@@ -21,9 +22,24 @@ import { IconAlertCircle } from "@tabler/icons";
 import { Prism } from "@mantine/prism";
 import { Callout } from "./Callout";
 import { Papercups } from "@papercups-io/chat-widget";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import Image from "next/image";
 
 export const ShopCards = () => {
   const { shops } = useSSG();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady || !router.query.install) return;
+    const paramShop = shops.findIndex(
+      ({ type }) => type === router.query.install
+    );
+    if (paramShop !== "-1") {
+      setShopIndex(paramShop);
+    }
+  }, [router.isReady, router.query.install]);
+
   const [shopIndex, setShopIndex] = useState(null);
   const [showAlert, setShowAlert] = useState(true);
   const theme = useMantineTheme();
@@ -31,19 +47,19 @@ export const ShopCards = () => {
   const InstallationGuides = {
     Shopify: (
       <Stack m={-20} pt={4} spacing={0}>
-        <Text size="sm" p="md">
+        {/* <Text size="sm" p="md">
           Adding a Shopify shop to Openship can be done in 3 ways:
         </Text>
-        <Divider />
+        <Divider /> */}
         <Accordion
           iconPosition="right"
           styles={(theme) => ({
-            label: { fontSize: 14, fontWeight: 500, lineHeight: 1.2 },
+            label: { fontSize: 16, fontWeight: 400, lineHeight: 1.2 },
             item: { fontSize: 14 },
-            itemOpened: {
-              backgroundColor:
-                theme.colors.gray[theme.colorScheme === "dark" ? 9 : 0],
-            },
+            // itemOpened: {
+            //   backgroundColor:
+            //     theme.colors.gray[theme.colorScheme === "dark" ? 9 : 0],
+            // },
           })}
         >
           <Accordion.Item label="Install the Openship app on the Shopify App Store">
@@ -129,7 +145,7 @@ export const ShopCards = () => {
             label="Create a custom app on your shop admin and add the credentials on
                 Openship"
           >
-            Shopify has a great guide on how to create a custom app{" "}
+            {/* Shopify has a great guide on how to create a custom app{" "}
             <a
               href="https://help.shopify.com/en/manual/apps/custom-apps"
               rel="noopener noreferrer"
@@ -137,7 +153,25 @@ export const ShopCards = () => {
             >
               here
             </a>
-            .
+            . */}
+            To create a custom app on Shopify, go to:
+            <br />
+            <br />
+            <Code>https://your-domain.myshopify.com/admin/settings/apps</Code>
+            <br />
+            <br />
+            And follow the video below:
+            <Box
+              component="video"
+              poster="https://brief.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?"
+              controls
+              mt="md"
+            >
+              <source
+                src="https://media.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?Expires=1661938174&Signature=B8KFXNJM6H6LKd9Uc6zyeUG2lsKmduIbQS26jSVVKHy1OhDsU3fC9VTRNToSzFbsE6xD9WbzJcpfXRZgyU~mfR4-iFOehmW9OZuZgzaovzlnVZzrWtcbJA0jP~0aXL4kcnb83JpNrieXkpZTU4-BhQDfeNGN1I7rvDmoDmecLHqOmpWCbK62HYq1NXHNJg-4cdT2iDTnKoxBtyb6jPiObNujk~5soJj1iGH5U-sO1zct4fsQrwzOPi-ezTReVHKzvbMlOjs5JrasGS-c5gixdGjVghApBB~Qz7kLBH-L7XjAsvEog~oGErKWitjcSmSQ0L4IT3hQ-0dBbR6hmPd3Dg__&Key-Pair-Id=K269JMAT9ZF4GZ"
+                type="video/mp4"
+              />
+            </Box>
             <br />
             <br />
             When setting the API scopes, these are the ones Openship needs
@@ -145,10 +179,10 @@ export const ShopCards = () => {
             <br />
             <Stack mt="sm" spacing="xs">
               {[
-                "write_orders",
-                "write_products",
                 "read_orders",
+                "write_orders",
                 "read_products",
+                "write_products",
                 "read_fulfillments",
                 "write_fulfillments",
                 "read_assigned_fulfillment_orders",
@@ -163,12 +197,8 @@ export const ShopCards = () => {
               ))}
             </Stack>
             <br />
-            Once the custom app is created, Shopify will give you the option to
-            install it on your shop. After you install it, you will need the
-            Admin API access token. Shopify will only reveal it to you once.
-            <br />
-            <br />
-            Once you have it, add a shop on Openship, choose
+            Once you have the Admin API access token copied, add a shop on
+            Openship, choose
             <Code>SHOPIFY CUSTOM</Code> as the shop type, choose a shop name,
             put your shopify domain as the domain, and Admin API access token
             under access token.
@@ -209,7 +239,7 @@ export const ShopCards = () => {
             }
           >
             Take it one step further and allow users to install <i>your</i>{" "}
-            Shopify app when they add a shopify shop on Openship.
+            Shopify app when they add a Shopify shop on Openship.
             <br />
             <br />
             To accomplish this, you'll need a free{" "}
@@ -261,7 +291,17 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
       <Modal
         opened={shops[shopIndex]}
         onClose={() => setShopIndex(null)}
-        title={`Adding a ${shops[shopIndex]?.type} shop`}
+        title={
+          <Group align="center">
+            <Text weight={500} size="lg">
+              Adding a {shops[shopIndex]?.type} shop
+            </Text>
+            <Badge radius="xs" size="sm" variant="outline" mt={2}>
+              3 Options
+            </Badge>
+          </Group>
+        }
+        size="lg"
       >
         {InstallationGuides[shops[shopIndex]?.type]}
       </Modal>
