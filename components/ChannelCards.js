@@ -154,15 +154,12 @@ export const ChannelCards = () => {
             And follow the video below:
             <Box
               component="video"
-              poster="https://brief.cleanshot.cloud/media/12376/bHlxZm0vWEjityBqRRVZnFAOiJywzRut1jsH3Zd6.mp4?"
+              sx={{ border: `3px solid black`, display: "block" }}
+              width="100%"
               controls
-              mt="md"
-            >
-              <source
-                src="https://media.cleanshot.cloud/media/12376/bHlxZm0vWEjityBqRRVZnFAOiJywzRut1jsH3Zd6.mp4?Expires=1661938158&Signature=M6zTL~HgOVeE0H5tipAIJUS3Kt-uS4Jgjk4l3jbm4tNGSrC6qv-2nZMqN1IpQJ1R6ZWpCsLTG7LvMuuFn0-7jWLdu4-LNZHiOMLfCh7GG7PKIHqvtRui-1ueehTi~ZJhYsMFirr3uQ8fkdp4Y3~V7n4u1ILmoLfNVRuL1Fv7QLit1oLENKtTb2cVCGhTgjKUsUuvj2II99BcjrfxoBhGFXOB1eAg5W1r5Tb2T1xPiIwvwHqlQQWiATVRF6ig~hnGfpufJE70-EkAqoIx~KaEhOJtMYbeirtVVLtt15YU~jONvEKq-8is6tcFponA4bO8-ohY4MpSBoK2FsSl8zjXNQ__&Key-Pair-Id=K269JMAT9ZF4GZ"
-                type="video/mp4"
-              />
-            </Box>
+              poster="https://brief.cleanshot.cloud/media/12376/bHlxZm0vWEjityBqRRVZnFAOiJywzRut1jsH3Zd6.mp4?"
+              src="https://user-images.githubusercontent.com/34615258/187931728-73fda576-c76a-41cf-a346-ea45b456efb2.mp4"
+            />
             <br />
             <br />
             When setting the API scopes, these are the ones Openship needs
