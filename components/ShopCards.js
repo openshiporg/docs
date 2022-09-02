@@ -167,7 +167,7 @@ export const ShopCards = () => {
               width="100%"
               controls
               poster="https://brief.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?"
-              src="https://user-images.githubusercontent.com/34615258/187932522-19f6de7a-f661-4022-992b-e27199099ad8.mp4"
+              src="https://user-images.githubusercontent.com/34615258/187931728-73fda576-c76a-41cf-a346-ea45b456efb2.mp4"
             />
             <br />
             <br />
