@@ -180,7 +180,7 @@ export const ChannelCards = () => {
                 "read_merchant_managed_fulfillment_orders",
                 "write_merchant_managed_fulfillment_orders",
               ].map((scope) => (
-                <Box>
+                <Box key={scope}>
                   <Code>{scope}</Code>
                 </Box>
               ))}
@@ -294,9 +294,11 @@ CHANNEL_SHOPIFY_SECRET=API_secret_key`}
       >
         {InstallationGuides[channels[channelIndex]?.type]}
       </Modal>
+
       <Stack mt="xl">
         {channels.map((channel, index) => (
           <PlatformCard
+            key={channel.id}
             {...channel}
             color="indigo"
             onClick={() => channel.stage === "DONE" && setChannelIndex(index)}
