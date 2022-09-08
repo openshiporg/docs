@@ -131,13 +131,14 @@ export const PlatformAdder = ({
   );
 };
 
-export const Form = ({ label, fields, metafields, buttonText }) => {
+export const Form = ({ label, fields, metaFields, buttonText }) => {
   const theme = useMantineTheme();
 
   return (
     <>
       {fields.map(({ name, title, placeholder, rightSection }) => (
         <TextInput
+          key={name}
           placeholder={placeholder}
           label={title}
           sx={{ overflow: "hidden" }}
@@ -160,7 +161,7 @@ export const Form = ({ label, fields, metafields, buttonText }) => {
           }}
         />
       ))}
-      {metafields && (
+      {metaFields && (
         <Paper
           p="xs"
           withBorder
@@ -184,7 +185,7 @@ export const Form = ({ label, fields, metafields, buttonText }) => {
               {label} fields
             </Text>
           </Stack>
-          {metafields.map(
+          {metaFields.map(
             ({ name, title, placeholder, rightSection }, index) => (
               <TextInput
                 placeholder={placeholder}

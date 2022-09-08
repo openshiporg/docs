@@ -75,7 +75,7 @@ export function OrderCard({ title, order, lineItems, tracking, color }) {
             </Box>
           </Box>
           {lineItems.map(({ name, sku, icon, color }) => (
-            <Paper
+            <Paper key={name}
               withBorder
               sx={{
                 flex: 1,

@@ -4,8 +4,9 @@ import themeConfig from "../theme.config";
 export function Steps({ steps }) {
   return (
     <List type="ordered" size="md" withPadding mt="lg" mb={50} ml="xl">
-      {steps.map(({ text, badge, href }, index) => (
+      {steps.map(({ text, badge, href }) => (
         <List.Item
+          key={href}
           mb={10}
           // icon={
           //   <ThemeIcon

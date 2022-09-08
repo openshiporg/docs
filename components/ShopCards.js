@@ -188,7 +188,7 @@ export const ShopCards = () => {
                 "write_merchant_managed_fulfillment_orders",
                 "read_shopify_payments_disputes",
               ].map((scope) => (
-                <Box>
+                <Box key={scope}>
                   <Code>{scope}</Code>
                 </Box>
               ))}
@@ -306,6 +306,7 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
         {shops.map((shop, index) => (
           <PlatformCard
             {...shop}
+            key={shop.id}
             onClick={() => shop.stage === "DONE" && setShopIndex(index)}
           />
         ))}
