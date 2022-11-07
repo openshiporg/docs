@@ -161,14 +161,9 @@ export const ShopCards = () => {
             <br />
             <br />
             And follow the video below:
-            <Box
-              component="video"
-              poster="https://brief.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?"
-              controls
-              mt="md"
-            >
+            <Box component="video" controls mt="md">
               <source
-                src="https://media.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?Expires=1661938174&Signature=B8KFXNJM6H6LKd9Uc6zyeUG2lsKmduIbQS26jSVVKHy1OhDsU3fC9VTRNToSzFbsE6xD9WbzJcpfXRZgyU~mfR4-iFOehmW9OZuZgzaovzlnVZzrWtcbJA0jP~0aXL4kcnb83JpNrieXkpZTU4-BhQDfeNGN1I7rvDmoDmecLHqOmpWCbK62HYq1NXHNJg-4cdT2iDTnKoxBtyb6jPiObNujk~5soJj1iGH5U-sO1zct4fsQrwzOPi-ezTReVHKzvbMlOjs5JrasGS-c5gixdGjVghApBB~Qz7kLBH-L7XjAsvEog~oGErKWitjcSmSQ0L4IT3hQ-0dBbR6hmPd3Dg__&Key-Pair-Id=K269JMAT9ZF4GZ"
+                src="https://user-images.githubusercontent.com/34615258/187931728-73fda576-c76a-41cf-a346-ea45b456efb2.mp4"
                 type="video/mp4"
               />
             </Box>
@@ -233,13 +228,13 @@ export const ShopCards = () => {
           <Accordion.Item
             label={
               <>
-                Create a custom app on the Shopify Partner dashboard and add
+                Create a custom app on the Shopify Partner dashboard and add the
                 credentials to <Code>.env</Code> file
               </>
             }
           >
             Take it one step further and allow users to install <i>your</i>{" "}
-            Shopify app when they add a Shopify shop on Openship.
+            Shopify app when they add a Shopify shop on your Openship instance.
             <br />
             <br />
             To accomplish this, you'll need a free{" "}
@@ -284,6 +279,100 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
         </Accordion>
       </Stack>
     ),
+    BigCommerce: (
+      <Stack m={-20} pt={4} spacing={0}>
+        {/* <Text size="sm" p="md">
+          Adding a Shopify shop to Openship can be done in 3 ways:
+        </Text>
+        <Divider /> */}
+        <Accordion
+          iconPosition="right"
+          styles={(theme) => ({
+            label: { fontSize: 16, fontWeight: 400, lineHeight: 1.2 },
+            item: { fontSize: 14 },
+            // itemOpened: {
+            //   backgroundColor:
+            //     theme.colors.gray[theme.colorScheme === "dark" ? 9 : 0],
+            // },
+          })}
+        >
+          <Accordion.Item label="Install the Openship app on the BigCommerce App Store">
+            When adding the shop on Openship, choose <Code>BIG COMMERCE</Code>{" "}
+            as the type and click Connect Big Commerce:
+            <PlatformAdder
+              title="Shop"
+              PlatformForms={{
+                shopify: {
+                  label: "Big Commerce",
+                  fields: [
+                    {
+                      title: "URL",
+                      name: "shop",
+                      placeholder: "centralbikeshop",
+                      // rightSection: ".mybigcommerce.com",
+                    },
+                  ],
+                  buttonText: "Connect Big Commerce",
+                },
+              }}
+              maxWidth={270}
+            />
+            This will take you to Big Commerce to install Openship.
+          </Accordion.Item>
+          <Accordion.Item
+            label={
+              <>
+                Create a custom app on the BigCommerce Developer dashboard and add the
+                credentials to <Code>.env</Code> file
+              </>
+            }
+          >
+            Take it one step further and allow users to install <i>your</i>{" "}
+            BigCommerce app when they add a BigCommerce shop on your Openship instance.
+            <br />
+            <br />
+            To accomplish this, you'll need a free{" "}
+            <a
+              href="https://partners.bigcommerce.com/English/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              BigCommerce Partner
+            </a>{" "}
+            account. After creating one, you'll need to create an app on the
+            dashboard and get the API key and API secret key. You'll need to add
+            this to your <Code>.env</Code> file as{" "}
+            <Code>SHOP_BIGCOMMERCE_API_KEY</Code> and{" "}
+            <Code>SHOP_BIGCOMMERCE_SECRET</Code> respectively.
+            <Prism.Tabs mt="xl">
+              <Prism.Tab label=".env" language="shell">
+                {`SHOP_BIGCOMMERCE_API_KEY=API_key
+SHOP_BIGCOMMERCE_SECRET=API_secret_key`}
+              </Prism.Tab>
+            </Prism.Tabs>
+            <Callout
+              mt="sm"
+              color="blue"
+              body={
+                <Text size="sm">
+                  If you're using Openship Cloud,{" "}
+                  <Text
+                    variant="link"
+                    component="a"
+                    size="sm"
+                    onClick={Papercups.toggle}
+                    style={{ cursor: "pointer" }}
+                  >
+                    get in touch
+                  </Text>{" "}
+                  and we'll add these variables to your instance.
+                </Text>
+              }
+            />
+          </Accordion.Item>
+        </Accordion>
+      </Stack>
+    ),
   };
 
   return (
@@ -296,9 +385,9 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
             <Text weight={500} size="lg">
               Adding a {shops[shopIndex]?.type} shop
             </Text>
-            <Badge radius="xs" size="sm" variant="outline" mt={2}>
+            {/* <Badge radius="xs" size="sm" variant="outline" mt={2}>
               3 Options
-            </Badge>
+            </Badge> */}
           </Group>
         }
         size="lg"

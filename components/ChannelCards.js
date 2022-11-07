@@ -225,7 +225,7 @@ export const ChannelCards = () => {
           <Accordion.Item
             label={
               <>
-                Create a custom app on the Shopify Partner dashboard and add
+                Create a custom app on the Shopify Partner dashboard and add the
                 credentials to <Code>.env</Code> file
               </>
             }
@@ -288,9 +288,9 @@ CHANNEL_SHOPIFY_SECRET=API_secret_key`}
             <Text weight={500} size="lg">
               Adding a {channels[channelIndex]?.type} channel
             </Text>
-            <Badge radius="xs" size="sm" variant="outline" mt={2}>
+            {/* <Badge radius="xs" size="sm" variant="outline" mt={2}>
               3 Options
-            </Badge>
+            </Badge> */}
           </Group>
         }
         size="lg"

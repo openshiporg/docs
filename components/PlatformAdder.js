@@ -25,16 +25,17 @@ export const PlatformAdder = ({
           placeholder: `Demo ${title}`,
         },
       ],
-      buttonText: `Create ${title}`
+      buttonText: `Create ${title}`,
     },
   },
+  maxWidth = 250,
 }) => {
   const theme = useMantineTheme();
   const [type, setType] = useState(Object.keys(PlatformForms)[0]);
 
   return (
     <Center>
-      <Paper sx={{ maxWidth: 250 }} withBorder my="lg" shadow="xs">
+      <Paper sx={{ maxWidth }} withBorder my="lg" shadow="xs">
         <Text
           weight={600}
           size="sm"
