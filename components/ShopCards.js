@@ -161,12 +161,14 @@ export const ShopCards = () => {
             <br />
             <br />
             And follow the video below:
-            <Box component="video" controls mt="md">
-              <source
-                src="https://user-images.githubusercontent.com/34615258/187931728-73fda576-c76a-41cf-a346-ea45b456efb2.mp4"
-                type="video/mp4"
-              />
-            </Box>
+            <Box
+              component="video"
+              sx={{ border: `3px solid black`, display: "block" }}
+              width="100%"
+              controls
+              poster="https://brief.cleanshot.cloud/media/12376/HsOfjn7mSL1pZHzTIJ2JE15sDgJosDrIWF8pJuF3.mp4?"
+              src="https://user-images.githubusercontent.com/34615258/187931728-73fda576-c76a-41cf-a346-ea45b456efb2.mp4"
+            />
             <br />
             <br />
             When setting the API scopes, these are the ones Openship needs
@@ -186,7 +188,7 @@ export const ShopCards = () => {
                 "write_merchant_managed_fulfillment_orders",
                 "read_shopify_payments_disputes",
               ].map((scope) => (
-                <Box>
+                <Box key={scope}>
                   <Code>{scope}</Code>
                 </Box>
               ))}
@@ -398,6 +400,7 @@ SHOP_BIGCOMMERCE_SECRET=API_secret_key`}
         {shops.map((shop, index) => (
           <PlatformCard
             {...shop}
+            key={shop.id}
             onClick={() => shop.stage === "DONE" && setShopIndex(index)}
           />
         ))}
