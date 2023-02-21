@@ -12,8 +12,9 @@ import {
 import { useColorScheme } from "@mantine/hooks";
 import { theme as mantineTheme } from "../theme/extendTheme";
 import { styles } from "../theme/styles";
-import "../styles.css";
+// import "@code-hike/mdx/styles"
 import "nextra-theme-docs/style.css";
+import "../styles.css";
 
 function MantineTheme({ children }) {
   let { theme: themeValue, setTheme, systemTheme } = useTheme();

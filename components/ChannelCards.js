@@ -47,10 +47,6 @@ export const ChannelCards = () => {
   const InstallationGuides = {
     Shopify: (
       <Stack m={-20} pt={4} spacing={0}>
-        <Text size="sm" p="md">
-          Adding a Shopify channel to Openship can be done in 3 ways:
-        </Text>
-        <Divider />
         <Accordion
           iconPosition="right"
           styles={(theme) => ({

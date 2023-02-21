@@ -25,7 +25,12 @@ const withNextra = require("nextra")({
   theme: "nextra-theme-docs",
   themeConfig: "./theme.config.js",
   mdxOptions: {
-    remarkPlugins: [[remarkCodeHike, { theme }]],
+    remarkPlugins: [
+      [
+        remarkCodeHike,
+        { theme, staticMediaQuery: "not screen, (max-width: 968px)" },
+      ],
+    ],
   },
   unstable_flexsearch: true,
   unstable_staticImage: true,
