@@ -1,7 +1,7 @@
 import { ChannelCards } from "../components/ChannelCards";
 
 export const getStaticProps = ({ params }) => {
-  return fetch(`https://openship.up.railway.app/api/get-channels`)
+  return fetch(`https://openship.org/api/get-channels`)
     .then((res) => res.json())
     .then(({ channels }) => {
       return {

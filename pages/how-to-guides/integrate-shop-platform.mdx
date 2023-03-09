@@ -1,28 +1,33 @@
-import { List, Badge, Text, Code as CodeBlock } from '@mantine/core';
+import { List, Badge, Text, Code as CodeBlock } from "@mantine/core";
 import { Papercups } from "@papercups-io/chat-widget";
 import { Steps } from "../../components/Steps";
-import { PlatformAdder } from "../../components/PlatformAdder"
-import { Callout } from "../../components/Callout"
-import { KeyPopper } from "../../components/KeyPopper"
+import { PlatformAdder } from "../../components/PlatformAdder";
+import { Callout } from "../../components/Callout";
+import { KeyPopper } from "../../components/KeyPopper";
 
-# Create a custom shop
+# Integrate a shop platform
 
 <Callout
   mt="sm"
   color="blue"
-  title="Creating custom shops requires some programming knowledge."
-  body={<Text size="sm">Need us to make you a custom shop? <Text variant="link" component="a" size="sm" onClick={Papercups.toggle} style={{ cursor: "pointer" }}>Get in touch  &#8594;</Text></Text>}
+  title="Integrating a new platform shop requires some programming knowledge."
+  body={
+    <Text size="sm">
+      Need us to make you a shop integration?{" "}
+      <Text
+        variant="link"
+        component="a"
+        size="sm"
+        onClick={Papercups.toggle}
+        style={{ cursor: "pointer" }}
+      >
+        Get in touch &#8594;
+      </Text>
+    </Text>
+  }
 />
 
-Openship supports shop platforms out of the box like Shopify, WooCommerce, and BigCommerce, but also works with custom shops.
-
-<Callout
-  mt="sm"
-  color="teal"
-  body="The easiest way to create a custom shop is to create a shop on the dashboard, get the shop ID, and then use the API to create orders. Use the guide below to enable more features and integrations between your shop and Openship."
-/>
-
-To create a custom shop, you must create 4 endpoints:
+Openship supports some shop platforms out of the box like Shopify, WooCommerce, and BigCommerce. To add new platforms this list, follow these steps:
 
 <Steps
   steps={[
@@ -58,7 +63,7 @@ To create a custom shop, you must create 4 endpoints:
   body="This function will allow Openship to search shop orders and add them to Openship on-demand."
 />
 
-**1.** We'll start with a function that returns an array of orders. You can `fetch` these orders from a CMS, Google Sheet, or any platform. 
+**1.** We'll start with a function that returns an array of orders. You can `fetch` these orders from a CMS, Google Sheet, or any platform.
 
 Each order in the array will have 13 values:
 
@@ -85,7 +90,6 @@ Each order in the array will have 13 values:
     <List.Item>*lineItemId*: unique identifier for line item</List.Item>
   </List>
 
-
 ```js api/search-orders.js focus=2:30
 export default async (req, res) => {
   const allOrders = [
@@ -93,9 +97,7 @@ export default async (req, res) => {
       orderId: "210983908",
       orderName: "SC-1221",
       link: "https://sc.com/order/210983908",
-      date: Intl.DateTimeFormat("en-US").format(
-        Date.now()
-      ),
+      date: Intl.DateTimeFormat("en-US").format(Date.now()),
       first_name: "Jared",
       last_name: "Dunn",
       streetAddress1: "3593 Sycamore Street",
@@ -117,11 +119,8 @@ export default async (req, res) => {
       ],
     },
   ];
-  return res
-    .status(200)
-    .json({ orders: allOrders });
+  return res.status(200).json({ orders: allOrders });
 };
-
 ```
 
 ---
@@ -138,19 +137,13 @@ Let's put these values to use.
 
 ```js api/search-orders.js focus=2:6
 export default async (req, res) => {
-  const {
-    domain,
-    accessToken,
-    searchEntry,
-  } = req.query;
+  const { domain, accessToken, searchEntry } = req.query;
   const allOrders = [
     {
       orderId: "210983908",
       orderName: "SC-1221",
       link: "https://sc.com/order/210983908",
-      date: Intl.DateTimeFormat("en-US").format(
-        Date.now()
-      ),
+      date: Intl.DateTimeFormat("en-US").format(Date.now()),
       first_name: "Jared",
       last_name: "Dunn",
       streetAddress1: "3593 Sycamore Street",
@@ -172,11 +165,8 @@ export default async (req, res) => {
       ],
     },
   ];
-  return res
-    .status(200)
-    .json({ orders: allOrders });
+  return res.status(200).json({ orders: allOrders });
 };
-
 ```
 
 ---
@@ -187,24 +177,16 @@ export default async (req, res) => {
 
 ```js api/search-orders.js focus=7:11
 export default async (req, res) => {
-  const {
-    domain,
-    accessToken,
-    searchEntry,
-  } = req.query;
+  const { domain, accessToken, searchEntry } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allOrders = [
     {
       orderId: "210983908",
       orderName: "SC-1221",
       link: "https://sc.com/order/210983908",
-      date: Intl.DateTimeFormat("en-US").format(
-        Date.now()
-      ),
+      date: Intl.DateTimeFormat("en-US").format(Date.now()),
       first_name: "Jared",
       last_name: "Dunn",
       streetAddress1: "3593 Sycamore Street",
@@ -226,9 +208,7 @@ export default async (req, res) => {
       ],
     },
   ];
-  return res
-    .status(200)
-    .json({ orders: allOrders });
+  return res.status(200).json({ orders: allOrders });
 };
 ```
 
@@ -240,24 +220,16 @@ export default async (req, res) => {
 
 ```js api/search-orders.js focus=41:46
 export default async (req, res) => {
-  const {
-    domain,
-    accessToken,
-    searchEntry,
-  } = req.query;
+  const { domain, accessToken, searchEntry } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allOrders = [
     {
       orderId: "210983908",
       orderName: "SC-1221",
       link: "https://sc.com/order/210983908",
-      date: Intl.DateTimeFormat("en-US").format(
-        Date.now()
-      ),
+      date: Intl.DateTimeFormat("en-US").format(Date.now()),
       first_name: "Jared",
       last_name: "Dunn",
       streetAddress1: "3593 Sycamore Street",
@@ -285,9 +257,7 @@ export default async (req, res) => {
     );
     return res.status(200).json({ orders });
   }
-  return res
-    .status(200)
-    .json({ orders: allOrders });
+  return res.status(200).json({ orders: allOrders });
 };
 ```
 
@@ -299,24 +269,16 @@ export default async (req, res) => {
 
 ```js api/search-orders.js focus=47:49
 export default async (req, res) => {
-  const {
-    domain,
-    accessToken,
-    searchEntry,
-  } = req.query;
+  const { domain, accessToken, searchEntry } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allOrders = [
     {
       orderId: "210983908",
       orderName: "SC-1221",
       link: "https://sc.com/order/210983908",
-      date: Intl.DateTimeFormat("en-US").format(
-        Date.now()
-      ),
+      date: Intl.DateTimeFormat("en-US").format(Date.now()),
       first_name: "Jared",
       last_name: "Dunn",
       streetAddress1: "3593 Sycamore Street",
@@ -344,9 +306,7 @@ export default async (req, res) => {
     );
     return res.status(200).json({ orders });
   }
-  return res
-    .status(200)
-    .json({ orders: allOrders });
+  return res.status(200).json({ orders: allOrders });
 };
 ```
 
@@ -390,10 +350,8 @@ export default async (req, res) => {
       availableForSale: true,
     },
   ];
-  return res
-    .status(200)
-    .json({ products: allProducts });
-}
+  return res.status(200).json({ products: allProducts });
+};
 ```
 
 ---
@@ -411,12 +369,7 @@ Let's put these values to use.
 
 ```js api/search-products.js focus=2:7
 export default async (req, res) => {
-  const {
-    accessToken,
-    searchEntry,
-    productId,
-    variantId,
-  } = req.query;
+  const { accessToken, searchEntry, productId, variantId } = req.query;
   const allProducts = [
     {
       image: "https://example.com/book.jpeg",
@@ -427,11 +380,8 @@ export default async (req, res) => {
       availableForSale: true,
     },
   ];
-  return res
-    .status(200)
-    .json({ products: allProducts });
-}
-
+  return res.status(200).json({ products: allProducts });
+};
 ```
 
 ---
@@ -442,16 +392,9 @@ export default async (req, res) => {
 
 ```js api/search-products.js focus=8:12
 export default async (req, res) => {
-  const {
-    accessToken,
-    searchEntry,
-    productId,
-    variantId,
-  } = req.query;
+  const { accessToken, searchEntry, productId, variantId } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allProducts = [
     {
@@ -463,9 +406,7 @@ export default async (req, res) => {
       availableForSale: true,
     },
   ];
-  return res
-    .status(200)
-    .json({ products: allProducts });
+  return res.status(200).json({ products: allProducts });
 };
 ```
 
@@ -477,16 +418,9 @@ export default async (req, res) => {
 
 ```js api/search-products.js focus=23:28
 export default async (req, res) => {
-  const {
-    accessToken,
-    searchEntry,
-    productId,
-    variantId,
-  } = req.query;
+  const { accessToken, searchEntry, productId, variantId } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allProducts = [
     {
@@ -504,11 +438,8 @@ export default async (req, res) => {
     );
     return res.status(200).json({ products });
   }
-  return res
-    .status(200)
-    .json({ products: allProducts });
+  return res.status(200).json({ products: allProducts });
 };
-
 ```
 
 ---
@@ -519,16 +450,9 @@ export default async (req, res) => {
 
 ```js api/search-products.js focus=29:41
 export default async function handler(req, res) {
-  const {
-    accessToken,
-    searchEntry,
-    productId,
-    variantId,
-  } = req.query;
+  const { accessToken, searchEntry, productId, variantId } = req.query;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   const allProducts = [
     {
@@ -549,19 +473,14 @@ export default async function handler(req, res) {
   if (productId && variantId) {
     const products = allProducts.filter(
       (product) =>
-        product.productId === productId &&
-        product.variantId === variantId
+        product.productId === productId && product.variantId === variantId
     );
     if (products.length > 0) {
       return res.status(200).json({ products });
     }
-    return res
-      .status(400)
-      .json({ error: "Not found" });
+    return res.status(400).json({ error: "Not found" });
   }
-  return res
-    .status(200)
-    .json({ products: allProducts });
+  return res.status(200).json({ products: allProducts });
 }
 ```
 
@@ -571,14 +490,14 @@ export default async function handler(req, res) {
 
 To create orders for this shop on Openship, we'll be using the API and will need a key. On Openship, you'll see the key icon on the left sidebar.
 
-<KeyPopper/>
+<KeyPopper />
 
-After generating a key, add this to your ``.env`` file as ``OPENSHIP_KEY``. Since we'll be using Openship's GraphQL API, we'll also add ``OPENSHIP_DOMAIN`` to the ``.env`` file. 
+After generating a key, add this to your `.env` file as `OPENSHIP_KEY`. Since we'll be using Openship's GraphQL API, we'll also add `OPENSHIP_DOMAIN` to the `.env` file.
 
-This is how the ``.env`` file looks so far:
+This is how the `.env` file looks so far:
 
 - **ACCESS_TOKEN**: access token to verify the request
-- **OPENSHIP_DOMAIN**: domain where your Openship API can be accessed (normally ends in ``/api/graphql``)
+- **OPENSHIP_DOMAIN**: domain where your Openship API can be accessed (normally ends in `/api/graphql`)
 - **OPENSHIP_KEY**: API key created on your Openship instance
 
 <Callout
@@ -599,11 +518,12 @@ This is how the ``.env`` file looks so far:
   }
 />
 
-``` shell .env
+```shell .env
 ACCESS_TOKEN=supersecretpassword
 OPENSHIP_DOMAIN=https://myshop.myopenship.com/api/graphql
 OPENSHIP_KEY=bc5394008c83802e
 ```
+
 ---
 
 <CH.Scrollycoding>
@@ -611,6 +531,7 @@ OPENSHIP_KEY=bc5394008c83802e
 <br />
 
 **1.** Let's start creating our create-order function. First, we'll get these 14 values from the request body:
+
 - **shopId**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>Openship shop ID
 - **orderId**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>unique order identifier
 - **orderName**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>order name
@@ -653,15 +574,13 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
 };
-
-
 ```
 
 ---
 
 <br />
 
-**2.** First, we'll check the accessToken against ``ACCESS_TOKEN`` variable that's in our ``.env`` file.
+**2.** First, we'll check the accessToken against `ACCESS_TOKEN` variable that's in our `.env` file.
 
 ```js api/create-order.js focus=18:22
 export default async (req, res) => {
@@ -682,22 +601,18 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
 };
-
-
 ```
 
 ---
 
 <br />
 
-**3.** To make requests to Openship's GraphQL API, we'll use the ``gql`` and ``request`` imports from the ``graphql-request`` package.
+**3.** To make requests to Openship's GraphQL API, we'll use the `gql` and `request` imports from the `graphql-request` package.
 
-We'll use ``OPENSHIP_DOMAIN`` as the url and pass ``OPENSHIP_KEY`` a header named ``x-api-key``.
+We'll use `OPENSHIP_DOMAIN` as the url and pass `OPENSHIP_KEY` a header named `x-api-key`.
 
 ```js api/create-order.js focus=26:31
 import { request, gql } from "graphql-request";
@@ -720,9 +635,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -731,10 +644,8 @@ export default async (req, res) => {
         "x-api-key": process.env.OPENSHIP_KEY,
       },
     });
-  } catch {
-  }
+  } catch {}
 };
-
 ```
 
 ---
@@ -764,9 +675,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -782,10 +691,10 @@ export default async (req, res) => {
         }
       `,
     });
-  } catch {
-  }
+  } catch {}
 };
 ```
+
 ---
 
 <br />
@@ -818,9 +727,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -854,10 +761,10 @@ export default async (req, res) => {
         },
       },
     });
-  } catch {
-  }
+  } catch {}
 };
 ```
+
 ---
 
 <br />
@@ -869,7 +776,7 @@ export default async (req, res) => {
 - **processOrder**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>boolean</Badge>if true and linking the order or matching the order didn't create any errors, Openship will process the order and create purchases based on the cart items
 - **status**:<Badge mr="xs" ml={6} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>order status
 
-We'll pass in true for ``linkOrder``, ``matchOrder``, and ``processOrder``. Since the order will be in processing as soon as it is created, we'll mark the ``status`` as ``INPROCESS``. Otherwise, we would mark the ``status`` as ``PENDING``.
+We'll pass in true for `linkOrder`, `matchOrder`, and `processOrder`. Since the order will be in processing as soon as it is created, we'll mark the `status` as `INPROCESS`. Otherwise, we would mark the `status` as `PENDING`.
 
 ```js api/create-order.js focus=54:57
 import { request, gql } from "graphql-request";
@@ -892,9 +799,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -932,10 +837,10 @@ export default async (req, res) => {
         },
       },
     });
-  } catch {
-  }
+  } catch {}
 };
 ```
+
 ---
 
 <br />
@@ -963,9 +868,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -1003,16 +906,14 @@ export default async (req, res) => {
         },
       },
     });
-    return res
-      .status(200)
-      .json({ orderDetails });
-  } catch {
-  }
+    return res.status(200).json({ orderDetails });
+  } catch {}
 };
 ```
+
 ---
 
-<br/>
+<br />
 
 **8.** We'll also catch any errors if creating the order fails.
 
@@ -1037,9 +938,7 @@ export default async (req, res) => {
     lineItems,
   } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const orderDetails = await request({
@@ -1077,9 +976,7 @@ export default async (req, res) => {
         },
       },
     });
-    return res
-      .status(200)
-      .json({ orderDetails });
+    return res.status(200).json({ orderDetails });
   } catch {
     return res.status(400).json({
       error: "Order creation failed.",
@@ -1097,26 +994,33 @@ Orders can also be cancelled. This is useful if an item is out of stock, damaged
 <CH.Scrollycoding>
 
 **1.** Let's start creating our cancel-order function. First, we'll get these 2 values from the request body:
-<List ml="sm">
-  <List.Item>**accessToken**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>access token to verify the request</List.Item>
-  <List.Item>**orderId**:<Badge mx={4} size="sm" color="gray" radius="sm" sx={{height: 16}}>string</Badge>order ID that needs to be cancelled</List.Item>
-</List> 
 
-We'll check the accessToken against ``ACCESS_TOKEN`` variable that's in our ``.env`` file.
+<List ml="sm">
+  <List.Item>
+    **accessToken**:
+    <Badge mx={4} size="sm" color="gray" radius="sm" sx={{ height: 16 }}>
+      string
+    </Badge>
+    access token to verify the request
+  </List.Item>
+  <List.Item>
+    **orderId**:
+    <Badge mx={4} size="sm" color="gray" radius="sm" sx={{ height: 16 }}>
+      string
+    </Badge>
+    order ID that needs to be cancelled
+  </List.Item>
+</List>
+
+We'll check the accessToken against `ACCESS_TOKEN` variable that's in our `.env` file.
 
 ```js api/cancel-order.js focus=2:10
 export default async (req, res) => {
-  const {
-    accessToken,
-    orderId,
-  } = req.body;
+  const { accessToken, orderId } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
 };
-
 ```
 
 ---
@@ -1129,14 +1033,9 @@ export default async (req, res) => {
 import { request, gql } from "graphql-request";
 
 export default async (req, res) => {
-  const {
-    accessToken,
-    orderId,
-  } = req.body;
+  const { accessToken, orderId } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const cancelledOrder = await request({
@@ -1145,30 +1044,23 @@ export default async (req, res) => {
         "x-api-key": process.env.OPENSHIP_KEY,
       },
     });
-  } catch {
-  }
+  } catch {}
 };
-
 ```
 
 ---
 
 <br />
 
-**3.** This time, we'll call the ``cancelOrder`` mutation and pass the orderId as the variable. 
+**3.** This time, we'll call the `cancelOrder` mutation and pass the orderId as the variable.
 
 ```js api/cancel-order.js focus=19:26
 import { request, gql } from "graphql-request";
 
 export default async (req, res) => {
-  const {
-    accessToken,
-    orderId,
-  } = req.body;
+  const { accessToken, orderId } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const cancelledOrder = await request({
@@ -1185,10 +1077,10 @@ export default async (req, res) => {
       `,
       variables: { orderId },
     });
-  } catch {
-  }
+  } catch {}
 };
 ```
+
 ---
 
 <br />
@@ -1199,14 +1091,9 @@ export default async (req, res) => {
 import { request, gql } from "graphql-request";
 
 export default async (req, res) => {
-  const {
-    accessToken,
-    orderId,
-  } = req.body;
+  const { accessToken, orderId } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const cancelledOrder = await request({
@@ -1223,16 +1110,14 @@ export default async (req, res) => {
       `,
       variables: { orderId },
     });
-    return res
-      .status(200)
-      .json({ cancelledOrder });
-  } catch {
-  }
+    return res.status(200).json({ cancelledOrder });
+  } catch {}
 };
 ```
+
 ---
 
-<br/>
+<br />
 
 **5.** We'll also catch any errors if order cancellation fails.
 
@@ -1240,14 +1125,9 @@ export default async (req, res) => {
 import { request, gql } from "graphql-request";
 
 export default async (req, res) => {
-  const {
-    accessToken,
-    orderId,
-  } = req.body;
+  const { accessToken, orderId } = req.body;
   if (process.env.ACCESS_TOKEN !== accessToken) {
-    return res
-      .status(403)
-      .json({ error: "Denied" });
+    return res.status(403).json({ error: "Denied" });
   }
   try {
     const cancelledOrder = await request({
@@ -1264,9 +1144,7 @@ export default async (req, res) => {
       `,
       variables: { orderId },
     });
-    return res
-      .status(200)
-      .json({ cancelledOrder });
+    return res.status(200).json({ cancelledOrder });
   } catch {
     return res.status(400).json({
       error: "Order cancellation failed.",
@@ -1281,9 +1159,22 @@ export default async (req, res) => {
 
 Now that we have our functions built, we have to deploy them. We'll keep it simple and add these functions to a [Next.js](https://nextjs.org) application as [API Routes](https://nextjs.org/docs/api-routes/introduction). This is a good starting place when building your own shop. Check out the CodeSandbox below to customize it and make it your own.
 
-<iframe src="https://codesandbox.io/embed/github/openshiporg/openship-shop/tree/master/?codemirror=1&fontsize=14&hidenavigation=0&module=/pages/api/search-orders,/pages/api/search-products.js,/pages/api/create-order.js,/pages/api/cancel-order.js&theme=dark&view=editor" style={{ width: '100%', height: '600px', overflow: 'hidden', background: 'rgb(21, 21, 21)', marginTop: "30px", bpurchaseRadius: "5px" }} title="SWR - Optimistic UI" allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" sandbox="allow-autoplay allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts" />
+<iframe
+  src="https://codesandbox.io/embed/github/openshiporg/openship-shop/tree/master/?codemirror=1&fontsize=14&hidenavigation=0&module=/pages/api/search-orders,/pages/api/search-products.js,/pages/api/create-order.js,/pages/api/cancel-order.js&theme=dark&view=editor"
+  style={{
+    width: "100%",
+    height: "600px",
+    overflow: "hidden",
+    background: "rgb(21, 21, 21)",
+    marginTop: "30px",
+    bpurchaseRadius: "5px",
+  }}
+  title="SWR - Optimistic UI"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-autoplay allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+/>
 
-When you're finished customizing, you can deploy the application to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any platform that supports ``node.js``.
+When you're finished customizing, you can deploy the application to [Vercel](https://vercel.com), [Netlify](https://netlify.com), or any platform that supports `node.js`.
 
 We have already deployed the demo shop we just made. To test it, add the shop and choose DEMO under the shop type.
 

@@ -14,6 +14,7 @@ import {
   Box,
   useMantineTheme,
   Badge,
+  Drawer,
 } from "@mantine/core";
 import { useSSG } from "nextra/ssg";
 import { PlatformCard } from "./PlatformCard";
@@ -25,6 +26,7 @@ import { Papercups } from "@papercups-io/chat-widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export const ShopCards = () => {
   const { shops } = useSSG();
@@ -43,10 +45,11 @@ export const ShopCards = () => {
   const [shopIndex, setShopIndex] = useState(null);
   const [showAlert, setShowAlert] = useState(true);
   const theme = useMantineTheme();
+  const { theme: themeValue, setTheme, systemTheme } = useTheme();
 
   const InstallationGuides = {
     Shopify: (
-      <Stack m={-20} pt={4} spacing={0}>
+      <Stack pt={4} spacing={0} mx={-16}>
         {/* <Text size="sm" p="md">
           Adding a Shopify shop to Openship can be done in 3 ways:
         </Text>
@@ -282,7 +285,7 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
       </Stack>
     ),
     BigCommerce: (
-      <Stack m={-20} pt={4} spacing={0}>
+      <Stack pt={4} spacing={0} mx={-16}>
         {/* <Text size="sm" p="md">
           Adding a Shopify shop to Openship can be done in 3 ways:
         </Text>
@@ -299,13 +302,13 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
           })}
         >
           <Accordion.Item label="Install the Openship app on the BigCommerce App Store">
-            When adding the shop on Openship, choose <Code>BIG COMMERCE</Code>{" "}
-            as the type and click Connect Big Commerce:
+            When adding the shop on Openship, choose <Code>BIGCOMMERCE</Code> as
+            the type and click Connect BigCommerce:
             <PlatformAdder
               title="Shop"
               PlatformForms={{
                 shopify: {
-                  label: "Big Commerce",
+                  label: "BigCommerce",
                   fields: [
                     {
                       title: "URL",
@@ -314,23 +317,24 @@ SHOP_SHOPIFY_SECRET=API_secret_key`}
                       // rightSection: ".mybigcommerce.com",
                     },
                   ],
-                  buttonText: "Connect Big Commerce",
+                  buttonText: "Connect BigCommerce",
                 },
               }}
               maxWidth={270}
             />
-            This will take you to Big Commerce to install Openship.
+            This will take you to BigCommerce to install Openship.
           </Accordion.Item>
           <Accordion.Item
             label={
               <>
-                Create a custom app on the BigCommerce Developer dashboard and add the
-                credentials to <Code>.env</Code> file
+                Create a custom app on the BigCommerce Developer dashboard and
+                add the credentials to <Code>.env</Code> file
               </>
             }
           >
             Take it one step further and allow users to install <i>your</i>{" "}
-            BigCommerce app when they add a BigCommerce shop on your Openship instance.
+            BigCommerce app when they add a BigCommerce shop on your Openship
+            instance.
             <br />
             <br />
             To accomplish this, you'll need a free{" "}
@@ -379,23 +383,50 @@ SHOP_BIGCOMMERCE_SECRET=API_secret_key`}
 
   return (
     <>
-      <Modal
+      <Drawer
         opened={shops[shopIndex]}
         onClose={() => setShopIndex(null)}
         title={
-          <Group align="center">
-            <Text weight={500} size="lg">
-              Adding a {shops[shopIndex]?.type} shop
+          <Group align="center" spacing="xl">
+            <Text
+              weight={700}
+              size="md"
+              sx={{ textTransform: "uppercase" }}
+              color="gray"
+            >
+              {shops[shopIndex]?.type}{" "}
             </Text>
+            <Badge size="xs" color="teal" radius="sm" mt={1}>
+              Installation Guide
+            </Badge>
             {/* <Badge radius="xs" size="sm" variant="outline" mt={2}>
               3 Options
             </Badge> */}
           </Group>
         }
         size="lg"
+        position="right"
+        padding="md"
+        sx={{ overflow: "scroll" }}
+        styles={{
+          header: {
+            marginLeft: -16,
+            marginRight: -16,
+            marginBottom: 0,
+            marginTop: -16,
+            padding: 16,
+            background: themeValue === "light" ? "#ffffff" : "#000000",
+            borderBottom: `1px solid ${
+              themeValue === "light"
+                ? theme.colors.gray[3]
+                : theme.colors.gray[8]
+            }`,
+          },
+          drawer: { overflow: "scroll" },
+        }}
       >
         {InstallationGuides[shops[shopIndex]?.type]}
-      </Modal>
+      </Drawer>
       <Stack mt="xl">
         {shops.map((shop, index) => (
           <PlatformCard

@@ -153,8 +153,8 @@ export default {
         />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta httpEquiv="Content-Language" content="en" />
-        <meta name="description" content={meta.description} />
-        <meta name="og:description" content={meta.description} />
+        <meta name="description" content={meta?.description} />
+        <meta name="og:description" content={meta?.description} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="og:title"

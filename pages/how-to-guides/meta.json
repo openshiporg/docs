@@ -1,4 +1,6 @@
 {
   "create-custom-shop": "Create a custom shop",
-  "create-custom-channel": "Create a custom channel"
+  "create-custom-channel": "Create a custom channel",
+  "integrate-shop-platform": "Integrate shop platform",
+  "integrate-channel-platform": "Integrate channel platform"
 }

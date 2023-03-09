@@ -28,7 +28,7 @@ const withNextra = require("nextra")({
     remarkPlugins: [
       [
         remarkCodeHike,
-        { theme, staticMediaQuery: "not screen, (max-width: 968px)" },
+        { theme, staticMediaQuery: "not screen, (max-width: 1080px)" },
       ],
     ],
   },

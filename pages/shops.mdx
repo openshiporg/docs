@@ -1,7 +1,7 @@
 import { ShopCards } from "../components/ShopCards";
 
 export const getStaticProps = ({ params }) => {
-  return fetch(`https://openship.up.railway.app/api/get-shops`)
+  return fetch(`https://openship.org/api/get-shops`)
     .then((res) => res.json())
     .then(({ shops }) => {
       return {
