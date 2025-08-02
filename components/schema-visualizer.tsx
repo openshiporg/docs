@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -16,10 +16,11 @@ import { Plus, Minus, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TableNode from "@/components/table-node";
 import SchemaEdge from "@/components/schema-edge";
-import { parsePrismaSchema, openshipSchemaContent } from "@/lib/schema-parser";
+import { parsePrismaSchema, openfrontSchemaContent, openshipSchemaContent } from "@/lib/schema-parser";
 
-// Parse the Openship schema
-const { nodes: initialNodes, edges: initialEdges } = parsePrismaSchema(openshipSchemaContent);
+interface SchemaVisualizerProps {
+  schemaId?: string;
+}
 
 // Register custom node types and edge types
 const nodeTypes = {
@@ -30,7 +31,13 @@ const edgeTypes = {
   custom: SchemaEdge,
 };
 
-function SchemaVisualizerInner() {
+function SchemaVisualizerInner({ schemaId = "openfront" }: SchemaVisualizerProps) {
+  // Parse the correct schema based on schemaId
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+    const schemaContent = schemaId === "openship" ? openshipSchemaContent : openfrontSchemaContent;
+    return parsePrismaSchema(schemaContent);
+  }, [schemaId]);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -40,9 +47,21 @@ function SchemaVisualizerInner() {
     fitView({ padding: 0.2 });
   }, [fitView]);
 
+  // Add a title based on schema type
+  const schemaTitle = schemaId === "openship" ? "Openship" : "Openfront";
+
   return (
-    <div className="h-[800px] w-full border rounded-lg bg-background">
-      <div className="w-full h-full" ref={reactFlowWrapper}>
+    <div className="w-full flex flex-col">
+      <header className="border-b bg-background px-6 py-4 mb-4">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {schemaTitle} Database Schema
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Interactive visualization of the {schemaTitle} data model and relationships
+        </p>
+      </header>
+      <div className="h-[800px] w-full border rounded-lg bg-background">
+        <div className="w-full h-full" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -101,15 +120,16 @@ function SchemaVisualizerInner() {
             </Button>
           </Panel>
         </ReactFlow>
+        </div>
       </div>
     </div>
   );
 }
 
-export function SchemaVisualizer() {
+export default function SchemaVisualizer({ schemaId }: SchemaVisualizerProps) {
   return (
     <ReactFlowProvider>
-      <SchemaVisualizerInner />
+      <SchemaVisualizerInner schemaId={schemaId} />
     </ReactFlowProvider>
   );
 }

@@ -1,15 +1,6 @@
-import type { Metadata } from "next";
-import SchemaVisualizer from "@/components/schema/schema-visualizer";
-
-export const metadata: Metadata = {
-  title: "Schema Visualizer - Openfront",
-};
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <div className="min-h-svh flex flex-col">
-      {/* <Header /> */}
-      <SchemaVisualizer />
-    </div>
-  );
+  // Redirect to the openfront schema visualizer by default
+  redirect("/schema-visualizer/openfront");
 }
