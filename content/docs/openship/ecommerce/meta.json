@@ -1,0 +1,24 @@
+{
+  "title": "E-commerce",
+  "description": "Multi-region commerce platform",
+  "icon": "ShoppingCart",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "what-is-openship", 
+    "comparisons",
+    "deployment",
+    "---Integrations---",
+    "shops",
+    "channels",
+    "---How-to Guides---",
+    "how-to-guides/create-custom-shop",
+    "how-to-guides/create-custom-channel", 
+    "how-to-guides/integrate-shop-platform",
+    "how-to-guides/integrate-channel-platform",
+    "---API---",
+    "schema-visualizer",
+    "api-reference"
+  ]
+}

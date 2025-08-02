@@ -1,0 +1,187 @@
+---
+title: Shops
+description: Understanding shop platforms and shops in Openship
+icon: Store
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openship uses a two-tier system for connecting to e-commerce platforms: **Shop Platforms** (templates) and **Shops** (instances). Understanding this distinction is crucial for setting up your integrations correctly.
+
+import ShopFlowDiagram from "@/components/shop-flow-diagram";
+
+<ShopFlowDiagram />
+
+## Shop Platforms vs Shops
+
+### Shop Platforms (Templates)
+
+A **Shop Platform** is a reusable template that defines how Openship integrates with a specific type of e-commerce platform. Think of it as a blueprint or configuration preset.
+
+**What Shop Platforms contain:**
+- Integration function mappings (which code to run for different operations)
+- OAuth credentials for app-based installations
+- Default settings for the platform type
+
+**Examples of Shop Platforms:**
+- **Shopify Platform** - Template for all Shopify stores
+- **BigCommerce Platform** - Template for all BigCommerce stores  
+- **Demo Platform** - Template for testing custom integrations
+- **Custom Platform** - Template with HTTP endpoints for custom integrations
+
+### Shops (Instances)
+
+A **Shop** is an actual connection to a specific store or account. It uses a Shop Platform template but contains the unique credentials and settings for that particular store.
+
+**What Shops contain:**
+- Reference to which Shop Platform to use
+- Store-specific credentials (domain, access token)
+- Store name and metadata
+- Custom configuration overrides
+
+**Examples of Shops:**
+- **"My Shopify Store"** - Uses Shopify Platform, connects to `mystore.myshopify.com`
+- **"Backup Store"** - Also uses Shopify Platform, connects to `backup.myshopify.com`
+- **"Demo Shop"** - Uses Demo Platform for testing
+
+## How Shops Work
+
+<Steps>
+<Step>
+
+### Create Shop Platform (Template)
+
+First, you create a Shop Platform that defines the integration method:
+
+```
+Shop Platform: "Shopify Platform"
+├── searchProductsFunction: "shopify"
+├── getProductFunction: "shopify"
+├── searchOrdersFunction: "shopify"
+├── updateProductFunction: "shopify"
+└── createWebhookFunction: "shopify"
+```
+
+All function values point to the built-in Shopify integration (`/integrations/shop/shopify.ts`).
+
+</Step>
+<Step>
+
+### Create Shops (Instances)
+
+Then, you create individual shops that use this platform:
+
+```
+Shop: "Main Store"                Shop: "EU Store"
+├── Platform: Shopify Platform    ├── Platform: Shopify Platform  
+├── Domain: main.myshopify.com    ├── Domain: eu.myshopify.com
+├── Access Token: abc123...       ├── Access Token: xyz789...
+└── Name: "Main Store"            └── Name: "EU Store"
+```
+
+Both shops use the same integration logic (Shopify Platform) but connect to different stores with different credentials.
+
+</Step>
+<Step>
+
+### Function Execution
+
+When Openship needs to search products in "Main Store":
+
+1. **Lookup**: Find shop's platform → "Shopify Platform"
+2. **Check function**: `searchProductsFunction` = "shopify" 
+3. **Import**: Load `/integrations/shop/shopify.ts`
+4. **Execute**: Call `searchProductsFunction()` with shop's credentials
+5. **Connect**: Make API calls to `main.myshopify.com` using shop's access token
+
+</Step>
+</Steps>
+
+## Platform Types
+
+### Built-in Platform Presets
+
+Openship comes with preset templates for popular e-commerce platforms:
+
+- **Shopify** - Full integration with Shopify stores
+- **BigCommerce** - Full integration with BigCommerce stores  
+- **WooCommerce** - WordPress/WooCommerce integration
+- **Demo** - Testing platform with sample data
+
+When you select a preset, all function values are automatically filled with the appropriate integration name.
+
+### Custom HTTP Platforms
+
+You can also create platforms that use HTTP endpoints instead of built-in integrations:
+
+```
+Shop Platform: "My Custom Platform"
+├── searchProductsFunction: "https://my-api.com/search-products"
+├── getProductFunction: "https://my-api.com/get-product"
+├── searchOrdersFunction: "https://my-api.com/search-orders"
+└── updateProductFunction: "https://my-api.com/update-product"
+```
+
+This allows integration with any system that can provide HTTP endpoints matching Openship's interface.
+
+## Typical Workflow
+
+### Step 1: Create Shop Platform
+
+1. Go to **Shop Platforms** page
+2. Click **"Create Platform"**
+3. Choose a preset (Shopify, BigCommerce, etc.) or create custom
+4. Configure OAuth credentials (if needed)
+5. Save the platform template
+
+### Step 2: Create Shops
+
+1. Go to **Shops** page  
+2. Select your Shop Platform
+3. Click **"Create Shop"**
+4. Enter shop-specific details:
+   - Shop name
+   - Store domain
+   - Access credentials
+5. Save the shop instance
+
+### Step 3: Use in Automation
+
+Now your shops can be used in:
+- **Product matching** - Link products between shops and channels
+- **Order automation** - Automatic order processing
+- **Inventory sync** - Keep stock levels synchronized
+
+## Benefits of This System
+
+### Reusability
+Create one Shopify platform, use it for multiple Shopify stores without reconfiguring integration settings.
+
+### Flexibility  
+Mix built-in integrations with custom HTTP endpoints. Use Shopify for some shops, custom APIs for others.
+
+### Maintainability
+Update integration logic in the platform template, and all shops using that platform inherit the changes.
+
+### Testing
+Use demo platforms for testing automation workflows without affecting real stores.
+
+## Getting Started
+
+### For Built-in Platforms
+1. **Create** a platform using a preset (e.g., "Shopify Platform")
+2. **Connect** shops to that platform with their specific credentials
+3. **Start** creating product matches and automation
+
+### For Custom Integrations
+1. **Deploy** HTTP endpoints following our [custom shop guide](/docs/how-to-guides/create-custom-shop)
+2. **Create** a custom platform pointing to your endpoints  
+3. **Connect** shops using your custom platform
+4. **Test** the integration with our demo endpoints first
+
+### For Testing
+1. **Create** a "Demo Platform" using the demo preset
+2. **Add** demo shops with sample test data
+3. **Practice** workflows before connecting real stores
+
+The platform system gives you maximum flexibility while maintaining consistency across your integrations. Whether you're connecting a single Shopify store or building complex custom integrations, the platform-first approach scales with your needs.

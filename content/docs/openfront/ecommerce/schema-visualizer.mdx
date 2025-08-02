@@ -1,0 +1,66 @@
+---
+title: Schema Visualizer
+description: Interactive database schema visualization for Openfront
+icon: Database
+---
+
+## Database Schema
+
+Explore the complete Openfront database schema with this interactive visualization. Click and drag to navigate, zoom to focus on specific areas, and see how all the models connect together.
+
+<iframe 
+  src="/schema-visualizer" 
+  className="w-full h-[80vh] border-0 rounded-lg ring-1 ring-gray-900/5 dark:ring-white/10 shadow-inner not-prose"
+  title="Schema Visualizer"
+/>
+
+## Understanding the Schema
+
+The Openfront database is built using Prisma with PostgreSQL and consists of several core model groups:
+
+### User Management
+- **User** - The central user model with role-based permissions
+- **Role** - Defines what actions users can perform
+- **ApiKey** - API access tokens for programmatic access
+
+### E-commerce Core
+- **Store** - Store configuration with currency and regional settings
+- **Product** - Product catalog with variants, options, and collections
+- **ProductVariant** - Individual product variations with pricing and inventory
+- **Order** - Customer orders with full lifecycle management
+- **Cart** - Shopping cart functionality with payment processing
+
+### Customer Management
+- **Address** - Customer addresses for billing and shipping
+- **CustomerGroup** - Customer segmentation for pricing and discounts
+- **User** - Customer accounts with order history and preferences
+
+### Payment & Financial
+- **Payment** - Payment processing with multiple providers
+- **PaymentSession** - Payment processing sessions
+- **Currency** - Multi-currency support with conversion
+- **MoneyAmount** - Flexible pricing system
+
+### Fulfillment & Shipping
+- **Fulfillment** - Order fulfillment tracking
+- **ShippingProvider** - Shipping integrations (Shippo, etc.)
+- **ShippingLabel** - Shipping label generation and tracking
+- **Region** - Geographic regions with tax and shipping rules
+
+### Advanced Features
+- **Discount** - Flexible discount rules and promotions
+- **GiftCard** - Gift card system with transactions
+- **Return** - Return management with refund processing
+- **Claim** - Product claim system with images
+
+## Key Relationships
+
+The schema shows how Openfront provides a complete e-commerce platform:
+
+1. **Store Structure**: Store → Products → Variants (product catalog)
+2. **Order Flow**: Cart → Order → Fulfillment → Shipping (order processing)
+3. **Payment**: PaymentSession → Payment → Capture/Refund (payment processing)
+4. **Customer Journey**: User → Cart → Order → Return (customer lifecycle)
+5. **Inventory**: ProductVariant → StockMovement → Location (inventory management)
+
+This architecture allows Openfront to handle complex e-commerce scenarios with multi-currency, multi-region support, advanced pricing rules, and comprehensive order management.

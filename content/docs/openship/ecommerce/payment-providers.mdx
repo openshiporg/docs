@@ -1,0 +1,301 @@
+---
+title: Payment Providers
+description: Understanding payment providers and payment processing in Openfront
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront uses a two-tier system for processing payments: **Payment Provider Platforms** (templates) and **Payment Providers** (instances). Understanding this distinction is crucial for setting up your payment integrations correctly.
+
+## Payment Provider Platforms vs Payment Providers
+
+### Payment Provider Platforms (Templates)
+
+A **Payment Provider Platform** is a reusable template that defines how Openfront integrates with a specific payment gateway. Think of it as a blueprint or configuration preset.
+
+**What Payment Provider Platforms contain:**
+- Integration function mappings (which code to run for different operations)
+- API credentials configuration structure
+- Webhook handling templates
+- Regional availability settings
+
+**Examples of Payment Provider Platforms:**
+- **Stripe Platform** - Template for all Stripe integrations
+- **PayPal Platform** - Template for all PayPal integrations  
+- **Manual Platform** - Template for offline payment methods
+- **Custom Platform** - Template with HTTP endpoints for custom integrations
+
+### Payment Providers (Instances)
+
+A **Payment Provider** is an actual connection to a specific payment gateway account. It uses a Payment Provider Platform template but contains the unique credentials and settings for that particular account.
+
+**What Payment Providers contain:**
+- Reference to which Payment Provider Platform to use
+- Account-specific credentials (API keys, merchant IDs)
+- Provider name and configuration
+- Regional and currency settings
+
+## How Payment Works
+
+<Steps>
+<Step>
+
+### Create Payment Provider (Template)
+
+First, you create a Payment Provider that defines the integration method:
+
+```
+Payment Provider: "Stripe Provider"
+├── createPaymentFunction: "stripe"
+├── capturePaymentFunction: "stripe" 
+├── refundPaymentFunction: "stripe"
+├── getPaymentStatusFunction: "stripe"
+├── generatePaymentLinkFunction: "stripe"
+└── handleWebhookFunction: "stripe"
+```
+
+All function values point to the built-in Stripe integration (`/integrations/payment/stripe.ts`).
+
+</Step>
+<Step>
+
+### Configure Regional Availability
+
+Payment providers are assigned to regions where they should be available:
+
+```
+Stripe Provider
+├── Regions: [North America, Europe]
+├── Credentials: { publishableKey, secretKey }
+└── Webhook Secret: whsec_...
+
+PayPal Provider  
+├── Regions: [Global]
+├── Credentials: { clientId, clientSecret }
+└── Webhook ID: 8JR59343...
+```
+
+</Step>
+<Step>
+
+### Payment Session Creation
+
+When customers reach checkout, Openfront creates payment sessions for all available providers:
+
+1. **Customer starts checkout** in North America region
+2. **System finds providers** → Stripe, PayPal (both available in NA)
+3. **Creates payment sessions** for each provider
+4. **Customer selects** preferred payment method
+5. **Initiates payment** using selected provider
+
+</Step>
+<Step>
+
+### Function Execution
+
+When Openfront needs to create a payment:
+
+1. **Lookup**: Find provider's functions → "Stripe Provider"
+2. **Check function**: `createPaymentFunction` = "stripe"
+3. **Import**: Load `/integrations/payment/stripe.ts`
+4. **Execute**: Call `createPaymentFunction()` with cart data
+5. **Connect**: Make API calls to Stripe using provider's credentials
+
+</Step>
+</Steps>
+
+## Supported Payment Provider Platforms
+
+Openfront comes with built-in platform presets for popular payment gateways:
+
+### Stripe
+Full integration with Stripe payment processing
+- Credit/debit card payments
+- Payment intents and confirmations
+- Automatic capture or manual authorization
+- Webhooks for real-time status updates
+- Refunds and partial refunds
+
+### PayPal
+Complete PayPal integration featuring:
+- PayPal checkout experience
+- PayPal account payments
+- Order authorization and capture
+- Webhook verification
+- Refund processing
+
+### Manual Payments
+Simple manual payment tracking for:
+- Cash payments
+- Bank transfers
+- Check payments
+- Other offline payment methods
+
+### Custom HTTP Platforms
+For integrating with other payment gateways through HTTP endpoints.
+
+## Custom Payment Providers
+
+### Option 1: File-based Integration
+
+Create a new adapter file in `/features/integrations/payment/`:
+
+```typescript
+// /features/integrations/payment/custom-gateway.ts
+
+export async function createPaymentFunction({ cart, amount, currency, provider }) {
+  // Your custom payment creation logic
+  const paymentIntent = await yourGateway.createPayment({
+    amount,
+    currency,
+    credentials: provider.credentials
+  });
+  
+  return {
+    sessionData: paymentIntent,
+    paymentId: paymentIntent.id
+  };
+}
+
+export async function capturePaymentFunction({ paymentId, amount, provider }) {
+  // Capture payment logic
+  return await yourGateway.capturePayment(paymentId, amount);
+}
+
+// Implement other required functions...
+```
+
+### Option 2: HTTP Endpoint Integration
+
+Configure your provider to use HTTP endpoints:
+
+```
+Payment Provider: "My Custom Gateway"
+├── createPaymentFunction: "https://my-gateway.com/api/create-payment"
+├── capturePaymentFunction: "https://my-gateway.com/api/capture-payment"
+├── refundPaymentFunction: "https://my-gateway.com/api/refund-payment"
+├── getPaymentStatusFunction: "https://my-gateway.com/api/payment-status"
+├── generatePaymentLinkFunction: "https://my-gateway.com/api/payment-link"
+└── handleWebhookFunction: "https://my-gateway.com/api/webhook"
+```
+
+Your endpoints receive standardized payloads:
+
+```json
+{
+  "provider": {
+    "name": "My Custom Gateway",
+    "credentials": { "apiKey": "...", "merchantId": "..." }
+  },
+  "cart": { "id": "cart_123", "total": 5000, "currency": "USD" },
+  "amount": 5000,
+  "currency": "USD"
+}
+```
+
+## Required Functions Interface
+
+Every payment provider must implement these functions:
+
+### createPaymentFunction
+Creates a payment session/intent for the given cart.
+
+```typescript
+async function createPaymentFunction({ cart, amount, currency, provider }) {
+  // Return: { sessionData, paymentId }
+}
+```
+
+### capturePaymentFunction
+Captures an authorized payment.
+
+```typescript
+async function capturePaymentFunction({ paymentId, amount, provider }) {
+  // Return: { success: boolean, transactionId?: string }
+}
+```
+
+### refundPaymentFunction
+Processes refunds for captured payments.
+
+```typescript
+async function refundPaymentFunction({ paymentId, amount, provider }) {
+  // Return: { success: boolean, refundId?: string }
+}
+```
+
+### getPaymentStatusFunction
+Checks the current status of a payment.
+
+```typescript
+async function getPaymentStatusFunction({ paymentId, provider }) {
+  // Return: { status: 'pending' | 'authorized' | 'captured' | 'failed' }
+}
+```
+
+### generatePaymentLinkFunction
+Generates management/dashboard links for payments.
+
+```typescript
+async function generatePaymentLinkFunction({ paymentId, provider }) {
+  // Return: { url: string }
+}
+```
+
+### handleWebhookFunction
+Processes webhooks from the payment provider.
+
+```typescript
+async function handleWebhookFunction({ event, headers, provider }) {
+  // Return: { verified: boolean, eventType?: string, paymentId?: string }
+}
+```
+
+## Regional Configuration
+
+Payment providers are **region-specific**, allowing different payment methods for different markets:
+
+- Providers are assigned to one or more regions
+- Checkout only shows providers available in the cart's region
+- Supports multi-currency and geo-specific payment requirements
+- Enables compliance with local payment regulations
+
+## Webhook Handling
+
+Openfront provides centralized webhook processing:
+
+1. **Webhook endpoint**: `/api/webhooks/payment/[providerId]`
+2. **Signature verification**: Using provider's webhook handling function
+3. **Event processing**: Automatic payment status updates
+4. **Order updates**: Status changes trigger order processing
+
+## Getting Started
+
+### For Built-in Platform Presets
+1. **Create** a payment provider platform using Stripe, PayPal, or Manual preset
+2. **Configure** API credentials in platform settings
+3. **Create** payment provider instances for each account
+4. **Assign** to regions where the provider should be available
+5. **Test** payments in development mode
+
+### For Custom Payment Provider Platforms
+1. **Create** a custom payment provider platform following our guides
+2. **Implement** required payment functions for your gateway
+3. **Set up** webhook endpoints for real-time updates
+4. **Test** integration thoroughly before going live
+
+### For HTTP-based Integrations  
+1. **Deploy** HTTP endpoints matching Openfront's interface
+2. **Create** payment provider platform with endpoint URLs
+3. **Implement** webhook signature verification
+4. **Test** with Openfront's standardized payloads
+
+## How-to Guides
+
+Ready to set up your payment integrations? Follow these step-by-step guides:
+
+- **[Create Custom Payment Provider](/docs/ecommerce/how-to-guides/custom-payment-provider)** - Build your own payment gateway integration
+- **[Create Payment Integration](/docs/ecommerce/how-to-guides/create-payment-integration)** - Connect to existing payment platforms
+
+The payment provider system gives you complete flexibility to integrate any payment gateway while maintaining a consistent checkout experience for your customers.

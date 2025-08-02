@@ -1,0 +1,986 @@
+---
+title: Create Channel Integration
+description: Learn how to create custom channel integrations for purchasing and fulfillment
+icon: Radio
+---
+
+## Overview
+
+Channels are fulfillment platforms where Openship can automatically purchase products to fulfill orders. Unlike shops (which sell products), channels provide products for purchase when orders need to be fulfilled. Openship has a built-in integration for Shopify so new integrations can be built by following the same pattern.
+
+## Shopify Channel Integration Reference
+
+The Shopify channel integration (`/features/integrations/channel/shopify.ts`) demonstrates all required functions for a complete channel integration. This guide will explain how each function works and how to implement it for your own channel integration. Each function below has 3 parts, what Openship sends to the function, how the function works, and what Openship expects to be returned.
+
+## Function Reference
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Product Search - searchProductsFunction
+
+**Purpose**: Openship uses this function to search for products available for purchase when setting up product matches, allowing users to find fulfillment options for their shop products
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `searchEntry` | `string` | - |
+| `after?` | `string` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `products` | `Product[]` | Array of purchasable product objects |
+| `pageInfo` | `{ hasNextPage: boolean; endCursor: string }` | Pagination information |
+
+```typescript tab="Implementation"
+export async function searchProductsFunction({ 
+  platform, 
+  searchEntry, 
+  after 
+}: { 
+  platform: { domain: string; accessToken: string }; 
+  searchEntry: string; 
+  after?: string; 
+}) {
+  const shopifyClient = new GraphQLClient(
+    `https://${platform.domain}/admin/api/graphql.json`,
+    {
+      headers: {
+        "X-Shopify-Access-Token": platform.accessToken,
+      },
+    }
+  );
+
+  const gqlQuery = gql`
+    query SearchProducts($query: String, $after: String) {
+      productVariants(first: 15, query: $query, after: $after) {
+        edges {
+          node {
+            id
+            availableForSale
+            image { originalSrc }
+            price
+            title
+            product {
+              id
+              handle
+              title
+              images(first: 1) {
+                edges {
+                  node { originalSrc }
+                }
+              }
+            }
+            inventoryQuantity
+            inventoryPolicy
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  `;
+
+  const { productVariants } = await shopifyClient.request(gqlQuery, {
+    query: searchEntry,
+    after,
+  });
+
+  if (productVariants.edges.length < 1) {
+    throw new Error("No products found from Shopify channel");
+  }
+
+  const products = productVariants.edges.map(({ node, cursor }) => ({
+    image: node.image?.originalSrc || node.product.images.edges[0]?.node.originalSrc,
+    title: `${node.product.title} - ${node.title}`,
+    productId: node.product.id.split("/").pop(),
+    variantId: node.id.split("/").pop(),
+    price: node.price,
+    availableForSale: node.availableForSale,
+    inventory: node.inventoryQuantity,
+    inventoryTracked: node.inventoryPolicy !== "deny",
+    productLink: `https://${platform.domain}/products/${node.product.handle}`,
+    cursor,
+  }));
+
+  return { 
+    products, 
+    pageInfo: productVariants.pageInfo 
+  };
+}
+```
+
+```json tab="Response"
+{
+  "products": [
+    {
+      "image": "https://cdn.shopify.com/...",
+      "title": "Product Name - Variant Name",
+      "productId": "123456789",
+      "variantId": "987654321",
+      "price": "29.99",
+      "availableForSale": true,
+      "inventory": 50,
+      "inventoryTracked": true,
+      "productLink": "https://store.myshopify.com/products/product-handle",
+      "cursor": "eyJsYXN0X2lkIjo..."
+    }
+  ],
+  "pageInfo": {
+    "hasNextPage": true,
+    "endCursor": "eyJsYXN0X2lkIjo..."
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Get Single Product - getProductFunction
+
+**Purpose**: Openship uses this function to fetch detailed product information from channel platforms when creating product matches, ensuring accurate pricing and availability data for automated purchasing
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `productId` | `string` | - |
+| `variantId?` | `string` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `product` | `Product` | Single product object with purchase details |
+
+```typescript tab="Implementation"
+export async function getProductFunction({
+  platform,
+  productId,
+  variantId,
+}: {
+  platform: { domain: string; accessToken: string };
+  productId: string;
+  variantId?: string;
+}) {
+  const shopifyClient = new GraphQLClient(
+    `https://${platform.domain}/admin/api/graphql.json`,
+    {
+      headers: {
+        "X-Shopify-Access-Token": platform.accessToken,
+      },
+    }
+  );
+
+  const gqlQuery = gql`
+    query GetProduct($variantId: ID!) {
+      productVariant(id: $variantId) {
+        id
+        availableForSale
+        image { originalSrc }
+        price
+        title
+        product {
+          id
+          handle
+          title
+          images(first: 1) {
+            edges {
+              node { originalSrc }
+            }
+          }
+        }
+        inventoryQuantity
+        inventoryPolicy
+      }
+    }
+  `;
+
+  const fullVariantId = `gid://shopify/ProductVariant/${variantId}`;
+  const { productVariant } = await shopifyClient.request(gqlQuery, {
+    variantId: fullVariantId,
+  });
+
+  if (!productVariant) {
+    throw new Error("Product not found from Shopify channel");
+  }
+
+  const product = {
+    image: productVariant.image?.originalSrc || 
+           productVariant.product.images.edges[0]?.node.originalSrc,
+    title: `${productVariant.product.title} - ${productVariant.title}`,
+    productId: productVariant.product.id.split("/").pop(),
+    variantId: productVariant.id.split("/").pop(),
+    price: productVariant.price,
+    availableForSale: productVariant.availableForSale,
+    inventory: productVariant.inventoryQuantity,
+    inventoryTracked: productVariant.inventoryPolicy !== "deny",
+    productLink: `https://${platform.domain}/products/${productVariant.product.handle}`,
+  };
+
+  return { product };
+}
+```
+
+```json tab="Response"
+{
+  "product": {
+    "image": "https://cdn.shopify.com/...",
+    "title": "Product Name - Variant Name",
+    "productId": "123456789",
+    "variantId": "987654321",
+    "price": "29.99",
+    "availableForSale": true,
+    "inventory": 50,
+    "inventoryTracked": true,
+    "productLink": "https://store.myshopify.com/products/product-handle"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Create Purchase - createPurchaseFunction
+
+**Purpose**: Openship uses this function to automatically create purchases on channel platforms when orders are received from connected shops, enabling automated order fulfillment workflow
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `cartItems` | `CartItem[]` | - |
+| `shipping?` | `ShippingAddress` | - |
+| `notes?` | `string` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `purchaseId` | `string` | Unique identifier for the purchase |
+| `orderNumber` | `string` | Human-readable order number |
+| `totalPrice` | `string` | Total cost of the purchase |
+| `invoiceUrl` | `string` | URL to the purchase invoice |
+| `lineItems` | `LineItem[]` | Items included in the purchase |
+| `status` | `string` | Current status of the purchase |
+
+```typescript tab="Implementation"
+export async function createPurchaseFunction({
+  platform,
+  cartItems,
+  shipping,
+  notes,
+}: {
+  platform: { domain: string; accessToken: string };
+  cartItems: Array<{
+    variantId: string;
+    quantity: number;
+    price?: string;
+  }>;
+  shipping?: {
+    firstName: string;
+    lastName: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    province: string;
+    country: string;
+    zip: string;
+    phone?: string;
+  };
+  notes?: string;
+}) {
+  const shopifyClient = new GraphQLClient(
+    `https://${platform.domain}/admin/api/graphql.json`,
+    {
+      headers: {
+        "X-Shopify-Access-Token": platform.accessToken,
+      },
+    }
+  );
+
+  // Create draft order
+  const mutation = gql`
+    mutation CreateDraftOrder($input: DraftOrderInput!) {
+      draftOrderCreate(input: $input) {
+        draftOrder {
+          id
+          name
+          invoiceUrl
+          totalPrice
+          lineItems(first: 50) {
+            edges {
+              node {
+                id
+                title
+                quantity
+                originalUnitPrice
+                variant {
+                  id
+                  title
+                  product {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const lineItems = cartItems.map(item => ({
+    variantId: `gid://shopify/ProductVariant/${item.variantId}`,
+    quantity: item.quantity,
+    originalUnitPrice: item.price,
+  }));
+
+  const input: any = {
+    lineItems,
+    note: notes,
+  };
+
+  if (shipping) {
+    input.shippingAddress = {
+      firstName: shipping.firstName,
+      lastName: shipping.lastName,
+      address1: shipping.address1,
+      address2: shipping.address2,
+      city: shipping.city,
+      province: shipping.province,
+      country: shipping.country,
+      zip: shipping.zip,
+      phone: shipping.phone,
+    };
+  }
+
+  const result = await shopifyClient.request(mutation, { input });
+
+  if (result.draftOrderCreate.userErrors.length > 0) {
+    throw new Error(`Failed to create purchase: ${result.draftOrderCreate.userErrors.map(e => e.message).join(', ')}`);
+  }
+
+  const draftOrder = result.draftOrderCreate.draftOrder;
+
+  // Complete the draft order
+  const completeMutation = gql`
+    mutation CompleteDraftOrder($id: ID!) {
+      draftOrderComplete(id: $id) {
+        draftOrder {
+          order {
+            id
+            name
+            totalPrice
+            lineItems(first: 50) {
+              edges {
+                node {
+                  id
+                  title
+                  quantity
+                  variant { id }
+                }
+              }
+            }
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const completeResult = await shopifyClient.request(completeMutation, {
+    id: draftOrder.id,
+  });
+
+  if (completeResult.draftOrderComplete.userErrors.length > 0) {
+    throw new Error(`Failed to complete purchase: ${completeResult.draftOrderComplete.userErrors.map(e => e.message).join(', ')}`);
+  }
+
+  const order = completeResult.draftOrderComplete.draftOrder.order;
+
+  return {
+    purchaseId: order.id.split("/").pop(),
+    orderNumber: order.name,
+    totalPrice: order.totalPrice,
+    invoiceUrl: draftOrder.invoiceUrl,
+    lineItems: order.lineItems.edges.map(({ node }) => ({
+      id: node.id.split("/").pop(),
+      title: node.title,
+      quantity: node.quantity,
+      variantId: node.variant.id.split("/").pop(),
+    })),
+    status: "pending",
+  };
+}
+```
+
+```json tab="Response"
+{
+  "purchaseId": "123456789",
+  "orderNumber": "#1001",
+  "totalPrice": "59.98",
+  "invoiceUrl": "https://store.myshopify.com/invoices/123",
+  "lineItems": [
+    {
+      "id": "987654321",
+      "title": "Product Name",
+      "quantity": 2,
+      "variantId": "123"
+    }
+  ],
+  "status": "pending"
+}
+```
+
+</Step>
+<Step>
+
+### Create Webhook
+
+**Purpose**: Openship uses this function to set up real-time webhooks that notify the system when purchases are fulfilled or cancelled on channel platforms, enabling automatic tracking updates to customers
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `endpoint` | `string` | - |
+| `events` | `string[]` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `webhooks` | `Webhook[]` | Array of created webhook objects |
+
+```typescript tab="Implementation"
+export async function createWebhookFunction({
+  platform,
+  endpoint,
+  events,
+}: {
+  platform: { domain: string; accessToken: string };
+  endpoint: string;
+  events: string[];
+}) {
+  const mapTopic = {
+    ORDER_CREATED: "ORDERS_CREATE",
+    ORDER_CANCELLED: "ORDERS_CANCELLED",
+    ORDER_CHARGEBACKED: "DISPUTES_CREATE",
+    TRACKING_CREATED: "FULFILLMENTS_CREATE",
+  };
+
+  const shopifyClient = new GraphQLClient(
+    `https://${platform.domain}/admin/api/graphql.json`,
+    {
+      headers: {
+        "X-Shopify-Access-Token": platform.accessToken,
+      },
+    }
+  );
+
+  const webhooks = [];
+
+  for (const event of events) {
+    const shopifyTopic = mapTopic[event] || event;
+    const mutation = gql`
+      mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $webhookSubscription: WebhookSubscriptionInput!) {
+        webhookSubscriptionCreate(topic: $topic, webhookSubscription: $webhookSubscription) {
+          webhookSubscription {
+            id
+            endpoint {
+              __typename
+              ... on WebhookHttpEndpoint {
+                callbackUrl
+              }
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const result = await shopifyClient.request(mutation, {
+      topic: shopifyTopic.toUpperCase(),
+      webhookSubscription: {
+        callbackUrl: endpoint,
+        format: "JSON",
+      },
+    });
+
+    webhooks.push(result.webhookSubscriptionCreate.webhookSubscription);
+  }
+
+  return { webhooks };
+}
+```
+
+```json tab="Response"
+{
+  "webhooks": [
+    {
+      "id": "gid://shopify/WebhookSubscription/123456789",
+      "endpoint": {
+        "callbackUrl": "https://your-app.com/webhook"
+      }
+    }
+  ]
+}
+```
+
+</Step>
+</Steps>
+
+## OAuth Integration
+
+If you have a Shopify app (or app on any platform), you can implement OAuth functions to allow users to install your app directly instead of manually retrieving access tokens. This provides a smoother user experience where users can authorize your integration through the standard app installation flow.
+
+<Steps>
+<Step>
+
+### OAuth Authorization
+
+**Purpose**: Openship uses this function to generate secure OAuth authorization URLs that allow users to safely connect their channel platforms to Openship for automated purchasing
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `callbackUrl` | `string` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `authUrl` | `string` | OAuth authorization URL for user redirection |
+
+```typescript tab="Implementation"
+export async function oAuthFunction({
+  platform,
+  callbackUrl,
+}: {
+  platform: { domain: string; accessToken: string };
+  callbackUrl: string;
+}) {
+  const scopes = "read_products,write_products,read_orders,write_orders,read_inventory,write_inventory";
+  const shopifyAuthUrl = `https://${platform.domain}/admin/oauth/authorize?client_id=${process.env.SHOPIFY_APP_KEY}&scope=${scopes}&redirect_uri=${callbackUrl}&state=${Math.random().toString(36).substring(7)}`;
+  
+  return { authUrl: shopifyAuthUrl };
+}
+```
+
+</Step>
+<Step>
+
+### OAuth Token Exchange
+
+**Purpose**: Openship uses this function to complete the OAuth flow by exchanging temporary authorization codes for permanent access tokens, establishing a secure connection to the user's channel platform
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `code` | `string` | - |
+| `shop` | `string` | - |
+| `state` | `string` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `accessToken` | `string` | OAuth access token for API authentication |
+| `domain` | `string` | Channel domain for API requests |
+
+```typescript tab="Implementation"
+export async function oAuthCallbackFunction({
+  platform,
+  code,
+  shop,
+  state,
+}: {
+  platform: { domain: string; accessToken: string };
+  code: string;
+  shop: string;
+  state: string;
+}) {
+  const tokenUrl = `https://${shop}/admin/oauth/access_token`;
+  
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: process.env.SHOPIFY_APP_KEY,
+      client_secret: process.env.SHOPIFY_APP_SECRET,
+      code,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to exchange OAuth code for access token");
+  }
+
+  const { access_token } = await response.json();
+  
+  return { 
+    accessToken: access_token,
+    domain: shop,
+  };
+}
+```
+
+</Step>
+</Steps>
+
+## Webhook Event Handlers
+
+Channel integrations must implement webhook handlers to process real-time events from the platform.
+
+<Steps>
+<Step>
+
+#### Fulfillment Tracking Handler - createTrackingWebhookHandler
+
+**Purpose**: Openship uses this webhook handler to receive tracking information when purchases are shipped from channel platforms, automatically forwarding tracking details to customers and updating order status
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `event` | `any` | - |
+| `headers` | `Record<string, string>` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `fulfillment` | `Fulfillment` | Tracking/fulfillment details |
+| `type` | `"fulfillment_created"` | Event type identifier |
+
+```typescript tab="Implementation"
+export async function createTrackingWebhookHandler({
+  platform,
+  event,
+  headers,
+}: {
+  platform: { domain: string; accessToken: string };
+  event: any;
+  headers: Record<string, string>;
+}) {
+  // Verify webhook authenticity
+  const hmac = headers["x-shopify-hmac-sha256"];
+  if (!hmac) {
+    throw new Error("Missing webhook HMAC");
+  }
+
+  const fulfillment = {
+    id: event.id,
+    orderId: event.order_id,
+    status: event.status,
+    trackingCompany: event.tracking_company,
+    trackingNumber: event.tracking_number,
+    trackingUrl: event.tracking_url,
+    purchaseId: event.order_id?.toString(),
+    lineItems: event.line_items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      quantity: item.quantity,
+      variantId: item.variant_id,
+      productId: item.product_id,
+    })),
+    createdAt: event.created_at,
+    updatedAt: event.updated_at,
+  };
+
+  return { fulfillment, type: "fulfillment_created" };
+}
+```
+
+```json tab="Response"
+{
+  "fulfillment": {
+    "id": 555666777,
+    "orderId": 123456789,
+    "status": "success",
+    "trackingCompany": "UPS",
+    "trackingNumber": "1Z999AA1234567890",
+    "trackingUrl": "https://wwwapps.ups.com/tracking/tracking.cgi?tracknum=1Z999AA1234567890",
+    "purchaseId": "123456789",
+    "lineItems": [
+      {
+        "id": 987654321,
+        "title": "Product Name",
+        "quantity": 2,
+        "variantId": "123",
+        "productId": "456"
+      }
+    ],
+    "createdAt": "2025-01-15T12:00:00Z",
+    "updatedAt": "2025-01-15T12:00:00Z"
+  },
+  "type": "fulfillment_created"
+}
+```
+
+</Step>
+<Step>
+
+#### Purchase Cancellation Handler - cancelPurchaseWebhookHandler
+
+**Purpose**: Openship uses this webhook handler to process purchase cancellation events from channel platforms, automatically handling refunds and updating order status across connected platforms
+
+**Request Body**:
+
+| Prop | Type | Default |
+|------|------|---------|
+| `platform` | `{ domain: string; accessToken: string }` | - |
+| `event` | `any` | - |
+| `headers` | `Record<string, string>` | - |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `order` | `Order` | Cancelled purchase object with cancellation details |
+| `type` | `"purchase_cancelled"` | Event type identifier |
+
+```typescript tab="Implementation"
+export async function cancelPurchaseWebhookHandler({
+  platform,
+  event,
+  headers,
+}: {
+  platform: { domain: string; accessToken: string };
+  event: any;
+  headers: Record<string, string>;
+}) {
+  // Verify webhook authenticity
+  const hmac = headers["x-shopify-hmac-sha256"];
+  if (!hmac) {
+    throw new Error("Missing webhook HMAC");
+  }
+
+  const order = {
+    id: event.id,
+    name: event.name,
+    cancelReason: event.cancel_reason,
+    cancelledAt: event.cancelled_at,
+    refund: event.refunds?.[0] || null,
+    lineItems: event.line_items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      quantity: item.quantity,
+      variantId: item.variant_id,
+      productId: item.product_id,
+    })),
+  };
+
+  return { order, type: "purchase_cancelled" };
+}
+```
+
+```json tab="Response"
+{
+  "order": {
+    "id": 123456789,
+    "name": "#1001",
+    "cancelReason": "customer",
+    "cancelledAt": "2025-01-15T11:00:00Z",
+    "refund": {
+      "id": 111222333,
+      "amount": "59.98",
+      "currency": "USD"
+    },
+    "lineItems": [
+      {
+        "id": 987654321,
+        "title": "Product Name",
+        "quantity": 2,
+        "variantId": "123",
+        "productId": "456"
+      }
+    ]
+  },
+  "type": "purchase_cancelled"
+}
+```
+
+</Step>
+</Steps>
+
+## Adding Your Channel Integration to Openship
+
+Once you've implemented your channel integration functions, you need to create a channel platform in Openship. Here's exactly what you'll see in the Openship interface:
+
+### 1. Navigate to Channel Platforms
+
+In Openship, go to the **Channels** page where you'll see the platform management interface:
+
+<div className="p-4 space-y-4 border rounded-lg bg-muted/20">
+  <div>
+    <h2 className="text-xs font-normal mb-3 text-muted-foreground">
+      Platforms
+    </h2>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        variant="secondary"
+        className="border rounded-lg h-8 px-3 flex items-center gap-2"
+      >
+        <Plus className="h-4 w-4" />
+        <span>Create platform to get started</span>
+      </Button>
+    </div>
+  </div>
+</div>
+
+### 2. Create Channel Platform Dialog
+
+Click the **"Create platform to get started"** button to open the platform creation dialog:
+
+<div className="border rounded-lg">
+  <div className="border-b p-6">
+    <h3 className="text-lg font-semibold">Create Channel Platform</h3>
+    <p className="text-sm text-muted-foreground mt-1">
+      Create a platform based on an existing template
+    </p>
+  </div>
+  
+  <div className="p-6 space-y-4">
+    <div className="space-y-2">
+      <label className="text-base pb-2">Platform</label>
+      <div className="relative">
+        <button className="w-full bg-muted/40 text-base border rounded-md px-3 py-2 text-left flex items-center justify-between">
+          <span className="text-muted-foreground">Select a platform</span>
+          <ChevronDown className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div className="flex items-center justify-end gap-3 p-6 border-t">
+    <Button variant="outline">Cancel</Button>
+    <Button disabled>Create Platform</Button>
+  </div>
+</div>
+
+### 3. Platform Template Selection
+
+When you click the dropdown, you'll see the available channel templates:
+
+<div className="border rounded-md bg-background">
+  <div className="p-2">
+    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Templates</div>
+    <div className="px-2 py-1.5 hover:bg-muted/50 rounded-sm cursor-pointer">Amazon</div>
+    <div className="px-2 py-1.5 hover:bg-muted/50 rounded-sm cursor-pointer">eBay</div>
+    <div className="px-2 py-1.5 hover:bg-muted/50 rounded-sm cursor-pointer">Etsy</div>
+    <div className="px-2 py-1.5 hover:bg-muted/50 rounded-sm cursor-pointer">Demo</div>
+    <div className="px-2 py-1.5 text-muted-foreground rounded-sm">Facebook <span className="text-xs">(soon)</span></div>
+    <div className="px-2 py-1.5 text-muted-foreground rounded-sm">Google <span className="text-xs">(soon)</span></div>
+    <div className="px-2 py-1.5 text-muted-foreground rounded-sm">Walmart <span className="text-xs">(soon)</span></div>
+    <hr className="my-2" />
+    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Custom</div>
+    <div className="px-2 py-1.5 hover:bg-muted/50 rounded-sm cursor-pointer">Start from scratch...</div>
+  </div>
+</div>
+
+### 4. For Built-in Integration - Select Template
+
+If you created a built-in integration file (e.g., `myplatform.ts` in `/features/integrations/channel/`), you would:
+
+1. **Add your template to the channelAdapters list** in `CreatePlatform.tsx`:
+```typescript
+const channelAdapters = {
+  amazon: "amazon",
+  ebay: "ebay", 
+  etsy: "etsy",
+  demo: "demo", // Demo integration for testing
+  myplatform: "myplatform", // Add your integration here
+  // ...
+};
+```
+
+2. **Select your template** from the dropdown
+3. **Fill in the basic fields**: Name, App Key, App Secret (if needed)
+
+### 5. For Custom HTTP Integration - Select "Start from scratch..."
+
+If you're using HTTP endpoints, select **"Start from scratch..."** to see all the function fields:
+
+When you select **"Start from scratch..."**, you'll see form fields where you can enter your custom HTTP endpoints for each function.
+
+### 6. After Creating Platform
+
+Once you create the platform, it appears in the platforms list:
+
+<div className="p-4 space-y-4 border rounded-lg bg-muted/20">
+  <div>
+    <h2 className="text-xs font-normal mb-3 text-muted-foreground">
+      Platforms
+    </h2>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        variant="secondary"
+        className="border rounded-lg h-8 w-8"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+      
+      <Badge className="cursor-pointer flex items-center justify-between gap-2 uppercase tracking-wide border pl-3 text-xs font-medium rounded-lg bg-sky-100 text-sky-900 border-sky-200">
+        MY CHANNEL
+        <Button
+          variant="secondary"
+          size="icon"
+          className="border h-5 w-5"
+        >
+          <EllipsisVertical className="h-2.5 w-2.5" />
+        </Button>
+      </Badge>
+    </div>
+  </div>
+
+  <div>
+    <h2 className="text-xs font-normal mb-3 text-muted-foreground">
+      Actions
+    </h2>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        variant="default"
+        className="h-8 px-3 flex items-center gap-2"
+      >
+        <Tv className="h-4 w-4" />
+        <span>Create Channel</span>
+      </Button>
+    </div>
+  </div>
+</div>
+
+### 7. Create Channels Using Your Platform
+
+Now you can click **"Create Channel"** to create individual channel instances that use your platform template. Each channel will use the same integration logic but with different credentials (domain, access tokens, etc.).
+
+The platform system ensures your integration functions are reusable across multiple channel instances while maintaining clean separation between template logic and instance-specific configurations.

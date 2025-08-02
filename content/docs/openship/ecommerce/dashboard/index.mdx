@@ -1,0 +1,96 @@
+---
+title: Dashboard Overview
+description: Comprehensive admin dashboard for managing your Openfront e-commerce platform with enterprise-grade features
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Openfront comes with a comprehensive admin dashboard that provides all the tools needed to manage your e-commerce platform. Built with Next.js 15 and KeystoneJS 6, the dashboard offers a modern, responsive interface for business operations.
+
+<Callout type="info">
+**Want Complete Customization?** Openfront's dashboard can be deployed as a separate application, allowing you to customize the interface, add new pages, and integrate with your existing systems. [Learn about custom dashboards →](/docs/ecommerce/dashboard/custom)
+</Callout>
+
+## Dashboard Navigation
+
+The dashboard is organized into focused sections for efficient management:
+
+### Core Operations
+- **Orders** - Complete order management, returns, claims, and fulfillment tracking
+- **Analytics** - Sales reports, revenue tracking, and business performance metrics
+- **Markets** - Multi-regional settings including countries, currencies, and shipping zones
+
+### Product Management
+- **Products** - Product catalog with variants, inventory, and pricing management
+- **Categories** - Product category hierarchy and organization
+- **Collections** - Marketing-focused product groupings and themed collections
+
+### Customer Management
+- **Users** - Customer accounts, administrative users, and permission management
+
+### Marketing & Growth
+- **Discounts** - Promotional codes, discount rules, and campaign management
+- **Price Lists** - Customer-specific pricing and bulk pricing strategies
+- **Gift Cards** - Gift card creation, redemption tracking, and balance management
+- **Shipping Options** - Customer-facing shipping methods and pricing
+
+### System Integration
+- **Shipping Providers** - Configure Shippo and other shipping integrations
+- **Payment Providers** - Set up Stripe, PayPal, and other payment gateways
+
+## Key Features
+
+### Modern Interface
+- **Responsive Design**: Works seamlessly across desktop, tablet, and mobile devices
+- **Intuitive Navigation**: Organized sidebar with collapsible sections for efficient workflow
+- **Advanced Filtering**: Search and filter capabilities across all data management screens
+- **Bulk Operations**: Mass actions for efficient data management
+
+### Business Management
+- **Real-time Analytics**: Live sales data, revenue tracking, and performance insights
+- **Order Processing**: Complete order lifecycle from creation to fulfillment
+- **Inventory Management**: Stock tracking with multi-location support
+- **Customer Relations**: User accounts, permissions, and customer data management
+
+### System Administration  
+- **Multi-Regional Support**: Manage currencies, countries, and regional settings
+- **Provider Integration**: Configure payment and shipping providers with webhook support
+- **Security & Permissions**: Role-based access control with audit trails
+- **API Management**: Generate API keys and manage external integrations
+
+### Advanced Models
+For developers and advanced users, the dashboard provides direct access to all underlying data models through the Models section, including detailed management of orders, products, customers, payments, shipping, and system configurations.
+
+## Getting Started
+
+1. **Access your dashboard** at `/dashboard` after installation
+2. **Configure basic settings** including store information and regional preferences  
+3. **Set up integrations** for payments and shipping providers
+4. **Add your product catalog** with categories and collections
+5. **Start processing orders** and managing your business operations
+
+## Next Steps
+
+<Cards>
+  <Card 
+    title="Custom Dashboard" 
+    href="/docs/ecommerce/dashboard/custom" 
+    description="Deploy and customize your own dashboard with complete design freedom"
+  />
+  <Card 
+    title="API Reference" 
+    href="/docs/ecommerce/api-reference" 
+    description="Complete GraphQL API documentation for integrations"
+  />
+  <Card 
+    title="Payment Providers" 
+    href="/docs/ecommerce/payment-providers" 
+    description="Configure Stripe, PayPal, and other payment systems"
+  />
+  <Card 
+    title="Shipping Providers" 
+    href="/docs/ecommerce/shipping-providers" 
+    description="Set up Shippo and other shipping integrations"
+  />
+</Cards>

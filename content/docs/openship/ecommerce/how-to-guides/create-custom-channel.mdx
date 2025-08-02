@@ -1,0 +1,576 @@
+---
+title: Create Custom Channel
+description: Learn how to create custom HTTP-based channel integrations
+icon: Radio
+---
+
+## Overview
+
+Instead of using built-in channel integrations like Shopify, you can create custom HTTP endpoints that Openship will call to interact with your fulfillment platform. This approach gives you complete flexibility to integrate with any system - whether it's a 3PL, supplier, or custom fulfillment service.
+
+## How Custom Integrations Work
+
+When you create a channel platform in Openship, instead of setting function values to built-in slugs like "shopify", you can provide HTTP URLs. Openship will make POST requests to these endpoints with the required parameters and expect specific response formats.
+
+For example:
+- **Built-in**: `searchProductsFunction: "shopify"`
+- **Custom**: `searchProductsFunction: "https://your-fulfillment-api.com/api/search-products"`
+
+## Required HTTP Endpoints
+
+Your custom channel integration must implement the following HTTP endpoints that match the function interface from the channel integration guide:
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Product Search - `/api/search-products`
+
+**Purpose**: Openship uses this endpoint to search for products available for purchase when setting up product matches, allowing users to find fulfillment options for their shop products
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `searchEntry` | `string` | Search query |
+| `after?` | `string` | Pagination cursor |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `products` | `Product[]` | Array of purchasable product objects |
+| `pageInfo` | `{ hasNextPage: boolean; endCursor: string }` | Pagination information |
+
+```typescript tab="Implementation"
+// POST /api/search-products
+export default async function handler(req, res) {
+  const { platform, searchEntry, after } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Your custom product catalog (suppliers, 3PL inventory, etc.)
+  const allProducts = [
+    {
+      image: "https://via.placeholder.com/300x300/FF0000/FFFFFF?text=PIPE",
+      title: "Hooli XYZ Compression Device",
+      productId: "hooli001",
+      variantId: "white",
+      price: "299.99",
+      availableForSale: true,
+      inventory: 150,
+      inventoryTracked: true,
+      productLink: "https://hooli-supply.com/products/xyz-compression",
+      cursor: "eyJpZCI6Imhvb2xpMDAxIn0="
+    },
+    {
+      image: "https://via.placeholder.com/300x300/008080/FFFFFF?text=STORAGE",
+      title: "Electronics Storage Box",
+      productId: "storage001", 
+      variantId: "crypto-box",
+      price: "2000.00",
+      availableForSale: true,
+      inventory: 8,
+      inventoryTracked: true,
+      productLink: "https://demo-supplier.com/products/crypto-device",
+      cursor: "eyJpZCI6InNldGVjMDAxIn0="
+    },
+    {
+      image: "https://via.placeholder.com/300x300/4B0082/FFFFFF?text=HACK", 
+      title: "Wireless Mouse - Blue",
+      productId: "phreaks001",
+      variantId: "blue-box",
+      price: "500.00",
+      availableForSale: true,
+      inventory: 12,
+      inventoryTracked: true,
+      productLink: "https://demo-store.com/products/wireless-mouse",
+      cursor: "eyJpZCI6Im1vdXNlMDAxIn0="
+    }
+  ];
+
+  let filteredProducts = allProducts;
+
+  // Filter by search term if provided
+  if (searchEntry) {
+    filteredProducts = allProducts.filter(product =>
+      product.title.toLowerCase().includes(searchEntry.toLowerCase())
+    );
+  }
+
+  // Simple pagination
+  let startIndex = 0;
+  if (after) {
+    const decodedCursor = JSON.parse(Buffer.from(after, 'base64').toString());
+    startIndex = allProducts.findIndex(p => p.productId === decodedCursor.id) + 1;
+  }
+
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + 10);
+  const hasNextPage = startIndex + 10 < filteredProducts.length;
+  const endCursor = paginatedProducts.length > 0 
+    ? paginatedProducts[paginatedProducts.length - 1].cursor 
+    : null;
+
+  return res.status(200).json({
+    products: paginatedProducts,
+    pageInfo: {
+      hasNextPage,
+      endCursor
+    }
+  });
+}
+```
+
+```json tab="Response"
+{
+  "products": [
+    {
+      "image": "https://via.placeholder.com/300x300/FF0000/FFFFFF?text=PIPE",
+      "title": "Hooli XYZ Compression Device",
+      "productId": "hooli001",
+      "variantId": "white",
+      "price": "299.99",
+      "availableForSale": true,
+      "inventory": 150,
+      "inventoryTracked": true,
+      "productLink": "https://hooli-supply.com/products/xyz-compression",
+      "cursor": "eyJpZCI6Imhvb2xpMDAxIn0="
+    }
+  ],
+  "pageInfo": {
+    "hasNextPage": true,
+    "endCursor": "eyJpZCI6Imhvb2xpMDAxIn0="
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Get Single Product - `/api/get-product`
+
+**Purpose**: Openship uses this endpoint to fetch detailed product information from channel platforms when creating product matches, ensuring accurate pricing and availability data for automated purchasing
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `productId` | `string` | Product identifier |
+| `variantId?` | `string` | Variant identifier |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `product` | `Product` | Single product object with purchase details |
+
+```typescript tab="Implementation"
+// POST /api/get-product
+export default async function handler(req, res) {
+  const { platform, productId, variantId } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Your product catalog
+  const products = {
+    "hooli001": {
+      white: {
+        image: "https://via.placeholder.com/300x300/FF0000/FFFFFF?text=PIPE",
+        title: "Hooli XYZ Compression Device - White",
+        productId: "hooli001",
+        variantId: "white", 
+        price: "299.99",
+        availableForSale: true,
+        inventory: 150,
+        inventoryTracked: true,
+        productLink: "https://hooli-supply.com/products/xyz-compression"
+      }
+    },
+    "storage001": {
+      "crypto-box": {
+        image: "https://via.placeholder.com/300x300/008080/FFFFFF?text=STORAGE",
+        title: "Electronics Storage Box - Crypto Box",
+        productId: "storage001",
+        variantId: "crypto-box",
+        price: "2000.00",
+        availableForSale: true,
+        inventory: 8,
+        inventoryTracked: true,
+        productLink: "https://demo-supplier.com/products/crypto-device"
+      }
+    }
+  };
+
+  const product = products[productId]?.[variantId || 'default'];
+  
+  if (!product) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  return res.status(200).json({ product });
+}
+```
+
+```json tab="Response"
+{
+  "product": {
+    "image": "https://via.placeholder.com/300x300/FF0000/FFFFFF?text=PIPE",
+    "title": "Hooli XYZ Compression Device - White",
+    "productId": "hooli001",
+    "variantId": "white",
+    "price": "299.99",
+    "availableForSale": true,
+    "inventory": 150,
+    "inventoryTracked": true,
+    "productLink": "https://hooli-supply.com/products/xyz-compression"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Create Purchase - `/api/create-purchase`
+
+**Purpose**: Openship uses this endpoint to automatically create purchases on channel platforms when orders are received from connected shops, enabling automated order fulfillment workflow
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `cartItems` | `CartItem[]` | Items to purchase |
+| `shipping?` | `ShippingAddress` | Shipping address |
+| `notes?` | `string` | Order notes |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `purchaseId` | `string` | Unique identifier for the purchase |
+| `orderNumber` | `string` | Human-readable order number |
+| `totalPrice` | `string` | Total cost of the purchase |
+| `invoiceUrl` | `string` | URL to the purchase invoice |
+| `lineItems` | `LineItem[]` | Items included in the purchase |
+| `status` | `string` | Current status of the purchase |
+
+```typescript tab="Implementation"
+// POST /api/create-purchase
+export default async function handler(req, res) {
+  const { platform, cartItems, shipping, notes } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  try {
+    // Generate unique purchase ID (in real app, use proper ID generation)
+    const purchaseId = `PO-${Date.now()}`;
+    const orderNumber = `#${purchaseId}`;
+
+    // Calculate total price
+    const totalPrice = cartItems.reduce((sum, item) => {
+      return sum + (parseFloat(item.price) * item.quantity);
+    }, 0).toFixed(2);
+
+    // In a real implementation, you would:
+    // 1. Create the purchase in your fulfillment system
+    // 2. Send order to your supplier/3PL
+    // 3. Update inventory levels
+    // 4. Generate invoices/receipts
+
+    // For demo purposes, let's simulate different responses based on products
+    const hasCryptoEquipment = cartItems.some(item => item.variantId?.includes('crypto') || item.variantId?.includes('setec'));
+    
+    if (hasCryptoEquipment) {
+      // Special handling for crypto/security equipment
+      return res.status(200).json({
+        purchaseId,
+        orderNumber,
+        totalPrice,
+        invoiceUrl: `https://demo-supplier.com/invoices/${purchaseId}`,
+        lineItems: cartItems.map(item => ({
+          id: `line_${Date.now()}_${Math.random()}`,
+          title: item.name || `Product ${item.variantId}`,
+          quantity: item.quantity,
+          variantId: item.variantId
+        })),
+        status: "pending_security_clearance" // Crypto equipment needs clearance
+      });
+    }
+
+    // Regular purchase flow
+    const processedLineItems = cartItems.map(item => ({
+      id: `line_${Date.now()}_${Math.random()}`,
+      title: item.name || `Product ${item.variantId}`,
+      quantity: item.quantity,
+      variantId: item.variantId
+    }));
+
+    // Simulate email notification to supplier
+    console.log(`📧 Purchase Order Created: ${orderNumber}`);
+    console.log(`📦 Items:`, processedLineItems);
+    console.log(`🚚 Ship to: ${shipping?.firstName} ${shipping?.lastName}`);
+    console.log(`💰 Total: $${totalPrice}`);
+
+    return res.status(200).json({
+      purchaseId,
+      orderNumber,
+      totalPrice,
+      invoiceUrl: `https://your-fulfillment-portal.com/invoices/${purchaseId}`,
+      lineItems: processedLineItems,
+      status: "processing"
+    });
+
+  } catch (error) {
+    console.error('Purchase creation failed:', error);
+    return res.status(500).json({
+      error: "Purchase creation failed",
+      details: error.message
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "purchaseId": "PO-1705123456789",
+  "orderNumber": "#PO-1705123456789",
+  "totalPrice": "299.99",
+  "invoiceUrl": "https://your-fulfillment-portal.com/invoices/PO-1705123456789",
+  "lineItems": [
+    {
+      "id": "line_1705123456789_0.123",
+      "title": "Hooli XYZ Compression Device",
+      "quantity": 1,
+      "variantId": "white"
+    }
+  ],
+  "status": "processing"
+}
+```
+
+</Step>
+<Step>
+
+### Create Webhook - `/api/create-webhook`
+
+**Purpose**: Openship uses this endpoint to set up real-time webhooks that notify the system when purchases are fulfilled or cancelled on channel platforms, enabling automatic tracking updates to customers
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `endpoint` | `string` | Webhook URL |
+| `events` | `string[]` | Event types to subscribe to |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `webhooks` | `Webhook[]` | Array of created webhook objects |
+
+```typescript tab="Implementation"
+// POST /api/create-webhook
+export default async function handler(req, res) {
+  const { platform, endpoint, events } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  try {
+    const webhooks = [];
+
+    // Map Openship events to your system's events
+    const eventMapping = {
+      "TRACKING_CREATED": "fulfillment.shipped",
+      "ORDER_CANCELLED": "purchase.cancelled",
+      "ORDER_CHARGEBACKED": "purchase.disputed"
+    };
+
+    for (const event of events) {
+      const internalEvent = eventMapping[event] || event;
+      
+      // In a real implementation, you would register these webhooks 
+      // with your fulfillment system/3PL API
+      const webhookId = `webhook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      console.log(`🔗 Registering webhook: ${internalEvent} -> ${endpoint}`);
+      
+      // Simulate webhook registration
+      webhooks.push({
+        id: webhookId,
+        endpoint: {
+          callbackUrl: endpoint
+        },
+        events: [internalEvent],
+        active: true,
+        created_at: new Date().toISOString()
+      });
+    }
+
+    return res.status(200).json({ webhooks });
+
+  } catch (error) {
+    console.error('Webhook creation failed:', error);
+    return res.status(500).json({
+      error: "Webhook creation failed",
+      details: error.message
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "webhooks": [
+    {
+      "id": "webhook_1705123456789_abc123def",
+      "endpoint": {
+        "callbackUrl": "https://your-openship.com/webhook/channel"
+      },
+      "events": ["fulfillment.shipped"],
+      "active": true,
+      "created_at": "2025-01-22T10:30:00Z"
+    }
+  ]
+}
+```
+
+</Step>
+</Steps>
+
+## Webhook Event Handlers
+
+Your custom channel should implement webhook handlers to notify Openship of fulfillment events:
+
+<Steps>
+<Step>
+
+### Fulfillment Tracking Handler - `/api/webhook/tracking-created`
+
+**Purpose**: Openship uses this webhook to receive tracking information when purchases are shipped from channel platforms, automatically forwarding tracking details to customers and updating order status
+
+```typescript tab="Implementation"
+// POST /api/webhook/tracking-created
+export default async function handler(req, res) {
+  const { event, headers } = req.body;
+
+  // Verify webhook authenticity (implement your own verification)
+  if (!verifyWebhookSignature(headers)) {
+    return res.status(403).json({ error: "Invalid signature" });
+  }
+
+  // Transform your fulfillment event to Openship format
+  const fulfillment = {
+    id: event.fulfillment_id,
+    orderId: event.order_id,
+    status: "success",
+    trackingCompany: event.shipping_carrier,
+    trackingNumber: event.tracking_number,
+    trackingUrl: event.tracking_url,
+    purchaseId: event.purchase_id,
+    lineItems: event.shipped_items.map(item => ({
+      id: item.line_item_id,
+      title: item.product_name,
+      quantity: item.quantity_shipped,
+      variantId: item.variant_id,
+      productId: item.product_id
+    })),
+    createdAt: event.shipped_at,
+    updatedAt: event.updated_at
+  };
+
+  return res.status(200).json({ fulfillment, type: "fulfillment_created" });
+}
+
+function verifyWebhookSignature(headers) {
+  // Implement your webhook signature verification here
+  // This could be HMAC, JWT, or other verification method
+  return true; // Simplified for demo
+}
+```
+
+</Step>
+</Steps>
+
+## Testing Your Custom Channel
+
+We've built a demo channel integration right into this documentation that you can use to test the complete Openship workflow before implementing your own custom channel.
+
+### Step 1: Create a Demo Channel Platform
+
+1. In your Openship dashboard, navigate to **Platform > Channels**
+2. Click **"Add Platform"**
+3. In the **"Create Channel Platform"** dialog:
+   - Select **"Demo"** from the Platform dropdown
+   - The Name field will auto-fill with **"Demo Channel"**
+   - Click **"Create Platform"**
+
+This creates a platform that points to our demo channel endpoints at `https://docs.openship.org/api/demo/channel/*`
+
+### Step 2: Connect Your Demo Channel
+
+1. After creating the platform, click **"Create Channel"** 
+2. In the **"Create Channel"** dialog:
+   - **Platform**: Select "Demo Channel Platform"
+   - **Name**: "Demo" (or any name you prefer)
+   - **Domain**: "local" 
+   - **Access Token**: "demo_token"
+3. Click **"Create Channel"**
+
+### Step 3: Test the Demo Integration
+
+Once connected, you can test the complete workflow:
+
+- Browse products available for purchase from our demo supplier
+- Test product matching between shops and channels
+- Create demo purchases and track their status
+- Experience automated order fulfillment
+
+### Step 4: Replace with Your Implementation
+
+When you're ready to use your custom channel:
+
+1. Go to your Demo Channel Platform settings
+2. Replace the demo URLs with your actual implementation:
+
+```
+# Replace these demo URLs:
+https://docs.openship.org/api/demo/channel/search-products
+https://docs.openship.org/api/demo/channel/get-product  
+https://docs.openship.org/api/demo/channel/create-purchase
+https://docs.openship.org/api/demo/channel/create-webhook
+# ... and other endpoints
+
+# With your URLs:
+https://your-fulfillment-api.com/api/search-products
+https://your-fulfillment-api.com/api/get-product
+https://your-fulfillment-api.com/api/create-purchase
+https://your-fulfillment-api.com/api/create-webhook
+# ... and so on
+```
+
+This approach lets you learn how Openship works with our demo data first, then seamlessly transition to your own implementation.
+

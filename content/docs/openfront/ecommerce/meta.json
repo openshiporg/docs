@@ -1,0 +1,30 @@
+{
+  "title": "E-commerce",
+  "description": "Multi-region commerce platform",
+  "icon": "ShoppingCart",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "what-is-openfront", 
+    "comparisons",
+    "deployment",
+    "---Dashboard---",
+    "dashboard/index",
+    "dashboard/custom",
+    "---Storefront---",
+    "storefront/index",
+    "storefront/custom",
+    "---Integrations---",
+    "payment-providers",
+    "shipping-providers",
+    "---How-to Guides---",
+    "how-to-guides/custom-payment-provider", 
+    "how-to-guides/custom-shipping-provider",
+    "how-to-guides/create-payment-integration", 
+    "how-to-guides/create-shipping-integration",
+    "---API---",
+    "schema-visualizer",
+    "api-reference"
+  ]
+}

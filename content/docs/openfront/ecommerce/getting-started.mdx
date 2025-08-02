@@ -1,0 +1,410 @@
+---
+title: Getting Started
+description: Get Openfront running in 15 minutes with this step-by-step guide
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+Get Openfront up and running in just 15 minutes! This guide will walk you through the fastest way to set up a local development environment and create your first store with sample data.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- **Node.js 20+** installed
+- **PostgreSQL 12+** running locally
+- **Git** for version control
+- A code editor (VS Code recommended)
+
+## Step 1: Clone and Setup
+
+<Steps>
+<Step>
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/openshiporg/openfront
+cd openfront
+```
+
+</Step>
+
+<Step>
+
+### Install Dependencies
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+<Tab value="npm">
+```bash
+npm install
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn install
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm install
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun install
+```
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Environment Configuration
+
+Create a `.env.local` file in the root directory with the following required variables:
+
+```bash
+# Required - Database Connection
+DATABASE_URL="postgresql://username:password@localhost:5432/openfront"
+
+# Required - Session Security (must be at least 32 characters)
+SESSION_SECRET="your-very-long-session-secret-key-here-32-chars-minimum"
+
+# Optional - Payment Providers (Stripe)
+STRIPE_SECRET_KEY="sk_test_51..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Optional - Payment Providers (PayPal)
+PAYPAL_CLIENT_ID="your-paypal-client-id"
+PAYPAL_CLIENT_SECRET="your-paypal-client-secret"
+
+# Optional - Shipping Provider (Shippo)
+SHIPPO_API_KEY="shippo_test_..."
+
+# Optional - File Storage (S3-compatible)
+S3_BUCKET_NAME="your-bucket-name"
+S3_REGION="us-east-1"
+S3_ACCESS_KEY_ID="your-access-key"
+S3_SECRET_ACCESS_KEY="your-secret-key"
+S3_ENDPOINT="https://your-s3-endpoint.com"
+
+# Optional - Email Configuration
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+FROM_EMAIL="noreply@yourstore.com"
+```
+
+> **Important**: The `SESSION_SECRET` must be at least 32 characters long for security.
+
+</Step>
+
+</Steps>
+
+## Step 2: Start Development Server
+
+<Steps>
+<Step>
+
+### Launch the Application
+
+<Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+<Tab value="npm">
+```bash
+npm run dev
+```
+</Tab>
+<Tab value="yarn">
+```bash
+yarn dev
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+pnpm dev
+```
+</Tab>
+<Tab value="bun">
+```bash
+bun dev
+```
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Access the Application
+
+Open your browser and navigate to:
+
+- **Storefront**: [http://localhost:3000](http://localhost:3000) - Customer-facing store
+- **Admin Panel**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard) - Management interface
+- **GraphQL API**: [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql) - Interactive API explorer
+
+> **Note**: The first time you visit the admin panel, you'll be prompted to create an admin user account.
+
+</Step>
+
+</Steps>
+
+## Step 3: Create Admin User
+
+<Steps>
+<Step>
+
+### Initialize Admin Account
+
+On first visit to the admin panel, you'll be automatically redirected to the initialization page:
+
+1. Go to [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+2. You'll be redirected to `/dashboard/init`
+3. Fill in the admin user creation form:
+   - **Name**: Your full name
+   - **Email**: Your email address
+   - **Password**: A secure password (minimum 8 characters)
+
+</Step>
+
+<Step>
+
+### Complete Initial Login
+
+After creating your admin account:
+1. You'll be automatically logged in
+2. You'll be redirected to the main dashboard
+3. Look for the **onboarding card** in the left sidebar with a blue pulsing dot
+
+</Step>
+
+</Steps>
+
+## Step 4: Store Onboarding
+
+<Steps>
+<Step>
+
+### Start Onboarding Process
+
+In the admin dashboard sidebar, you'll see an onboarding card:
+
+1. Click **"Get started"** on the onboarding card
+2. A dialog will open with three setup options
+
+</Step>
+
+<Step>
+
+### Choose Setup Type
+
+Select one of three onboarding options:
+
+#### Basic Setup (Recommended for Testing)
+- **1 region**: North America (USD)
+- **1 payment method**: Manual Payment
+- **1 product**: Penrose Triangle T-Shirt
+- **Basic shipping**: Standard shipping option
+
+#### Complete Setup (Full Demo Store)
+- **3 regions**: North America (USD), Europe (EUR), United Kingdom (GBP)
+- **3 payment methods**: Stripe, PayPal, Manual Payment
+- **10 products**: Complete "Impossible Tees" product catalog
+- **Multiple shipping**: Standard, Express, and Return shipping
+
+#### Custom Setup (Advanced)
+- **Custom JSON editing**: Modify the data templates for each section
+- **Full control**: Create your own regions, products, and settings
+- **Developer-friendly**: Perfect for custom implementations
+
+</Step>
+
+<Step>
+
+### Run Onboarding
+
+1. Select your preferred setup type
+2. Click **"Confirm"** to start the onboarding process
+3. Watch as the system creates:
+   - Store configuration
+   - Currencies and regions
+   - Payment providers
+   - Shipping options
+   - Product categories
+   - Product collections
+   - Products with variants and pricing
+
+The process typically takes 30-60 seconds depending on the setup type.
+
+</Step>
+
+</Steps>
+
+## Step 5: Explore Your Store
+
+<Steps>
+<Step>
+
+### Visit the Storefront
+
+After onboarding completes:
+
+1. Click **"View your storefront"** in the completion dialog
+2. Or navigate to [http://localhost:3000](http://localhost:3000)
+3. You'll see your fully configured store with sample products
+
+</Step>
+
+<Step>
+
+### Explore the Admin Panel
+
+Back in the admin dashboard, explore the different sections:
+
+- **Products**: Manage your product catalog
+- **Orders**: View and process orders
+- **Customers**: Manage customer accounts
+- **Regional Settings**: Configure regions, currencies, and countries
+- **Settings**: Configure payment providers, shipping, and store settings
+
+</Step>
+
+<Step>
+
+### Test the Checkout Process
+
+1. Add a product to cart on the storefront
+2. Proceed to checkout
+3. Fill in shipping information
+4. Test payment processing (use Stripe test cards if configured)
+5. View the order in the admin panel
+
+</Step>
+
+</Steps>
+
+## Customize Your Store
+
+Now that you have Openfront running, you can customize it to match your brand and business needs:
+
+## Next Steps
+
+<Cards>
+  <Card title="Custom Storefront" href="/docs/custom-storefront" description="Build your custom storefront" />
+  <Card title="Custom Dashboard" href="/docs/custom-dashboard" description="Customize your admin dashboard" />
+</Cards>
+
+## Common Issues
+
+### Onboarding Fails with "Unique Constraint" Error
+
+This happens if you're not using a fresh database:
+
+```bash
+# Reset the database
+psql -U username -d postgres -c "DROP DATABASE openfront;"
+psql -U username -d postgres -c "CREATE DATABASE openfront;"
+
+# Re-run migrations
+npm run migrate
+
+# Restart the development server
+npm run dev
+```
+
+### Payment Providers Not Working
+
+For Stripe and PayPal to work in the Complete Setup, you need the corresponding environment variables:
+
+**For Stripe:**
+```bash
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+**For PayPal:**
+```bash
+PAYPAL_CLIENT_ID="your-client-id"
+PAYPAL_CLIENT_SECRET="your-client-secret"
+```
+
+### Port Already in Use
+
+If port 3000 is busy:
+
+```bash
+PORT=3001 npm run dev
+```
+
+### Database Connection Error
+
+Check your PostgreSQL connection:
+
+```bash
+psql -h localhost -U username -d openfront
+```
+
+## Development Tools
+
+### GraphQL Playground
+
+Access the GraphQL API directly at:
+[http://localhost:3000/api/graphql](http://localhost:3000/api/graphql)
+
+Example query to view your products:
+```graphql
+query GetProducts {
+  products {
+    id
+    title
+    description
+    handle
+    status
+    thumbnail
+    productVariants {
+      id
+      title
+      sku
+      inventoryQuantity
+      moneyAmounts {
+        amount
+        currency {
+          code
+        }
+      }
+    }
+    productImages {
+      id
+      url
+      altText
+    }
+    productCategories {
+      id
+      name
+      handle
+    }
+  }
+}
+```
+
+### Admin Panel Features
+
+The admin panel provides complete store management:
+- **Product Management**: CRUD operations for products, variants, options, categories, and collections
+- **Order Processing**: View orders, manage fulfillment, process refunds and returns
+- **Customer Management**: View customer accounts and order history
+- **Regional Settings**: Configure regions, currencies, and tax rates
+- **Payment & Shipping**: Set up payment providers and shipping methods
+- **Discounts & Promotions**: Create and manage discount rules and gift cards
+- **User Management**: Manage admin users and role-based permissions
+- **Claims Processing**: Handle product claims and returns
+- **Settings**: Configure all aspects of your store
+
+---
+
+*You're now ready to start building with Openfront! The onboarding process sets up a complete demo store that you can explore and customize to your needs.*

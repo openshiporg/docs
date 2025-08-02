@@ -1,0 +1,646 @@
+---
+title: Create Payment Integration
+description: Learn how to create custom payment integrations for Openfront using built-in adapters
+icon: CreditCard
+---
+
+## Overview
+
+Payment integrations in Openfront allow you to connect any payment gateway through a standardized interface. Unlike HTTP-based custom payment providers, payment integrations are TypeScript modules that run directly within Openfront, providing better performance and type safety.
+
+## How Payment Integrations Work
+
+Payment integrations in Openfront are built as TypeScript modules that implement a standard interface. Openfront has built-in integrations for Stripe and PayPal, and you can create new integrations by following the same pattern.
+
+For example:
+- **Built-in Integration**: `createPaymentFunction: "stripe"`
+- **Custom Integration**: `createPaymentFunction: "my-custom-gateway"`
+
+## Stripe Payment Integration Reference
+
+The Stripe payment integration (`/features/integrations/payment/stripe.ts`) demonstrates all required functions for a complete payment integration. This guide will explain how each function works and how to implement it for your own payment integration.
+
+## Function Reference
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Create Payment - createPaymentFunction
+
+**Purpose**: Openfront uses this function to initialize payment sessions when customers start checkout
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cart` | `{ id: string; total: number; customer?: object }` | Cart information and customer details |
+| `amount` | `number` | Payment amount in cents |
+| `currency` | `string` | Currency code (USD, EUR, etc.) |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `clientSecret` | `string` | Client secret for frontend payment completion |
+| `paymentIntentId` | `string` | Unique payment identifier from gateway |
+
+```typescript tab="Implementation"
+export async function createPaymentFunction({ cart, amount, currency }) {
+  const stripe = getStripeClient();
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount,
+    currency: currency.toLowerCase(),
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  return {
+    clientSecret: paymentIntent.client_secret,
+    paymentIntentId: paymentIntent.id,
+  };
+}
+```
+
+```json tab="Response"
+{
+  "clientSecret": "pi_1234567890_secret_abc123",
+  "paymentIntentId": "pi_1234567890"
+}
+```
+
+</Step>
+<Step>
+
+### Capture Payment - capturePaymentFunction
+
+**Purpose**: Openfront uses this function to capture authorized payments after order fulfillment
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paymentId` | `string` | Payment ID to capture |
+| `amount` | `number` | Amount to capture in cents |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | Capture status from gateway |
+| `amount` | `number` | Actual amount captured |
+| `data` | `object` | Complete response data from gateway |
+
+```typescript tab="Implementation"
+export async function capturePaymentFunction({ paymentId, amount }) {
+  const stripe = getStripeClient();
+
+  const paymentIntent = await stripe.paymentIntents.capture(paymentId, {
+    amount_to_capture: amount,
+  });
+
+  return {
+    status: paymentIntent.status,
+    amount: paymentIntent.amount_captured,
+    data: paymentIntent,
+  };
+}
+```
+
+```json tab="Response"
+{
+  "status": "captured",
+  "amount": 5000,
+  "data": {
+    "id": "pi_1234567890",
+    "amount": 5000,
+    "amount_captured": 5000,
+    "currency": "usd",
+    "status": "captured"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Refund Payment - refundPaymentFunction
+
+**Purpose**: Openfront uses this function to process refunds for captured payments
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paymentId` | `string` | Original payment ID to refund |
+| `amount` | `number` | Refund amount in cents |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | Refund status from gateway |
+| `amount` | `number` | Actual amount refunded |
+| `data` | `object` | Complete refund data from gateway |
+
+```typescript tab="Implementation"
+export async function refundPaymentFunction({ paymentId, amount }) {
+  const stripe = getStripeClient();
+
+  const refund = await stripe.refunds.create({
+    payment_intent: paymentId,
+    amount,
+  });
+
+  return {
+    status: refund.status,
+    amount: refund.amount,
+    data: refund,
+  };
+}
+```
+
+```json tab="Response"
+{
+  "status": "succeeded",
+  "amount": 5000,
+  "data": {
+    "id": "re_1234567890",
+    "amount": 5000,
+    "currency": "usd",
+    "payment_intent": "pi_1234567890",
+    "status": "succeeded"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Get Payment Status - getPaymentStatusFunction
+
+**Purpose**: Openfront uses this function to check current payment status for order updates
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paymentId` | `string` | Payment ID to check |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | Payment status: `requires_payment_method`, `requires_confirmation`, `succeeded`, `canceled` |
+| `amount` | `number` | Payment amount |
+| `data` | `object` | Complete payment data from gateway |
+
+```typescript tab="Implementation"
+export async function getPaymentStatusFunction({ paymentId }) {
+  const stripe = getStripeClient();
+
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentId);
+
+  return {
+    status: paymentIntent.status,
+    amount: paymentIntent.amount,
+    data: paymentIntent,
+  };
+}
+```
+
+```json tab="Response"
+{
+  "status": "succeeded",
+  "amount": 5000,
+  "data": {
+    "id": "pi_1234567890",
+    "amount": 5000,
+    "currency": "usd",
+    "status": "succeeded",
+    "created": 1640995200
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Generate Payment Link - generatePaymentLinkFunction
+
+**Purpose**: Openfront uses this function to create dashboard links for payment management
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `paymentId` | `string` | Payment ID to create link for |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | `string` | URL to payment in gateway dashboard |
+
+```typescript tab="Implementation"
+export async function generatePaymentLinkFunction({ paymentId }) {
+  return `https://dashboard.stripe.com/payments/${paymentId}`;
+}
+```
+
+```json tab="Response"
+{
+  "url": "https://dashboard.stripe.com/payments/pi_1234567890"
+}
+```
+
+</Step>
+<Step>
+
+### Handle Webhook - handleWebhookFunction
+
+**Purpose**: Openfront uses this function to process webhook notifications from your payment gateway
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `event` | `object` | Webhook event payload from gateway |
+| `headers` | `object` | HTTP headers from webhook request |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `isValid` | `boolean` | Whether webhook signature is valid |
+| `event` | `object` | Processed event data |
+| `type` | `string` | Event type (payment_intent.succeeded, etc.) |
+| `resource` | `object` | Main resource from the event |
+
+```typescript tab="Implementation"
+export async function handleWebhookFunction({ event, headers }) {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('Stripe webhook secret is not configured');
+  }
+
+  const stripe = getStripeClient();
+
+  try {
+    const stripeEvent = stripe.webhooks.constructEvent(
+      JSON.stringify(event),
+      headers['stripe-signature'],
+      webhookSecret
+    );
+
+    return {
+      isValid: true,
+      event: stripeEvent,
+      type: stripeEvent.type,
+      resource: stripeEvent.data.object,
+    };
+  } catch (err) {
+    throw new Error(`Webhook signature verification failed: ${err.message}`);
+  }
+}
+```
+
+```json tab="Response"
+{
+  "isValid": true,
+  "event": {
+    "id": "evt_1234567890",
+    "type": "payment_intent.succeeded",
+    "data": {
+      "object": {
+        "id": "pi_1234567890",
+        "status": "succeeded"
+      }
+    }
+  },
+  "type": "payment_intent.succeeded",
+  "resource": {
+    "id": "pi_1234567890",
+    "status": "succeeded"
+  }
+}
+```
+
+</Step>
+</Steps>
+
+## Creating Your Custom Payment Integration
+
+### Step 1: Create Integration File
+
+Create your integration in `/features/integrations/payment/`:
+
+```typescript
+// /features/integrations/payment/my-gateway.ts
+
+const getGatewayClient = () => {
+  const apiKey = process.env.MY_GATEWAY_API_KEY;
+  if (!apiKey) {
+    throw new Error("My Gateway API key not configured");
+  }
+  return new MyGatewaySDK({
+    apiKey,
+    environment: process.env.NODE_ENV === 'production' ? 'live' : 'sandbox'
+  });
+};
+
+export async function createPaymentFunction({ cart, amount, currency }) {
+  const gateway = getGatewayClient();
+
+  const payment = await gateway.payments.create({
+    amount: amount,
+    currency: currency.toLowerCase(),
+    metadata: {
+      cartId: cart.id,
+      source: 'openfront'
+    }
+  });
+
+  return {
+    clientSecret: payment.client_secret,
+    paymentIntentId: payment.id,
+  };
+}
+
+export async function capturePaymentFunction({ paymentId, amount }) {
+  const gateway = getGatewayClient();
+
+  const capture = await gateway.payments.capture(paymentId, {
+    amount: amount,
+  });
+
+  return {
+    status: capture.status,
+    amount: capture.amount_captured,
+    data: capture,
+  };
+}
+
+export async function refundPaymentFunction({ paymentId, amount }) {
+  const gateway = getGatewayClient();
+
+  const refund = await gateway.refunds.create({
+    payment_id: paymentId,
+    amount,
+  });
+
+  return {
+    status: refund.status,
+    amount: refund.amount,
+    data: refund,
+  };
+}
+
+export async function getPaymentStatusFunction({ paymentId }) {
+  const gateway = getGatewayClient();
+
+  const payment = await gateway.payments.retrieve(paymentId);
+
+  return {
+    status: payment.status,
+    amount: payment.amount,
+    data: payment,
+  };
+}
+
+export async function generatePaymentLinkFunction({ paymentId }) {
+  const baseUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://dashboard.mygateway.com'
+    : 'https://sandbox-dashboard.mygateway.com';
+    
+  return `${baseUrl}/payments/${paymentId}`;
+}
+
+export async function handleWebhookFunction({ event, headers }) {
+  const webhookSecret = process.env.MY_GATEWAY_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('My Gateway webhook secret is not configured');
+  }
+
+  const gateway = getGatewayClient();
+
+  try {
+    const signature = headers['x-mygateway-signature'];
+    const isValid = gateway.webhooks.verify(
+      JSON.stringify(event),
+      signature,
+      webhookSecret
+    );
+
+    if (!isValid) {
+      throw new Error('Invalid webhook signature');
+    }
+
+    return {
+      isValid: true,
+      event,
+      type: event.type,
+      resource: event.data,
+    };
+  } catch (err) {
+    throw new Error(`Webhook verification failed: ${err.message}`);
+  }
+}
+```
+
+### Step 2: Register the Integration
+
+Add your integration to the payment adapters registry:
+
+```typescript
+// /features/integrations/payment/index.ts
+export const paymentProviderAdapters = {
+  stripe: () => import("./stripe"),
+  paypal: () => import("./paypal"),
+  manual: () => import("./manual"),
+  "my-gateway": () => import("./my-gateway"), // Add your integration
+};
+```
+
+### Step 3: Configure Environment Variables
+
+Add the required environment variables to your `.env` file:
+
+```bash
+# My Gateway Configuration
+MY_GATEWAY_API_KEY=your_api_key_here
+MY_GATEWAY_WEBHOOK_SECRET=your_webhook_secret_here
+```
+
+### Step 4: Create Payment Provider
+
+In the Openfront admin panel:
+
+1. Navigate to **Settings > Payment Providers**
+2. Click **"Create Payment Provider"**
+3. Configure your provider:
+
+```
+Provider Configuration:
+├── Name: "My Custom Gateway"
+├── isActive: true
+├── createPaymentFunction: "my-gateway"
+├── capturePaymentFunction: "my-gateway"
+├── refundPaymentFunction: "my-gateway"
+├── getPaymentStatusFunction: "my-gateway"
+├── generatePaymentLinkFunction: "my-gateway"
+├── handleWebhookFunction: "my-gateway"
+└── metadata: {
+    "environment": "sandbox",
+    "supportedCurrencies": ["USD", "EUR", "GBP"]
+  }
+```
+
+## Error Handling Best Practices
+
+### Gateway Errors
+
+Always handle gateway-specific errors appropriately:
+
+```typescript
+export async function createPaymentFunction({ cart, amount, currency }) {
+  try {
+    const gateway = getGatewayClient();
+    const payment = await gateway.payments.create({
+      amount,
+      currency: currency.toLowerCase(),
+    });
+    
+    return {
+      clientSecret: payment.client_secret,
+      paymentIntentId: payment.id,
+    };
+  } catch (error) {
+    // Log the error for debugging
+    console.error('Payment creation failed:', error);
+    
+    // Transform gateway errors to standard format
+    if (error.code === 'INSUFFICIENT_FUNDS') {
+      throw new Error('Insufficient funds for this payment');
+    }
+    
+    if (error.code === 'INVALID_CURRENCY') {
+      throw new Error(`Currency ${currency} is not supported`);
+    }
+    
+    // Generic error handling
+    throw new Error(`Payment failed: ${error.message}`);
+  }
+}
+```
+
+### Webhook Security
+
+Always verify webhook signatures to prevent fraud:
+
+```typescript
+export async function handleWebhookFunction({ event, headers }) {
+  const webhookSecret = process.env.MY_GATEWAY_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('Webhook secret not configured');
+  }
+
+  const signature = headers['x-mygateway-signature'];
+  if (!signature) {
+    throw new Error('Missing webhook signature');
+  }
+
+  const gateway = getGatewayClient();
+  const isValid = gateway.webhooks.verify(
+    JSON.stringify(event),
+    signature,
+    webhookSecret
+  );
+
+  if (!isValid) {
+    throw new Error('Invalid webhook signature');
+  }
+
+  return {
+    isValid: true,
+    event,
+    type: event.type,
+    resource: event.data,
+  };
+}
+```
+
+## Testing Your Payment Integration
+
+### Unit Testing
+
+Create comprehensive tests for your payment functions:
+
+```typescript
+// /features/integrations/payment/my-gateway.test.ts
+import { createPaymentFunction, capturePaymentFunction } from './my-gateway';
+
+describe('My Gateway Integration', () => {
+  test('should create payment successfully', async () => {
+    const result = await createPaymentFunction({
+      cart: { id: 'cart_123' },
+      amount: 5000,
+      currency: 'USD'
+    });
+
+    expect(result.clientSecret).toBeDefined();
+    expect(result.paymentIntentId).toBeDefined();
+  });
+
+  test('should capture payment successfully', async () => {
+    const result = await capturePaymentFunction({
+      paymentId: 'pi_123',
+      amount: 5000
+    });
+
+    expect(result.status).toBe('captured');
+    expect(result.amount).toBe(5000);
+  });
+});
+```
+
+### Integration Testing
+
+Test the complete payment flow:
+
+1. Create a payment
+2. Simulate customer completion
+3. Capture the payment
+4. Test refund functionality
+5. Verify webhook handling
+
+## Deployment Checklist
+
+### Pre-deployment Testing
+
+- [ ] Test all payment functions with test credentials
+- [ ] Verify error handling for various scenarios
+- [ ] Test webhook signature verification
+- [ ] Validate currency and amount handling
+- [ ] Test refund and capture operations
+
+### Production Deployment
+
+- [ ] Switch to production API credentials
+- [ ] Update webhook endpoints in gateway dashboard
+- [ ] Set up monitoring and alerting
+- [ ] Configure rate limiting if needed
+- [ ] Test with small real transactions
+
+### Post-deployment Monitoring
+
+- [ ] Monitor payment success rates
+- [ ] Track response times and performance
+- [ ] Set up alerts for high error rates
+- [ ] Regular audit of transaction data
+- [ ] Monitor webhook delivery success
+
+Your custom payment integration is now ready to process payments through Openfront while maintaining security and reliability standards.

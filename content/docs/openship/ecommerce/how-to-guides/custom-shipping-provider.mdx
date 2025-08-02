@@ -1,0 +1,589 @@
+---
+title: Creating a Custom Shipping Provider
+description: Build custom shipping integrations for Openfront
+icon: Truck
+---
+
+Learn how to create custom shipping providers to integrate any shipping carrier or fulfillment service with Openfront. This guide covers both file-based adapters and HTTP endpoint integrations.
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Overview
+
+Openfront's shipping provider system allows you to integrate any shipping carrier through a standardized interface. You can either:
+- **File-based adapter**: Create a local adapter module
+- **HTTP endpoint**: Use external API endpoints for fulfillment services
+
+## Prerequisites
+
+Before creating a custom shipping provider:
+- Understanding of JavaScript/TypeScript
+- Access to shipping carrier API documentation
+- Development environment with Openfront
+- API credentials for your shipping service
+
+## Understanding the Shipping Provider Interface
+
+Every shipping provider must implement these core functions:
+
+```typescript
+interface ShippingProviderAdapter {
+  getRatesFunction(params: RatesParams): Promise<RateResult[]>;
+  createLabelFunction(params: LabelParams): Promise<LabelResult>;
+  validateAddressFunction(params: AddressParams): Promise<ValidationResult>;
+  trackShipmentFunction(params: TrackingParams): Promise<TrackingResult>;
+  cancelLabelFunction(params: CancelParams): Promise<CancelResult>;
+}
+```
+
+## Option 1: File-Based Adapter
+
+<Steps>
+<Step>
+
+### Create Adapter File
+
+Create your adapter in `/features/integrations/shipping/`:
+
+```typescript
+// /features/integrations/shipping/my-custom-carrier.ts
+
+export async function getRatesFunction({ provider, order, dimensions }) {
+  try {
+    // Initialize your shipping carrier client
+    const carrier = new MyShippingCarrier({
+      apiKey: provider.accessToken,
+      environment: provider.metadata.environment || 'sandbox'
+    });
+
+    // Prepare shipment data
+    const shipment = {
+      from: provider.fromAddress,
+      to: order.shippingAddress,
+      packages: dimensions.map(dim => ({
+        length: dim.length,
+        width: dim.width,
+        height: dim.height,
+        weight: dim.weight,
+        units: dim.units
+      }))
+    };
+
+    // Get rates from carrier
+    const rates = await carrier.getRates(shipment);
+
+    // Transform to Openfront format
+    return rates.map(rate => ({
+      carrierId: rate.carrier_code,
+      serviceType: rate.service_code,
+      serviceName: rate.service_name,
+      amount: Math.round(rate.total_cost * 100), // Convert to cents
+      currency: rate.currency,
+      estimatedDays: rate.estimated_delivery_days,
+      metadata: {
+        rateId: rate.id,
+        transitTime: rate.transit_time
+      }
+    }));
+  } catch (error) {
+    console.error('Rate calculation failed:', error);
+    throw new Error(`Rate calculation failed: ${error.message}`);
+  }
+}
+
+export async function createLabelFunction({ provider, order, rateId, dimensions, lineItems }) {
+  try {
+    const carrier = new MyShippingCarrier({
+      apiKey: provider.accessToken,
+      environment: provider.metadata.environment
+    });
+
+    // Prepare shipment data
+    const shipmentData = {
+      from: provider.fromAddress,
+      to: order.shippingAddress,
+      packages: dimensions,
+      rateId: rateId,
+      contents: lineItems.map(item => ({
+        description: item.productVariant.product.title,
+        quantity: item.quantity,
+        value: item.unitPrice,
+        weight: item.productVariant.weight || 1,
+        sku: item.productVariant.sku
+      }))
+    };
+
+    // Create shipping label
+    const label = await carrier.createLabel(shipmentData);
+
+    return {
+      labelId: label.id,
+      trackingNumber: label.tracking_number,
+      labelUrl: label.label_url,
+      carrierId: label.carrier_id,
+      serviceType: label.service_type,
+      cost: Math.round(label.cost * 100), // Convert to cents
+      metadata: {
+        labelFormat: label.format,
+        estimatedDelivery: label.estimated_delivery_date
+      }
+    };
+  } catch (error) {
+    console.error('Label creation failed:', error);
+    throw new Error(`Label creation failed: ${error.message}`);
+  }
+}
+
+export async function validateAddressFunction({ provider, address }) {
+  try {
+    const carrier = new MyShippingCarrier({
+      apiKey: provider.accessToken,
+      environment: provider.metadata.environment
+    });
+
+    const validation = await carrier.validateAddress({
+      street1: address.address1,
+      street2: address.address2,
+      city: address.city,
+      state: address.province,
+      zip: address.postalCode,
+      country: address.countryCode
+    });
+
+    return {
+      isValid: validation.is_valid,
+      correctedAddress: validation.is_valid ? {
+        address1: validation.normalized_address.street1,
+        address2: validation.normalized_address.street2,
+        city: validation.normalized_address.city,
+        province: validation.normalized_address.state,
+        postalCode: validation.normalized_address.zip,
+        countryCode: validation.normalized_address.country
+      } : null,
+      messages: validation.messages || []
+    };
+  } catch (error) {
+    console.error('Address validation failed:', error);
+    return {
+      isValid: false,
+      correctedAddress: null,
+      messages: [`Address validation failed: ${error.message}`]
+    };
+  }
+}
+
+export async function trackShipmentFunction({ provider, trackingNumber }) {
+  try {
+    const carrier = new MyShippingCarrier({
+      apiKey: provider.accessToken,
+      environment: provider.metadata.environment
+    });
+
+    const tracking = await carrier.trackShipment(trackingNumber);
+
+    // Map carrier status to Openfront status
+    const statusMap = {
+      'created': 'created',
+      'picked_up': 'in_transit',
+      'in_transit': 'in_transit',
+      'out_for_delivery': 'out_for_delivery',
+      'delivered': 'delivered',
+      'exception': 'exception',
+      'returned': 'returned'
+    };
+
+    return {
+      status: statusMap[tracking.status] || 'unknown',
+      estimatedDelivery: tracking.estimated_delivery_date,
+      actualDelivery: tracking.delivered_date,
+      events: tracking.tracking_events.map(event => ({
+        timestamp: event.occurred_at,
+        status: statusMap[event.status] || event.status,
+        location: event.city_locality ? `${event.city_locality}, ${event.state_province}` : '',
+        description: event.description
+      }))
+    };
+  } catch (error) {
+    console.error('Tracking failed:', error);
+    throw new Error(`Tracking failed: ${error.message}`);
+  }
+}
+
+export async function cancelLabelFunction({ provider, labelId }) {
+  try {
+    const carrier = new MyShippingCarrier({
+      apiKey: provider.accessToken,
+      environment: provider.metadata.environment
+    });
+
+    const cancellation = await carrier.cancelLabel(labelId);
+
+    return {
+      success: cancellation.status === 'cancelled',
+      refundAmount: cancellation.refund_amount ? Math.round(cancellation.refund_amount * 100) : 0,
+      refundId: cancellation.refund_id,
+      message: cancellation.message
+    };
+  } catch (error) {
+    console.error('Label cancellation failed:', error);
+    throw new Error(`Label cancellation failed: ${error.message}`);
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Register the Adapter
+
+Add your adapter to the adapter registry:
+
+```typescript
+// /features/integrations/shipping/index.ts
+export const shippingProviderAdapters = {
+  shippo: () => import("./shippo"),
+  shipengine: () => import("./shipengine"),
+  manual: () => import("./manual"),
+  "my-custom-carrier": () => import("./my-custom-carrier"), // Add your adapter
+};
+```
+
+</Step>
+<Step>
+
+### Create Shipping Provider
+
+In the Openfront admin:
+
+1. Go to **Shipping Providers**
+2. Click **"Create Provider"**
+3. Configure settings:
+
+```
+Provider Configuration:
+├── Name: "My Custom Carrier"
+├── isActive: true
+├── getRatesFunction: "my-custom-carrier"
+├── createLabelFunction: "my-custom-carrier"
+├── validateAddressFunction: "my-custom-carrier"
+├── trackShipmentFunction: "my-custom-carrier"
+├── cancelLabelFunction: "my-custom-carrier"
+├── accessToken: "your-api-key"
+├── fromAddress: {
+    "company": "Your Company",
+    "address1": "123 Warehouse St",
+    "city": "Warehouse City",
+    "province": "State",
+    "postalCode": "12345",
+    "countryCode": "US"
+  }
+└── metadata: {
+    "environment": "sandbox",
+    "supportedServices": ["ground", "express", "overnight"]
+  }
+```
+
+</Step>
+</Steps>
+
+## Option 2: HTTP Endpoint Integration
+
+<Steps>
+<Step>
+
+### Deploy HTTP Endpoints
+
+Create external API endpoints that match Openfront's interface:
+
+```typescript
+// Example: Express.js endpoint for getRates
+app.post('/api/shipping/rates', async (req, res) => {
+  try {
+    const { provider, order, dimensions } = req.body;
+    
+    // Your rate calculation logic
+    const rates = await yourShippingService.calculateRates({
+      origin: provider.fromAddress,
+      destination: order.shippingAddress,
+      packages: dimensions,
+      credentials: provider.accessToken
+    });
+    
+    res.json(rates.map(rate => ({
+      carrierId: rate.carrier,
+      serviceType: rate.service,
+      serviceName: rate.name,
+      amount: rate.price,
+      currency: rate.currency,
+      estimatedDays: rate.transitTime
+    })));
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/shipping/create-label', async (req, res) => {
+  try {
+    const { provider, order, rateId, dimensions, lineItems } = req.body;
+    
+    const label = await yourShippingService.createLabel({
+      rateId,
+      order,
+      packages: dimensions,
+      contents: lineItems
+    });
+    
+    res.json({
+      labelId: label.id,
+      trackingNumber: label.tracking,
+      labelUrl: label.labelUrl,
+      carrierId: label.carrier,
+      serviceType: label.service,
+      cost: label.cost
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Implement other endpoints...
+```
+
+</Step>
+<Step>
+
+### Configure HTTP Provider
+
+Create provider with HTTP endpoint URLs:
+
+```
+Provider Configuration:
+├── Name: "My HTTP Carrier"
+├── isActive: true
+├── getRatesFunction: "https://api.mycarrier.com/shipping/rates"
+├── createLabelFunction: "https://api.mycarrier.com/shipping/create-label"
+├── validateAddressFunction: "https://api.mycarrier.com/shipping/validate"
+├── trackShipmentFunction: "https://api.mycarrier.com/shipping/track"
+├── cancelLabelFunction: "https://api.mycarrier.com/shipping/cancel"
+├── accessToken: "your-api-token"
+└── fromAddress: { ... }
+```
+
+</Step>
+</Steps>
+
+## Handling Dimensions and Units
+
+Openfront standardizes package dimensions. Your adapter should handle unit conversions:
+
+```typescript
+function convertDimensions(dimensions, targetUnits) {
+  return dimensions.map(dim => {
+    const converted = { ...dim };
+    
+    // Convert length units
+    if (dim.units.length !== targetUnits.length) {
+      const lengthMultiplier = dim.units.length === 'cm' ? 0.393701 : 2.54;
+      converted.length *= lengthMultiplier;
+      converted.width *= lengthMultiplier;
+      converted.height *= lengthMultiplier;
+    }
+    
+    // Convert weight units
+    if (dim.units.weight !== targetUnits.weight) {
+      const weightMultipliers = {
+        'lb_to_kg': 0.453592,
+        'kg_to_lb': 2.20462,
+        'oz_to_g': 28.3495,
+        'g_to_oz': 0.035274
+      };
+      
+      const key = `${dim.units.weight}_to_${targetUnits.weight}`;
+      if (weightMultipliers[key]) {
+        converted.weight *= weightMultipliers[key];
+      }
+    }
+    
+    converted.units = targetUnits;
+    return converted;
+  });
+}
+```
+
+## Testing Your Shipping Provider
+
+<Steps>
+<Step>
+
+### Rate Calculation Testing
+
+```typescript
+// Test rate calculation
+const testOrder = {
+  shippingAddress: {
+    address1: '123 Test St',
+    city: 'Test City',
+    province: 'CA',
+    postalCode: '90210',
+    countryCode: 'US'
+  }
+};
+
+const testDimensions = [{
+  length: 10,
+  width: 8,
+  height: 6,
+  weight: 2,
+  units: { length: 'in', weight: 'lb' }
+}];
+
+const rates = await getRatesFunction({
+  provider: testProvider,
+  order: testOrder,
+  dimensions: testDimensions
+});
+
+console.log('Calculated rates:', rates);
+```
+
+</Step>
+<Step>
+
+### Label Creation Testing
+
+Test the complete shipping flow:
+
+1. Calculate rates
+2. Select a rate
+3. Create shipping label
+4. Verify tracking number
+5. Test label cancellation
+
+</Step>
+<Step>
+
+### Address Validation Testing
+
+Test various address scenarios:
+- Valid addresses
+- Invalid addresses
+- International addresses
+- PO boxes and military addresses
+
+</Step>
+</Steps>
+
+## Error Handling Best Practices
+
+### Network Errors
+
+```typescript
+// Implement retry logic for network failures
+async function apiCallWithRetry(apiCall, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await apiCall();
+    } catch (error) {
+      if (attempt === maxRetries || !isRetryableError(error)) {
+        throw error;
+      }
+      
+      // Exponential backoff
+      await new Promise(resolve => 
+        setTimeout(resolve, Math.pow(2, attempt) * 1000)
+      );
+    }
+  }
+}
+
+function isRetryableError(error) {
+  return error.code === 'NETWORK_ERROR' || 
+         error.status >= 500 || 
+         error.code === 'TIMEOUT';
+}
+```
+
+### Validation Errors
+
+```typescript
+// Validate required fields
+function validateShipmentData(order, dimensions) {
+  if (!order.shippingAddress) {
+    throw new Error('Shipping address is required');
+  }
+  
+  if (!dimensions || dimensions.length === 0) {
+    throw new Error('Package dimensions are required');
+  }
+  
+  dimensions.forEach((dim, index) => {
+    if (!dim.weight || dim.weight <= 0) {
+      throw new Error(`Invalid weight for package ${index + 1}`);
+    }
+  });
+}
+```
+
+## Security Considerations
+
+### API Key Management
+
+- Store API keys securely in provider configuration
+- Use environment-specific keys (sandbox vs production)
+- Rotate API keys regularly
+- Monitor for unauthorized usage
+
+### Address Data Protection
+
+- Don't log complete addresses in production
+- Implement proper data retention policies
+- Comply with regional privacy regulations
+- Use secure communication protocols
+
+## Monitoring and Logging
+
+### Key Metrics to Monitor
+
+- Rate calculation success rates
+- Label creation success rates
+- Average response times
+- Error rates by operation type
+
+### Logging Best Practices
+
+```typescript
+// Log important events without sensitive data
+console.log(`Rates calculated for order ${order.id}: ${rates.length} options`);
+console.log(`Label created: ${labelId} for tracking ${trackingNumber}`);
+
+// Don't log sensitive information
+// console.log(`API Key: ${apiKey}`); // ❌ Never do this
+// console.log(`Full address: ${JSON.stringify(address)}`); // ❌ Avoid in production
+```
+
+## Deployment Checklist
+
+### Pre-deployment Testing
+
+- [ ] Test all functions with various scenarios
+- [ ] Verify error handling for edge cases
+- [ ] Test with production-like data volumes
+- [ ] Validate address handling for target regions
+- [ ] Test webhook endpoints (if applicable)
+
+### Production Deployment
+
+- [ ] Switch to production API credentials
+- [ ] Update environment configurations
+- [ ] Set up monitoring and alerting
+- [ ] Document configuration for team members
+- [ ] Plan rollback procedures
+
+### Post-deployment Monitoring
+
+- [ ] Monitor success rates for all operations
+- [ ] Track response times and performance
+- [ ] Set up alerts for high error rates
+- [ ] Regular audit of shipping costs vs actual rates
+
+Creating custom shipping providers enables you to integrate any shipping carrier while maintaining Openfront's consistent rate calculation and fulfillment experience.

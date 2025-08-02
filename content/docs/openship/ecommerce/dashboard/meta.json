@@ -1,0 +1,9 @@
+{
+  "title": "Dashboard",
+  "description": "Admin dashboard for managing your Openfront platform",
+  "icon": "LayoutDashboard",
+  "pages": [
+    "index",
+    "custom"
+  ]
+}

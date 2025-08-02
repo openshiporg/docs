@@ -1,0 +1,572 @@
+---
+title: Creating a Custom Payment Provider
+description: Build custom payment integrations for Openfront using HTTP endpoints
+icon: CreditCard
+---
+
+Learn how to create custom payment providers to integrate any payment gateway with Openfront. This guide covers building HTTP endpoints that Openfront can call to process payments.
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Overview
+
+Custom payment providers in Openfront work by implementing HTTP endpoints that match Openfront's payment processing interface. When customers make payments, Openfront calls your endpoints to handle the actual payment processing with your chosen gateway.
+
+## How Custom Payment Integrations Work
+
+Instead of built-in integrations like `"stripe"` or `"paypal"`, custom payment providers use HTTP endpoints:
+
+**Built-in Integration:**
+```
+createPaymentFunction: "stripe"
+```
+
+**Custom HTTP Integration:**
+```
+createPaymentFunction: "https://your-api.com/api/create-payment"
+```
+
+When a payment is processed, Openfront sends a standardized payload to your endpoint and expects a specific response format.
+
+## Required HTTP Endpoints
+
+Your custom payment provider must implement these endpoints:
+
+<Steps>
+<Step>
+
+### Create Payment - `/api/create-payment`
+
+**Purpose**: Openfront uses this endpoint to initialize payment sessions when customers start checkout
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration and API keys |
+| `cart` | `{ id: string; total: number; currency: string; customer?: object }` | Cart information and customer details |
+| `amount` | `number` | Payment amount in cents |
+| `currency` | `string` | Currency code (USD, EUR, etc.) |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionData` | `object` | Payment session data for frontend (client secrets, etc.) |
+| `paymentId` | `string` | Unique payment identifier from your gateway |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, cart, amount, currency } = req.body;
+
+  try {
+    // Initialize your gateway with provider credentials
+    const gateway = new YourPaymentGateway({
+      apiKey: provider.credentials.apiKey,
+      environment: provider.credentials.environment
+    });
+
+    // Create payment intent/session
+    const paymentIntent = await gateway.createPayment({
+      amount: amount,
+      currency: currency,
+      orderId: cart.id,
+      customerEmail: cart.customer?.email,
+      metadata: {
+        cartId: cart.id,
+        source: 'openfront'
+      }
+    });
+
+    return res.json({
+      sessionData: {
+        paymentIntentId: paymentIntent.id,
+        clientSecret: paymentIntent.clientSecret,
+        publishableKey: provider.credentials.publishableKey
+      },
+      paymentId: paymentIntent.id
+    });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: `Payment creation failed: ${error.message}` 
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "sessionData": {
+    "paymentIntentId": "pi_1234567890",
+    "clientSecret": "pi_1234567890_secret_abc123",
+    "publishableKey": "pk_test_abc123"
+  },
+  "paymentId": "pi_1234567890"
+}
+```
+
+</Step>
+<Step>
+
+### Capture Payment - `/api/capture-payment`
+
+**Purpose**: Openfront uses this endpoint to capture authorized payments after order fulfillment
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration |
+| `paymentId` | `string` | Payment ID to capture |
+| `amount` | `number` | Amount to capture in cents |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether capture was successful |
+| `transactionId` | `string` | Transaction/capture ID from gateway |
+| `capturedAmount` | `number` | Actual amount captured |
+| `fees?` | `number` | Processing fees if available |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, paymentId, amount } = req.body;
+
+  try {
+    const gateway = new YourPaymentGateway({
+      apiKey: provider.credentials.apiKey,
+      environment: provider.credentials.environment
+    });
+
+    const capture = await gateway.capturePayment({
+      paymentId: paymentId,
+      amount: amount
+    });
+
+    return res.json({
+      success: capture.status === 'captured',
+      transactionId: capture.transactionId,
+      capturedAmount: capture.amount,
+      fees: capture.processingFees
+    });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: `Capture failed: ${error.message}` 
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "success": true,
+  "transactionId": "txn_1234567890",
+  "capturedAmount": 5000,
+  "fees": 175
+}
+```
+
+</Step>
+<Step>
+
+### Refund Payment - `/api/refund-payment`
+
+**Purpose**: Openfront uses this endpoint to process refunds for captured payments
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration |
+| `paymentId` | `string` | Original payment ID to refund |
+| `amount` | `number` | Refund amount in cents |
+| `reason?` | `string` | Refund reason |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether refund was successful |
+| `refundId` | `string` | Refund ID from gateway |
+| `refundedAmount` | `number` | Actual amount refunded |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, paymentId, amount, reason } = req.body;
+
+  try {
+    const gateway = new YourPaymentGateway({
+      apiKey: provider.credentials.apiKey,
+      environment: provider.credentials.environment
+    });
+
+    const refund = await gateway.refundPayment({
+      paymentId: paymentId,
+      amount: amount,
+      reason: reason || 'requested_by_customer'
+    });
+
+    return res.json({
+      success: refund.status === 'refunded',
+      refundId: refund.id,
+      refundedAmount: refund.amount
+    });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: `Refund failed: ${error.message}` 
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "success": true,
+  "refundId": "ref_1234567890",
+  "refundedAmount": 5000
+}
+```
+
+</Step>
+<Step>
+
+### Get Payment Status - `/api/get-payment-status`
+
+**Purpose**: Openfront uses this endpoint to check current payment status for order updates
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration |
+| `paymentId` | `string` | Payment ID to check |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `string` | Payment status: `pending`, `authorized`, `captured`, `failed`, `cancelled` |
+| `amount` | `number` | Payment amount |
+| `currency` | `string` | Payment currency |
+| `lastUpdated` | `string` | ISO timestamp of last update |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, paymentId } = req.body;
+
+  try {
+    const gateway = new YourPaymentGateway({
+      apiKey: provider.credentials.apiKey,
+      environment: provider.credentials.environment
+    });
+
+    const payment = await gateway.getPayment(paymentId);
+
+    // Map gateway status to Openfront status
+    const statusMap = {
+      'created': 'pending',
+      'authorized': 'authorized',
+      'captured': 'captured',
+      'failed': 'failed',
+      'cancelled': 'cancelled'
+    };
+
+    return res.json({
+      status: statusMap[payment.status] || 'pending',
+      amount: payment.amount,
+      currency: payment.currency,
+      lastUpdated: payment.updatedAt.toISOString()
+    });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: `Status check failed: ${error.message}` 
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "status": "captured",
+  "amount": 5000,
+  "currency": "USD",
+  "lastUpdated": "2024-01-15T14:30:00Z"
+}
+```
+
+</Step>
+<Step>
+
+### Generate Payment Link - `/api/generate-payment-link`
+
+**Purpose**: Openfront uses this endpoint to create dashboard links for payment management
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration |
+| `paymentId` | `string` | Payment ID to create link for |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | `string` | URL to payment in gateway dashboard |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, paymentId } = req.body;
+
+  try {
+    // Generate link to payment gateway dashboard
+    const baseUrl = provider.credentials.environment === 'live'
+      ? 'https://dashboard.yourgateway.com'
+      : 'https://sandbox-dashboard.yourgateway.com';
+    
+    const dashboardUrl = `${baseUrl}/payments/${paymentId}`;
+
+    return res.json({
+      url: dashboardUrl
+    });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: `Link generation failed: ${error.message}` 
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "url": "https://dashboard.yourgateway.com/payments/pi_1234567890"
+}
+```
+
+</Step>
+<Step>
+
+### Handle Webhook - `/api/handle-webhook`
+
+**Purpose**: Openfront uses this endpoint to process webhook notifications from your payment gateway
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `provider` | `{ name: string; credentials: object }` | Payment provider configuration |
+| `event` | `object` | Webhook event payload from gateway |
+| `headers` | `object` | HTTP headers from webhook request |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `verified` | `boolean` | Whether webhook signature is valid |
+| `eventType` | `string` | Type of event (payment.captured, payment.failed, etc.) |
+| `paymentId` | `string` | Payment ID from the event |
+| `shouldUpdatePayment` | `boolean` | Whether Openfront should update payment status |
+
+```typescript tab="Implementation"
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { provider, event, headers } = req.body;
+
+  try {
+    // Verify webhook signature
+    const gateway = new YourPaymentGateway({
+      apiKey: provider.credentials.apiKey,
+      webhookSecret: provider.credentials.webhookSecret
+    });
+
+    const signature = headers['x-gateway-signature'];
+    const isValid = gateway.verifyWebhookSignature(
+      JSON.stringify(event),
+      signature
+    );
+
+    if (!isValid) {
+      return res.status(403).json({ 
+        verified: false,
+        error: 'Invalid webhook signature' 
+      });
+    }
+
+    // Process webhook event
+    const eventType = event.type;
+    const paymentId = event.data.payment.id;
+
+    // Determine if Openfront should update payment status
+    const updateEvents = [
+      'payment.captured',
+      'payment.failed', 
+      'payment.cancelled',
+      'payment.refunded'
+    ];
+
+    return res.json({
+      verified: true,
+      eventType: eventType,
+      paymentId: paymentId,
+      shouldUpdatePayment: updateEvents.includes(eventType)
+    });
+  } catch (error) {
+    return res.status(400).json({
+      verified: false,
+      error: error.message
+    });
+  }
+}
+```
+
+```json tab="Response"
+{
+  "verified": true,
+  "eventType": "payment.captured",
+  "paymentId": "pi_1234567890",
+  "shouldUpdatePayment": true
+}
+```
+
+</Step>
+</Steps>
+
+## Testing Your Custom Payment Provider
+
+### Step 1: Set Up Demo Integration
+
+Before connecting to your live payment gateway, set up a demo integration for testing:
+
+1. **Create demo endpoints** that return mock responses
+2. **Test the complete flow** with sample data
+3. **Verify webhook handling** with test events
+4. **Replace URLs** with live endpoints once tested
+
+### Step 2: Create Payment Provider Platform
+
+In Openfront admin:
+
+1. Navigate to **Settings > Payment Providers**
+2. Click **"Create Provider Platform"**
+3. Configure your platform:
+
+```
+Platform Configuration:
+├── Name: "My Custom Gateway"
+├── createPaymentFunction: "https://your-api.com/api/create-payment"
+├── capturePaymentFunction: "https://your-api.com/api/capture-payment"
+├── refundPaymentFunction: "https://your-api.com/api/refund-payment"
+├── getPaymentStatusFunction: "https://your-api.com/api/get-payment-status"
+├── generatePaymentLinkFunction: "https://your-api.com/api/generate-payment-link"
+└── handleWebhookFunction: "https://your-api.com/api/handle-webhook"
+```
+
+### Step 3: Create Payment Provider Instance
+
+1. Click **"Create Provider"** under your platform
+2. Configure credentials:
+
+```json
+{
+  "apiKey": "your-gateway-api-key",
+  "publishableKey": "your-gateway-publishable-key",
+  "webhookSecret": "your-webhook-secret",
+  "environment": "sandbox"
+}
+```
+
+3. **Assign to regions** where this provider should be available
+4. **Test payments** in your store
+
+### Step 4: Production Deployment
+
+Once testing is complete:
+
+1. **Update environment** credentials to production
+2. **Switch endpoint URLs** to production endpoints
+3. **Configure webhook URLs** in your gateway dashboard
+4. **Monitor payments** and error rates
+
+## Error Handling Best Practices
+
+### Endpoint Error Responses
+
+Always return appropriate HTTP status codes:
+
+```typescript
+// Success
+return res.status(200).json({ success: true, ... });
+
+// Client error (invalid request)
+return res.status(400).json({ error: "Invalid amount" });
+
+// Authentication error
+return res.status(401).json({ error: "Invalid API key" });
+
+// Server error
+return res.status(500).json({ error: "Gateway unavailable" });
+```
+
+### Webhook Security
+
+Always verify webhook signatures to prevent fraud:
+
+```typescript
+const isValid = gateway.verifyWebhookSignature(payload, signature);
+if (!isValid) {
+  return res.status(403).json({ 
+    verified: false,
+    error: 'Invalid signature' 
+  });
+}
+```
+
+### Logging and Monitoring
+
+Log important events without exposing sensitive data:
+
+```typescript
+// Good: Log without sensitive data
+console.log(`Payment ${paymentId} created for amount ${amount}`);
+
+// Bad: Never log credentials
+// console.log(`API Key: ${apiKey}`);
+```
+
+Your custom payment provider is now ready to process payments through Openfront while maintaining security and reliability standards.

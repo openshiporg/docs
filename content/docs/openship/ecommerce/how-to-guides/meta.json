@@ -1,0 +1,9 @@
+{
+  "title": "How-to guides",
+  "pages": [
+    "create-custom-shop",
+    "create-custom-channel", 
+    "integrate-shop-platform",
+    "integrate-channel-platform"
+  ]
+}

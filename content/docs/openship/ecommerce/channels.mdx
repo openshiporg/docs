@@ -1,0 +1,237 @@
+---
+title: Channels
+description: Understanding channel platforms and channels in Openship
+icon: Radio
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openship uses a two-tier system for connecting to fulfillment providers: **Channel Platforms** (templates) and **Channels** (instances). Understanding this distinction is crucial for setting up your fulfillment network correctly.
+
+import ChannelFlowDiagram from "@/components/channel-flow-diagram";
+
+<ChannelFlowDiagram />
+
+## Channel Platforms vs Channels
+
+### Channel Platforms (Templates)
+
+A **Channel Platform** is a reusable template that defines how Openship integrates with a specific type of fulfillment provider. Think of it as a blueprint or configuration preset for purchase and fulfillment operations.
+
+**What Channel Platforms contain:**
+- Integration function mappings (which code to run for different operations)
+- OAuth credentials for app-based installations
+- Default settings for the fulfillment provider type
+
+**Examples of Channel Platforms:**
+- **Shopify Platform** - Template for purchasing from Shopify stores
+- **3PL Platform** - Template for warehouse/3PL providers
+- **Supplier Platform** - Template for direct supplier integrations
+- **Demo Platform** - Template for testing custom fulfillment integrations
+- **Custom Platform** - Template with HTTP endpoints for custom fulfillment systems
+
+### Channels (Instances)
+
+A **Channel** is an actual connection to a specific fulfillment provider or supplier account. It uses a Channel Platform template but contains the unique credentials and settings for that particular provider.
+
+**What Channels contain:**
+- Reference to which Channel Platform to use
+- Provider-specific credentials (domain, access token, API keys)
+- Channel name and metadata
+- Custom configuration overrides
+
+**Examples of Channels:**
+- **"Main Supplier"** - Uses Shopify Platform, connects to `supplier.myshopify.com`
+- **"3PL Warehouse"** - Uses 3PL Platform, connects to warehouse API
+- **"Demo Channel"** - Uses Demo Platform for testing
+
+## How Channels Work
+
+<Steps>
+<Step>
+
+### Create Channel Platform (Template)
+
+First, you create a Channel Platform that defines the fulfillment integration method:
+
+```
+Channel Platform: "Shopify Fulfillment Platform"
+├── searchProductsFunction: "shopify"
+├── getProductFunction: "shopify"
+├── createPurchaseFunction: "shopify"
+├── createWebhookFunction: "shopify"
+└── createTrackingWebhookHandler: "shopify"
+```
+
+All function values point to the built-in Shopify channel integration (`/integrations/channel/shopify.ts`).
+
+</Step>
+<Step>
+
+### Create Channels (Instances)
+
+Then, you create individual channels that use this platform:
+
+```
+Channel: "Supplier A"               Channel: "Supplier B"
+├── Platform: Shopify Platform      ├── Platform: Shopify Platform  
+├── Domain: supplier-a.myshopify.com├── Domain: supplier-b.myshopify.com
+├── Access Token: abc123...         ├── Access Token: xyz789...
+└── Name: "Supplier A"              └── Name: "Supplier B"
+```
+
+Both channels use the same integration logic (Shopify Platform) but connect to different suppliers with different credentials.
+
+</Step>
+<Step>
+
+### Function Execution
+
+When Openship needs to create a purchase in "Supplier A":
+
+1. **Lookup**: Find channel's platform → "Shopify Platform"
+2. **Check function**: `createPurchaseFunction` = "shopify" 
+3. **Import**: Load `/integrations/channel/shopify.ts`
+4. **Execute**: Call `createPurchaseFunction()` with channel's credentials
+5. **Connect**: Make API calls to `supplier-a.myshopify.com` to create purchase order
+
+</Step>
+</Steps>
+
+## Platform Types
+
+### Built-in Platform Presets
+
+Openship comes with preset templates for popular fulfillment platforms:
+
+- **Shopify** - Purchase from Shopify stores (dropshipping suppliers)
+- **BigCommerce** - Purchase from BigCommerce stores
+- **WooCommerce** - Purchase from WordPress/WooCommerce suppliers
+- **Demo** - Testing platform with sample fulfillment data
+
+When you select a preset, all function values are automatically filled with the appropriate integration name.
+
+### Custom HTTP Platforms
+
+You can also create platforms that use HTTP endpoints instead of built-in integrations:
+
+```
+Channel Platform: "My 3PL Platform"
+├── searchProductsFunction: "https://my-3pl.com/api/search-products"
+├── getProductFunction: "https://my-3pl.com/api/get-product"
+├── createPurchaseFunction: "https://my-3pl.com/api/create-purchase"
+└── createWebhookFunction: "https://my-3pl.com/api/create-webhook"
+```
+
+This allows integration with any fulfillment system that can provide HTTP endpoints matching Openship's interface.
+
+## Channel Operations
+
+### Product Search and Selection
+
+Channels provide products that can be purchased for fulfillment:
+
+- **Search Products** - Browse available inventory from the fulfillment provider
+- **Get Product Details** - Retrieve pricing, availability, and specifications
+- **Match Products** - Link shop products to channel products for automated purchasing
+
+### Purchase Creation
+
+When orders come in from shops, channels handle purchase fulfillment:
+
+- **Create Purchase Orders** - Automatically place orders with suppliers/3PLs
+- **Handle Special Requirements** - Custom logic for different product types
+- **Generate Invoices** - Create purchase documentation
+
+### Tracking and Updates
+
+Channels provide real-time fulfillment updates:
+
+- **Webhook Handlers** - Receive shipping notifications from providers
+- **Tracking Updates** - Forward tracking information to customers
+- **Status Changes** - Handle cancellations and modifications
+
+## Typical Workflow
+
+### Step 1: Create Channel Platform
+
+1. Go to **Channel Platforms** page
+2. Click **"Create Platform"**
+3. Choose a preset (Shopify, 3PL, etc.) or create custom
+4. Configure OAuth credentials (if needed)
+5. Save the platform template
+
+### Step 2: Create Channels
+
+1. Go to **Channels** page  
+2. Select your Channel Platform
+3. Click **"Create Channel"**
+4. Enter channel-specific details:
+   - Channel name
+   - Provider domain/endpoint
+   - Access credentials
+5. Save the channel instance
+
+### Step 3: Product Matching
+
+1. Go to **Matches** page
+2. **Select shop products** to fulfill
+3. **Search channel products** for fulfillment options
+4. **Create matches** linking shop products to channel products
+
+### Step 4: Automation
+
+Now your channels can automatically:
+- **Receive orders** from matched shop products
+- **Create purchases** with the fulfillment provider
+- **Update tracking** when items ship
+- **Handle cancellations** and modifications
+
+## Benefits of This System
+
+### Reusability
+Create one Shopify channel platform, use it for multiple suppliers without reconfiguring integration settings.
+
+### Flexibility  
+Mix built-in integrations with custom HTTP endpoints. Use Shopify for some suppliers, custom APIs for 3PLs.
+
+### Maintainability
+Update integration logic in the platform template, and all channels using that platform inherit the changes.
+
+### Testing
+Use demo platforms for testing fulfillment workflows without affecting real suppliers.
+
+### Scalability
+Easily add new fulfillment providers by creating new channel platforms and instances.
+
+## Getting Started
+
+### For Built-in Platforms
+1. **Create** a platform using a preset (e.g., "Shopify Platform")
+2. **Connect** channels to that platform with supplier credentials
+3. **Start** matching products and enabling automation
+
+### For Custom Integrations
+1. **Deploy** HTTP endpoints following our [custom channel guide](/docs/how-to-guides/create-custom-channel)
+2. **Create** a custom platform pointing to your endpoints  
+3. **Connect** channels using your custom platform
+4. **Test** the integration with our demo endpoints first
+
+### For Testing
+1. **Create** a "Demo Platform" using the demo preset
+2. **Add** demo channels with sample test data
+3. **Practice** workflows before connecting real suppliers
+
+### Working with 3PLs
+1. **Understand** your 3PL's API capabilities
+2. **Create** custom HTTP platform matching their interface
+3. **Set up** webhook endpoints for tracking updates
+4. **Test** purchase creation and tracking flows
+
+### Dropshipping Setup
+1. **Use** Shopify platform for supplier stores
+2. **Create** channels for each supplier
+3. **Match** your shop products to supplier products
+4. **Enable** automatic purchase creation
+
+The channel platform system gives you maximum flexibility in building your fulfillment network. Whether you're working with a single supplier or managing complex 3PL relationships, the platform-first approach scales with your business needs.

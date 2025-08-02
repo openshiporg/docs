@@ -1,0 +1,621 @@
+---
+title: Create Custom Shop
+description: Learn how to create custom HTTP-based shop integrations
+icon: Globe
+---
+
+## Overview
+
+Instead of using built-in shop integrations like Shopify, you can create custom HTTP endpoints that Openship will call to interact with your shop platform. This approach gives you complete flexibility to integrate with any system - whether it's a custom e-commerce platform, CRM, or even a spreadsheet.
+
+## How Custom Integrations Work
+
+When you create a shop platform in Openship, instead of setting function values to built-in slugs like "shopify", you can provide HTTP URLs. Openship will make POST requests to these endpoints with the required parameters and expect specific response formats.
+
+For example:
+- **Built-in**: `searchProductsFunction: "shopify"`
+- **Custom**: `searchProductsFunction: "https://your-app.com/api/search-products"`
+
+## Required HTTP Endpoints
+
+Your custom shop integration must implement the following HTTP endpoints that match the function interface from the shop integration guide:
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Product Search - `/api/search-products`
+
+**Purpose**: Openship uses this endpoint to allow users to search and browse products from your shop when creating product matches or exploring available inventory
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `searchEntry` | `string` | Search query |
+| `after?` | `string` | Pagination cursor |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `products` | `Product[]` | Array of product objects |
+| `pageInfo` | `{ hasNextPage: boolean; endCursor: string }` | Pagination information |
+
+```typescript tab="Implementation"
+// POST /api/search-products
+export default async function handler(req, res) {
+  const { platform, searchEntry, after } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Your custom product data (could come from database, API, etc.)
+  const allProducts = [
+    {
+      image: "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+      title: "Wireless Bluetooth Headphones",
+      productId: "headphones001", 
+      variantId: "black",
+      price: "1337.00",
+      availableForSale: true,
+      inventory: 42,
+      inventoryTracked: true,
+      productLink: "https://demo-store.com/products/bluetooth-headphones",
+      cursor: "eyJpZCI6ImdpYnNvbjAwMSJ9"
+    },
+    {
+      image: "https://via.placeholder.com/300x300/008080/FFFFFF?text=CHARGER",
+      title: "Portable Phone Charger Module", 
+      productId: "charger001",
+      variantId: "black-box",
+      price: "2000.00",
+      availableForSale: true,
+      inventory: 5,
+      inventoryTracked: true,
+      productLink: "https://demo-store.com/products/phone-charger",
+      cursor: "eyJpZCI6InNldGVjMDAxIn0="
+    },
+    {
+      image: "https://via.placeholder.com/300x300/0000FF/FFFFFF?text=WAR",
+      title: "Smart Watch Series 5",
+      productId: "watch001",
+      variantId: "default", 
+      price: "25000.00",
+      availableForSale: false,
+      inventory: 0,
+      inventoryTracked: true,
+      productLink: "https://demo-store.com/products/smart-watch",
+      cursor: "eyJpZCI6IndvcHIwMDEifQ=="
+    }
+  ];
+
+  let filteredProducts = allProducts;
+
+  // Filter by search term if provided
+  if (searchEntry) {
+    filteredProducts = allProducts.filter(product =>
+      product.title.toLowerCase().includes(searchEntry.toLowerCase())
+    );
+  }
+
+  // Simple pagination (in real app, use proper pagination)
+  let startIndex = 0;
+  if (after) {
+    const decodedCursor = JSON.parse(Buffer.from(after, 'base64').toString());
+    startIndex = allProducts.findIndex(p => p.productId === decodedCursor.id) + 1;
+  }
+
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + 10);
+  const hasNextPage = startIndex + 10 < filteredProducts.length;
+  const endCursor = paginatedProducts.length > 0 
+    ? paginatedProducts[paginatedProducts.length - 1].cursor 
+    : null;
+
+  return res.status(200).json({
+    products: paginatedProducts,
+    pageInfo: {
+      hasNextPage,
+      endCursor
+    }
+  });
+}
+```
+
+```json tab="Response"
+{
+  "products": [
+    {
+      "image": "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+      "title": "Wireless Bluetooth Headphones",
+      "productId": "headphones001",
+      "variantId": "black", 
+      "price": "1337.00",
+      "availableForSale": true,
+      "inventory": 42,
+      "inventoryTracked": true,
+      "productLink": "https://demo-store.com/products/bluetooth-headphones",
+      "cursor": "eyJpZCI6ImdpYnNvbjAwMSJ9"
+    }
+  ],
+  "pageInfo": {
+    "hasNextPage": true,
+    "endCursor": "eyJpZCI6ImdpYnNvbjAwMSJ9"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Get Single Product - `/api/get-product`
+
+**Purpose**: Openship uses this endpoint to fetch detailed product information when users select specific products for matching or viewing current inventory levels
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `productId` | `string` | Product identifier |
+| `variantId?` | `string` | Variant identifier |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `product` | `Product` | Single product object with full details |
+
+```typescript tab="Implementation"
+// POST /api/get-product  
+export default async function handler(req, res) {
+  const { platform, productId, variantId } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Your product database (could be real database, API, etc.)
+  const products = {
+    "headphones001": {
+      black: {
+        image: "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+        title: "Wireless Bluetooth Headphones - Midnight Black",
+        productId: "headphones001",
+        variantId: "black",
+        price: "1337.00", 
+        availableForSale: true,
+        inventory: 42,
+        inventoryTracked: true,
+        productLink: "https://demo-store.com/products/bluetooth-headphones"
+      }
+    },
+    "charger001": {
+      "black-box": {
+        image: "https://via.placeholder.com/300x300/008080/FFFFFF?text=CHARGER",
+        title: "Portable Phone Charger Module - Black Box",
+        productId: "charger001", 
+        variantId: "black-box",
+        price: "2000.00",
+        availableForSale: true,
+        inventory: 5,
+        inventoryTracked: true,
+        productLink: "https://demo-store.com/products/phone-charger"
+      }
+    }
+  };
+
+  const product = products[productId]?.[variantId || 'default'];
+  
+  if (!product) {
+    return res.status(404).json({ error: "Product not found" });
+  }
+
+  return res.status(200).json({ product });
+}
+```
+
+```json tab="Response"
+{
+  "product": {
+    "image": "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+    "title": "Wireless Bluetooth Headphones - Midnight Black", 
+    "productId": "headphones001",
+    "variantId": "black",
+    "price": "1337.00",
+    "availableForSale": true,
+    "inventory": 42,
+    "inventoryTracked": true,
+    "productLink": "https://demo-store.com/products/gibson-terminal"
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Search Orders - `/api/search-orders`
+
+**Purpose**: Openship uses this endpoint to retrieve orders from your shop, allowing the system to automatically process incoming orders and trigger corresponding purchases on matched channel platforms
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `searchEntry` | `string` | Search query |
+| `after?` | `string` | Pagination cursor |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orders` | `Order[]` | Array of order objects |
+| `pageInfo` | `{ hasNextPage: boolean; endCursor: string }` | Pagination information |
+
+```typescript tab="Implementation"
+// POST /api/search-orders
+export default async function handler(req, res) {
+  const { platform, searchEntry, after } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Your orders data source
+  const allOrders = [
+    {
+      orderId: "order001",
+      orderName: "#ORDER-001", 
+      link: "https://demo-store.com/orders/order001",
+      date: "09/15/1995",
+      firstName: "John",
+      lastName: "Smith",
+      streetAddress1: "123 Main Street",
+      streetAddress2: "Apt 404",
+      city: "New York", 
+      state: "NY",
+      zip: "10001",
+      country: "United States",
+      email: "customer@demo-store.com",
+      fulfillmentStatus: "unfulfilled",
+      financialStatus: "paid",
+      totalPrice: "1337.00",
+      currency: "USD",
+      lineItems: [
+        {
+          lineItemId: "order001item001",
+          name: "Wireless Bluetooth Headphones",
+          quantity: 1,
+          image: "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+          price: "1337.00",
+          variantId: "black",
+          productId: "headphones001"
+        }
+      ],
+      cursor: "eyJpZCI6ImhhY2sxOTk1MDAxIn0="
+    },
+    {
+      orderId: "sneakers1992001", 
+      orderName: "#ORDER-002",
+      link: "https://demo-store.com/orders/sneakers1992001",
+      date: "09/09/1992",
+      firstName: "Jane",
+      lastName: "Doe",
+      streetAddress1: "12 Maple Dr",
+      streetAddress2: "", 
+      city: "San Francisco",
+      state: "CA",
+      zip: "94102",
+      country: "United States",
+      email: "cosmo@demo-store.com",
+      fulfillmentStatus: "unfulfilled",
+      financialStatus: "paid", 
+      totalPrice: "2000.00",
+      currency: "USD",
+      lineItems: [
+        {
+          lineItemId: "charger001item001",
+          name: "Portable Phone Charger Module",
+          quantity: 1,
+          image: "https://via.placeholder.com/300x300/008080/FFFFFF?text=CHARGER",
+          price: "2000.00",
+          variantId: "black-box",
+          productId: "charger001"
+        }
+      ],
+      cursor: "eyJpZCI6InNuZWFrZXJzMTk5MjAwMSJ9"
+    }
+  ];
+
+  let filteredOrders = allOrders;
+
+  // Filter by search term if provided
+  if (searchEntry) {
+    filteredOrders = allOrders.filter(order =>
+      order.orderName.toLowerCase().includes(searchEntry.toLowerCase()) ||
+      order.firstName.toLowerCase().includes(searchEntry.toLowerCase()) ||
+      order.lastName.toLowerCase().includes(searchEntry.toLowerCase())
+    );
+  }
+
+  return res.status(200).json({
+    orders: filteredOrders,
+    pageInfo: {
+      hasNextPage: false,
+      endCursor: null
+    }
+  });
+}
+```
+
+```json tab="Response"
+{
+  "orders": [
+    {
+      "orderId": "order001",
+      "orderName": "#ORDER-001",
+      "link": "https://demo-store.com/orders/order001", 
+      "date": "09/15/1995",
+      "firstName": "John",
+      "lastName": "Smith",
+      "streetAddress1": "123 Main Street",
+      "streetAddress2": "Apt 404",
+      "city": "New York",
+      "state": "NY", 
+      "zip": "10001",
+      "country": "United States",
+      "email": "customer@demo-store.com",
+      "fulfillmentStatus": "unfulfilled",
+      "financialStatus": "paid",
+      "totalPrice": "1337.00",
+      "currency": "USD",
+      "lineItems": [
+        {
+          "lineItemId": "order001item001",
+          "name": "Wireless Bluetooth Headphones",
+          "quantity": 1,
+          "image": "https://via.placeholder.com/300x300/000000/FFFFFF?text=HEADPHONES",
+          "price": "1337.00", 
+          "variantId": "black",
+          "productId": "headphones001"
+        }
+      ],
+      "cursor": "eyJpZCI6ImhhY2sxOTk1MDAxIn0="
+    }
+  ],
+  "pageInfo": {
+    "hasNextPage": false,
+    "endCursor": null
+  }
+}
+```
+
+</Step>
+<Step>
+
+### Update Product - `/api/update-product`
+
+**Purpose**: Openship uses this endpoint to automatically sync inventory levels and pricing between matched products across different platforms
+
+**HTTP Method**: `POST`
+
+**Request Body**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `platform` | `{ domain: string; accessToken: string }` | Platform credentials |
+| `productId` | `string` | Product identifier |
+| `variantId` | `string` | Variant identifier |
+| `inventory?` | `number` | New inventory count |
+| `price?` | `string` | New price |
+
+**Response Format**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether update succeeded |
+| `results` | `object[]` | Update operation results |
+
+```typescript tab="Implementation"
+// POST /api/update-product
+export default async function handler(req, res) {
+  const { platform, productId, variantId, inventory, price } = req.body;
+
+  // Verify access token
+  if (platform.accessToken !== process.env.ACCESS_TOKEN) {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  // Simulate updating your product database
+  const results = [];
+
+  if (price !== undefined) {
+    // Update price in your system
+    console.log(`Updating price for ${productId}:${variantId} to ${price}`);
+    results.push({
+      operation: "price_update",
+      productId,
+      variantId, 
+      oldPrice: "1337.00", // You'd get this from your database
+      newPrice: price,
+      success: true
+    });
+  }
+
+  if (inventory !== undefined) {
+    // Update inventory in your system
+    console.log(`Updating inventory for ${productId}:${variantId} to ${inventory}`);
+    results.push({
+      operation: "inventory_update", 
+      productId,
+      variantId,
+      oldInventory: 42, // You'd get this from your database
+      newInventory: inventory,
+      success: true
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    results
+  });
+}
+```
+
+```json tab="Response"
+{
+  "success": true,
+  "results": [
+    {
+      "operation": "price_update",
+      "productId": "headphones001",
+      "variantId": "black",
+      "oldPrice": "1337.00",
+      "newPrice": "1400.00", 
+      "success": true
+    },
+    {
+      "operation": "inventory_update",
+      "productId": "headphones001", 
+      "variantId": "black",
+      "oldInventory": 42,
+      "newInventory": 38,
+      "success": true
+    }
+  ]
+}
+```
+
+</Step>
+</Steps>
+
+## Webhook Event Handlers
+
+Your custom shop can also implement webhook handlers to notify Openship of events in real-time:
+
+<Steps>
+<Step>
+
+### Order Creation Handler - `/api/webhook/order-created`
+
+**Purpose**: Openship uses this webhook to instantly receive and process new orders from your shop platform, automatically triggering the workflow to create corresponding purchases on matched channel platforms
+
+```typescript tab="Implementation"
+// POST /api/webhook/order-created
+export default async function handler(req, res) {
+  const { event, headers } = req.body;
+
+  // Verify webhook authenticity (implement your own verification)
+  if (!verifyWebhookSignature(headers)) {
+    return res.status(403).json({ error: "Invalid signature" });
+  }
+
+  // Transform your webhook event to Openship format
+  const order = {
+    id: event.order_id,
+    name: event.order_number,
+    email: event.customer_email,
+    financialStatus: event.payment_status,
+    fulfillmentStatus: "unfulfilled",
+    totalPrice: event.total_amount,
+    currency: event.currency,
+    lineItems: event.items.map(item => ({
+      id: item.line_item_id,
+      title: item.product_name,
+      quantity: item.quantity,
+      price: item.unit_price,
+      variantId: item.variant_id,
+      productId: item.product_id
+    })),
+    shippingAddress: {
+      firstName: event.shipping_address.first_name,
+      lastName: event.shipping_address.last_name,
+      address1: event.shipping_address.street,
+      city: event.shipping_address.city,
+      province: event.shipping_address.state,
+      country: event.shipping_address.country,
+      zip: event.shipping_address.postal_code
+    },
+    createdAt: event.created_at,
+    updatedAt: event.updated_at
+  };
+
+  return res.status(200).json({ order, type: "order_created" });
+}
+```
+
+</Step>
+</Steps>
+
+## Testing Your Custom Shop
+
+We've built a demo shop integration right into this documentation that you can use to test the complete Openship workflow before implementing your own custom shop.
+
+### Step 1: Create a Demo Shop Platform
+
+1. In your Openship dashboard, navigate to **Platform > Shops**
+2. Click **"Add Platform"**
+3. In the **"Create Shop Platform"** dialog:
+   - Select **"Demo"** from the Platform dropdown
+   - The Name field will auto-fill with **"Demo Shop"**
+   - Click **"Create Platform"**
+
+This creates a platform that points to our demo shop endpoints at `https://docs.openship.org/api/demo/shop/*`
+
+### Step 2: Connect Your Demo Shop
+
+1. After creating the platform, click **"Create Shop"** 
+2. In the **"Create Shop"** dialog:
+   - **Platform**: Select "Demo Shop Platform"
+   - **Name**: "Demo" (or any name you prefer)
+   - **Domain**: "local" 
+   - **Access Token**: "demo_token"
+3. Click **"Create Shop"**
+
+### Step 3: Test the Demo Integration
+
+Once connected, you can test the complete workflow:
+
+- Browse products using our demo product catalog
+- View sample orders in the system
+- Test product matching between shops and channels
+- Experience the full order fulfillment process
+
+### Step 4: Replace with Your Implementation
+
+When you're ready to use your custom shop:
+
+1. Go to your Demo Shop Platform settings
+2. Replace the demo URLs with your actual implementation:
+
+```
+# Replace these demo URLs:
+https://docs.openship.org/api/demo/shop/search-products
+https://docs.openship.org/api/demo/shop/get-product
+https://docs.openship.org/api/demo/shop/search-orders
+https://docs.openship.org/api/demo/shop/update-product
+# ... and other endpoints
+
+# With your URLs:
+https://your-app.com/api/search-products
+https://your-app.com/api/get-product
+https://your-app.com/api/search-orders
+https://your-app.com/api/update-product
+# ... and so on
+```
+
+This approach lets you learn how Openship works with our demo data first, then seamlessly transition to your own implementation.
+

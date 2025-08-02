@@ -1,0 +1,53 @@
+---
+title: Schema Visualizer
+description: Interactive database schema visualization for Openship
+icon: Database
+---
+
+## Database Schema
+
+Explore the complete Openship database schema with this interactive visualization. Click and drag to navigate, zoom to focus on specific areas, and see how all the models connect together.
+
+<iframe 
+  src="/schema-visualizer" 
+  className="w-full h-[80vh] border-0 rounded-lg ring-1 ring-gray-900/5 dark:ring-white/10 shadow-inner not-prose"
+  title="Schema Visualizer"
+/>
+
+## Understanding the Schema
+
+The Openship database is built using Prisma with PostgreSQL and consists of several core model groups:
+
+### User Management
+- **User** - The central user model with role-based permissions
+- **Role** - Defines what actions users can perform
+- **ApiKey** - API access tokens for programmatic access
+
+### Platform Architecture
+- **ShopPlatform** - Templates for shop integrations (e.g., Shopify, WooCommerce)
+- **ChannelPlatform** - Templates for channel integrations (e.g., suppliers, 3PLs)
+- **Shop** - Individual shop instances using platform templates
+- **Channel** - Individual channel instances using platform templates
+
+### Order Management
+- **Order** - Customer orders from shops
+- **LineItem** - Individual items within orders
+- **CartItem** - Items being purchased from channels
+- **TrackingDetail** - Shipping and fulfillment tracking
+
+### Product Matching
+- **ShopItem** - Products available from shops
+- **ChannelItem** - Products available from channels  
+- **Match** - Connections between shop and channel products
+- **Link** - Automated routing rules between shops and channels
+
+## Key Relationships
+
+The schema shows how Openship creates a bridge between e-commerce platforms:
+
+1. **Platform → Instance**: Platforms define how to integrate, while Shops/Channels are configured instances
+2. **Order Flow**: Orders → LineItems → CartItems (automated purchasing)
+3. **Product Matching**: ShopItems ↔ Matches ↔ ChannelItems (product mapping)
+4. **Fulfillment**: CartItems → TrackingDetails (shipping updates)
+
+This architecture allows Openship to automatically route orders from any connected shop to any connected channel based on your configured matches and links.

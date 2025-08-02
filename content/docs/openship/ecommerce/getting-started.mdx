@@ -1,0 +1,78 @@
+---
+title: Quick Start
+description: Getting Started with Openfront
+icon: Album
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+## Introduction
+
+Openfront is an **order routing platform** that connects the places where you're selling to the places where you're fulfilling. It automatically routes orders from your sales channels to your fulfillment partners, giving you complete control over your order flow.
+
+## Automatic Installation
+
+A minimum version of Node.js 20 required.
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+<Tab value="npm">
+```bash
+git clone https://github.com/openshiporg/openfront.git
+cd openfront
+npm install
+```
+</Tab>
+<Tab value="pnpm">
+```bash
+git clone https://github.com/openshiporg/openfront.git
+cd openfront
+pnpm install
+```
+</Tab>
+<Tab value="yarn">
+```bash
+git clone https://github.com/openshiporg/openfront.git
+cd openfront
+yarn install
+```
+</Tab>
+</Tabs>
+
+### Environment Setup
+
+Create a `.env` file in the root directory:
+
+```bash
+# Required: Change this to a secure random string
+SESSION_SECRET=your-super-secret-session-key-here
+
+# Required: Your PostgreSQL database connection string
+DATABASE_URL=postgresql://username:password@localhost:5432/openfront
+
+# Optional: SMTP configuration for email notifications
+SMTP_FROM="no-reply@yourdomain.com"
+SMTP_HOST="your-smtp-host"
+SMTP_PASSWORD="your-smtp-password"
+SMTP_PORT="587"
+SMTP_USER="your-smtp-user"
+```
+
+### Start Development
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+This will:
+- Build the Keystone schema
+- Run database migrations
+- Start the development server
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Enjoy!
+
+Your Openfront instance is now running! Start by connecting your first shop and setting up fulfillment channels.

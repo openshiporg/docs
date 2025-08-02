@@ -1,0 +1,40 @@
+---
+title: Deployment
+description: How to deploy Openfront
+icon: Rocket
+---
+
+## Getting started
+
+Openfront uses Next.js, so naturally, it can be hosted anywhere that supports Node.js. Openfront also requires a `postgres` database.
+
+## 1-Click Deployment
+
+These deployment services offer `Node.js` and `postgres` databases so Openfront can be deployed in 1-click.
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/openfront)
+
+### Render
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/openfrontorg/openfront)
+
+### Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fopenfrontorg%2Fopenfront&env=SESSION_SECRET,DATABASE_URL&envDescription=A%20postgres%20connection%20string%20is%20used%20for%20DATABASE_URL)
+
+### Netlify
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/openfrontorg/openfront)
+
+To deploy on platforms that don't support databases like [Netlify](https://netlify.com) and [Vercel](https://vercel.com), you'll need to pass a `postgres` connection string as the `DATABASE_URL` variable.
+
+Go to site settings > build & deploy > environment and add these variables:
+
+```bash
+DATABASE_URL=postgresql://postgres:example@url:3000/postgres
+SESSION_SECRET=your-secure-session-secret-key
+```
+
+Replace DATABASE_URL with a postgres database connection string. Redeploy the site.

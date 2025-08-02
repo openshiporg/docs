@@ -1,0 +1,8 @@
+{
+  "pages": [
+    "custom-payment-provider",
+    "custom-shipping-provider",
+    "create-payment-integration",
+    "create-shipping-integration"
+  ]
+}

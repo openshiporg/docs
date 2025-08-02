@@ -1,0 +1,409 @@
+---
+title: Shipping Providers
+description: Understanding shipping providers and fulfillment in Openfront
+icon: Truck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront uses a two-tier system for shipping fulfillment: **Shipping Provider Platforms** (templates) and **Shipping Providers** (instances). Understanding this distinction is crucial for setting up your shipping integrations correctly.
+
+## Shipping Provider Platforms vs Shipping Providers
+
+### Shipping Provider Platforms (Templates)
+
+A **Shipping Provider Platform** is a reusable template that defines how Openfront integrates with specific shipping carriers and fulfillment services. Think of it as a blueprint or configuration preset.
+
+**What Shipping Provider Platforms contain:**
+- Integration function mappings for shipping operations
+- API credentials configuration structure
+- Webhook handling templates
+- Regional availability settings
+
+**Examples of Shipping Provider Platforms:**
+- **Shippo Platform** - Template for all Shippo integrations
+- **ShipEngine Platform** - Template for all ShipEngine integrations  
+- **Manual Platform** - Template for manual shipping calculations
+- **Custom Platform** - Template with HTTP endpoints for custom integrations
+
+### Shipping Providers (Instances)
+
+A **Shipping Provider** is an actual connection to a specific shipping service account. It uses a Shipping Provider Platform template but contains the unique credentials and settings for that particular account.
+
+**What Shipping Providers contain:**
+- Reference to which Shipping Provider Platform to use
+- Account-specific credentials (API keys, tokens)
+- Origin address and warehouse configuration
+- Regional and carrier settings
+
+### Shipping Operations
+
+Shipping providers handle these key operations:
+
+- **Rate Calculation** - Get shipping quotes for orders
+- **Label Creation** - Generate shipping labels and tracking
+- **Address Validation** - Verify shipping addresses
+- **Shipment Tracking** - Track packages in transit
+- **Label Management** - Cancel and refund shipping labels
+
+## How Shipping Works
+
+<Steps>
+<Step>
+
+### Create Shipping Provider
+
+Configure a shipping provider with carrier integration:
+
+```
+Shipping Provider: "ShipEngine Provider"
+├── getRatesFunction: "shipengine"
+├── createLabelFunction: "shipengine"
+├── validateAddressFunction: "shipengine"
+├── trackShipmentFunction: "shipengine"
+├── cancelLabelFunction: "shipengine"
+├── accessToken: "SE_PROD_..."
+└── fromAddress: { ... origin address ... }
+```
+
+</Step>
+<Step>
+
+### Regional Configuration
+
+Assign providers to shipping regions:
+
+```
+ShipEngine Provider
+├── Regions: [North America, Europe]
+├── Carriers: [USPS, UPS, FedEx, DHL]
+└── From Address: Warehouse location
+
+Shippo Provider
+├── Regions: [Global]
+├── Carriers: [All supported carriers]
+└── From Address: Fulfillment center
+```
+
+</Step>
+<Step>
+
+### Rate Calculation Process
+
+When customers request shipping rates:
+
+1. **Order analysis** → Extract items, dimensions, destination
+2. **Provider lookup** → Find providers available in region
+3. **Rate requests** → Call provider rate functions
+4. **Rate comparison** → Present options to customer
+5. **Selection** → Customer chooses shipping method
+
+</Step>
+<Step>
+
+### Label Creation Workflow
+
+After order placement:
+
+1. **Rate selection** → Customer's chosen shipping method
+2. **Label creation** → Generate shipping label via provider
+3. **Tracking assignment** → Get tracking number from carrier
+4. **Fulfillment update** → Update order with shipping info
+5. **Customer notification** → Send tracking details
+
+</Step>
+</Steps>
+
+## Supported Shipping Provider Platforms
+
+Openfront comes with built-in platform presets for popular shipping services:
+
+### Shippo
+Complete Shippo platform integration:
+- Multi-carrier shipping rates
+- Address validation services
+- Label creation and management
+- Real-time tracking updates
+- International shipping support
+- Customs documentation
+
+### ShipEngine
+Full ShipEngine API integration supporting:
+- 40+ shipping carriers worldwide
+- Real-time rate shopping
+- Address validation and correction
+- Label generation and printing
+- Package tracking and updates
+- Carrier account management
+
+### Manual Provider
+Simple manual shipping rate calculation:
+- Configurable flat rates by carrier
+- Weight and dimension-based pricing
+- Mock tracking number generation
+- Example implementation for testing
+
+### Custom HTTP Platforms
+For integrating with other shipping services through HTTP endpoints.
+
+## Custom Shipping Providers
+
+### Option 1: File-based Integration
+
+Create a shipping adapter in `/features/integrations/shipping/`:
+
+```typescript
+// /features/integrations/shipping/custom-fulfillment.ts
+
+export async function getRatesFunction({ provider, order, dimensions }) {
+  // Calculate shipping rates for the order
+  const rates = await yourService.calculateRates({
+    origin: provider.fromAddress,
+    destination: order.shippingAddress,
+    packages: dimensions,
+    credentials: provider.accessToken
+  });
+  
+  return rates.map(rate => ({
+    carrierId: rate.carrier,
+    serviceType: rate.service,
+    serviceName: rate.name,
+    amount: rate.price,
+    currency: rate.currency,
+    estimatedDays: rate.transitTime
+  }));
+}
+
+export async function createLabelFunction({ provider, order, rateId, dimensions, lineItems }) {
+  // Create shipping label
+  const label = await yourService.createLabel({
+    rate: rateId,
+    order: order,
+    packages: dimensions,
+    items: lineItems
+  });
+  
+  return {
+    labelId: label.id,
+    trackingNumber: label.tracking,
+    labelUrl: label.labelUrl,
+    carrierId: label.carrier,
+    serviceType: label.service
+  };
+}
+
+// Implement other required functions...
+```
+
+### Option 2: HTTP Endpoint Integration
+
+Configure provider to use external HTTP endpoints:
+
+```
+Shipping Provider: "Custom Fulfillment API"
+├── getRatesFunction: "https://fulfillment.company.com/api/rates"
+├── createLabelFunction: "https://fulfillment.company.com/api/labels"
+├── validateAddressFunction: "https://fulfillment.company.com/api/validate"
+├── trackShipmentFunction: "https://fulfillment.company.com/api/track"
+└── cancelLabelFunction: "https://fulfillment.company.com/api/cancel"
+```
+
+Your endpoints receive standardized requests:
+
+```json
+{
+  "provider": {
+    "name": "Custom Fulfillment API",
+    "accessToken": "your-api-token",
+    "fromAddress": { ... }
+  },
+  "order": {
+    "id": "order_123",
+    "shippingAddress": { ... },
+    "lineItems": [ ... ]
+  },
+  "dimensions": [
+    {
+      "length": 10,
+      "width": 8,
+      "height": 6,
+      "weight": 2,
+      "units": { "length": "in", "weight": "lb" }
+    }
+  ]
+}
+```
+
+## Required Functions Interface
+
+Every shipping provider must implement these functions:
+
+### getRatesFunction
+Calculate shipping rates for an order.
+
+```typescript
+async function getRatesFunction({ provider, order, dimensions }) {
+  // Return array of rate options
+  return [{
+    carrierId: "ups",
+    serviceType: "ground",
+    serviceName: "UPS Ground",
+    amount: 1250, // cents
+    currency: "USD",
+    estimatedDays: 3
+  }];
+}
+```
+
+### createLabelFunction
+Generate a shipping label for the order.
+
+```typescript
+async function createLabelFunction({ provider, order, rateId, dimensions, lineItems }) {
+  // Return label details
+  return {
+    labelId: "label_123",
+    trackingNumber: "1Z999AA1234567890",
+    labelUrl: "https://label-url.com/label.pdf",
+    carrierId: "ups",
+    serviceType: "ground"
+  };
+}
+```
+
+### validateAddressFunction
+Validate and potentially correct shipping addresses.
+
+```typescript
+async function validateAddressFunction({ provider, address }) {
+  // Return validation results
+  return {
+    isValid: true,
+    correctedAddress: { ... }, // if corrections made
+    messages: [] // validation messages
+  };
+}
+```
+
+### trackShipmentFunction
+Get tracking information for a shipment.
+
+```typescript
+async function trackShipmentFunction({ provider, trackingNumber }) {
+  // Return tracking details
+  return {
+    status: "in_transit",
+    estimatedDelivery: "2024-01-15",
+    events: [
+      {
+        timestamp: "2024-01-10T10:00:00Z",
+        status: "picked_up",
+        location: "Origin facility"
+      }
+    ]
+  };
+}
+```
+
+### cancelLabelFunction
+Cancel a shipping label and process refunds.
+
+```typescript
+async function cancelLabelFunction({ provider, labelId }) {
+  // Return cancellation result
+  return {
+    success: true,
+    refundAmount: 1250, // cents
+    refundId: "refund_123"
+  };
+}
+```
+
+## Dimensions and Units
+
+Openfront standardizes package dimensions:
+
+```typescript
+interface PackageDimensions {
+  length: number;
+  width: number;
+  height: number;
+  weight: number;
+  units: {
+    length: "in" | "cm";
+    weight: "lb" | "kg" | "oz" | "g";
+  };
+}
+```
+
+Providers should handle unit conversions as needed for their APIs.
+
+## Order Fulfillment Integration
+
+Shipping providers integrate with Openfront's fulfillment system:
+
+- **Manual Fulfillment** - Admin creates labels manually
+- **Automatic Fulfillment** - Labels created on order confirmation
+- **Batch Processing** - Create multiple labels simultaneously
+- **Tracking Updates** - Automatic status updates via webhooks
+
+## Error Handling
+
+Shipping operations should handle common scenarios:
+
+- **Invalid addresses** - Return validation errors
+- **No rates available** - Return empty rate array
+- **API failures** - Throw descriptive errors
+- **Label creation failures** - Create failed label records
+
+## Testing and Development
+
+### Rate Testing
+Test rate calculations with various:
+- Package sizes and weights
+- Domestic and international addresses
+- Different service levels
+- Edge cases (PO boxes, military addresses)
+
+### Label Testing
+Verify label creation for:
+- Different package types
+- Various shipping services
+- Return labels
+- International shipments with customs
+
+### Integration Testing
+- Address validation accuracy
+- Tracking number format validation
+- Webhook payload handling
+- Error response processing
+
+## Getting Started
+
+### For Built-in Platform Presets
+1. **Create** a shipping provider platform using Shippo, ShipEngine, or Manual preset
+2. **Configure** API credentials and origin address in platform settings
+3. **Create** shipping provider instances for each account/warehouse
+4. **Assign** to regions where shipping is available
+5. **Test** rate calculation and label creation
+
+### For Custom Shipping Provider Platforms
+1. **Create** a custom shipping provider platform following our guides
+2. **Implement** required shipping functions for your service
+3. **Set up** webhook endpoints for tracking updates
+4. **Test** integration thoroughly before going live
+
+### For HTTP-based Integrations
+1. **Deploy** HTTP endpoints matching Openfront's interface
+2. **Create** shipping provider platform with endpoint URLs
+3. **Implement** authentication and webhook handling
+4. **Test** with Openfront's standardized payloads
+
+## How-to Guides
+
+Ready to set up your shipping integrations? Follow these step-by-step guides:
+
+- **[Create Custom Shipping Provider](/docs/ecommerce/how-to-guides/custom-shipping-provider)** - Build your own shipping service integration
+- **[Create Shipping Integration](/docs/ecommerce/how-to-guides/create-shipping-integration)** - Connect to existing shipping platforms
+
+The shipping provider system enables you to integrate with any shipping carrier or fulfillment service while providing consistent rate calculation and label creation experiences.
