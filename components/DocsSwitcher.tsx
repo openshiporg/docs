@@ -31,7 +31,7 @@ export function DocsSwitcher() {
       url: '/docs/openship/ecommerce',
       title: 'Openship',
       description: 'Multi-channel fulfillment platform',
-      icon: <OpenshipLogoIcon className="w-5 h-5" color="#f59e0b" />,
+      icon: <OpenshipLogoIcon className="w-5 h-5" />,
       color: '#f59e0b'
     }
   ];
