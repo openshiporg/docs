@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { DocsSwitcher } from '@/components/DocsSwitcher';
+import { CombinedLogo } from '@/components/CombinedLogo';
 
 /**
  * Shared layout configurations
@@ -10,7 +10,7 @@ import { DocsSwitcher } from '@/components/DocsSwitcher';
  */
 export const baseOptions: BaseLayoutProps = {
   nav: {
-    title: <DocsSwitcher />,
+    title: <CombinedLogo />,
   },
   // see https://fumadocs.dev/docs/ui/navigation/links
   links: [],
