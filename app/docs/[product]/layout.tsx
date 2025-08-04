@@ -4,6 +4,7 @@ import { baseOptions } from '@/app/layout.config';
 import { openfrontSource, openshipSource } from '@/lib/source';
 import { LogoIcon as OpenfrontLogoIcon } from '@/components/LogoIcon-openfront';
 import { LogoIcon as OpenshipLogoIcon } from '@/components/LogoIcon';
+import { DocsSwitcher } from '@/components/DocsSwitcher';
 import { notFound } from 'next/navigation';
 
 export default async function Layout({ 
@@ -26,6 +27,10 @@ export default async function Layout({
   return (
     <DocsLayout
       {...baseOptions}
+      nav={{
+        ...baseOptions.nav,
+        title: <DocsSwitcher />,
+      }}
       tree={currentSource.pageTree}
       sidebar={{
         tabs: {
