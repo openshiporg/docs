@@ -133,7 +133,7 @@ export default function HomePage() {
           }
           className=""
           background={<div />}
-          Icon={({ className }) => <OpenshipLogoIcon className="size-full" color="#f59e0b" />}
+          Icon={({ className }) => <OpenshipLogoIcon className="size-full" />}
           description="E-COMMERCE"
           href="/docs/openship/ecommerce"
           cta="Explore E-commerce"
