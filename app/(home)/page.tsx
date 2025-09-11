@@ -100,7 +100,7 @@ function GlobeDemo() {
   return (
     <a href="/ethos" className="group block">
       <div className="relative flex size-full items-center justify-center overflow-hidden rounded-lg border bg-background px-40 pb-40 pt-8 md:pb-60 md:shadow-xl transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]">
-        <span className="flex flex-col items-center pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10">
+        <span className="flex flex-col items-center pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-200/50">
           {/* <CombinedLogo /> */}
           Ethos
           <span className="text-lg font-normal max-w-md">
@@ -113,7 +113,7 @@ function GlobeDemo() {
         <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,255,255,0))]" />
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </a>
   );

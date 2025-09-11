@@ -14,11 +14,10 @@ export default function EthosPage() {
               </span>
             </h1>
             <p className="mx-auto mt-6 text-lg leading-8 text-gray-600">
-              Learn why we're building Openship and our vision to democratize
-              e-commerce
+              Learn why we're building Openship and our vision to democratize e-commerce
             </p>
             <div className="prose">
-         
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 The Office Chair Empire That Wasn't
@@ -46,11 +45,13 @@ export default function EthosPage() {
 
               <p className="text-justify">
                 This isn't a story about one unlucky seller. This is the story
-                of commerce in 2025: a feudal system where individual businesses
+                of commerce in 2025. A feudal system where individual businesses
                 compete desperately with each other while the lords of the
                 digital manor extract wealth from every transaction,
                 relationship, and innovation.
               </p>
+
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 The Problem: Marketplace Feudalism
@@ -58,14 +59,8 @@ export default function EthosPage() {
 
               <p className="text-justify">
                 Today's commerce landscape has a fundamental imbalance.
-                Individual businesses compete intensely with each other, while
-                the marketplaces they rely on have captured the lion's share of
-                market control.
-              </p>
-
-              <p className="text-justify font-semibold">
-                Sellers face brutal competition, but marketplaces have almost
-                none.
+                Individual businesses fight tooth and nail against each other, while
+                the marketplaces they rely on face almost no competition at all.
               </p>
 
               <p className="text-justify font-semibold">Sellers are trapped.</p>
@@ -74,18 +69,20 @@ export default function EthosPage() {
                 Switching from Amazon to eBay means rebuilding your entire
                 operation: losing your reviews, starting over with algorithms,
                 and abandoning years of optimization. The marketplaces know
-                this, so they can raise fees, change rules overnight, and copy
+                this. They can raise fees, change rules overnight, and even copy
                 your best products without consequence.
               </p>
 
               <p className="text-justify">
-                The result? A commerce ecosystem designed to extract value from
+                The result is a commerce ecosystem designed to extract value from
                 businesses rather than empower them. Sellers become more like
-                franchisees than independent businesses. Every transaction,
-                every customer relationship, every piece of data flows through
-                and strengthens someone else's empire while the actual creators
+                franchisees than independent owners. Every transaction,
+                every customer relationship, and every piece of data flows into
+                someone else's empire while the actual creators
                 of value struggle for scraps.
               </p>
+
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 The Shift: Software That Fits Your Business
@@ -93,8 +90,8 @@ export default function EthosPage() {
 
               <p className="text-justify">
                 We're in the middle of a quiet revolution. For years, businesses
-                have bent over backward to fit rigid, one-size-fits-all software
-                by tweaking endless settings and accepting "good enough."
+                bent over backward to fit rigid, one-size-fits-all software,
+                tweaking endless settings and settling for "good enough."
               </p>
 
               <p className="text-justify font-semibold">That era is over.</p>
@@ -102,8 +99,9 @@ export default function EthosPage() {
               <p className="text-justify">
                 Modern development makes it possible to create personal
                 software: tools you can shape to fit your business like a glove.
-                No more endless configurations. You can modify the software
-                itself to work exactly how you need.
+                No more endless configurations. No more waiting for someone else to add a feature.
+                You can adapt the software
+                itself to work exactly the way you need.
               </p>
 
               <p className="text-justify">
@@ -111,148 +109,174 @@ export default function EthosPage() {
                 you tools that adapt to you, not the other way around.
               </p>
 
+              <hr className="my-12 border-gray-200" />
+
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
-                Our Solution: Commerce You Own, Built for Your Industry
+                The Infrastructure Big Tech Doesn't Want You to Have
               </h2>
 
               <p className="text-justify">
-                We're creating commerce tools tailored to specific industries.
-                This is software you can customize at the source and truly own.
-              </p>
-
-              <h3 className="text-xl font-medium text-gray-900 mt-8 mb-3">
-                Designed for Your World
-              </h3>
-
-              <p className="text-justify">
-                Forget generic platforms that force you to adapt. Our tools are
-                built for your industry's unique needs:
+                This is why we built the infrastructure the platform giants hope you'll never see:
               </p>
 
               <ul className="list-disc pl-6 space-y-2">
                 <li>
-                  <strong>Restaurants</strong>: Table management, kitchen
-                  workflows, and meal customization
+                  <strong>Openship</strong>. Order routing that connects any sales channel to any fulfillment source. 
+                  No more being trapped in one marketplace's ecosystem.
                 </li>
                 <li>
-                  <strong>Automotive</strong>: Parts compatibility, service
-                  scheduling, and warranty tracking
-                </li>
-                <li>
-                  <strong>Healthcare</strong>: Appointment booking, patient
-                  records, and insurance processing
-                </li>
-                <li>
-                  <strong>Fitness</strong>: Class scheduling, memberships, and
-                  equipment tracking
+                  <strong>Openfront</strong>. Complete e-commerce platforms you own entirely: 
+                  source code, data, customers, everything.
                 </li>
               </ul>
 
-              <p className="text-justify">
-                Each solution shares core commerce features but feels like it
-                was made just for you.
+              <p className="text-justify font-semibold">
+                The result is that, for the first time, individual businesses can have the same 
+                multi-channel capabilities as enterprise retailers without paying rent to platform owners.
               </p>
 
-              <h3 className="text-xl font-medium text-gray-900 mt-8 mb-3">
-                Built for Ownership, Not Rental
-              </h3>
+              <hr className="my-12 border-gray-200" />
+
+              <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
+                Built for Any Industry, Owned by You
+              </h2>
 
               <p className="text-justify">
-                When you use our platforms, you're not just getting access.
-                You're getting ownership:
+                Instead of forcing every business into the same generic template, 
+                our platforms adapt to your industry.
               </p>
 
               <ul className="list-disc pl-6 space-y-2">
                 <li>
-                  <strong>Full source code</strong> to modify anything to match
-                  your workflow
+                  <strong>Core Commerce</strong>. Products, orders, payments, shipping. 
+                  The foundations every business needs.
                 </li>
                 <li>
-                  <strong>Clean, modern architecture</strong> that's
-                  straightforward to customize
+                  <strong>Customizable Everything</strong>. Full source code means you can 
+                  modify any workflow, add any feature, and integrate any service.
                 </li>
                 <li>
-                  <strong>No strings attached</strong>: no monthly fees, no
-                  feature gates, no artificial limits
+                  <strong>Industry Examples</strong>. Restaurants add table management, 
+                  auto dealers add parts compatibility, gyms add class scheduling.
                 </li>
               </ul>
 
               <p className="text-justify">
-                This is the fundamental shift: from renting someone else's
-                vision of what your business needs to owning software that
-                evolves with you.
+                The difference is simple. Instead of paying monthly fees for limited customization, 
+                you own the platform and shape it exactly to how your business works.
               </p>
 
+              <hr className="my-12 border-gray-200" />
+
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
-                The Network Effect: Building Marketplaces from the Ground Up
+                The Only E-commerce Infrastructure Big Tech Can't Copy
+              </h2>
+
+              <ul className="list-disc pl-6 space-y-2">
+                <li>
+                  <strong>Full Ownership</strong>. You get the complete source code. 
+                  Modify anything, add anything, remove anything.
+                </li>
+                <li>
+                  <strong>Zero Platform Fees</strong>. Only pay for the servers to run your software. 
+                  No subscription fees, no transaction cuts, no artificial limits.
+                </li>
+                <li>
+                  <strong>Standards-Based</strong>. Uses open protocols, so you're never 
+                  locked in.
+                </li>
+                <li>
+                  <strong>Deploy Anywhere</strong>. One-click deployment to any hosting provider. 
+                  Your servers, your control, your data.
+                </li>
+              </ul>
+
+              <p className="text-justify font-semibold">
+                Most important: if we disappear tomorrow, your business keeps running. 
+                The source code is yours forever, and so is your independence.
+              </p>
+
+              <hr className="my-12 border-gray-200" />
+
+              <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
+                How Independent Businesses Become Powerful Networks
               </h2>
 
               <p className="text-justify">
-                Most people think you have to choose: build a marketplace or
-                build seller tools. We do both.
+                Most people think you have to choose: build a marketplace or build seller tools. 
+                We do both, because when sellers truly own their infrastructure, marketplaces emerge organically from their networks.
               </p>
 
               <p className="text-justify font-semibold">Here's how it works:</p>
 
               <ol className="list-decimal pl-6 space-y-2">
                 <li>
-                  <strong>Sellers get industry-specific platforms</strong> they
-                  fully control
+                  <strong>Partner with Anyone</strong>. Connect your Openfront store directly with other 
+                  independent businesses for inventory sharing, order routing, and fulfillment.
                 </li>
                 <li>
-                  <strong>Multi-channel freedom</strong> lets them sell anywhere
-                  while keeping independence
+                  <strong>Keep Your Profits</strong>. No marketplace takes a cut when you trade directly.
                 </li>
                 <li>
-                  <strong>Shared infrastructure</strong> creates natural
-                  connection points between sellers
+                  <strong>Scale Without Risk</strong>. Expand into new markets by partnering with local 
+                  fulfillment providers instead of building warehouses.
                 </li>
                 <li>
-                  <strong>Organic marketplaces emerge</strong> from networks of
-                  independent businesses
+                  <strong>Share the Upgrades</strong>. Open source means when one business adds a useful 
+                  feature, everyone can benefit.
                 </li>
               </ol>
 
-              <h3 className="text-xl font-medium text-gray-900 mt-8 mb-3">
+              <p className="text-justify">
+                <strong>Example:</strong> You sell products in the US and want to expand to the UK. Instead of opening a warehouse and hiring staff, you partner with a UK fulfillment provider through Openship.
+                Orders from UK customers are automatically routed to your partner for local delivery.
+                You keep your customers, expand globally, and avoid massive infrastructure costs with zero marketplace fees.
+              </p>
+
+              <hr className="my-12 border-gray-200" />
+
+              <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 Unlike Traditional SaaS
-              </h3>
+              </h2>
 
               <p className="text-justify">
-                Shopify gives you a store and hopes you'll stay forever, paying
+                Traditional platforms give you a store and hope you'll stay forever, paying
                 monthly fees for features you can't customize. We give you the
                 entire commerce infrastructure and the ability to modify it
                 however you want.
               </p>
 
               <p className="text-justify font-semibold">
-                The difference is simple: We succeed when you're independent,
+                The difference is simple. We succeed when you're independent,
                 not dependent.
               </p>
+
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 True Independence Through Open Source
               </h2>
 
               <p className="text-justify">
-                Our platforms are built for permanence:
+                Our platforms are built for permanence.
               </p>
 
               <ul className="list-disc pl-6 space-y-2">
                 <li>
-                  <strong>100% open source</strong>: no vendor lock-in, no
-                  surprise changes
+                  <strong>100% Open Source</strong>. No vendor lock-in, no
+                  surprise changes.
                 </li>
                 <li>
-                  <strong>Self-hostable</strong>: run it anywhere, own your data
-                  completely
+                  <strong>Self-Hostable</strong>. Run it anywhere and own your data
+                  completely.
                 </li>
                 <li>
-                  <strong>Standards-based</strong>: connect any payment
-                  processor, shipping service, or tool
+                  <strong>Standards-Based</strong>. Connect any payment
+                  processor, shipping service, or tool.
                 </li>
                 <li>
-                  <strong>Built to last</strong>: using technologies that will
-                  outlive any company or trend
+                  <strong>Built to Last</strong>. Technologies that will
+                  outlive any company or trend.
                 </li>
               </ul>
 
@@ -260,6 +284,8 @@ export default function EthosPage() {
                 Open source means your business tools work forever, regardless
                 of what happens to us.
               </p>
+
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 The Future We're Building
@@ -270,20 +296,21 @@ export default function EthosPage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li>
                   Every business <strong>owns</strong> its commerce
-                  infrastructure
+                  infrastructure.
                 </li>
                 <li>
-                  Software <strong>molds to your needs</strong>, not vice versa
+                  Software <strong>molds to your needs</strong>, not vice versa.
                 </li>
                 <li>
                   Marketplaces <strong>grow from communities</strong> of
-                  independent sellers
+                  independent sellers.
                 </li>
                 <li>
-                  No one settles for "close enough" when they can have{" "}
-                  <strong>exactly right</strong>
+                  No one settles for "close enough" when they can have <strong>exactly right</strong>.
                 </li>
               </ul>
+
+              <hr className="my-12 border-gray-200" />
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
                 Your Path to Commerce Independence
@@ -296,35 +323,57 @@ export default function EthosPage() {
 
               <ol className="list-decimal pl-6 space-y-2">
                 <li>
-                  <strong>Pick your platform</strong>: Start with tools built
-                  for your specific industry
+                  <strong>Choose Your Entry Point</strong>. Deploy Openfront for your store, 
+                  or Openship for multi-channel routing.
                 </li>
                 <li>
-                  <strong>Make it yours</strong>: Modify the source code to
-                  match your exact workflow
+                  <strong>Make It Yours</strong>. Customize the source code to match 
+                  your exact workflow.
                 </li>
                 <li>
-                  <strong>Connect strategically</strong>: Use existing
-                  marketplaces while building direct relationships
+                  <strong>Connect Strategically</strong>. Use existing marketplaces while 
+                  building direct relationships.
                 </li>
                 <li>
-                  <strong>Scale freely</strong>: Grow into your own marketplace
-                  when ready, using infrastructure you own
+                  <strong>Scale Without Limits</strong>. Add features, integrate services, 
+                  and connect with partners on infrastructure you control.
                 </li>
               </ol>
 
+              <p className="text-justify font-semibold">
+                The goal is simple. Never again worry that a platform will change the rules, 
+                raise fees, or copy your best ideas.
+              </p>
+
               <hr className="my-12 border-gray-200" />
 
+              <h2 className="text-2xl font-semibold text-gray-900 mt-12 mb-4">
+                One More Thing...
+              </h2>
+
               <p className="text-justify">
-                This isn't about disrupting e-commerce. It's about{" "}
-                <strong>democratizing</strong> it. Giving every business the
-                power to own, shape, and control their digital commerce destiny.
+                Every platform we build includes something most commerce tools don't:
+                a built-in AI assistant that understands your entire business.
               </p>
 
               <p className="text-justify">
-                The future of commerce is owned, not rented. Personal, not
-                generic. Open, not closed.
+                Instead of clicking through dashboards to create products, manage orders, 
+                or analyze data, you just ask.
+                "Create a product for the European market with these specifications."
+                "Show me which orders need fulfillment."
+                "Route this bulk order to our best supplier." The AI handles the rest.
               </p>
+
+              <p className="text-justify">
+                And because you own the platform, you choose the AI.
+                Use our built-in assistant, connect Claude, ChatGPT, or your own custom AI through the built-in MCP server.
+              </p>
+
+              <p className="text-justify font-semibold">
+                Your platform, your data, your AI assistant, your choice.
+              </p>
+
+              <hr className="my-12 border-gray-200" />
 
               <p className="text-justify font-semibold text-lg">
                 <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent">

@@ -1,96 +1,138 @@
 ---
-title: Dashboard Overview
-description: Comprehensive admin dashboard for managing your Openfront e-commerce platform with enterprise-grade features
+title: Platform Overview
+description: Order routing dashboard for managing shops, channels, matches, and order processing in Openship
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront comes with a comprehensive admin dashboard that provides all the tools needed to manage your e-commerce platform. Built with Next.js 15 and KeystoneJS 6, the dashboard offers a modern, responsive interface for business operations.
+Openship has 4 main sections for managing order routing between your shops and fulfillment providers. Built with Next.js 15 and KeystoneJS 6, it gives you a clean interface for connecting everything together.
 
 <Callout type="info">
-**Want Complete Customization?** Openfront's dashboard can be deployed as a separate application, allowing you to customize the interface, add new pages, and integrate with your existing systems. [Learn about custom dashboards →](/docs/ecommerce/dashboard/custom)
+**Order Routing Platform**: Openship is NOT an e-commerce platform. It's an order routing platform that connects shops (where you sell) to channels (where you fulfill).
 </Callout>
 
-## Dashboard Navigation
+## Platform Sections
 
-The dashboard is organized into focused sections for efficient management:
+The Openship platform has exactly 4 main sections for order routing management:
 
-### Core Operations
-- **Orders** - Complete order management, returns, claims, and fulfillment tracking
-- **Analytics** - Sales reports, revenue tracking, and business performance metrics
-- **Markets** - Multi-regional settings including countries, currencies, and shipping zones
+### Orders
+Handle customer orders with automatic matching and fulfillment. See orders from your connected shops and route them to the right fulfillment providers.
 
-### Product Management
-- **Products** - Product catalog with variants, inventory, and pricing management
-- **Categories** - Product category hierarchy and organization
-- **Collections** - Marketing-focused product groupings and themed collections
+**Key Features:**
+- Order processing and routing
+- Automated order fulfillment
+- Order status tracking
+- Manual order intervention when needed
 
-### Customer Management
-- **Users** - Customer accounts, administrative users, and permission management
+### Shops  
+Connect e-commerce platforms like Shopify, Openfront, BigCommerce to source products and receive orders.
 
-### Marketing & Growth
-- **Discounts** - Promotional codes, discount rules, and campaign management
-- **Price Lists** - Customer-specific pricing and bulk pricing strategies
-- **Gift Cards** - Gift card creation, redemption tracking, and balance management
-- **Shipping Options** - Customer-facing shipping methods and pricing
+**Key Features:**
+- Shop connection management
+- Order source configuration
+- Shop integration settings
+- Platform-specific configurations
 
-### System Integration
-- **Shipping Providers** - Configure Shippo and other shipping integrations
-- **Payment Providers** - Set up Stripe, PayPal, and other payment gateways
+### Channels
+Manage fulfillment destinations where orders are routed and processed. Connect to suppliers, 3PLs, or other fulfillment providers.
 
-## Key Features
+**Key Features:**
+- Channel connection management
+- Fulfillment destination setup
+- Channel integration settings
+- Order routing configuration
 
-### Modern Interface
-- **Responsive Design**: Works seamlessly across desktop, tablet, and mobile devices
-- **Intuitive Navigation**: Organized sidebar with collapsible sections for efficient workflow
-- **Advanced Filtering**: Search and filter capabilities across all data management screens
-- **Bulk Operations**: Mass actions for efficient data management
+### Matches
+Map shop items to channel items for automated inventory synchronization and order routing.
 
-### Business Management
-- **Real-time Analytics**: Live sales data, revenue tracking, and performance insights
-- **Order Processing**: Complete order lifecycle from creation to fulfillment
-- **Inventory Management**: Stock tracking with multi-location support
-- **Customer Relations**: User accounts, permissions, and customer data management
+**Key Features:**
+- Product matching between shops and channels
+- Automated product mapping
+- Inventory synchronization
+- Flexible vendor switching
 
-### System Administration  
-- **Multi-Regional Support**: Manage currencies, countries, and regional settings
-- **Provider Integration**: Configure payment and shipping providers with webhook support
-- **Security & Permissions**: Role-based access control with audit trails
-- **API Management**: Generate API keys and manage external integrations
+## How Openship Works
 
-### Advanced Models
-For developers and advanced users, the dashboard provides direct access to all underlying data models through the Models section, including detailed management of orders, products, customers, payments, shipping, and system configurations.
+### Order Flow
+1. **Orders arrive** from connected shops (Shopify, Openfront, etc.)
+2. **Openship routes orders** to appropriate channels based on matches
+3. **Channels fulfill orders** and provide tracking information
+4. **Updates flow back** to original shops automatically
+
+### Two-Tier Architecture
+Openship uses a platform-instance architecture:
+
+- **Platforms** define integration templates (ShopPlatform, ChannelPlatform)
+- **Instances** are actual connections using platform templates (Shop, Channel)
+
+This lets you reuse integration logic across multiple connections of the same type.
+
+## Key Capabilities
+
+### Automated Order Routing
+- Connect multiple shops to multiple channels
+- Automatic order forwarding based on product matches
+- Flexible routing rules and conditions
+- Real-time order status updates
+
+### Integration Management
+- Platform adapters for different shop types
+- Channel adapters for different fulfillment providers
+- Webhook processing for real-time updates
+- API integrations for smooth data flow
+
+### Product Matching
+- Map shop products to channel products
+- Support for multiple fulfillment options per product
+- Easy vendor switching without disruption
+- Automatic inventory sync
+
+## Data Models
+
+Openship uses 15 core data models for order routing:
+
+**User & Auth:** User, Role, ApiKey
+**Platforms:** ShopPlatform, ChannelPlatform  
+**Instances:** Shop, Channel
+**Orders:** Order, LineItem, CartItem
+**Products:** ShopItem, ChannelItem, Match
+**Routing:** Link, TrackingDetail
 
 ## Getting Started
 
-1. **Access your dashboard** at `/dashboard` after installation
-2. **Configure basic settings** including store information and regional preferences  
-3. **Set up integrations** for payments and shipping providers
-4. **Add your product catalog** with categories and collections
-5. **Start processing orders** and managing your business operations
+1. **Access your platform** at `/platform` after installation
+2. **Connect shops** where you receive orders
+3. **Connect channels** where you fulfill orders  
+4. **Create product matches** between shop and channel products
+5. **Set up links** to automate order routing
+6. **Monitor order processing** and adjust as needed
+
+## API Access
+
+Generate API keys through the KeystoneJS admin interface at `/dashboard/ApiKey` to integrate with external systems.
 
 ## Next Steps
 
 <Cards>
   <Card 
-    title="Custom Dashboard" 
-    href="/docs/ecommerce/dashboard/custom" 
-    description="Deploy and customize your own dashboard with complete design freedom"
+    title="Shops" 
+    href="/docs/openship/ecommerce/shops" 
+    description="Connect Shopify, Openfront, and other shop platforms"
+  />
+  <Card 
+    title="Channels" 
+    href="/docs/openship/ecommerce/channels" 
+    description="Set up fulfillment channels and suppliers"
+  />
+  <Card 
+    title="Order Routing" 
+    href="/docs/openship/ecommerce/getting-started" 
+    description="Learn how to set up automated order routing"
   />
   <Card 
     title="API Reference" 
-    href="/docs/ecommerce/api-reference" 
-    description="Complete GraphQL API documentation for integrations"
-  />
-  <Card 
-    title="Payment Providers" 
-    href="/docs/ecommerce/payment-providers" 
-    description="Configure Stripe, PayPal, and other payment systems"
-  />
-  <Card 
-    title="Shipping Providers" 
-    href="/docs/ecommerce/shipping-providers" 
-    description="Set up Shippo and other shipping integrations"
+    href="/docs/openship/ecommerce/api-reference" 
+    description="GraphQL API for custom integrations"
   />
 </Cards>

@@ -1,15 +1,290 @@
 ---
 title: GraphQL API
-description: GraphQL API reference for Openship
+description: GraphQL API reference for Openship order routing platform
 icon: Binary
 ---
 
 # GraphQL Playground
 
-Each Openship instance has a GraphQL Playground at `/api/graphql`. Use it to get the API reference, interact with the API, and build integrations.
+Explore the Openship GraphQL API with the interactive playground below. Test order routing, product matching, and multi-channel operations directly in your browser.
 
-For testing, use the development instance playground: https://devs.myopenship.com/api/graphql
+<iframe 
+  src="https://os.openship.org/api/graphql" 
+  className="w-full h-[80vh] border-0 rounded-lg ring-1 ring-gray-900/5 dark:ring-white/10 shadow-inner not-prose"
+  title="Openship GraphQL Playground"
+/>
 
-## Accessing the API
+## API Authentication
 
-On the dashboard, generate an API key on the sidebar. Pass the key as a header named `x-api-key` for all API calls.
+Openship uses simple API key authentication for programmatic access.
+
+### Generate API Key
+
+import { Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+### Navigate to API Keys
+Go to your Openship dashboard at `your-domain.com/dashboard/platform/api-keys`
+
+### Create API Key
+Click **"Create Api Key"** to create a new API key
+
+### Configure Key
+1. **User**: Select the user account this key will act as
+2. **Name** (optional): Enter a descriptive name for tracking purposes
+
+### Copy Your Key
+Save the key and copy the generated API key ID. This key provides full access to the associated user's resources and can only be viewed once.
+</Steps>
+
+## Making API Calls
+
+Use Bearer token authentication with your API key:
+
+```bash
+curl -X POST \
+  https://your-domain.com/api/graphql \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer your-api-key-here' \
+  -d '{"query": "{ orders { id } }"}'
+```
+
+## Authentication Notes
+
+⚠️ **Important**: Openship API keys provide full access to the associated user account without granular scopes. Treat them like passwords and store securely.
+
+## Core API Operations
+
+### Order Management
+
+```graphql
+# Search orders from connected shops
+query SearchShopOrders($shopId: ID!, $filters: OrderFilters) {
+  searchShopOrders(shopId: $shopId, filters: $filters) {
+    id
+    name
+    email
+    lineItems {
+      name
+      quantity
+      price
+    }
+  }
+}
+
+# Process order for fulfillment
+mutation MatchOrder($orderId: ID!) {
+  matchOrder(orderId: $orderId) {
+    success
+    message
+    matches {
+      shopItem {
+        name
+      }
+      channelItem {
+        name
+      }
+    }
+  }
+}
+```
+
+### Product Matching
+
+```graphql
+# Search products from shops
+query SearchShopProducts($shopId: ID!, $search: String) {
+  searchShopProducts(shopId: $shopId, search: $search) {
+    id
+    name
+    image
+    price
+    inventory
+  }
+}
+
+# Search products from channels
+query SearchChannelProducts($channelId: ID!, $search: String) {
+  searchChannelProducts(channelId: $channelId, search: $search) {
+    id
+    name
+    image
+    price
+    inventory
+  }
+}
+
+# Create product match
+mutation CreateMatch($data: MatchCreateInput!) {
+  createMatch(data: $data) {
+    id
+    shopItem {
+      name
+    }
+    channelItem {
+      name
+    }
+  }
+}
+```
+
+### Shop & Channel Management
+
+```graphql
+# Get connected shops
+query Shops {
+  shops {
+    id
+    name
+    type
+    platform {
+      name
+    }
+  }
+}
+
+# Get connected channels
+query Channels {
+  channels {
+    id
+    name
+    type
+    platform {
+      name
+    }
+  }
+}
+```
+
+### Order Processing
+
+```graphql
+# Add matched products to cart
+mutation AddMatchToCart($orderId: ID!, $matches: [MatchInput!]!) {
+  addMatchToCart(orderId: $orderId, matches: $matches) {
+    success
+    cartItems {
+      id
+      name
+      quantity
+    }
+  }
+}
+
+# Place orders to channels
+mutation PlaceOrders($cartItems: [CartItemInput!]!) {
+  placeOrders(cartItems: $cartItems) {
+    success
+    orders {
+      id
+      channel {
+        name
+      }
+      trackingNumber
+    }
+  }
+}
+```
+
+## Webhook Endpoints
+
+Openship has webhook endpoints for real-time order processing:
+
+### Shop Webhooks
+- `POST /api/handlers/shop/create-order/{shopId}` - New order from shop
+- `POST /api/handlers/shop/cancel-order/{shopId}` - Order cancellation
+
+### Channel Webhooks  
+- `POST /api/handlers/channel/cancel-purchase/{channelId}` - Purchase cancellation
+- `POST /api/handlers/channel/create-tracking/{channelId}` - Tracking information
+
+## Data Models
+
+### Core Types
+
+```graphql
+type Order {
+  id: ID!
+  orderId: String
+  email: String
+  name: String
+  lineItems: [LineItem!]!
+  shop: Shop
+}
+
+type Shop {
+  id: ID!
+  name: String!
+  type: String!
+  platform: ShopPlatform
+  domain: String
+}
+
+type Channel {
+  id: ID!
+  name: String!
+  type: String!
+  platform: ChannelPlatform
+  endpoint: String
+}
+
+type Match {
+  id: ID!
+  shopItem: ShopItem!
+  channelItem: ChannelItem!
+  shop: Shop!
+  channel: Channel!
+}
+```
+
+### Integration Types
+
+```graphql
+type ShopPlatform {
+  id: ID!
+  name: String!
+  searchProductsFunction: String
+  searchOrdersFunction: String
+  getWebhooksFunction: String
+}
+
+type ChannelPlatform {
+  id: ID!
+  name: String!
+  searchProductsFunction: String
+  createPurchaseFunction: String
+  createTrackingFunction: String
+}
+```
+
+## Error Handling
+
+The API returns errors in standard GraphQL format:
+
+```json
+{
+  "errors": [
+    {
+      "message": "Shop not found",
+      "extensions": {
+        "code": "NOT_FOUND",
+        "field": "shopId"
+      }
+    }
+  ]
+}
+```
+
+Common error codes:
+- `NOT_FOUND` - Resource doesn't exist
+- `UNAUTHORIZED` - Invalid API key
+- `VALIDATION_ERROR` - Invalid input data
+- `INTEGRATION_ERROR` - External platform error
+
+## Rate Limiting
+
+API requests are rate limited to prevent abuse. Limits vary by endpoint and authentication method.
+
+## GraphQL Schema
+
+For the complete, up-to-date schema, visit your instance's GraphQL Playground at `/api/graphql` where you can explore all available types, queries, and mutations with auto-completion and documentation.

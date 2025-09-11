@@ -4,6 +4,7 @@ import createGlobe, { COBEOptions } from "cobe"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import { cn } from "@/lib/utils"
+import { useIsWebGLAvailable } from "@/hooks/use-webgl"
 
 const GLOBE_CONFIG: COBEOptions = {
   width: 800,
@@ -40,6 +41,7 @@ export function Globe({
   className?: string
   config?: COBEOptions
 }) {
+  const isWebGLAvailable = useIsWebGLAvailable()
   let phi = 0
   let width = 0
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -79,19 +81,44 @@ export function Globe({
   }
 
   useEffect(() => {
+    if (!isWebGLAvailable || !canvasRef.current) return
+
     window.addEventListener("resize", onResize)
     onResize()
 
-    const globe = createGlobe(canvasRef.current!, {
+    const globe = createGlobe(canvasRef.current, {
       ...config,
       width: width * 2,
       height: width * 2,
       onRender,
     })
 
-    setTimeout(() => (canvasRef.current!.style.opacity = "1"))
-    return () => globe.destroy()
-  }, [])
+    setTimeout(() => {
+      if (canvasRef.current) {
+        canvasRef.current.style.opacity = "1"
+      }
+    })
+    return () => {
+      globe.destroy()
+      window.removeEventListener("resize", onResize)
+    }
+  }, [isWebGLAvailable, onRender, config])
+
+  // Fallback for when WebGL is not available
+  if (!isWebGLAvailable) {
+    return (
+      <div
+        className={cn(
+          "absolute inset-0 mx-auto aspect-[1/1] w-full max-w-[600px] flex items-center justify-center",
+          className,
+        )}
+      >
+        <div className="text-muted-foreground text-sm">
+          Globe requires WebGL support
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

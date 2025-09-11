@@ -6,10 +6,90 @@ icon: Binary
 
 # GraphQL Playground
 
-Each Openfront instance has a GraphQL Playground at `/api/graphql`. Use it to get the API reference, interact with the API, and build integrations.
+Explore the OpenFront GraphQL API with the interactive playground below. You can test queries, view the schema, and build integrations directly in your browser.
 
-For testing, use the development instance playground: https://demo.openfront.com/api/graphql
+<iframe 
+  src="https://ecommerce.openship.org/api/graphql" 
+  className="w-full h-[80vh] border-0 rounded-lg ring-1 ring-gray-900/5 dark:ring-white/10 shadow-inner not-prose"
+  title="OpenFront GraphQL Playground"
+/>
 
-## Accessing the API
+## API Authentication
 
-On the dashboard, generate an API key on the sidebar. Pass the key as a header named `x-api-key` for all API calls.
+OpenFront uses Bearer token authentication with comprehensive scope-based permissions.
+
+### Generate API Key
+
+import { Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+### Navigate to API Keys
+Go to your OpenFront dashboard at `your-domain.com/dashboard/platform/api-keys`
+
+### Create New Key
+Click **"Create Api Key"** to open the key creation form
+
+### Configure Permissions
+1. **Name**: Enter a descriptive name for your API key
+2. **Scopes**: Select the permissions you need from the dropdown:
+   - `read_products`, `write_products` - Product management
+   - `read_orders`, `write_orders` - Order processing 
+   - `read_customers`, `write_customers` - Customer data
+   - `read_fulfillments`, `write_fulfillments` - Order fulfillment
+   - `read_checkouts`, `write_checkouts` - Checkout process
+   - `read_discounts`, `write_discounts` - Discount management
+   - `read_gift_cards`, `write_gift_cards` - Gift card operations
+   - `read_returns`, `write_returns` - Return processing
+   - `read_sales_channels`, `write_sales_channels` - Sales channels
+   - `read_payments`, `write_payments` - Payment processing
+   - `read_webhooks`, `write_webhooks` - Webhook management
+   - `read_apps`, `write_apps` - App integrations
+3. **Expiration** (optional): Set an expiration date for the key
+4. **IP Restrictions** (optional): Limit access to specific IP addresses
+
+### Copy Your Key
+Click **"Create"** and immediately copy the generated API key. It starts with `of_` and can only be viewed once.
+</Steps>
+
+## Making API Calls
+
+Use the Bearer token authentication with your API key:
+
+```bash
+curl -X POST \
+  https://your-domain.com/api/graphql \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer of_your-api-key-here' \
+  -d '{"query": "{ products { id name } }"}'
+```
+
+## Example Queries
+
+### Get Products
+```graphql
+query GetProducts {
+  products {
+    id
+    name
+    description
+    variants {
+      id
+      price
+      inventory
+    }
+  }
+}
+```
+
+### Create Order
+```graphql
+mutation CreateOrder($data: OrderCreateInput!) {
+  createOrder(data: $data) {
+    id
+    displayId
+    email
+    status
+    total
+  }
+}
+```

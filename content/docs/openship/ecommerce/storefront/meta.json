@@ -1,9 +1,0 @@
-{
-  "title": "Storefront",
-  "description": "Customer-facing storefront for your e-commerce platform",
-  "icon": "Store",
-  "pages": [
-    "index",
-    "custom"
-  ]
-}
