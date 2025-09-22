@@ -10,6 +10,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
   --radius-lg: var(--radius);
+  --font-instrument-serif: var(--font-instrument-serif);
 }
 
 :root {
