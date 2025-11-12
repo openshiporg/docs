@@ -61,9 +61,9 @@ export default function EthosPage() {
           <div>
             <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Building a Decentralized Marketplace</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
-              At Openship, we are creating open source software as a service platforms for every vertical, 
-              from hotels to grocery stores to barbershops. Together, these vertical platforms form the 
-              foundation of a decentralized marketplace, where businesses fully own their storefronts and 
+              At <a href="https://openship.org" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">Openship</a>, we are creating <a href="https://github.com/openshiporg/openfront" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">open source software as a service platforms</a> for every vertical,
+              from hotels to grocery stores to barbershops. Together, these vertical platforms form the
+              foundation of a <a href="https://github.com/openshiporg/marketplace" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">decentralized marketplace</a>, where businesses fully own their storefronts and
               customer relationships.
             </p>
             <p className="text-fd-muted-foreground leading-relaxed">
@@ -96,7 +96,7 @@ export default function EthosPage() {
           <div>
             <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Built for Independence</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
-              This is why we built infrastructure that you can truly own. With Openship and Openfront, 
+              This is why we built infrastructure that you can truly own. With Openship and <a href="https://github.com/openshiporg/openfront" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">Openfront</a>, 
               your store is your system, your code, your data. If we disappear tomorrow, your business 
               keeps running because the tools are open and under your control.
             </p>
