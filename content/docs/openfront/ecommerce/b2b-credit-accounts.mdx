@@ -1,0 +1,66 @@
+---
+title: B2B & Credit Accounts
+description: Business account requests, credit approval, and API-based ordering for B2B workflows.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront includes B2B account flows for stores that need more than normal retail checkout. That usually means business account requests, approved credit limits, payment terms, and API-backed ordering for larger customers.
+
+## Business account workflow
+
+<Steps>
+<Step>
+### Request submission
+A signed-in user can submit a business account request with details like:
+- business type
+- expected monthly volume
+- requested credit limit
+- a short description of the business
+</Step>
+
+<Step>
+### Admin review
+Store staff review the request in the dashboard and decide whether to approve it.
+
+That review can include:
+- internal notes
+- adjusted credit limits
+- approval or rejection based on the store's process
+</Step>
+
+<Step>
+### Account setup after approval
+When approved, Openfront can create the linked account records, apply the credit terms, and generate the token or access needed for API ordering.
+</Step>
+</Steps>
+
+## Credit and billing behavior
+
+For approved B2B accounts, the main difference is that the order flow does not have to behave like ordinary pay-now retail checkout.
+
+That can include:
+- credit limit tracking
+- used versus available credit
+- billing cycles
+- outstanding balances
+- account-level payment terms
+
+## API ordering for partners
+
+B2B partners can use their customer token to place orders programmatically.
+
+Typical use cases:
+- automated inventory checks
+- headless reordering
+- partner portals
+- bulk ordering from an external system
+
+## Where this is useful
+
+- wholesale accounts
+- reseller programs
+- distributors
+- business buyers with invoicing or payment terms
+
+The important distinction is that these flows are account-driven, not just discount-code-driven. The platform treats them as a different operating model, which is what B2B stores usually need.

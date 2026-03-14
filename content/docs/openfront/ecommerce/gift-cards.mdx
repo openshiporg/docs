@@ -1,0 +1,30 @@
+---
+title: Gift Cards
+description: How gift cards are created, redeemed, and tracked across multiple transactions.
+---
+
+Gift cards in Openfront are treated as a real balance, not just a one-time coupon code.
+
+That means a gift card can be created, issued to a customer, redeemed across more than one order, and tracked through its transaction history.
+
+## What the gift card flow covers
+
+- custom gift card amounts
+- unique gift card codes
+- balance tracking
+- expiration dates when used
+- transaction records for redemption activity
+
+## Typical lifecycle
+
+1. a gift card is created in the dashboard or sold as a product
+2. the recipient gets the code
+3. the code is applied during checkout
+4. Openfront checks whether the card is valid and how much balance remains
+5. the order total is reduced and the transaction is recorded
+
+## Why it matters
+
+Gift cards are easy to describe and surprisingly annoying to implement well. The useful part is not just the code itself. It is the accounting around partial use, remaining balance, and transaction history.
+
+That is the part Openfront already models.

@@ -35,7 +35,7 @@ export interface ModelNodeData extends Record<string, unknown> {
   }>;
 }
 
-export interface RelationEdgeData {
+export interface RelationEdgeData extends Record<string, unknown> {
   relationType: RelationType;
 }
 

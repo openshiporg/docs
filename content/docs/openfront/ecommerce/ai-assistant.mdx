@@ -1,0 +1,87 @@
+---
+title: AI assistant
+description: Use the MCP-backed assistant in the dashboard to search and update store data.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront includes an AI assistant inside the admin dashboard. It is not a generic help bot. It connects to the same GraphQL API the rest of the product uses, inspects the schema through MCP tools, and then runs real queries or mutations based on what you ask.
+
+That means the assistant is useful for actual store work, not just answering documentation questions.
+
+## What it is good at
+
+- looking up products, orders, customers, and other records
+- creating or updating data without you having to remember exact mutation names
+- making repetitive admin tasks faster
+- helping operators move around a large schema with plain language instead of GraphQL syntax
+
+## How it works
+
+<Steps>
+<Step>
+### It inspects the live schema
+The assistant talks to the MCP transport exposed by the app and discovers models, fields, and operations before it makes a change.
+</Step>
+<Step>
+### It maps your request to the right model
+If you ask for something like "find the Blue Hoodie" or "update this region's currency settings," the assistant resolves that request to the correct GraphQL types and operations.
+</Step>
+<Step>
+### It executes the same API the app already uses
+The actual work still happens through GraphQL. There is no hidden admin backdoor.
+</Step>
+<Step>
+### It respects your session
+The assistant runs with your current permissions. If your account cannot edit products or view certain records, the assistant cannot do that either.
+</Step>
+</Steps>
+
+## Useful prompts to start with
+
+Try prompts like these inside the dashboard:
+
+- "Find products with Penrose in the name."
+- "Increase the price of the Summer Collection by 10 percent."
+- "Show me unpaid orders from this week."
+- "Create a discount code for 15 percent off."
+- "List payment providers available in Europe."
+
+## Where it lives in the codebase
+
+If you want to customize the assistant, start with these files:
+
+- `app/api/completion/route.ts`
+- `app/api/mcp-transport/[transport]/route.ts`
+- `features/dashboard/hooks/use-chat-submission.tsx`
+- `features/dashboard/components/dual-sidebar/ai-chat-sidebar.tsx`
+
+## Configuration
+
+The dashboard supports two main ways to run the assistant.
+
+### Shared keys
+Use platform-managed OpenRouter credentials when you want the team to share a central setup.
+
+### Local keys
+Use your own OpenRouter key when you want per-user control over model choice and cost.
+
+The current dashboard exposes those options through the assistant settings UI.
+
+## Supported models
+
+For data-heavy admin work, higher-reasoning models tend to hold up better. A practical starting point is:
+
+- `anthropic/claude-3.5-sonnet`
+- `openai/gpt-4o`
+
+## What to be careful about
+
+- The assistant is only as safe as your access rules.
+- You should still review bulk changes before trusting them.
+- Natural language is convenient, but it is not a substitute for good permissions and validation.
+
+<Callout type="info">
+Think of the AI assistant as an admin operator that already knows your schema. It is not a customer-facing chat widget, and it should not be treated like one.
+</Callout>

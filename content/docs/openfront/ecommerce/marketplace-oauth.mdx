@@ -1,0 +1,53 @@
+---
+title: Marketplace & OAuth
+description: Connect external applications to an Openfront store through OAuth-based access.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront includes OAuth-based integration flows for stores that want to connect external apps or build an app ecosystem around the platform.
+
+This is useful when another system needs controlled access to store data without sharing a full admin session.
+
+## The OAuth flow
+
+<Steps>
+<Step>
+### App registration
+An app is registered with the credentials and redirect URLs it needs.
+
+That usually includes:
+- client ID and secret
+- redirect URIs
+- requested scopes
+</Step>
+
+<Step>
+### User authorization
+When the app wants access, the user is sent to an authorization screen where they can see what the app is asking for.
+</Step>
+
+<Step>
+### Installation and token use
+Once approved, the app receives the token it needs to call the Openfront API within the granted scope.
+</Step>
+</Steps>
+
+## Why this matters
+
+OAuth is the safer path when you want third-party access without turning every integration into a custom one-off token exchange.
+
+Typical use cases:
+- external order-management systems
+- marketplace connectors
+- custom partner apps
+- internal tools that should not run as full dashboard users
+
+## Related concepts
+
+These integrations often sit alongside:
+- scoped app permissions
+- idempotency handling for repeated requests
+- webhook subscriptions for syncing data changes
+
+If you are building apps around Openfront instead of just running a single storefront, this is one of the features that starts to matter quickly.

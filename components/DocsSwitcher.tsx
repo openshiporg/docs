@@ -16,7 +16,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export function DocsSwitcher() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
   const router = useRouter();
   
   const options = [

@@ -1,0 +1,57 @@
+---
+title: Product Matching
+description: Link products across different shops and channels for automated routing.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+# Product Matching
+
+Product Matching is the "brain" of Openship. It allows the system to understand that "Product A" in your Shopify store is the same as "Product B" in your supplier's fulfillment system.
+
+## How Matches Work
+
+A **Match** is a many-to-one or one-to-one relationship between a **Shop Item** (where you sell) and a **Channel Item** (where you fulfill).
+
+### Variant-Level Matching
+Openship supports granular matching at the variant level. You can map a "Large Red T-Shirt" in Shopify to a specific SKU in your 3PL system, even if the names or SKUs don't match exactly.
+
+### Automated Routing
+When an order arrives from a Shop:
+1. **Identification**: Openship looks at the line items in the order.
+2. **Lookup**: It searches for an active **Match** for each item.
+3. **Routing**: If a match is found, Openship knows exactly which **Channel** to send the fulfillment request to and which product ID to use.
+
+## Creating Matches
+
+<Steps>
+<Step>
+### Import Items
+Connect your Shop and Channel. Openship will automatically import your product catalog.
+</Step>
+<Step>
+### Select Shop Item
+Navigate to the **Matches** page and select a product from your Shop.
+</Step>
+<Step>
+### Link to Channel Item
+Search for and select the corresponding item from your fulfillment Channel.
+</Step>
+<Step>
+### Confirm Variants
+Map the individual variants between the two systems. You can use the "Auto-match by SKU" feature to speed up this process if your SKUs are consistent.
+</Step>
+</Steps>
+
+## Advanced Matching Scenarios
+
+### Bundling
+Map a single Shop Item to multiple Channel Items. When the Shop Item is sold, Openship will trigger fulfillment for all linked items in the bundle.
+
+### Multi-Channel Sourcing
+Map a Shop Item to different Channels based on availability or shipping destination (coming soon).
+
+## Benefits
+- **Zero Manual Data Entry**: Once matched, orders flow automatically.
+- **Error Reduction**: Eliminates the risk of sending the wrong product to fulfillment.
+- **Scale**: Manage thousands of SKUs across multiple vendors with ease.
