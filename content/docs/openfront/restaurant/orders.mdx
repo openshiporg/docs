@@ -1,0 +1,119 @@
+---
+title: Orders and service states
+description: How restaurant orders are modeled, filtered, and moved through service.
+icon: Ticket
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The order model is the backbone of Openfront Restaurant. Almost every surface touches it: storefront checkout, POS, service floor, KDS, payments, reporting, and inventory depletion.
+
+## Core order statuses
+
+The `RestaurantOrder` model currently uses these statuses:
+
+- `open`
+- `sent_to_kitchen`
+- `in_progress`
+- `ready`
+- `served`
+- `completed`
+- `cancelled`
+
+That status flow is not just cosmetic. It drives kitchen visibility, table state, reporting, and stock updates.
+
+## What an order can contain
+
+A restaurant order can already store:
+
+- order type and source
+- table links for dine-in service
+- guest count
+- special instructions
+- urgency and hold state
+- customer name, email, phone, and delivery fields
+- courses
+- order items
+- payments
+- discounts and gift cards relationships
+- a per-order currency code
+
+## How orders move through service
+
+<Steps>
+<Step>
+### The order is created
+An order can come from the storefront, POS, or another internal workflow. At creation time, it gets an order number, line items, totals, and context like tables or customer info.
+</Step>
+<Step>
+### Kitchen work begins
+Once payment is confirmed or the order is otherwise pushed forward, kitchen tickets are created per station. At that point the order moves into the kitchen pipeline.
+</Step>
+<Step>
+### Front of house and kitchen update it together
+KDS ticket status and item fulfillment push the order from `sent_to_kitchen` to `in_progress`, then `ready`, then `served`.
+</Step>
+<Step>
+### Payment closes the order
+When the check is settled, the order becomes `completed`. If it is cancelled instead, the status changes accordingly.
+</Step>
+<Step>
+### Inventory and reporting catch up
+On completion, recipe-linked ingredients can be depleted automatically and the finished sale shows up in reporting.
+</Step>
+</Steps>
+
+## Order list views
+
+The order list already supports a few operational presets:
+
+- **Kitchen**: open, sent to kitchen, in progress, and ready
+- **Expedite**: ready and served
+- **Cashier**: served and completed
+
+You can also filter directly by status or source.
+
+## Detail and fulfillment pages
+
+Openfront Restaurant includes dedicated order pages for:
+
+- reviewing an order in detail
+- handling service management and fulfillment
+- jumping into payment for a live check
+
+Those screens are where staff can move from a simple list to the actual work of handling the table.
+
+## Example query
+
+```graphql
+query KitchenOrders {
+  restaurantOrders(
+    where: { status: { in: [open, sent_to_kitchen, in_progress, ready] } }
+    orderBy: { createdAt: desc }
+  ) {
+    id
+    orderNumber
+    status
+    orderType
+    isUrgent
+    tables {
+      tableNumber
+    }
+  }
+}
+```
+
+## Important hooks in the model
+
+A few useful behaviors already happen automatically:
+
+- dine-in orders can mark linked tables as occupied on create
+- completed or cancelled dine-in orders can move tables into cleaning
+- completed orders can trigger ingredient depletion when recipes exist
+
+That means order status is already doing real platform work behind the scenes.
+
+<Callout type="info">
+If you are debugging restaurant behavior, start with the order record. In practice, it is the shared source of truth between guest ordering, staff service, kitchen execution, and reporting.
+</Callout>

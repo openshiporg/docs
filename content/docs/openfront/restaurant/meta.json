@@ -1,6 +1,31 @@
 {
   "title": "Restaurant",
-  "description": "Food delivery and ordering platform",
+  "description": "Restaurant operating system with storefront, POS, KDS, and floor management",
   "icon": "UtensilsCrossed",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "ai-assistant",
+    "---Storefront---",
+    "storefront/index",
+    "---Operations---",
+    "pos/index",
+    "service-floor",
+    "orders",
+    "kds/index",
+    "waitlist/index",
+    "---Staff & labor---",
+    "staff/index",
+    "---Reporting---",
+    "reports/index",
+    "---Configuration---",
+    "menu/index",
+    "menu/inventory",
+    "store-settings",
+    "payment-providers",
+    "---Promotions---",
+    "promotions"
+  ]
 }

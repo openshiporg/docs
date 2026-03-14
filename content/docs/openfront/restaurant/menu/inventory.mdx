@@ -1,0 +1,96 @@
+---
+title: Inventory and food costing
+description: Ingredients, recipes, purchase orders, waste logs, and stock depletion.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Inventory is where a restaurant platform either becomes useful or stays decorative.
+
+Openfront Restaurant already includes the core pieces you need to connect menu sales to ingredient cost and stock movement.
+
+## What is in the inventory layer
+
+### Ingredients
+Ingredients track:
+
+- stock quantity
+- unit of measure
+- category
+- par level
+- reorder point and reorder quantity
+- cost per unit
+- vendor
+- storage location
+- expiration date and SKU
+
+### Recipes
+Recipes link menu items to their ingredient usage. Each recipe can store:
+
+- the linked menu item
+- ingredient list as structured JSON
+- yield
+- prep time
+- instructions
+- total cost
+- cost per serving
+- food cost percentage
+
+### Purchasing and waste
+The platform also includes:
+
+- vendors
+- inventory locations
+- purchase orders
+- stock movements
+- waste logs
+
+## The practical workflow
+
+<Steps>
+<Step>
+### Create ingredients first
+Add your raw materials with unit, cost, vendor, and baseline stock information.
+</Step>
+<Step>
+### Build recipes for menu items
+Create a recipe record, link it to a menu item, and add the ingredients that make up that dish.
+</Step>
+<Step>
+### Review food cost
+Once the recipe is in place, the app can calculate total cost, cost per serving, and food cost percentage.
+</Step>
+<Step>
+### Complete real orders
+When an order is completed and a linked recipe exists, the order hooks can deplete ingredient stock automatically and write stock-movement records.
+</Step>
+<Step>
+### Track purchasing and waste
+Use purchase orders to manage restocking and waste logs to understand where margin is leaking.
+</Step>
+</Steps>
+
+## Why this part matters
+
+A lot of restaurant software stops at "we sold the burger." The better question is whether you sold it at a number that still makes sense once the bun, beef, cheese, labor, and waste are all in the picture.
+
+This build is already moving in that direction.
+
+## Current strengths
+
+- ingredient records are detailed enough for real kitchen use
+- recipes already calculate cost metrics
+- waste has a dedicated model and screen
+- purchase orders have a useful workflow and status model
+- completed orders can write stock movement automatically
+
+## Current gaps
+
+- recipe ingredients are stored as JSON today, so this layer works best when your team is comfortable with structured admin data
+- unit conversion and purchasing normalization still have room to grow
+- the value of this module jumps once you commit to keeping recipe data current
+
+<Callout type="info">
+The inventory module is already worth documenting because it does real work. It just gets much better as your operational discipline improves.
+</Callout>

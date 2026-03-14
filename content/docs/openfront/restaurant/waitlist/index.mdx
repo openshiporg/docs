@@ -1,0 +1,59 @@
+---
+title: Waitlist and reservations
+description: Host-stand workflows for walk-ins, quoted waits, and table matching.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The waitlist flow is already one of the cleaner operational pieces in the product. Hosts can add parties, track quoted wait time, mark guests as notified, and seat them into tables that actually fit.
+
+## What the waitlist screen does
+
+- add a party with name, phone number, party size, quoted wait, and notes
+- keep the list focused on parties that are still waiting or already notified
+- move a party from waiting to notified
+- seat a party into a matching available table
+- cancel a party or mark them as a no-show
+
+## Seating workflow
+
+<Steps>
+<Step>
+### Add the party
+Create a waitlist entry with guest name, phone number, party size, quoted wait time, and optional notes.
+</Step>
+<Step>
+### Keep the status honest
+When the host reaches out, mark the guest as notified. If they disappear, cancel them or mark them as a no-show.
+</Step>
+<Step>
+### Match the right table
+When it is time to seat the party, the screen loads available tables with enough capacity for that group.
+</Step>
+<Step>
+### Seat the party
+Seating the guest updates the waitlist entry and flips the table to occupied at the same time.
+</Step>
+</Steps>
+
+## What about reservations?
+
+Reservations already exist in the data model and in the dashboard route. A reservation stores:
+
+- guest name and contact details
+- reservation date and party size
+- duration
+- status
+- special requests
+- assigned table
+
+That said, reservations are not as fully built out as the waitlist flow yet. Today they are better described as a solid model and admin surface than a finished host-stand product.
+
+<Callout type="info">
+The current waitlist handles real host work better than the reservations flow. If your launch depends heavily on formal reservation management, plan to spend more time there before calling it done.
+</Callout>
+
+## What is not wired yet
+
+The waitlist stores phone numbers and a notified state, but it does not send SMS messages by itself yet. If you want text messaging, you will need to add that integration on top of the existing workflow.

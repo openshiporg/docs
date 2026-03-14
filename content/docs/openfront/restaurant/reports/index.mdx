@@ -1,0 +1,71 @@
+---
+title: Reporting
+description: Sales, menu, labor, and operational reporting in the current restaurant build.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Restaurant already has four reporting surfaces that matter day to day. They are not pretending to be a giant BI warehouse. They are there to help an operator answer the obvious questions after a shift.
+
+## The reporting surfaces
+
+<Cards>
+  <Card title="Operational dashboard" href="/docs/openfront/restaurant/orders" description="Live counts for active orders, kitchen load, table occupancy, and quick operational jump-offs." />
+  <Card title="Sales report" href="/docs/openfront/restaurant/reports" description="Revenue, order volume, average check, guest count, dayparts, order type, and payment breakdowns." />
+  <Card title="Menu performance" href="/docs/openfront/restaurant/menu/inventory" description="Completed order-item data rolled up into item and category performance." />
+  <Card title="Labor report" href="/docs/openfront/restaurant/staff" description="Time-entry based labor cost, labor percentage, tips, and role-level breakdowns." />
+</Cards>
+
+## What each report is using
+
+### Operational dashboard
+The operational dashboard pulls together live counts like:
+
+- open orders
+- in-progress orders
+- ready orders
+- occupied tables
+- today's revenue and order count
+
+It is best treated as the quick pulse of the restaurant, not as a historical analysis tool.
+
+### Sales report
+The sales report is the strongest of the current views. It already rolls up:
+
+- total revenue
+- completed orders
+- average check
+- total guests
+- total tax, tips, and discounts
+- daypart trends
+- order-type mix
+- payment-method mix
+
+### Menu performance
+Menu performance is driven by completed `OrderItem` records. It helps you spot:
+
+- which items actually move
+- which categories are carrying revenue
+- which menu items are dragging
+- where recipe costing would make the view even sharper
+
+### Labor report
+Labor reporting combines `TimeEntry` data with completed-order sales. It is useful for:
+
+- payroll cost review
+- labor percentage
+- sales per labor hour
+- role-by-role cost breakdown
+
+## Where reporting is still early
+
+A few pieces are present but still rough:
+
+- some operational metrics are still more dashboard hints than finished analytics products
+- recipe-linked profitability gets much better once your inventory and recipe data are filled out
+- export and long-range forecasting are not the point of the current build yet
+
+<Callout type="info">
+The reporting story is already useful for operating a restaurant. It just is not trying to be everything at once.
+</Callout>

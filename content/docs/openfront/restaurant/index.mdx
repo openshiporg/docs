@@ -1,39 +1,112 @@
 ---
-title: Coming Soon
-description: Complete restaurant platform with table management and kitchen workflows
+title: Restaurant platform
+description: What ships in Openfront Restaurant today, and what still needs another pass.
 icon: UtensilsCrossed
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-## Openfront Restaurant
+Openfront Restaurant is the restaurant branch of Openfront. It is not just the e-commerce build with menu labels swapped in. The current codebase already covers the core restaurant loop: publish a menu, take orders from the storefront or staff-facing tools, route them into the kitchen, manage the floor, close the check, and report on the shift afterward.
 
-Openfront Restaurant gives you complete control over your restaurant operations with industry-specific tools that adapt to your workflow, not the other way around.
+<Callout type="info">
+This page reflects the code that is in `code/openfront-restaurant` right now. If something exists in the schema but still feels rough in the product, we say that plainly.
+</Callout>
 
-<Steps className="[&>*:last-child]:after:hidden">
+## What ships today
+
+<Cards>
+  <Card title="Storefront ordering" href="/docs/openfront/restaurant/storefront" description="One-page ordering flow with menu browsing, cart, checkout modal, account pages, and order confirmation." />
+  <Card title="Point of sale" href="/docs/openfront/restaurant/pos" description="Fast dine-in and takeout order entry with table selection, courses, urgency, and payment handoff." />
+  <Card title="Service floor" href="/docs/openfront/restaurant/service-floor" description="Live table-service workspace for moving tables, splitting checks, firing courses, and closing checks." />
+  <Card title="Kitchen display system" href="/docs/openfront/restaurant/kds" description="Station-based ticket routing, all-day view, item-level completion, and expediter gating." />
+  <Card title="Menu and modifiers" href="/docs/openfront/restaurant/menu" description="Categories, items, images, allergen data, dietary flags, modifiers, featured items, and availability." />
+  <Card title="Inventory and recipes" href="/docs/openfront/restaurant/menu/inventory" description="Ingredients, vendors, purchase orders, waste logs, recipe costing, and stock depletion on completed orders." />
+  <Card title="Staff and labor" href="/docs/openfront/restaurant/staff" description="Staff records, weekly scheduling, tip pools, time-entry driven labor reporting, and compensation fields." />
+  <Card title="Reporting" href="/docs/openfront/restaurant/reports" description="Operational dashboard plus sales, menu performance, and labor views." />
+</Cards>
+
+## How the order lifecycle works
+
+<Steps>
 <Step>
-### Storefront
-Customer-facing online ordering and table reservation system with your branding.
+### A guest or staff member starts the order
+A guest can order through the storefront. Staff can start the same order from the POS or service-floor tools. In every case, the system writes a `RestaurantOrder` with structured `OrderItem` records underneath it.
 </Step>
-
 <Step>
-### Dashboard
-Restaurant management system for kitchen operations, orders, and staff coordination.
+### Payment gets attached to the order
+The storefront creates the order first, then creates a payment record and confirms it. In staff workflows, payments are usually handled at the end of service through the payment screen.
 </Step>
-
 <Step>
-### Marketplace
-Open source food delivery and ordering platform that connects diners with restaurants - no commission fees or vendor lock-in.
+### The order enters the kitchen pipeline
+Once the order is paid or pushed forward, kitchen tickets are generated per station. Grill items go to Grill, fryer items go to Fryer, expo gets the final coordination view, and so on.
+</Step>
+<Step>
+### Front of house keeps the floor moving
+Hosts work the waitlist and seating flow. Servers use the service-floor UI to add items, fire or recall courses, split checks, combine tables, and transfer active checks when service changes hands.
+</Step>
+<Step>
+### The shift closes with reporting and inventory updates
+When an order reaches `completed`, recipe-linked ingredients can be depleted automatically, payments are recorded, and the reporting views pick up the finished sale.
 </Step>
 </Steps>
 
-## Key Flows
+## The main product surfaces
 
-### Customer Experience
-- **Online Ordering**: Browse menu, customize orders, schedule pickup/delivery, and track order status with real-time updates
-- **Table Reservations**: Check availability, book tables, manage party size, and receive confirmation with special requests handling
-- **Loyalty & Reviews**: Earn points, redeem rewards, leave feedback, and access exclusive member promotions
+### Storefront
+The storefront is a customer-facing menu and ordering experience. It is driven by `StoreSettings`, `MenuCategory`, `MenuItem`, `MenuItemModifier`, `Cart`, and `CartItem`. Guests browse the menu, customize items, choose pickup or delivery, and check out without leaving the page.
 
-### Restaurant Operations
-- **Kitchen Management**: Process orders efficiently, coordinate with front-of-house, manage inventory levels, and track preparation times
-- **Staff Coordination**: Schedule shifts, assign tables, coordinate delivery drivers, and manage peak hour operations
+### POS
+The POS screen is built for opening orders quickly. Staff can switch between dine-in and takeout, select one or more tables, build a cart, assign courses, flag the order as urgent, and send it into service.
+
+### Service floor
+The service-floor screen is where the restaurant starts to feel like restaurant software instead of generic admin UI. It tracks table states, lets staff open a table, add items to an active check, move parties, combine tables, split payments, and handle course timing.
+
+### KDS
+The kitchen display system organizes tickets by station and by status. It supports ticket view, all-day view, overdue timing thresholds, item-level completion, and an expediter gate so expo cannot bump a ticket while prep stations are still working it.
+
+### Platform admin
+The dashboard covers menu setup, store settings, payment providers, gift cards, discounts, onboarding, reports, staffing, and inventory workflows.
+
+## Current shape of the platform
+
+### Strong already
+
+- Storefront menu, cart, checkout modal, account area, and order confirmation flow
+- POS order entry with tables, courses, urgency, and special instructions
+- Service-floor actions for transfer, combine, split, fire, recall, and payment handoff
+- KDS with station tabs, lane filters, all-day view, and item-level readiness tracking
+- Menu modeling with images, featured items, modifiers, dietary flags, and meal-period tagging
+- Store settings for hours, locale, currency, delivery fees, pickup discounts, and storefront copy
+- Inventory, recipe costing, purchase orders, waste logs, and stock movements
+- Staff scheduling, tip pools, and labor reporting driven by time entries
+- Onboarding seed data for a demo restaurant and MCP-powered AI tooling
+
+### Still getting tightened up
+
+- Stripe is the primary verified payment path today. PayPal support exists in the adapter layer, but it is not wired as evenly through every restaurant workflow yet.
+- Gift cards are further along than discounts. Gift card redemption already shows up in the POS payment flow. Discount modeling and admin screens exist, but automatic discount application still needs more work.
+- Reservations exist as a model and admin route, but the host-stand flow is not as polished as the waitlist flow yet.
+- Permissions, role naming, and API-key scope enforcement still need a cleanup pass before you would call them finished.
+
+## Stack and architecture
+
+- Next.js 16 with the App Router
+- React 19
+- KeystoneJS 6 for lists, auth, and GraphQL
+- PostgreSQL through Prisma
+- Stripe, PayPal, and manual payment adapters
+- Tailwind CSS and shadcn/ui for the interface layer
+- MCP-backed AI actions in the dashboard
+
+Openfront Restaurant keeps the same overall pattern as the original Openfront project: thin app routes, business logic in `features/platform/*` and `features/keystone/*`, and a GraphQL API as the shared contract across storefront, admin, and AI workflows.
+
+## Where to go next
+
+<Cards>
+  <Card title="Get it running" href="/docs/openfront/restaurant/getting-started" description="Install the app, create your first admin user, and seed a working demo restaurant." />
+  <Card title="Learn the storefront" href="/docs/openfront/restaurant/storefront" description="See how guest ordering, checkout, and order confirmation work." />
+  <Card title="Run the floor" href="/docs/openfront/restaurant/service-floor" description="Use the table-service workspace for live dining-room operations." />
+  <Card title="Configure payments" href="/docs/openfront/restaurant/payment-providers" description="Understand the Stripe, PayPal, and manual adapter setup." />
+</Cards>

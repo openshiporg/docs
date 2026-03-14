@@ -1,0 +1,80 @@
+---
+title: Service floor
+description: Live table-service workflow for running the dining room.
+icon: ConciergeBell
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+If the POS is for opening checks, the service-floor screen is for running service.
+
+This is one of the most restaurant-specific parts of the product. It shows table state, active checks, course timing, split logic, and table movement in one place, which is exactly where a generic admin app usually falls apart.
+
+## What the service-floor screen covers
+
+- live table states for available, occupied, reserved, and cleaning
+- one-sheet access to the active order on a table
+- quick add-item flow for an open check
+- split check by guest count
+- split check by selected items
+- combine multiple tables onto one order
+- transfer a check from one table to another
+- fire a pending course into the kitchen
+- recall a course that should wait
+- jump into payment when the table is ready to close
+
+## How the workflow usually plays out
+
+<Steps>
+<Step>
+### Open the table
+Tap a table to see whether it already has an active check. If it does not, staff can start service from there.
+</Step>
+<Step>
+### Add items during service
+The service-floor sheet can add more menu items to the open order without sending the staff member back to the original POS flow.
+</Step>
+<Step>
+### Control course timing
+Pending courses can be fired when the table is ready. If timing changes, a course can be recalled back to pending.
+</Step>
+<Step>
+### Handle check changes cleanly
+When a party moves, you can transfer the order. When a group expands, you can combine tables. When payment gets messy, you can split by guest or by item.
+</Step>
+<Step>
+### Close the table
+When service is done, hand off to the payment screen and complete the order. Table status can then move into cleaning before it returns to available.
+</Step>
+</Steps>
+
+## Table states in the current build
+
+- `available`
+- `occupied`
+- `reserved`
+- `cleaning`
+
+Those states are used across the service-floor view, waitlist flow, and order hooks.
+
+## Why this screen matters
+
+Restaurant software gets hard once the dining room changes in real time. The service-floor page already handles several of the awkward parts that matter in actual service:
+
+- parties moving tables
+- multiple tables merging into one check
+- separate guests paying separately
+- kitchen timing that does not match order entry timing
+
+That is a big part of what makes Openfront Restaurant feel like its own product instead of a themed dashboard.
+
+<Callout type="info">
+The service-floor screen also has its own API summary route at `/api/platform/service-floor`, which is useful if you want to build supporting displays or staff tools around the same data.
+</Callout>
+
+## What still needs more polish
+
+- Reservation handling is lighter here than waitlist and table-service handling.
+- Some teams will still want a more visual floor-plan editor for layout changes.
+- Real-time updates are good enough for active use, but there is still room to tighten the live-sync story further.

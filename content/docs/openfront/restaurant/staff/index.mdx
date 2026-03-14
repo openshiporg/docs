@@ -1,0 +1,84 @@
+---
+title: Staff and labor
+description: Staff records, schedules, tip pools, and labor reporting.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront Restaurant already has more than a basic user table. Staff records include restaurant-specific fields, and there are working screens for scheduling, tip pooling, and labor analysis.
+
+## Staff data that already exists
+
+A user record can store:
+
+- restaurant staff role
+- employee ID
+- hourly rate
+- phone number and photo
+- PIN field for quick workflows
+- onboarding status
+- emergency contact details
+- certifications
+- active or inactive status
+
+That gives you a decent base for real operations, not just login management.
+
+## Main labor surfaces
+
+### Weekly schedule
+The schedule screen is a weekly roster view where managers can:
+
+- assign shifts by day
+- attach a staff member and role
+- set start and end times
+- store hourly rate per shift
+- edit or delete shifts later
+
+### Tip hub
+Tip pools are already modeled and have a dedicated screen for:
+
+- house pool distribution by hours worked
+- role-based weighted pools
+- settled and unsettled batches
+- viewing calculated distributions before marking a batch distributed
+
+### Labor report
+The labor report pulls together time entries and completed-order sales to show:
+
+- total hours
+- payroll cost
+- labor percentage
+- sales per labor hour
+- total tips
+- role-level breakdowns
+
+## How teams usually use it
+
+<Steps>
+<Step>
+### Create and maintain staff records
+Start with the user record. Add the staff role, hourly rate, phone, and any emergency or certification data you want to keep close.
+</Step>
+<Step>
+### Build the schedule
+Use the weekly schedule screen to assign shifts and keep the roster visible by day.
+</Step>
+<Step>
+### Record worked time
+Time-entry data and shift clock fields are already part of the model layer and feed reporting. That is what the labor and tip views depend on.
+</Step>
+<Step>
+### Review labor after service
+Use the labor report and tip hub to understand whether the shift made sense financially, not just whether it felt busy.
+</Step>
+</Steps>
+
+## Current limitations
+
+- The reporting side of labor is stronger than the staff-clock experience right now.
+- Permissions around who can manage people, roles, and wage data still need a cleanup pass.
+
+<Callout type="info">
+The staff module is already useful for scheduling and labor visibility. The next big win here is polishing the operational clock-in and permissions story.
+</Callout>

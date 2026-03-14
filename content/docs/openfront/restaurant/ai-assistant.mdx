@@ -1,0 +1,89 @@
+---
+title: AI assistant
+description: Use natural language inside the dashboard to work with restaurant data faster.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The AI assistant in Openfront Restaurant is not a canned FAQ bot. It sits on top of the same GraphQL API the rest of the product uses, and it discovers the schema through MCP tools before it makes changes.
+
+That matters for one simple reason: when the assistant updates a menu item or looks up an order, it is doing real work against real data.
+
+## What it is good at right now
+
+- creating or updating menu items
+- changing availability for an item that is sold out
+- looking up orders, users, and restaurant records
+- working with fields in Keystone lists without you having to remember the exact mutation name
+- acting as a fast admin-side assistant when you already know roughly what you want done
+
+## How it works
+
+<Steps>
+<Step>
+### It connects to your live schema
+The assistant uses MCP transport endpoints exposed by the app to inspect your GraphQL schema. That lets it discover list names, input types, and available fields instead of guessing.
+</Step>
+<Step>
+### It maps your request to the right operation
+If you ask for something natural, like updating a menu item or finding a reservation, the assistant searches for the right model and resolves the actual GraphQL operation name.
+</Step>
+<Step>
+### It executes the same API the app already uses
+Queries and mutations run against your existing Keystone GraphQL API. There is no hidden side channel.
+</Step>
+<Step>
+### It respects your session
+The assistant uses your current authenticated session. In practice, that means it can only do what your account can already do.
+</Step>
+</Steps>
+
+## Key pieces in the codebase
+
+The current assistant flow is built around these parts:
+
+- `app/api/completion/route.ts`
+- `app/api/mcp-transport/[transport]/route.ts`
+- `features/dashboard/actions/ai-chat.ts`
+
+If you want to customize the assistant, those are the files to start with.
+
+## Configuration
+
+You can run the assistant with shared OpenRouter credentials or with user-provided local keys.
+
+### Shared keys
+Set these environment variables:
+
+```bash
+OPENROUTER_API_KEY="sk-or-v1-..."
+OPENROUTER_MODEL="anthropic/claude-3.5-sonnet"
+OPENROUTER_MAX_TOKENS="4000"
+```
+
+### Local keys
+The dashboard UI also supports storing a per-user OpenRouter key and model choice in local settings.
+
+<Callout type="info">
+If you are rolling this out to staff, shared keys are the cleaner default. Local keys are useful when you want power users to bring their own model access.
+</Callout>
+
+## What to be careful about
+
+- The assistant is only as safe as the underlying access rules.
+- It is best used by managers and admins, not as a substitute for a locked-down permissions model.
+- For bulk changes, review the result just like you would review a spreadsheet import.
+
+## Good first use cases
+
+Try prompts like these inside the dashboard:
+
+- "Mark The Big Stack as unavailable tonight."
+- "Show me all waiting parties with a quoted wait longer than 20 minutes."
+- "Find menu items tagged as dinner and sort them by name."
+- "Create a new modifier called Extra Pickles for the Classic Burger."
+
+## What it is not
+
+It is not a customer-facing chat widget, and it is not a replacement for a finished permissions audit. Think of it as a practical admin operator that already knows your schema.

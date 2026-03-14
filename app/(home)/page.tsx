@@ -73,13 +73,23 @@ const BentoCard = ({
         <p className="whitespace-pre-wrap bg-gradient-to-b from-black to-gray-400 bg-clip-text text-xs font-bold uppercase tracking-widest text-transparent dark:from-white dark:to-slate-500">
           {description}
         </p>
+
+        <div className="mt-4 flex w-full flex-row items-center md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 opacity-60 hover:opacity-100"
+          >
+            Documentation
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <div
         className={cn(
-          "absolute bottom-0 flex w-full transform-gpu flex-row items-center p-4 transition-all duration-300",
-          "md:translate-y-10 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100",
-          "opacity-100 translate-y-0" // Always visible on mobile
+          "absolute bottom-0 hidden w-full transform-gpu flex-row items-center p-4 transition-all duration-300 md:flex",
+          "md:translate-y-10 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
         )}
       >
         <Button

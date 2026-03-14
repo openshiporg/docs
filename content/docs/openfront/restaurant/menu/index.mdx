@@ -1,0 +1,80 @@
+---
+title: Menu management
+description: Categories, items, modifiers, imagery, and service metadata.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The menu layer is one of the stronger parts of Openfront Restaurant already. The data model is flexible enough for a real restaurant menu, and the admin screens make that model usable instead of hiding it behind raw CRUD.
+
+## What a menu item can carry
+
+A `MenuItem` can already include:
+
+- price in cents
+- rich description content
+- images
+- availability
+- featured and popular flags
+- prep time
+- calorie count
+- kitchen station
+- allergen tags
+- dietary flags
+- meal-period tags
+- a category link
+- one or more modifiers
+
+That is enough to drive both the storefront and the kitchen-facing workflow.
+
+## Modifiers are first-class data
+
+Modifier groups already support:
+
+- required or optional selection
+- min and max selections
+- default-selected values
+- price adjustments
+- group labels like "Choose your side" or "Add-ons"
+
+That makes them useful for both guest ordering and staff-assisted ordering.
+
+## How to build the menu
+
+<Steps>
+<Step>
+### Create categories
+Start with `MenuCategory` records. These control menu structure, sorting, and meal-period tagging.
+</Step>
+<Step>
+### Add the items
+Create `MenuItem` records with pricing, imagery, availability, station routing, and customer-facing details.
+</Step>
+<Step>
+### Attach modifiers
+Use `MenuItemModifier` records to define sizes, toppings, sides, sauces, removals, temperatures, and similar choice sets.
+</Step>
+<Step>
+### Publish through the same data layer
+The storefront, POS, and KDS all read from the same underlying menu records. You are not maintaining three different menus.
+</Step>
+</Steps>
+
+## What the current menu tooling is good at
+
+- one shared menu for guest and staff surfaces
+- clean category sorting
+- item imagery and featured sections on the storefront
+- availability control for sold-out items
+- dietary and allergen tagging
+- kitchen station routing from the item record
+- modifier pricing and validation rules
+
+## What is present but not fully matured yet
+
+Meal periods are already modeled and filterable through the API, but the platform is not yet doing a deeply automated schedule-driven menu swap by itself. The fields are there. The last mile still depends on how far you want to take it.
+
+<Callout type="info">
+If you only have time for one careful setup pass before launch, spend it here. A clean menu model pays off everywhere else in the restaurant.
+</Callout>

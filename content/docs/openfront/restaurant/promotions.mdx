@@ -1,0 +1,41 @@
+---
+title: Promotions and gift cards
+description: The current state of discounts, promo data, and gift-card redemption.
+icon: Gift
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Openfront Restaurant already includes discount and gift-card models, plus admin screens for managing them. The important detail is that the two are not equally finished.
+
+## Gift cards are further along
+
+Gift cards already have:
+
+- a `GiftCard` model with value and balance
+- a `GiftCardTransaction` model for the ledger
+- admin management screens
+- lookup and redemption support inside the POS payment flow
+- support for partial payment against the remaining balance on a check
+
+That makes gift cards more than just placeholder data.
+
+## Discounts are modeled, but not as wired through
+
+Discounts already have:
+
+- `Discount` and `DiscountRule` models
+- admin list and detail pages
+- reporting fields that can surface discount totals on orders
+
+What they do not have yet is the same level of end-to-end restaurant-flow wiring that gift cards have. If you need fully automatic coupon application in storefront or staff payment flows, plan to finish that last mile before launch.
+
+## Practical read on the current state
+
+- **Gift cards**: useful now
+- **Discount management**: structurally present
+- **Discount automation**: still needs more work
+
+<Callout type="info">
+If you are deciding what to trust first, trust gift cards before you trust automated restaurant discounts.
+</Callout>

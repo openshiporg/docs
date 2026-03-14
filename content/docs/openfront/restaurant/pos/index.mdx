@@ -1,0 +1,75 @@
+---
+title: Point of sale
+description: Staff-facing order entry for dine-in and takeout.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The POS screen is built for speed. It is the place where a server, cashier, or counter staff member can open a new order without bouncing between three different tools.
+
+In the current build, the POS is strongest at the front half of service: opening orders, assigning tables, grouping courses, and sending the order into the restaurant workflow.
+
+## What the POS already does well
+
+- switch between dine-in and takeout
+- select one or more active tables for a dine-in order
+- browse menu items by category
+- respect item availability and show sold-out items as unavailable
+- build a cart with quantities
+- assign each line item to course 1, 2, or 3
+- mark the whole order as urgent
+- add order-level special instructions
+- create `RestaurantOrder`, `OrderCourse`, and `OrderItem` records in one flow
+
+## Typical POS flow
+
+<Steps>
+<Step>
+### Choose the order type
+Start with dine-in or takeout. If it is dine-in, pick the table or tables that should own the check.
+</Step>
+<Step>
+### Build the cart
+Tap through categories, add items, and adjust quantities. Unavailable items are visible, but they cannot be added by mistake.
+</Step>
+<Step>
+### Set the service timing
+Each line item can be assigned to course 1, 2, or 3. That gives the order structure before it ever reaches the service floor or kitchen workflow.
+</Step>
+<Step>
+### Add urgency or special instructions
+If the order needs extra attention, mark it urgent. You can also add notes for allergies, timing, or kitchen context.
+</Step>
+<Step>
+### Send the order
+Submitting the cart creates the restaurant order, creates course records, creates order items, and links tables when the order is dine-in.
+</Step>
+</Steps>
+
+## What happens after submission
+
+When the POS creates a dine-in order, the order hooks can immediately mark the linked tables as occupied. From there, the order can move into the kitchen pipeline and later into the payment workflow.
+
+The POS is intentionally lean. It does not try to handle every mid-service edge case itself.
+
+## What lives outside the initial POS screen
+
+These workflows happen elsewhere in the platform after the order is open:
+
+- split check by guest or by item
+- combine tables or transfer a check to a new table
+- fire or recall courses during service
+- close the check with cash, card, split payment, or gift card
+
+Those tools live mainly in the service-floor and payment pages.
+
+<Callout type="info">
+A good way to think about it: the POS opens the order fast. The service-floor UI runs the dining room once that order is live.
+</Callout>
+
+## Current limitations
+
+- The current POS creation flow is lighter on modifier selection than the storefront customization flow.
+- There is no offline sync mode yet.
+- Seat-by-seat ordering is not the center of this screen. More complex service actions happen after the order is open.

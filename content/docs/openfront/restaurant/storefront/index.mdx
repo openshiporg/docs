@@ -1,0 +1,153 @@
+---
+title: Storefront ordering
+description: The guest-facing menu, cart, checkout, and order-confirmation flow.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront Restaurant ships with a customer-facing ordering flow out of the box. The storefront is built around a single clear job: help a guest find food fast, customize it without friction, and get the order into your system cleanly.
+
+It is not trying to be a giant marketing site. It is closer to a polished digital menu and ordering experience.
+
+## What customers can do
+
+- browse categories from a sticky category rail
+- view featured items at the top of the menu
+- open an item modal for modifiers and special instructions
+- switch between pickup and delivery
+- build a cart that persists through the storefront session
+- check out inside a modal instead of leaving the page
+- create an account, manage profile details, save addresses, and review orders
+- land on a confirmation page with order details after checkout
+
+## What drives the storefront
+
+The guest experience is powered by a small set of core models:
+
+- `StoreSettings` for branding, hours, locale, currency, delivery fee, pickup discount, and promo copy
+- `MenuCategory` for sections and ordering
+- `MenuItem` for pricing, imagery, dietary data, prep time, and station routing
+- `MenuItemModifier` for item customization
+- `Cart` and `CartItem` for the bag state
+- `RestaurantOrder`, `OrderItem`, and `Payment` for the actual checkout handoff
+
+## How a guest order moves through the system
+
+<Steps>
+<Step>
+### Browse the menu
+The homepage loads store settings, categories, all available menu items, and featured items. Guests stay on one page and jump between categories instead of hopping through a deep catalog tree.
+</Step>
+<Step>
+### Customize the item
+When a guest opens an item, the customization modal groups modifiers by `modifierGroup`. Required groups, min and max selections, default selections, and price adjustments are all respected in the UI.
+</Step>
+<Step>
+### Add it to the bag
+The cart is backed by `Cart` and `CartItem` records. It keeps quantity, chosen modifiers, and special instructions per line item.
+</Step>
+<Step>
+### Choose pickup or delivery and check out
+The checkout modal calculates pickup discount, delivery fee, tax, and tip. It collects customer details, builds the order payload, and creates the `RestaurantOrder` before payment confirmation.
+</Step>
+<Step>
+### Confirm the order
+After payment succeeds, the order confirmation page loads the order through `getCustomerOrder`. If the guest is not signed in, the secret key in the confirmation URL can still unlock the order safely.
+</Step>
+</Steps>
+
+## The current checkout path
+
+### Verified today
+
+- card checkout through Stripe
+- pickup and delivery pricing logic
+- guest checkout
+- signed-in checkout with account data prefills
+- confirmation page with order items, totals, and status timeline
+
+### Good to know
+
+The storefront UI also includes PayPal support paths, but Stripe is still the most complete end-to-end path in the current restaurant build.
+
+<Callout type="info">
+If you are trying to launch quickly, use Stripe for online payments and manual or cash flows for in-store operations first. Add the broader payment mix after that is stable.
+</Callout>
+
+## Account area
+
+Signed-in customers can already manage a useful set of basics:
+
+- profile details
+- phone number
+- saved addresses
+- order history
+- order detail pages
+
+The account area lives under `/account` and is styled more like a practical customer portal than a generic dashboard.
+
+## Example order mutation
+
+The storefront checkout calls a GraphQL mutation shaped like this:
+
+```graphql
+mutation CreateStorefrontOrder(
+  $orderType: String!
+  $customerInfo: CustomerInfoInput!
+  $deliveryAddress: DeliveryAddressInput
+  $items: [StorefrontOrderItemInput!]!
+  $subtotal: Int!
+  $tax: Int!
+  $tip: Int!
+  $total: Int!
+  $currencyCode: String
+) {
+  createStorefrontOrder(
+    orderType: $orderType
+    customerInfo: $customerInfo
+    deliveryAddress: $deliveryAddress
+    items: $items
+    subtotal: $subtotal
+    tax: $tax
+    tip: $tip
+    total: $total
+    currencyCode: $currencyCode
+  ) {
+    success
+    orderId
+    orderNumber
+    clientSecret
+    error
+  }
+}
+```
+
+That mutation creates the order, creates the order items, creates a payment record, and returns the client secret needed for the Stripe confirmation step.
+
+## API helpers that already exist
+
+Outside the GraphQL layer, the storefront also exposes a few simple routes that are handy for client apps or experiments:
+
+- `GET /api/categories`
+- `GET /api/menu-items`
+- `GET /api/menu-items/[id]`
+- `POST /api/orders/create`
+- `GET /api/orders/[id]`
+
+The `menu-items` endpoint supports category, dietary, meal-period, and sort filters.
+
+## Current limitations
+
+- There is no customer-facing reservations flow in the current storefront build.
+- The storefront is deliberately focused on ordering, not on long-form content or CMS-heavy landing pages.
+- Customer account history is present, but if you are hardening for production you should review access control and query scoping carefully before launch.
+
+## Where to go next
+
+<Cards>
+  <Card title="Menu management" href="/docs/openfront/restaurant/menu" description="See how categories, items, images, and modifiers are modeled." />
+  <Card title="Payment providers" href="/docs/openfront/restaurant/payment-providers" description="Understand how Stripe, PayPal, and manual adapters are wired." />
+  <Card title="POS" href="/docs/openfront/restaurant/pos" description="Compare the guest ordering flow with the staff ordering flow." />
+</Cards>

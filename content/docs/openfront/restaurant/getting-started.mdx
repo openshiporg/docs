@@ -1,0 +1,196 @@
+---
+title: Getting started
+description: Install Openfront Restaurant, create your first admin user, and seed a demo restaurant.
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+If you want the shortest path to a working restaurant, this is it. The app can be running in a few minutes, and the onboarding flow can seed menu data, kitchen stations, floors, sections, tables, and payment providers for you.
+
+## What you need
+
+- Node.js 20 or newer
+- PostgreSQL
+- A `SESSION_SECRET` that is at least 32 characters long
+- Stripe keys if you want card checkout on day one
+
+<Callout type="info">
+You can explore most of the platform without Stripe, but the storefront card flow and Stripe-based payment screens will not complete until Stripe is configured.
+</Callout>
+
+## Install and boot the project
+
+<Steps>
+<Step>
+### Clone the repository
+
+```bash
+git clone https://github.com/openshiporg/openfront-restaurant.git
+cd openfront-restaurant
+```
+</Step>
+<Step>
+### Install dependencies
+
+```bash
+npm install
+```
+</Step>
+<Step>
+### Add your environment variables
+Create a `.env` file in the project root.
+
+```bash
+# Required
+DATABASE_URL="postgresql://username:password@localhost:5432/openfront_restaurant"
+SESSION_SECRET="replace-this-with-a-long-random-string-of-32-chars-or-more"
+
+# Recommended for storefront and card payments
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+NEXT_PUBLIC_STRIPE_KEY="pk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+
+# Optional PayPal adapter setup
+NEXT_PUBLIC_PAYPAL_CLIENT_ID="your-paypal-client-id"
+PAYPAL_CLIENT_SECRET="your-paypal-client-secret"
+PAYPAL_WEBHOOK_ID="your-paypal-webhook-id"
+NEXT_PUBLIC_PAYPAL_SANDBOX="true"
+
+# Optional AI assistant
+OPENROUTER_API_KEY="sk-or-v1-..."
+OPENROUTER_MODEL="anthropic/claude-3.5-sonnet"
+OPENROUTER_MAX_TOKENS="4000"
+
+# Optional customer self-signup
+PUBLIC_SIGNUPS_ALLOWED="true"
+
+# Optional file storage
+S3_BUCKET_NAME="your-bucket"
+S3_REGION="us-east-1"
+S3_ACCESS_KEY_ID="your-key"
+S3_SECRET_ACCESS_KEY="your-secret"
+S3_ENDPOINT="https://your-s3-endpoint"
+
+# Optional email
+SMTP_FROM="no-reply@example.com"
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_USER="smtp-user"
+SMTP_PASSWORD="smtp-password"
+SMTP_STORE_LINK="http://localhost:3000"
+```
+</Step>
+<Step>
+### Start the app
+
+```bash
+npm run dev
+```
+
+This command builds the Keystone schema, applies migrations, and starts the Next.js dev server.
+</Step>
+</Steps>
+
+## Create your first admin and seed the restaurant
+
+<Steps>
+<Step>
+### Create the initial user
+If the database is empty, go to:
+
+```text
+http://localhost:3000/dashboard/init
+```
+
+Create your first admin account there.
+</Step>
+<Step>
+### Sign in to the dashboard
+After the first user exists, the main dashboard lives at:
+
+```text
+http://localhost:3000/dashboard
+```
+</Step>
+<Step>
+### Run onboarding
+The sidebar includes onboarding cards for a fresh install. Use that flow to seed:
+
+- store settings
+- menu categories and items
+- modifiers
+- kitchen stations
+- floors, sections, and tables
+- payment providers
+
+The seed data is restaurant-specific and lives in `features/platform/onboarding/lib/seed.json`.
+</Step>
+<Step>
+### Open the key surfaces
+Once onboarding finishes, you can jump straight into the main workflows:
+
+- Storefront: `http://localhost:3000/`
+- POS: `http://localhost:3000/dashboard/platform/pos`
+- Service floor: `http://localhost:3000/dashboard/platform/service-floor`
+- KDS: `http://localhost:3000/dashboard/platform/kds`
+- Reports: `http://localhost:3000/dashboard/platform/reports`
+</Step>
+</Steps>
+
+## What gets created during onboarding
+
+The out-of-the-box seed is intentionally practical. It gives you a burger-restaurant setup with:
+
+- branded store settings and hours
+- kitchen stations like Grill, Fryer, Salad, Bar, Dessert, and Prep
+- a main floor plus sections
+- a table layout with capacities and coordinates
+- featured items, burgers, chicken, sides, drinks, and desserts
+- Stripe, PayPal, and manual payment-provider records
+
+That is enough to test the storefront, POS, KDS, reports, and floor workflows without building everything from scratch.
+
+## Good first checks after boot
+
+### Check the storefront
+Open the homepage and confirm you can:
+
+- browse categories
+- open an item customization modal
+- add items to the bag
+- open the checkout modal
+
+### Check the staff tools
+Open the dashboard and make sure you can:
+
+- create a POS order
+- see it in Orders
+- sync it into the KDS
+- move through the payment screen
+
+### Check localization
+If you changed currency, locale, or timezone in store settings, confirm those changes show up in:
+
+- storefront prices
+- payment screens
+- reports
+- footer hours
+
+## Common setup mistakes
+
+- **Short `SESSION_SECRET`**: the app expects a secret with at least 32 characters.
+- **Missing Stripe publishable key**: the checkout modal reads `NEXT_PUBLIC_STRIPE_KEY`, and some storefront components still fall back to `STRIPE_PUBLISHABLE_KEY`, so set both.
+- **No store settings**: the storefront depends on the singleton `StoreSettings` record. Onboarding is the easiest way to create it.
+- **Expecting PayPal parity on day one**: the adapter is in the codebase, but Stripe is the safer first launch path today.
+
+## Where to go next
+
+<Cards>
+  <Card title="Storefront" href="/docs/openfront/restaurant/storefront" description="Understand the guest ordering and checkout flow." />
+  <Card title="POS" href="/docs/openfront/restaurant/pos" description="Learn the fastest way to open and send a new order." />
+  <Card title="Service floor" href="/docs/openfront/restaurant/service-floor" description="Run live dining-room operations from the table-service workspace." />
+  <Card title="KDS" href="/docs/openfront/restaurant/kds" description="See how orders get routed and completed in the kitchen." />
+</Cards>

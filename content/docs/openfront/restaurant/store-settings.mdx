@@ -1,0 +1,58 @@
+---
+title: Store settings
+description: Hours, localization, branding, and ordering defaults from one singleton record.
+icon: Store
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`StoreSettings` is a singleton in Openfront Restaurant, and it quietly powers a lot of the product.
+
+This is where you control how the restaurant looks to guests and how money, time, and order defaults behave across the app.
+
+## What lives in store settings
+
+- restaurant name, tagline, address, phone, and email
+- currency code and locale
+- timezone and country code
+- operating hours
+- delivery fee and delivery minimum
+- pickup discount
+- estimated pickup and delivery timing
+- hero headline, subheadline, and promo banner
+- rating and review count display data
+
+## Why it matters
+
+The same record feeds multiple surfaces:
+
+- storefront hero copy and banner
+- footer contact information and hours
+- currency formatting in the storefront and reports
+- timezone-aware hour display
+- delivery and pickup math in checkout
+
+## Recommended setup order
+
+<Steps>
+<Step>
+### Start with identity
+Add the name, tagline, address, phone number, and email so the storefront stops looking generic.
+</Step>
+<Step>
+### Set localization correctly
+Choose currency, locale, timezone, and country before you start testing prices and reports.
+</Step>
+<Step>
+### Set your ordering defaults
+Delivery fee, minimums, pickup discount, and estimated timing all feed directly into the guest ordering flow.
+</Step>
+<Step>
+### Save and verify the storefront
+Check the homepage, footer, and checkout modal to make sure the settings are showing up where you expect.
+</Step>
+</Steps>
+
+## What changed recently
+
+The restaurant build now has better currency and localization support than the early draft docs suggested. Pricing, formatting, and several reporting surfaces already read from store settings instead of assuming a fixed US-only setup.

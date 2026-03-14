@@ -1,0 +1,87 @@
+---
+title: Payment providers
+description: How restaurant payments are wired through Stripe, PayPal, and manual adapters.
+icon: CreditCard
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Openfront Restaurant uses adapter-based payment providers. The model is simple: each provider record stores the function names that should handle create, capture, refund, status, dashboard-link, and webhook work.
+
+In the current build, those adapters live in:
+
+- `features/integrations/payment/stripe.ts`
+- `features/integrations/payment/paypal.ts`
+- `features/integrations/payment/manual.ts`
+
+## What is already working well
+
+### Stripe
+Stripe is the strongest path today.
+
+It is used for:
+
+- storefront card checkout
+- payment intents
+- capture and status checks
+- webhook verification through the generic webhook mutation path
+
+### Manual and cash flows
+Manual payments are useful for:
+
+- cash at the register
+- cash at the table
+- internal testing
+- mixed or split payment situations
+
+### PayPal
+A PayPal adapter already exists, and parts of the storefront UI are ready for it. The restaurant product just is not as uniformly standardized around PayPal as it is around Stripe yet.
+
+## How the provider model works
+
+<Steps>
+<Step>
+### Create or seed the provider record
+Onboarding already creates records for Stripe, PayPal, and Manual.
+</Step>
+<Step>
+### The runtime resolves the adapter
+When the app needs to create or capture a payment, it looks up the provider record and calls the named adapter function through `paymentProviderAdapter.ts`.
+</Step>
+<Step>
+### Payments attach to restaurant orders
+Payment records are linked to `RestaurantOrder`, so the restaurant order stays at the center of the flow.
+</Step>
+<Step>
+### Webhooks update the order state
+The Stripe webhook route forwards into the generic webhook mutation, which verifies the event through the adapter and then updates payment and order status.
+</Step>
+</Steps>
+
+## Provider fields you will see
+
+A provider record stores fields like:
+
+- `createPaymentFunction`
+- `capturePaymentFunction`
+- `refundPaymentFunction`
+- `getPaymentStatusFunction`
+- `generatePaymentLinkFunction`
+- `handleWebhookFunction`
+- credentials and metadata
+
+That makes the integration layer flexible without hardcoding every processor directly into route handlers.
+
+## Launch advice
+
+If you want the least risky setup for a real launch, use:
+
+- **Stripe** for online card checkout
+- **Manual** for cash or internal fallback flows
+
+Then add PayPal once you are happy with the rest of the payment pipeline.
+
+<Callout type="info">
+One honest note: the adapter layer is further along than the end-to-end payment parity across every restaurant workflow. Stripe is the safest primary path today.
+</Callout>
