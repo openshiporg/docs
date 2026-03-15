@@ -10,7 +10,7 @@ import { MatchDiagram } from '@/components/MatchDiagram';
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
-    ...defaultMdxComponents,
+    ...(defaultMdxComponents as unknown as MDXComponents),
     ...(icons as unknown as MDXComponents),
     Button,
     IntroDiagram,
@@ -19,5 +19,11 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     LinkDiagram,
     MatchDiagram,
     ...components,
-  };
+  } as MDXComponents;
+}
+
+export const useMDXComponents = getMDXComponents;
+
+declare global {
+  type MDXProvidedComponents = ReturnType<typeof getMDXComponents>;
 }

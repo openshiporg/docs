@@ -1,56 +1,62 @@
-import { docs } from '@/.source';
-import { loader } from 'fumadocs-core/source';
-import { createMDXSource } from 'fumadocs-mdx';
-import { icons } from 'lucide-react';
-import { createElement } from 'react';
+import { docs } from '../.source/server';
+import { type InferPageType, loader, source as makeSource } from 'fumadocs-core/source';
+import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
 
-// Filter docs and meta arrays based on file paths
-const openfrontDocs = docs.docs.filter(doc => doc._file.path.startsWith('openfront/') && !doc._file.path.startsWith('openship/'));
-const openfrontMeta = docs.meta.filter(meta => meta._file.path.startsWith('openfront/') && !meta._file.path.startsWith('openship/'));
+const baseSource = docs.toFumadocsSource();
+const allFiles = baseSource.files ?? [];
 
-const openshipDocs = docs.docs.filter(doc => doc._file.path.startsWith('openship/'));
-const openshipMeta = docs.meta.filter(meta => meta._file.path.startsWith('openship/'));
+const openfrontFiles = allFiles.filter((file) => {
+  const path = file.path ?? '';
+  return path.startsWith('openfront/') && !path.startsWith('openship/');
+});
 
-// Openship removed
+const openshipFiles = allFiles.filter((file) => (file.path ?? '').startsWith('openship/'));
 
-// Openfront source - only openfront content
-export const openfrontSource = loader({
+const openfrontVirtualSource = makeSource({
+  pages: openfrontFiles.filter((file) => file.type === 'page'),
+  metas: openfrontFiles.filter((file) => file.type === 'meta'),
+});
+
+const openshipVirtualSource = makeSource({
+  pages: openshipFiles.filter((file) => file.type === 'page'),
+  metas: openshipFiles.filter((file) => file.type === 'meta'),
+});
+
+export const openfrontSource = loader(openfrontVirtualSource, {
   baseUrl: '/docs/openfront',
-  url(slugs, locale) {
+  url(slugs) {
     return '/docs/openfront/' + slugs.slice(1).join('/');
   },
-  icon(icon) {
-    if (icon && icon in icons)
-      return createElement(icons[icon as keyof typeof icons]);
-  },
-  source: createMDXSource(openfrontDocs, openfrontMeta),
+  plugins: [lucideIconsPlugin()],
 });
 
-// Openship source - only openship content
-export const openshipSource = loader({
+export const openshipSource = loader(openshipVirtualSource, {
   baseUrl: '/docs/openship',
-  url(slugs, locale) {
+  url(slugs) {
     return '/docs/openship/' + slugs.slice(1).join('/');
   },
-  icon(icon) {
-    if (icon && icon in icons)
-      return createElement(icons[icon as keyof typeof icons]);
-  },
-  source: createMDXSource(openshipDocs, openshipMeta),
+  plugins: [lucideIconsPlugin()],
 });
 
-// Openship removed
-
-// Combined source (kept for backward compatibility)
-export const source = loader({
+export const source = loader(baseSource, {
   baseUrl: '/docs',
-  url(slugs, locale) {
+  url(slugs) {
     return '/docs/' + slugs.join('/');
   },
-  icon(icon) {
-    if (icon && icon in icons)
-      return createElement(icons[icon as keyof typeof icons]);
-  },
-  source: docs.toFumadocsSource(),
+  plugins: [lucideIconsPlugin()],
 });
 
+export function getPageImage(page: InferPageType<typeof source>) {
+  const segments = [...page.slugs, 'image.webp'];
+
+  return {
+    segments,
+    url: `/og/docs/${segments.join('/')}`,
+  };
+}
+
+export async function getLLMText(page: InferPageType<typeof source>) {
+  const processed = await page.data.getText('processed');
+
+  return `# ${page.data.title}\n\n${processed}`;
+}

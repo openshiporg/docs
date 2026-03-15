@@ -4,6 +4,7 @@ const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
+  serverExternalPackages: ['@takumi-rs/image-response'],
   reactStrictMode: true,
   images: {
     remotePatterns: [
@@ -11,19 +12,15 @@ const config = {
         protocol: 'https',
         hostname: 'vercel.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'railway.app',
-      },
-      {
-        protocol: 'https',
-        hostname: 'render.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.netlify.com',
-      },
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/docs/:path*.mdx',
+        destination: '/llms.mdx/docs/:path*',
+      },
+    ];
   },
 };
 
