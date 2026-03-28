@@ -4,7 +4,7 @@ description: Managing products and inventory in Openfront
 icon: Package
 ---
 
-Openfront gives you everything you need to manage products. Create, organize, and manage your entire catalog - from simple products to complex variants with multiple options.
+Openfront gives you everything you need to manage products. Create, organize, and manage your entire catalog - from simple products with one default variant to complex products with multiple option-driven variants.
 
 ## Product Structure
 
@@ -12,19 +12,18 @@ Openfront gives you everything you need to manage products. Create, organize, an
 
 Every product in Openfront contains:
 
-- **Basic Details** - Name, description, SKU, and metadata
-- **Pricing** - Cost, selling price, and currency settings
-- **Inventory** - Stock levels, tracking, and availability
-- **Media** - Images, videos, and product galleries
-- **SEO** - Meta titles, descriptions, and search optimization
+- **Core Details** - Title, description, handle, and metadata
+- **Media** - Images and product galleries
 - **Organization** - Categories, collections, and tags
+- **Visibility** - Status and publishing state
+- **Variants** - The sellable units that carry SKU, pricing, and inventory
 
 ### Product Types
 
 You can create different product types:
 
-- **Simple Products** - Single items with no variations
-- **Variable Products** - Products with options (size, color, etc.)
+- **Simple Products** - Single items sold through one default variant
+- **Variable Products** - Products with options (size, color, etc.) and multiple variants
 
 ## Product Variants
 
@@ -118,50 +117,109 @@ Add flexible metadata:
 
 ## Product Creation Workflow
 
-### Step 1: Basic Information
+When you create a product, the main thing to understand is the **Variant setup** section.
 
-1. Navigate to **Products** in the admin dashboard
-2. Click **"Create Product"**
-3. Enter basic details:
-   - Product name and description
-   - Product type selection
-   - SKU and barcode
-4. Set pricing and tax information
-5. Configure inventory settings
+That section gives you two paths:
 
-### Step 2: Product Media
+### Default variant
 
-1. Upload product images
-2. Set featured image
-3. Add additional gallery images
-4. Upload product videos (optional)
-5. Organize media order
+The UI says:
 
-### Step 3: Variants (if applicable)
+> **Best for simple products with one price, one SKU, and no options.**
 
-1. Define variant options (size, color, etc.)
-2. Generate variant combinations
-3. Set individual variant details:
-   - SKU and pricing
-   - Inventory levels
-   - Specific images
-4. Enable/disable variants as needed
+Choose **Default variant** when the product does not have customer-selectable options.
 
-### Step 4: Organization
+Examples:
+- a single book edition
+- a mug with one version
+- a digital product with one plan
+- any product where the shopper is not choosing size, color, material, or another option
 
-1. Assign to categories
-2. Add to collections
-3. Set product tags
-4. Configure custom attributes
-5. Set up related products
+When you use this path, Openfront creates a single default variant for the product. The default variant is titled **Default Title** unless you change it.
 
-### Step 5: SEO and Visibility
+In that form you can set:
+- variant title
+- SKU
+- inventory quantity
+- manage inventory
+- allow backorders
+- regional pricing
+- compare-at pricing
 
-1. Configure SEO meta data
-2. Set product visibility settings
-3. Schedule publishing (if needed)
-4. Preview storefront appearance
-5. Publish when ready
+For pricing, the UI lets you:
+
+> **Set prices for the regions you want to sell in. Leave blank to add later.**
+
+That is the right path for simple products because pricing in Openfront lives on variants. A simple product still needs one sellable variant so it can carry the price, SKU, and inventory.
+
+### Multiple variants
+
+The UI says:
+
+> **Use options like size or color and manage generated variant combinations.**
+
+Choose **Multiple variants** when the shopper needs to choose from combinations such as:
+- size
+- color
+- material
+- style
+- any other option group you define
+
+After the product exists, the variant workspace is organized into three tabs:
+
+1. **Variants**
+2. **Options**
+3. **Changes**
+
+### How the tabs work
+
+#### Variants
+This tab shows the sellable combinations that currently exist.
+
+This is where you review things like:
+- variant titles
+- SKU and barcode data
+- inventory
+- per-variant pricing
+- per-region prices
+- variant images
+
+#### Options
+This tab is where you define the option model.
+
+For example, you might add:
+- **Color** → Blue
+- **Size** → Small, Medium, Large, XL
+
+Those option values are what Openfront uses to determine which sellable combinations should exist.
+
+#### Changes
+This tab shows the difference between the option combinations you now have and the variants that already exist.
+
+It helps you review:
+- variants to create
+- variants that stay unchanged
+- variants that should be removed
+
+### Example: T-shirt flow
+
+Say you want to sell a T-shirt in **Blue** with sizes **Small, Medium, Large, and XL**.
+
+In **Options**, you would add:
+- **Color** → Blue
+- **Size** → Small, Medium, Large, XL
+
+Openfront then treats these as the intended combinations.
+
+That means the **Variants** tab will represent these sellable variants:
+- Blue / Small
+- Blue / Medium
+- Blue / Large
+- Blue / XL
+
+If you later add another color like **Black**, Openfront will detect the new combinations and show them in **Changes** before you save them.
+
+That way you can review what is being added instead of blindly generating new variants.
 
 ## Advanced Product Features
 

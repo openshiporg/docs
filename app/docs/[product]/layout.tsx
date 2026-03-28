@@ -4,7 +4,7 @@ import { baseOptions } from '@/app/layout.config';
 import { openfrontSource, openshipSource } from '@/lib/source';
 import { LogoIcon as OpenfrontLogoIcon } from '@/components/LogoIcon-openfront';
 import { LogoIcon as OpenshipLogoIcon } from '@/components/LogoIcon';
-import { DocsSwitcher } from '@/components/DocsSwitcher';
+import { DocsNavTitle } from '@/components/DocsNavTitle';
 import { notFound } from 'next/navigation';
 
 export default async function Layout({ 
@@ -29,7 +29,8 @@ export default async function Layout({
       {...baseOptions}
       nav={{
         ...baseOptions.nav,
-        title: <DocsSwitcher />,
+        title: () => <DocsNavTitle product={product as 'openfront' | 'openship'} />,
+        url: undefined,
       }}
       tree={currentSource.pageTree}
       sidebar={{

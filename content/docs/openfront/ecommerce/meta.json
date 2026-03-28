@@ -11,6 +11,7 @@
     "deployment",
     "---Dashboard---",
     "dashboard/index",
+    "products",
     "ai-assistant",
     "dashboard/custom",
     "---Advanced Features---",

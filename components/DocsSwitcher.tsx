@@ -74,7 +74,13 @@ export function DocsSwitcher() {
   ) : null;
 
   return (
-    <div className="relative">
+    <div
+      className="relative shrink-0"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       <button
         onClick={(e) => {
           e.preventDefault();
