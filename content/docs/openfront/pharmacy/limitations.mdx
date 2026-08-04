@@ -1,0 +1,67 @@
+---
+title: Pharmacy current limitations
+description: Legal, safety, provider, privacy, operational, and deployment boundaries that remain outside current source evidence.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+This page is a source boundary, not legal advice or a complete pharmacy-readiness checklist. Requirements depend on the pharmacy's activities, products, facilities, providers, patients, staff, and jurisdictions.
+</Callout>
+
+## No license or certification is supplied
+
+The repository does not license a pharmacy or its locations; credential pharmacists, technicians, prescribers, or couriers; authorize prescribing or dispensing; approve controlled-substance activity; certify HIPAA or other privacy/security compliance; certify eRx, EPCS, insurance, tax, payment, wholesaler, recall, cold-chain, counseling, delivery, accessibility, or consumer-protection behavior; or establish that hosting and operations meet an applicable rule.
+
+Tests, migrations, type checks, builds, browser screenshots, and HTTP responses are engineering evidence for the paths exercised. They are not regulatory, clinical, legal, security, payment, or operational certification.
+
+## Pharmacist and accountable-human work remains external
+
+The software records role checks, attestation, reason, and bounded approval evidence. It cannot determine whether the actor is currently licensed, working within scope, free of conflicts, following pharmacy policy, or making a clinically appropriate decision. It does not replace prospective drug-use review, interaction/allergy/duplicate-therapy checks, dose and indication review, substitution law, counseling, prescriber communication, identity checks, or physical verification.
+
+Consequential agent action is not an alternative. Agents must not approve, prescribe, substitute, dispense, release held inventory, close a recall, adjudicate a claim, or report an external effect without an independently authorized workflow and accountable human decision.
+
+## Prescription and controlled-substance gaps
+
+The local prescription lifecycle supports intake, source-verification state, pharmacist review, dispensing authorization, lot selection, refill/transfer requests, and evidence. It does not provide a certified prescription network, authoritative prescriber/DEA verification, EPCS signing, jurisdiction-specific transfer/refill rules, PDMP integration, controlled-substance inventory and perpetual-log controls, partial-fill rules, suspicious-order monitoring, mandated forms, or regulator reporting.
+
+Until those requirements are designed and independently validated, do not use current source for controlled substances or treat an external reference as proof of a valid prescription.
+
+## Patient privacy and clinical-safety gaps
+
+Bounded projections and tenant filters reduce exposure, but they do not establish a complete privacy/security program. Current source does not by itself supply identity proofing, workforce provisioning/deprovisioning, managed encryption and key rotation, device/session policy, centralized audit monitoring, breach response, business-associate controls, data residency, legal hold, patient access/amendment/export, deletion/retention jobs, backup restoration, disaster recovery, or penetration testing.
+
+Do not place real patient, prescription, insurance, payment, or clinical data into a deployment until the full data flow, minimum-necessary access, field encryption/tokenization, logs, backups, integrations, support access, and incident procedures are reviewed.
+
+## Inventory, recall, and cold-chain gaps
+
+Lot, expiry, movement, quarantine, recall, and temperature-excursion records preserve useful local evidence. They do not prove physical count, product authenticity, pedigree, calibrated sensor accuracy, storage-lane qualification, excursion stability, recall completeness, patient notification, supplier/regulator acknowledgement, destruction, or removal of physical stock.
+
+A production workflow needs device/provider validation, chain of custody, cycle counts, exception ownership, reconciliation, recall-source ingestion, affected-order/patient tracing, communications, disposal evidence, reporting, and jurisdiction-specific retention.
+
+## Provider execution gaps
+
+- eRx, wholesaler, insurance, and tax registries fail closed with unconfigured adapters.
+- Stripe adapter functions exist, but the current app has no dedicated Stripe webhook route and no complete asynchronous settlement/reconciliation operation. The storefront initiates a PaymentIntent and immediately requires an authorized/captured state without rendering Stripe confirmation UI, so production Stripe checkout cannot complete through the current browser flow.
+- The local payment adapter is development-only and does not represent money movement.
+- `guestPharmacyOrder` provides a token-scoped API projection, but there is no public order-status route or storefront retrieval flow.
+- Outbox events have no complete production worker/delivery service in current source; replay only changes local bounded state.
+- SMTP and storage support do not establish pharmacy-approved messaging or document handling.
+- Fulfillment records do not establish courier identity, counseling, controlled delivery, cold-chain delivery, or proof of handoff.
+
+## Runtime and dependency gaps
+
+Development and build commands currently deploy migrations against `DATABASE_URL`; release engineering should separate migration and build authority. The migration history includes inherited starter migrations and must be tested against both empty and retained databases. The current evidence records unresolved dependency audit findings under the inherited framework baseline; review and remediate or formally mitigate the exact release dependency tree before deployment.
+
+Operational readiness also requires resource limits, rate and body limits, abuse controls, observability, alerting, job supervision, database pooling, backup/restore drills, key management, provider outage behavior, incident response, staged rollout, rollback, support ownership, and documented downtime procedures.
+
+## Tenancy and concurrency require release-specific proof
+
+Current source applies organization/location membership filters and named operations recheck scope. Transaction and lock evidence covers selected one-unit checkout and workflow cases. Every release still needs cross-organization, cross-location, patient-owner, wrong-role, relationship-move, guessed-token, simultaneous dispense, simultaneous checkout, duplicate callback, retry, rollback, and partial-provider-failure tests against the actual PostgreSQL and deployment configuration.
+
+## What to validate before real use
+
+At minimum, obtain qualified pharmacy, legal, privacy, security, clinical-safety, accessibility, payment, provider, infrastructure, and jurisdictional review; define accountable operators; configure only contracted and tested providers; run the complete synthetic workflow and negative suite; verify physical procedures against system states; test recovery; and document which activities remain prohibited.
+
+See [Getting started](/docs/openfront/pharmacy/getting-started) for deployment sequencing and [Integrations and boundaries](/docs/openfront/pharmacy/integrations-boundaries) for provider contracts.

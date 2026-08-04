@@ -1,6 +1,6 @@
 ---
-title: What is Openship
-description: Introducing Openship, an order routing platform that connects your sales channels to fulfillment partners.
+title: What is Openship?
+description: Understand Openship's user-owned shop-to-channel routing boundary.
 icon: CircleQuestionMark
 ---
 
@@ -9,33 +9,46 @@ import { ShopDiagram } from "../../../../components/ShopDiagram";
 import { ChannelDiagram } from "../../../../components/ChannelDiagram";
 import { LinkDiagram } from "../../../../components/LinkDiagram";
 import { MatchDiagram } from "../../../../components/MatchDiagram";
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openship is an order router that connects the places where you're selling to the places where you're fulfilling. It automatically routes orders from your sales channels to your fulfillment partners, giving you complete control over your order flow.
+Openship is an operator order router. It connects a **shop**, where an order originates, to a **channel**, where matched items are purchased for fulfillment. It stores routing, match, purchase-reference, and tracking state; connected systems remain authoritative for their own catalog, inventory, customer order, funds, and shipment facts.
 
 <IntroDiagram />
 
-## Basic concepts
+<Callout type="warn">
+Current compiled adapters cover Shopify and Openfront only. Other commerce, marketplace, warehouse, 3PL, email, or spreadsheet systems require separate adapter source and verification. Openship is not a customer storefront, payment processor, warehouse system, or shipping carrier.
+</Callout>
 
-### Shops
+## Shops
 
-Shops represent your online stores where your customers place orders (e.g. Shopify, WooCommerce, eBay, Amazon). Once connected, new orders can be routed to Openship to be fulfilled.
+A Shop is one user-owned order source. Its ShopPlatform selects product, order, update, and webhook handlers. The shop holds connection-specific identity and credentials.
 
 <ShopDiagram />
 
-### Channels
+See [Shops](/docs/openship/ecommerce/shops) for the current adapter and credential limitations.
 
-Channels represent destinations where your orders can be routed and fulfilled. A channel could be an existing platform like your supplier's Shopify shop or a 3PL fulfillment service. It could also be something very simple like adding a row to a Google Sheet or sending an email with the order details. Openship currently only supports Shopify out of the box, but custom channels can be created. Check out [this guide](/docs/how-to-guides/create-custom-channel) to learn more.
+## Channels
+
+A Channel is one user-owned fulfillment destination. Its ChannelPlatform selects catalog, purchase, cancellation, webhook, and tracking handlers. Creating a Channel row does not establish a working provider connection.
 
 <ChannelDiagram />
 
-### Links
+See [Channels](/docs/openship/ecommerce/channels) for compiled adapters, custom execution, and reconciliation requirements.
 
-Links represent a connection between a shop and a channel. Once linked, new shop orders are forwarded to the linked channel for fulfillment.
+## Links
+
+A Link connects one owned shop to one owned channel and supplies the routing relationship used for order work.
 
 <LinkDiagram />
 
-### Matches
+## Matches
 
-For finer control over the fulfillment process, matches can be created on the product level. Matches represent a connection between your shop products and your channel products. When a match is created between a shop product and channel product, Openship will automatically process that order. Matches can be easily changed between your channel products so you are not locked-in to any one vendor, supplier, or fulfillment system as you scale.
+A Match maps one exact shop product/variant to one exact channel product/variant. Routing uses that mapping to decide which destination item can fulfill a source line. Operators can replace a match without changing the source catalog, but historical order/purchase identities should not drift when the current mapping changes.
 
 <MatchDiagram />
+
+## Controlled flow
+
+The intended path is shop order -> line match -> channel cart item -> downstream purchase -> authenticated tracking/cancellation -> source update. Custom GraphQL operations handle product/order search, matching, cart construction, purchase placement/cancellation, and webhooks. Each step needs same-user ownership, adapter allowlisting, idempotency, signed callback verification, durable error evidence, and reconciliation.
+
+Current source has no onboarding seed. Initialize the first user at `/dashboard/init`, then configure synthetic platforms, one shop, one channel, a link, and matches manually. Do not connect production credentials until the exact adapter passes cross-user, credential-read, egress, duplicate-purchase, partial-failure, cancellation, tracking, and restore tests.

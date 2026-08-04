@@ -1,0 +1,8 @@
+---
+title: External dashboards
+description: Give an LLM the Marketplace dashboard skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Marketplace dashboard, copy the skill and give it to your LLM. The skill will explain Marketplace's non-Keystone architecture before asking what should change, then inspect its conversational UI, MCP tools, adapter registry, cart/session capabilities, and merchant checkout handoff.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Marketplace codebase before proposing work.

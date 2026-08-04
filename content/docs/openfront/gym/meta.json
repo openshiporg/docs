@@ -1,6 +1,14 @@
 {
   "title": "Gym",
-  "description": "Gym membership management platform",
+  "description": "Memberships, class scheduling, booking, check-in, billing, and member operations",
   "icon": "Dumbbell",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
 }

@@ -1,0 +1,43 @@
+---
+title: Openfront UIKit
+description: Component kits, releases, registry access, orders, payments, and entitlements.
+icon: PanelsTopLeft
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Openfront UIKit is a self-hosted component-kit catalog and private registry foundation. It models kits, releases and files, compatibility and examples, accessibility/review evidence, registry keys, checkout orders, payments and access grants.
+
+<Callout type="warn">
+Before enabling paid access, verify manual-payment restrictions, immutable settlement, webhook replay, and entitlement behavior in the deployed environment.
+</Callout>
+
+## Architecture and schema
+
+Catalog/release/design-system records are globally scoped. Customer commerce is user/product scoped through Order, KitAccess, and RegistryApiKey; there is no organization/team tenant graph. The graph includes brand settings, kit products, releases, component files, package exports, compatibility targets, usage examples, integration recipes, screenshots, accessibility audits, review workflows and changelogs. Commerce records include orders/items, provider/session/payment/event records and kit access. Registry API keys control package access.
+
+Public routes cover the kit catalog, `/kits/[slug]`, kit checkout, account token, and registry docs. `/api/registry/[code]` validates the code, product, rate limit, key/access summary, release/version, and manifest integrity before returning files. Operator routes cover catalog, design systems, components, quality, releases, API keys, orders, payments, refunds, access, and audit.
+
+## Main workflow
+
+An operator publishes a kit release and its immutable files/exports. A user selects a kit, completes a verified checkout, receives a scoped entitlement, and creates or rotates a registry key. Registry requests validate both key and active access before returning a release artifact.
+
+## Bounded GraphQL operations
+
+Public catalog and operator projections expose kit/release/access/order state without returning key hashes or private files. Named operations submit, publish, deprecate, and review releases; create/revoke registry keys and kit access; create/complete/refund kit orders; handle payment webhooks; settle permitted offline orders; edit products; and run onboarding. Registry delivery independently checks the key, user, kit entitlement, release, and artifact before returning content.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database with synthetic packages and test credentials. `runUIKitOnboarding` creates local catalog, design-system, token, component, release, quality, and commerce data. Run it twice on an isolated current database, then verify catalog projections, review/publish/deprecate transitions, key revocation, checkout, operator settlement, refund, and entitlement access. Seeded kits are not a hosted registry or package service.
+
+## Integrations
+
+The code-owned payment registry contains Stripe, PayPal, and manual adapters plus signed webhook ingress. Adapter source is not settlement proof. Manual capture/refund/status intentionally throws and must remain an operator-recorded offline settlement boundary; it cannot grant public paid access by itself.
+
+External package hosting, artifact signing/provenance, malware scanning, CDN delivery, package-manager publication, and supply-chain attestation are not implemented by registry/file records.
+
+## Security and deployment
+
+Hash registry keys, restrict them to the entitled user/kit, support revocation and rotation, and avoid exposing private files through predictable URLs. Settlement and entitlement creation need one transaction, verified provider events, and replay protection. Railway builds then migrates at start; the package's `next lint` script is invalid under Next.js 16.
+
+Deploy only after reviewed migrations, current schema/type/tests/build, catalog/release lifecycle, key/access revocation, rate limits, checkout/refund/webhook replay, artifact integrity, retention, backup restoration, and responsive catalog/operator checks. A registry key or hash-checked manifest is not proof of package signing, malware safety, payment settlement, accessibility quality, compatibility, or supply-chain certification.

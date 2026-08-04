@@ -1,0 +1,14 @@
+{
+  "title": "Coffee Shop",
+  "description": "Menu, pickup ordering, POS, inventory, recipes, loyalty, and reporting",
+  "icon": "Coffee",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

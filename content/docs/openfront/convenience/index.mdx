@@ -1,0 +1,118 @@
+---
+title: Openfront Convenience
+description: Convenience retail, POS, inventory, loyalty, compliance, prepared food, and fuel.
+icon: Store
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-convenience) · [Catalog](https://openship.org/products/openfront-convenience)
+
+Openfront Convenience is an open-source operations application for convenience stores. It connects scan-and-price POS, tenders and receipts, cash control, purchasing and receiving, lot-aware inventory, loyalty, regulated-sale checks, prepared food, and optional fuel records in one business-owned PostgreSQL system.
+
+<Callout type="warn">
+Payment capture, signed payment webhooks, and fuel-controller protocols require explicit provider adapters. Current source can record configured external references and outcomes, but it does not claim an external effect that an adapter did not execute and reconcile.
+</Callout>
+
+## Install and configure
+
+Use Node.js 20 or later and PostgreSQL. From the repository root:
+
+```bash
+npm install
+```
+
+Create `.env` for the intended local database:
+
+```bash
+DATABASE_URL=postgresql://127.0.0.1:5432/openfront_convenience
+SHADOW_DATABASE_URL=postgresql://127.0.0.1:5432/openfront_convenience_shadow
+SESSION_SECRET=replace-with-at-least-32-random-characters
+INTERNAL_APP_ORIGIN=http://127.0.0.1:3000
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+`INTERNAL_APP_ORIGIN` is the trusted destination for cookie-bearing internal requests. In a deployed environment it must be the application's fixed origin; request host headers do not select it.
+
+Apply checked-in migrations and start development:
+
+```bash
+npm run migrate
+npm run dev
+```
+
+`npm run dev` also deploys migrations before starting Next.js, so point `DATABASE_URL` only at the database you intend to change. Do not use schema push or reset commands. The app is served at `/`, the operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
+
+## Architecture
+
+`Business` is the tenant root. Active employee memberships and business-owned roles determine permissions. Stores, employees, registers, inventory, pricing, purchasing, sales, integrations, and audit records carry a direct business relationship. Consequential operations also validate store ownership before using serializable Prisma transactions.
+
+Money uses integer minor units, rates use basis points, and stock and weighted quantities use fixed four-decimal arithmetic. Inventory, cash, loyalty, idempotency, and audit history is append-only through the public API. Completed sale lines retain product, price, tax, promotion, and compliance snapshots.
+
+Fuel is an optional bounded module. Retail catalog, sales, purchasing, and inventory do not depend on a fuel-controller connection.
+
+## Data model
+
+- **Business and stores:** businesses, roles, employees, store assignments, stores, registers, shifts, sessions, store days, and cash movements.
+- **Catalog and pricing:** products, variants, categories, barcodes, tax categories and rates, price books and entries, promotions, rules, and redemptions.
+- **Inventory and purchasing:** locations, stock levels, lots, ledger entries, counts and lines, vendors and items, purchase orders and lines, receiving and lines, and waste.
+- **Sales:** carts and lines, sales and immutable sale lines, tenders, refunds and lines, returns and lines, and original-lot restocking links.
+- **Customers and compliance:** loyalty programs, accounts and ledger entries, compliance policies, age-verification evidence, and operational alerts.
+- **Prepared food:** recipes, ingredients, prep batches, output lots, ingredient consumption, and waste.
+- **Fuel:** sites, grades, tanks and readings, pumps and nozzles, effective prices, deliveries, transactions, and reconciliation.
+- **Operations:** payment-provider records, API keys, webhook events, scoped idempotency keys, and audit events.
+
+Provider and controller configuration accepts opaque secret references such as `env://...` or `vault://...`; inline secret-like values are rejected.
+
+## Workflows
+
+The primary POS path is barcode scan -> server-side price, promotion, tax, and compliance validation -> sale snapshot and tenders -> receipt -> inventory and cash ledger postings.
+
+Named GraphQL operations also cover:
+
+- first-business onboarding with owner role, store, register, inventory locations, price book, tax defaults, and active membership;
+- shift and register-session opening and closing, balanced cash movement, expected cash, and over/short reconciliation;
+- cash sales, split tenders, partial/full refunds, returns, and restoration to original inventory lots;
+- purchase-order submission and approval, partial receiving, rejected quantities, lot creation, and stock posting;
+- inventory adjustments, counts, count approval, FIFO lot consumption, and idempotent replay;
+- promotion application, loyalty-ledger adjustments, and minimum-data age verification;
+- recipe consumption, prep output lots, and waste posting;
+- fuel delivery reconciliation and completed dispense recording; and
+- one-time API-key issuance and revocation.
+
+Purpose-built platform routes cover overview, POS, inventory, pricing, purchasing, restricted sales, loyalty, prepared food, fuel, reconciliation, exceptions, reports, and operations. `/dashboard/onboarding` handles first-business setup, while generic administration remains available for permitted records.
+
+## Bounded GraphQL operations
+
+The platform reads business-scoped operational and reporting projections. Named mutations onboard a business; open/close shifts and register sessions; create and price carts; complete and refund sales; receive purchase orders; post inventory adjustments and counts; apply promotions; adjust loyalty; verify restricted-sale age; run prepared-food and waste work; record fuel prices, deliveries, tank readings, transactions, and reconciliation; manage store-day/bank-deposit reconciliation; and issue/revoke API keys. Outbox claim, completion, replay, and failure state are separate worker operations. Generated CRUD is not a substitute for these transaction, fixed-point, lifecycle, and evidence boundaries.
+
+## Integrations
+
+Checkout and refund operations can record cash and externally confirmed non-cash references. They do not call an unconfigured payment provider. A payment adapter needs server-owned amount and currency, provider idempotency, signed raw-body webhook verification, event replay protection, controlled state transitions, and reconciliation.
+
+Fuel models record controller and device references without coupling the domain to one protocol. A controller adapter needs exact store/site scope, secret references, device mapping, signed or mutually authenticated ingress, duplicate-event handling, sequence and meter reconciliation, offline recovery, and an operator-visible exception path.
+
+The same adapter rule applies to accounting, loyalty, tax, ordering, and notification providers: a configuration row is not proof of execution.
+
+## Security
+
+Tenant filters hide other businesses, and relationship access rejects cross-business connections. Consequential mutations recheck business and store scope. Sale, inventory, cash, loyalty, idempotency, and audit evidence cannot be rewritten through ordinary GraphQL CRUD.
+
+Employee PINs and API tokens are one-way hashed. API-key plaintext is returned once and excluded from idempotency and audit snapshots. Restricted-sale evidence stores a cryptographic fingerprint and decision metadata rather than raw identity numbers, full birth dates, or document scans. Completion transport uses request-local cookie forwarding to the exact configured internal origin and does not patch process-global fetch.
+
+Before real operations, verify role grants, cross-business negatives, register and inventory concurrency, refund authorization, provider callback handling, secret management, backups, monitoring, rate limits, physical register controls, and applicable payment, tax, age-restriction, food-safety, fuel, and privacy requirements.
+
+## Deployment
+
+Current source contains eleven checked-in migration directories: seven inherited starter migrations and four Convenience migrations covering the operating graph, return-lot allocation, store-day/fuel reconciliation, and durable operation/outbox records. `npm run build` generates Keystone artifacts and builds Next.js without deploying migrations; `npm run dev` deploys them first. No hosted Convenience demo is advertised by these docs.
+
+For deployment, review and apply migrations separately, use stable secrets and a fixed `INTERNAL_APP_ORIGIN`, back up and test restoration, and run current schema tests, completion-transport tests, typecheck, build, tenant negatives, register/shift control, sale/refund, purchasing/receiving, FIFO lots, prepared-food, fuel records, API-key, and outbox replay flows. Configure only implemented adapters and stage rollout with monitoring and rollback. Those local paths do not establish real payment, fuel, accounting, tax, loyalty, or notification execution, and the application must not be deployed with inherited or synthetic credentials.
+
+## Extension paths
+
+- Add domain records under `features/keystone/models` and register them in `features/keystone/models/index.ts`; preserve direct business ownership and generate a reviewed migration.
+- Add consequential behavior under `features/keystone/mutations` using the existing operation runner, fixed-point helpers, tenant checks, idempotency, serializable transactions, and append-only evidence.
+- Extend first-business defaults in `features/platform/onboarding` without making seed data the authority for runtime permissions or prices.
+- Add payment, fuel, accounting, tax, loyalty, or notification adapters behind the corresponding provider boundary. Keep secrets out of model JSON and prove callback authentication, replay, failure, and reconciliation behavior.
+- Build cashier and operator surfaces under `app` or `features/dashboard`; call named domain operations instead of reproducing POS, refund, receiving, or inventory rules in the browser.
+- Add tests for cross-business access, fixed-point arithmetic, lot allocation, oversell/concurrency, idempotent replay, lifecycle denial, callback duplication, and failed external effects before enabling a new workflow.

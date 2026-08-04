@@ -1,69 +1,45 @@
 ---
-title: Quick Start
-description: Getting Started with Openship
-icon: Album
+title: Openship order routing
+description: Shop, channel, product-match, order, and fulfillment coordination from source you control.
+icon: Route
 ---
 
-## Introduction
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openship is an **order routing platform** that connects the places where you're selling to the places where you're fulfilling. It automatically routes orders from your sales channels to your fulfillment partners, giving you complete control over your order flow.
+[Source](https://github.com/openshiporg/openship) · [Getting started](/docs/openship/ecommerce/getting-started)
 
-## Automatic Installation
+Openship connects the places where orders originate with the places that fulfill them. A **shop** is an order source. A **channel** is a fulfillment destination. **Links** connect shops to channels, and **matches** map a shop item to a channel item before an order is placed downstream.
 
-A minimum version of Node.js 20 required.
+<Callout type="warn">
+The repository contains shop-to-channel routing and Shopify/Openfront adapters. A configured shop/channel, provider name, model, or synthetic endpoint response does not prove an external purchase, webhook, retry, cancellation, or tracking flow. Current credential fields, configurable execution destinations, and non-durable callback paths require hardening before production credentials or orders.
+</Callout>
 
-```bash tab="npm"
-git clone https://github.com/openship-org/openship.git
-cd openship
-npm install
-```
+## Architecture and data
 
-```bash tab="pnpm"
-git clone https://github.com/openship-org/openship.git
-cd openship
-pnpm install
-```
+Openship uses the same Next.js, Keystone, GraphQL, Prisma and PostgreSQL application base as Openfront. Its active graph is smaller and routing-specific: users/roles/API keys, shop and channel platforms, shops and channels, orders/line/cart items, shop/channel items, matches, links and tracking details. Ownership is directly User-scoped; there is no organization or workspace tenant graph.
 
-```bash tab="yarn"
-git clone https://github.com/openship-org/openship.git
-cd openship
-yarn install
-```
+Provider-specific behavior belongs behind shop and channel platform handlers. Openship stores its routing and match state; connected commerce or fulfillment platforms remain authoritative for their own products, orders and tracking records.
 
-### Environment Setup
+## Main workflow
 
-Create a `.env` file in the root directory:
+1. Configure a shop platform and shop with scoped credentials.
+2. Configure a channel platform and fulfillment channel.
+3. Link the shop to the channel.
+4. Search both product catalogs and create a match.
+5. Import or select a shop order.
+6. Convert matched lines into channel purchases.
+7. record tracking, cancellation, fulfillment or error state from the channel boundary.
 
-```bash
-# Required: Change this to a secure random string
-SESSION_SECRET=your-super-secret-session-key-here
+Idempotency, signature verification, credential isolation, retries and reconciliation need to be proved for each adapter.
 
-# Required: Your PostgreSQL database connection string
-DATABASE_URL=postgresql://username:password@localhost:5432/openship
+<Cards>
+  <Card title="Shops" href="/docs/openship/ecommerce/shops" description="Configure order sources and their platform handlers." />
+  <Card title="Channels" href="/docs/openship/ecommerce/channels" description="Configure fulfillment destinations and tracking behavior." />
+  <Card title="Product matching" href="/docs/openship/ecommerce/product-matching" description="Map shop products and variants to channel items." />
+  <Card title="GraphQL API" href="/docs/openship/ecommerce/api-reference" description="Inspect the generated contract for your exact source revision." />
+</Cards>
 
-# Optional: SMTP configuration for email notifications
-SMTP_FROM="no-reply@yourdomain.com"
-SMTP_HOST="your-smtp-host"
-SMTP_PASSWORD="your-smtp-password"
-SMTP_PORT="587"
-SMTP_USER="your-smtp-user"
-```
+## Openfront relationship
 
-### Start Development
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-This will:
-- Build the Keystone schema
-- Run database migrations
-- Start the development server
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Enjoy!
-
-Your Openship instance is now running! Start by connecting your first shop and setting up fulfillment channels.
+Openfront products can be shop sources for Openship, but Openship is not the Openfront storefront or payment system. It coordinates order routing across independently operated systems.

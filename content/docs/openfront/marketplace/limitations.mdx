@@ -1,0 +1,39 @@
+---
+title: Marketplace current limitations
+description: Adapter, conformance, privacy, browser-state, AI, reliability, and checkout boundaries in current source.
+icon: ShieldAlert
+---
+
+## Adapter coverage
+
+Current source supports curated Openfront ecommerce stores. Shopify, WooCommerce, BigCommerce, Restaurant, Hotel, Rental, Pharmacy, and other platform or vertical names are not working Marketplace adapters without separate source and conformance evidence.
+
+There is no public multi-vertical capability protocol or complete adapter conformance suite yet. Store health, capability freshness, version compatibility, and operator disable metadata also need a stronger contract.
+
+## Commerce ownership
+
+The marketplace does not own a product database, inventory, merchant customer account, order, payment, refund, or fulfillment record. It can prepare a merchant cart and generate an exact-origin handoff. It cannot prove payment or order completion, and it has no general reconciliation feed back from merchants.
+
+This is a deliberate interoperability boundary, not a promise that every merchant flow works. Connected stores remain responsible for identity, cart ownership, price, inventory, tax, shipping, payment, fraud, order, cancellation, refund, customer service, legal terms, and fulfillment.
+
+## Browser and privacy boundary
+
+The intended client boundary stores cart IDs, signed capabilities, encrypted store-session envelopes, and optional buyer OpenRouter settings in browser storage. Browser compromise, shared devices, extension access, XSS, stale sessions, and storage persistence therefore matter. Current source does not provide a centralized account that synchronizes or remotely revokes all browser-held state.
+
+The checked-in browser handoff is currently inconsistent: cart tools emit a `saveStoreSession` action with `sessionEnvelope`, while the browser MCP client consumes `saveSessionToken`/`sessionToken` and sends raw session headers that the server rejects in favor of `x-store-session-envelope`. The encryption/capability primitives exist, but do not describe authenticated browser cart/session handoff as functioning until the client/server action contract and focused browser test are corrected.
+
+A deployment needs a clear retention and cleanup policy, content-security policy, dependency review, XSS testing for store/model content rendered through MCP UI, session and capability expiry/rotation, privacy disclosure, and a decision about whether buyer-supplied key storage is permitted.
+
+## AI limitations
+
+Model output can be incomplete, biased, unsafe, or wrong. Ranking logic and prompts do not guarantee neutral discovery, complete catalog coverage, current merchant facts, or accessibility. The built-in model receives discovery tools only, but external MCP clients may have different behavior and must preserve equivalent credential and capability separation.
+
+Do not treat a model statement as a price, availability, policy, medical/legal recommendation, merchant commitment, or completed transaction. Read authoritative facts from the connected store and hand consequential work to the proper owner.
+
+## Security and reliability work
+
+Current source includes registry validation, public-network egress checks, DNS pinning, redirect refusal, credential-isolation primitives, store-bound envelope code, signed cart capabilities, request-local MCP handling, and bounded merchant requests. A deployed service still needs infrastructure egress policy, rate/body/concurrency limits, bot and abuse controls, logs/metrics/alerts, store health, retries that do not duplicate mutations, incident response, secret rotation, disaster recovery, and an operator store-disable path.
+
+Full browser end-to-end coverage against dedicated disposable merchant fixtures remains incomplete. Verify all enabled tools and stores under success, timeout, malformed response, stale cart, wrong account, wrong store, cross-cart, redirect, DNS/IP, rate limit, merchant outage, AI outage, and checkout-return conditions.
+
+A repository, product page, or hosted Marketplace response establishes URL availability only. It does not establish adapter coverage, store authenticity, transaction success, privacy compliance, security certification, uptime, or merchant settlement.

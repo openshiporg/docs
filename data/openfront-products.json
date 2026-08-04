@@ -1,0 +1,192 @@
+[
+  {
+    "id": "ecommerce",
+    "repository": "openfront",
+    "name": "Ecommerce",
+    "description": "Multi-region catalog, storefront, checkout, orders, inventory, payments, shipping, returns, and B2B commerce.",
+    "color": "#6366f1",
+    "href": "/docs/openfront/ecommerce",
+    "sourceUrl": "https://github.com/openshiporg/openfront",
+    "catalogUrl": "https://openship.org/products/openfront-ecommerce"
+  },
+  {
+    "id": "restaurant",
+    "repository": "openfront-restaurant",
+    "name": "Restaurant",
+    "description": "Menus, ordering, POS, kitchen, service-floor, inventory, staff, and restaurant reporting.",
+    "color": "#f59e0b",
+    "href": "/docs/openfront/restaurant",
+    "sourceUrl": "https://github.com/openshiporg/openfront-restaurant",
+    "catalogUrl": "https://openship.org/products/openfront-restaurant"
+  },
+  {
+    "id": "airline",
+    "repository": "openfront-airline",
+    "name": "Airline",
+    "description": "Airline retailing, offers, bookings, fulfillment, passenger service, baggage, and disruption operations.",
+    "color": "#3b82f6",
+    "href": "/docs/openfront/airline",
+    "sourceUrl": "https://github.com/openshiporg/openfront-airline",
+    "catalogUrl": "https://openship.org/products/openfront-airline"
+  },
+  {
+    "id": "barbershop",
+    "repository": "openfront-barbershop",
+    "name": "Barbershop",
+    "description": "Services, barber schedules, appointments, walk-in queue, POS, customers, inventory, and commissions.",
+    "color": "#2563eb",
+    "href": "/docs/openfront/barbershop",
+    "sourceUrl": "https://github.com/openshiporg/openfront-barbershop",
+    "catalogUrl": "https://openship.org/products/openfront-barbershop"
+  },
+  {
+    "id": "coffee-shop",
+    "repository": "openfront-coffee-shop",
+    "name": "Coffee Shop",
+    "description": "Menu and pickup ordering, POS, kitchen display, recipes, inventory, loyalty, catering, and shifts.",
+    "color": "#92400e",
+    "href": "/docs/openfront/coffee-shop",
+    "sourceUrl": "https://github.com/openshiporg/openfront-coffeeshop",
+    "catalogUrl": "https://openship.org/products/openfront-coffee-shop"
+  },
+  {
+    "id": "construction",
+    "repository": "openfront-construction",
+    "name": "Construction",
+    "description": "Projects, preconstruction, contracts, cost control, field work, safety, documents, and progress billing.",
+    "color": "#f97316",
+    "href": "/docs/openfront/construction",
+    "sourceUrl": "https://github.com/openshiporg/openfront-construction",
+    "catalogUrl": "https://openship.org/products/openfront-construction"
+  },
+  {
+    "id": "convenience",
+    "repository": "openfront-convenience",
+    "name": "Convenience",
+    "description": "Convenience-store POS, cash, inventory, purchasing, loyalty, restricted sales, prepared food, and fuel records.",
+    "color": "#0f9f9a",
+    "href": "/docs/openfront/convenience",
+    "sourceUrl": "https://github.com/openshiporg/openfront-convenience",
+    "catalogUrl": "https://openship.org/products/openfront-convenience"
+  },
+  {
+    "id": "dealership",
+    "repository": "openfront-dealership",
+    "name": "Dealership",
+    "description": "Vehicle inventory, leads, deal desk, test drives, trade-ins, finance intake, service, and delivery.",
+    "color": "#ef4444",
+    "href": "/docs/openfront/dealership",
+    "sourceUrl": "https://github.com/openshiporg/openfront-dealership",
+    "catalogUrl": "https://openship.org/products/openfront-dealership"
+  },
+  {
+    "id": "grocery",
+    "repository": "openfront-grocery",
+    "name": "Grocery",
+    "description": "Grocery catalog, fresh inventory, substitutions, pickup, delivery, purchasing, lists, loyalty, and subscriptions.",
+    "color": "#22c55e",
+    "href": "/docs/openfront/grocery",
+    "sourceUrl": "https://github.com/openshiporg/openfront-grocery",
+    "catalogUrl": "https://openship.org/products/openfront-grocery"
+  },
+  {
+    "id": "gym",
+    "repository": "openfront-gym",
+    "name": "Gym",
+    "description": "Memberships, classes, trainer scheduling, booking and waitlists, check-in, billing, and member accounts.",
+    "color": "#8b5cf6",
+    "href": "/docs/openfront/gym",
+    "sourceUrl": "https://github.com/openshiporg/openfront-gym",
+    "catalogUrl": "https://openship.org/products/openfront-gym"
+  },
+  {
+    "id": "hospital",
+    "repository": "openfront-hospital",
+    "name": "Hospital",
+    "description": "Appointments, registration, intake, patients, providers, inpatient and clinical workflows, claims, and communications.",
+    "color": "#06b6d4",
+    "href": "/docs/openfront/hospital",
+    "sourceUrl": "https://github.com/openshiporg/openfront-hospital",
+    "catalogUrl": "https://openship.org/products/openfront-hospital"
+  },
+  {
+    "id": "hotel",
+    "repository": "openfront-hotel",
+    "name": "Hotel",
+    "description": "Hotel room-night inventory, rates, reservations, guest access, front desk, folios, housekeeping, and channels.",
+    "color": "#ec4899",
+    "href": "/docs/openfront/hotel",
+    "sourceUrl": "https://github.com/openshiporg/openfront-hotel",
+    "catalogUrl": "https://openship.org/products/openfront-hotel"
+  },
+  {
+    "id": "law-firm",
+    "repository": "openfront-law-firm",
+    "name": "Law Firm",
+    "description": "Firm intake, conflicts, matters, ethical walls, documents, billing, trust records, portal access, and governance.",
+    "color": "#7c3aed",
+    "href": "/docs/openfront/law-firm",
+    "sourceUrl": "https://github.com/openshiporg/openfront-law-firm",
+    "catalogUrl": "https://openship.org/products/openfront-law-firm"
+  },
+  {
+    "id": "marketplace",
+    "repository": "openfront-marketplace",
+    "name": "Marketplace",
+    "description": "Conversational discovery and delegated cart and checkout operations across independently operated stores.",
+    "color": "#155dfc",
+    "href": "/docs/openfront/marketplace",
+    "sourceUrl": "https://github.com/openshiporg/marketplace",
+    "catalogUrl": "https://openship.org/products/marketplace"
+  },
+  {
+    "id": "pharmacy",
+    "repository": "openfront-pharmacy",
+    "name": "Pharmacy",
+    "description": "Pharmacist-controlled prescription, dispensing, recall, lot, cold-chain, patient, OTC, order, and fulfillment workflows.",
+    "color": "#0d9488",
+    "href": "/docs/openfront/pharmacy",
+    "sourceUrl": null,
+    "catalogUrl": null
+  },
+  {
+    "id": "real-estate",
+    "repository": "openfront-real-estate",
+    "name": "Real Estate",
+    "description": "Brokerage listings, leads, saved searches, showings, offers, deals, disclosures, milestones, and commissions.",
+    "color": "#14b8a6",
+    "href": "/docs/openfront/real-estate",
+    "sourceUrl": "https://github.com/openshiporg/openfront-realestate",
+    "catalogUrl": "https://openship.org/products/openfront-real-estate"
+  },
+  {
+    "id": "rental",
+    "repository": "openfront-rental",
+    "name": "Rental",
+    "description": "Professional short-term accommodation listings, quotes, reservations, guest trips, host operations, channels, and payouts.",
+    "color": "#d946ef",
+    "href": "/docs/openfront/rental",
+    "sourceUrl": "https://github.com/openshiporg/openfront-rental",
+    "catalogUrl": "https://openship.org/products/openfront-rental"
+  },
+  {
+    "id": "salon",
+    "repository": "openfront-salon",
+    "name": "Salon",
+    "description": "Services, stylists, appointments, schedules, resources, checkout, memberships, inventory, and commissions.",
+    "color": "#a855f7",
+    "href": "/docs/openfront/salon",
+    "sourceUrl": "https://github.com/openshiporg/openfront-salon",
+    "catalogUrl": "https://openship.org/products/openfront-salon"
+  },
+  {
+    "id": "uikit",
+    "repository": "openfront-uikit",
+    "name": "UIKit",
+    "description": "Component-kit catalog, releases and files, review evidence, checkout, entitlements, registry keys, and package delivery.",
+    "color": "#475569",
+    "href": "/docs/openfront/uikit",
+    "sourceUrl": null,
+    "catalogUrl": null
+  }
+]

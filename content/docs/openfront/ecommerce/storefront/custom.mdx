@@ -1,14 +1,8 @@
 ---
-title: Custom Storefront
-description: Deploy and customize your own Openfront storefront with complete control over design and functionality
+title: External storefronts
+description: Give an LLM the storefront skill to adapt an Openfront built-in storefront or create a separate storefront.
 ---
 
-import { Card, Cards } from 'fumadocs-ui/components/card';
+To create a custom storefront, copy the skill and give it to your LLM. It will first ask which Openfront product and codebase you are using, whether you want to adapt the built-in storefront or build a separate client, what you dislike about the current storefront, what should stay, and what the replacement should feel like.
 
-<Cards>
-  <Card 
-    title="Openfront Storefront" 
-    href="https://github.com/openshiporg/openfront-storefront" 
-    description="Separate storefront application for complete design freedom. Clone, customize, and deploy your own customer-facing store."
-  />
-</Cards>
+The skill tells the LLM to inspect that product's built-in storefront, routes, feature slices, GraphQL calls, generated schema, access rules, session behavior, and provider boundaries before proposing work. Tell it the customer journeys you need, the parts of the built-in experience you want changed, and any design, content, device, accessibility, or deployment requirements.

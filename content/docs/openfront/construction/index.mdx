@@ -1,0 +1,116 @@
+---
+title: Openfront Construction
+description: Construction project controls, field operations, safety, contracts, and billing.
+icon: HardHat
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-construction) · [Catalog](https://openship.org/products/openfront-construction)
+
+Openfront Construction is an open-source operations backend for general and specialty contractors. It connects project tenancy, preconstruction, cost control, contracts, field execution, safety, progress billing, and controlled agent actions in one relational graph.
+
+<Callout type="warn">
+Current source provides the domain graph, project portfolio and project workspaces, controlled GraphQL operations, checked migrations, and a synthetic project seed. It does not provide a subcontractor or client portal, interactive company onboarding, file pipeline, accounting connector, payment adapter, or notification worker.
+</Callout>
+
+## Install and configure
+
+Use Node.js 20 or later and PostgreSQL. From the repository root:
+
+```bash
+npm install
+```
+
+Create `.env` for the database you intend to use:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_construction
+SESSION_SECRET=replace-with-at-least-32-random-characters
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+The development and build scripts deploy checked-in migrations. Review the target and migration SQL before running either command:
+
+```bash
+npm run migrate
+npm run dev
+```
+
+The application is served at `/`, the generated operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`. Do not use `prisma db push` or a destructive reset. Generate migrations only against an approved disposable development database.
+
+Schema, authorization, and source checks that do not deploy migrations include:
+
+```bash
+npx keystone build --no-ui
+npm run typecheck
+npm test
+npm run lint
+npm run lint:schema
+```
+
+## Architecture
+
+`Company` is the tenant root and `Project` is the daily operating and security boundary. Company memberships establish tenant access; project memberships narrow operational access. Project-owned records also carry a derived company key so filters and relationship checks do not depend on long mutable relationship chains.
+
+Core links are relational; the generated Prisma schema does not hide domain relationships in JSON. Money uses signed 64-bit integer minor units, percentages and rates use basis points, and estimate versions, document and drawing revisions, contract lines, and progress-claim lines preserve issued facts.
+
+Thirteen high-risk aggregate lifecycles use named GraphQL mutations. Raw status updates are denied for those records. Agent identities, scope grants, action requests, reviews, outcomes, and idempotency keys keep machine work explicit and attributable.
+
+## Data model
+
+- **Identity and tenancy:** companies, users, roles, company and project memberships, partners, locations, projects, cost codes, and budget codes.
+- **Preconstruction:** bid packages, invitations, submissions and lines, estimates, immutable versions, and estimate lines.
+- **Cost control:** budgets, budget lines and changes, direct costs, cost codes, and budget codes.
+- **Contracts and change:** prime contracts, commitments, schedule-of-values lines, change events, quotes, change orders, and order lines.
+- **Execution:** RFIs and responses, submittals and reviews, specifications, drawings and revisions, documents and versions, daily logs, schedules, dependencies, and punch items.
+- **Field and safety:** labor, equipment, material and resource logs, incidents, observations, inspection templates and items, inspections, and corrective actions.
+- **Billing:** progress claims and lines, payments and allocations, retainage releases, and lien-waiver evidence.
+- **Agents and evidence:** agent identities, scope grants, action requests and outcomes, idempotency keys, and audit records.
+
+Every tenant aggregate has a direct ownership path. Relationship validation rejects company or project mismatches before persistence, and sensitive fields restrict incident details, credentials, waiver evidence, and audit digests.
+
+## Workflows
+
+A representative commercial path is bid and estimate -> budget and prime contract or commitment -> field execution -> change exposure and approval -> progress claim -> payment allocation, retainage, and waiver.
+
+Named lifecycle operations cover projects, bid packages, estimates, budget changes, prime contracts, commitments, change events, change orders, RFIs, submittals, progress claims, safety incidents, and inspections. Each operation checks the user permission or machine scope, company and project, allowed transition, reason, idempotency key, and audit attribution.
+
+Agent work follows request -> review -> outcome. A request binds one registered operation, target type and ID, destination status, company, optional project, active agent identity, and an unexpired matching scope grant. Execution revalidates those facts so an approval cannot survive identity or grant revocation.
+
+The platform includes a project portfolio and project workspaces for preconstruction, execution, financials, contracts, field work, documents, quality/safety, billing, team, audit, and reports. Those screens call project-scoped projections and command operations; generic list administration remains available for permitted records.
+
+There is no interactive construction onboarding flow. `npm run seed:demo` uses `DEMO_ADMIN_PASSWORD` and optional `DEMO_ADMIN_EMAIL` to create or reuse a synthetic company, operator membership, project, trade partners, budget/cost records, and sample work through privileged context. The script requires a ten-character password but does not restrict `DATABASE_URL` to a disposable or loopback host, so inspect the selected database before running it. Seeded project data is not a hosted demo or customer-safe default.
+
+## Bounded GraphQL operations
+
+Current project queries return a portfolio and one company/project-scoped workspace rather than exposing every construction list to the UI. Named mutations create projects and team assignments; start bid packages and daily logs; record direct costs, change events, RFIs, submittals, documents, punch items, safety observations, and agent requests/reviews/outcomes; and transition protected project, bid, estimate, budget, contract, change, execution, safety, billing, lien-waiver, and payment lifecycles. Each operation rechecks tenant/project scope, permission, expected state, reason, idempotency, and evidence as applicable.
+
+## Integrations
+
+Document object storage and scanning, signatures, accounting and ERP sync, payments, notifications, and background delivery remain external adapter work. Existing document, payment, and audit records define domain ownership and evidence; they do not establish a provider connection.
+
+An accounting adapter should map explicit company/project, cost-code, contract, change, claim, payment, and allocation records; use idempotent external links; preserve integer money and currency; and reconcile rather than overwrite local history. File and signature adapters should preserve version checksums, actor and provider evidence, callbacks, and retention policy. Payment and notification adapters need signed ingress, replay protection, retry state, and an outbox or worker.
+
+## Security
+
+List access applies company and project filters, and relationship hooks reject cross-tenant links. Sensitive lifecycle mutations recheck ownership before privileged database access. Machine grants are least-privilege, exact-company and optional exact-project, bounded by operation scope and expiry, and revalidated at execution.
+
+Completion/MCP transport uses a request-local fetch wrapper, forwards cookies only to the exact same-app endpoint, rejects redirects and caller cookie overrides, and leaves process-global fetch unchanged. GraphQL enforces a depth limit and restricts unsafe GET behavior. These controls do not replace ingress rate and body limits, managed secrets, centralized logs, incident response, backup restoration, provider security, or cross-company penetration testing.
+
+Before real contracts, safety, lien-waiver, or payment data, verify role and membership grants, company/project negatives, lifecycle denial, concurrent financial allocations, agent revocation, file and provider callbacks, retention, backups, and the legal, labor, safety, payment, and privacy requirements for the deployment.
+
+## Deployment
+
+Current source contains nine checked-in migration directories: seven inherited starter migrations followed by the construction schema and platform-operation migrations. Both `npm run dev` and `npm run build` currently execute `npm run migrate`; building with an uncontrolled `DATABASE_URL` can therefore change that database. Use isolated build credentials or split migration from application build before adopting immutable-image or independently promoted deployments.
+
+For a deliberate release, back up and verify the target, review every migration, deploy it once, build against an approved environment, run schema/security tests and authenticated company/project negatives, exercise each protected lifecycle and agent-revocation path, then test rollback and restoration. Current source does not supply file storage/scanning, accounting, signatures, payment processing, notification delivery, production observability, or a complete external portal. Add and test those services before using the application as an operational system.
+
+## Extension paths
+
+- Add lists in the appropriate bounded-context file under `features/keystone/models` and register them explicitly. Keep direct company/project relationships and use relational fields rather than hiding core links in JSON.
+- Add aggregate transitions to `features/keystone/domain/lifecycle.ts` and `features/keystone/mutations/lifecycle.ts`; preserve raw status denial, adjacency tests, idempotency, and immutable audit evidence.
+- Add agent capabilities in `features/keystone/domain/scopes.ts` and the controlled agent mutation path. Bind them to exact target types and tenant/project scope and revalidate grants at execution.
+- Add file, accounting, signature, payment, and notification adapters behind narrow domain operations. Store provider references and redacted evidence, not credentials or unbounded payloads, and test duplicate callbacks and reconciliation.
+- Build project, field, safety, and billing surfaces under `app` or `features/dashboard`; call domain operations rather than reimplementing transition and permission rules in the browser.
+- Extend `tests/schema` and `tests/security` with tenant negatives, relationship mismatches, lifecycle rejection, money/allocation invariants, concurrency, agent revocation, and provider failure cases before enabling new work.

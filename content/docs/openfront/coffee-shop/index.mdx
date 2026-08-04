@@ -1,0 +1,45 @@
+---
+title: Openfront Coffee Shop
+description: Menu, pickup ordering, POS, inventory, recipes, loyalty, and reporting.
+icon: Coffee
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-coffeeshop) · [Catalog](https://openship.org/products/openfront-coffee-shop)
+
+Openfront Coffee Shop covers a cafe's menu, pickup ordering, counter/POS work, ingredients and recipes, inventory, loyalty, subscriptions, catering, shifts, purchasing, prep and waste.
+
+<Callout type="warn">
+Manual/pay-at-counter is the seeded payment scope. Stripe and PayPal adapters make provider API calls and verify webhooks, but onboarding leaves them disabled; adapter source is not evidence of enabled checkout, settlement, refund, or reconciliation.
+</Callout>
+
+## Architecture and schema
+
+`StoreSettings` is the single-store operating root; current source is not a multi-cafe tenant graph. The graph includes store settings, menu categories/items/images/modifiers, cafe/POS/catering orders and immutable order lines, payment/provider/event records, ingredients, recipes, inventory items/lots, movements, suppliers/purchase orders, prep batches, waste, loyalty accounts/events, subscriptions and shifts.
+
+The public site has `/`, menu detail, `/checkout`, and `/order-confirmed`. Operator routes cover menu, orders, POS, KDS, reports, and coffee operations. Current source also contains register-shift and staff-shift operations; those are active records/workflows, not just future schema.
+
+## Main workflow
+
+A guest builds a pickup order from current menu items and modifiers. The server snapshots the accepted item, modifiers and price into order lines. Staff accept and prepare the order, settle it at the configured boundary, update inventory/prep records, and post loyalty changes where applicable.
+
+## GraphQL boundary
+
+Customer reads use `getCoffeeStore`, `getCoffeeMenu`, `getCafeOrder`, and `getCafeLoyaltyAccount` instead of opening private inventory, recipe, cost, shift, or payment lists. Named commands create pickup orders and transition cafe/POS/catering/order-item/subscription state; apply loyalty; initiate/refund/process payment webhooks; manage menu, lots/inventory, purchase orders, prep, waste, register shifts, staff shifts, and outbox claims/completion.
+
+`createCafePickupOrder` snapshots item/modifier/price facts, applies idempotency, and locks pickup capacity/inventory in its transaction. External clients should use those commands rather than generated writes, while release tests still need to prove store ownership, terminal states, replay, and concurrency.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database. `runCoffeeOnboarding` creates synthetic store, menu, recipe, inventory, loyalty, supplier, and staff data for local evaluation; repo scripts also exercise that local graph. The seed is not a hosted demo. Run onboarding against an isolated current database and verify its idempotency plus inventory-lot ownership, repair behavior, menu publication, and pickup ordering before evaluating the order path.
+
+## Integrations
+
+The registry contains manual, Stripe, and PayPal adapters; webhook ingress is `/api/payment-providers/[providerCode]/webhook`. Online providers are disabled in the synthetic seed. Enable one only after testing environment-only credentials, server-derived amount/currency, provider idempotency, signed raw-body callbacks, replay, terminal states, refunds, and reconciliation. Email, delivery, or third-party POS integrations are not implied by order/provider models.
+
+## Security and deployment
+
+Protect customer, loyalty, payment, cost and provider data. Order creation and inventory deductions need idempotent transactions and concurrent-stock tests. Railway builds then migrates at start; `.env.example` lists PostgreSQL, session, S3, SMTP, provider, and AI variables but does not prove those services.
+
+Deploy only after reviewed migrations, current schema/type/tests/build, cross-store and private-list negatives, pickup capacity, lot consumption, register/staff shifts, snapshot, webhook, refund, restore, and responsive workflow verification. Current source does not establish multi-cafe tenancy, delivery dispatch, third-party POS, enabled online settlement, notification delivery, food-safety compliance, or operating certification.

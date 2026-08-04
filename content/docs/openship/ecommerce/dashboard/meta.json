@@ -1,6 +1,6 @@
 {
   "title": "Dashboard",
-  "description": "Admin dashboard for managing your Openfront platform",
+  "description": "Operator dashboard for shops, channels, matches, and routed orders",
   "icon": "LayoutDashboard",
   "pages": [
     "index",

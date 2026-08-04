@@ -1,154 +1,66 @@
 ---
 title: Comparisons
-description: How is Openfront different from other e-commerce platforms?
-icon: GitCompareArrows
+description: Compare Openfront's self-hosted operating model with common commerce approaches.
 ---
 
-## Traditional E-commerce Platforms
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront is designed to be a flexible, customizable alternative to existing e-commerce platforms. Most traditional platforms are either too restrictive or overly complex for businesses that need specific functionality.
+Openfront is an open-source commerce application that combines a Next.js storefront and operator dashboard with a Keystone GraphQL backend and PostgreSQL. Its main difference from a hosted commerce service is operational ownership: you run the application, database, migrations, credentials, and integrations.
 
-Openfront works great if you want complete control over your e-commerce experience, need custom integrations, or want to build on top of an existing codebase without platform limitations.
+## Compare operating models
 
-### Feature Comparison
+| Approach | What you operate | Customization boundary | Typical tradeoff |
+| --- | --- | --- | --- |
+| Openfront | Application source, database, deployment, and provider configuration | The full application and backend source | More control, with responsibility for upgrades, security, reliability, and operations |
+| Hosted commerce service | Store configuration and extensions allowed by the service | Themes, apps, webhooks, and published APIs | Less infrastructure work, but behavior and data access remain bounded by the service |
+| Plugin-based commerce | A CMS, commerce plugin, database, and plugin set | Themes, plugins, and custom server code | Broad extension ecosystem, with plugin compatibility and maintenance work |
+| Enterprise commerce suite | Vendor platform plus an implementation and integration layer | Vendor extension points and contracted APIs | Broader packaged programs, with higher implementation and operational complexity |
+| Custom build | Every selected application and backend component | Whatever the team designs | Maximum design freedom, with no prebuilt Openfront domain model or workflow baseline |
 
-| Feature                | Openfront | Shopify | WooCommerce | Magento |
-| ---------------------- | --------- | ------- | ----------- | ------- |
-| Open Source            | Yes       | No      | Yes         | Yes     |
-| Self-Hosted            | Yes       | No      | Yes         | Yes     |
-| Custom Integrations    | Unlimited | Limited | Good        | Good    |
-| Regional Support       | Yes       | Plus+   | Multisite   | Yes     |
-| Payment Providers      | Unlimited | Limited | Plugins     | Many    |
-| Shipping Providers     | Unlimited | Limited | Plugins     | Many    |
-| Cost                   | Free      | $$$     | Hosting     | $$$$    |
-| Setup Complexity       | Medium    | Easy    | Medium      | Complex |
+These categories are not feature-for-feature equivalents. Compare the exact source revision, provider contracts, hosting model, support arrangement, and workflows required by your operation.
 
-## Shopify vs Openfront
+## What current Openfront source includes
 
-**Shopify** is great for quick setup and ease of use, but has limitations:
-- Transaction fees on most plans
-- Limited customization without expensive Shopify Plus
-- App dependency for advanced features
-- No access to core codebase
+The Ecommerce source currently contains:
 
-**Openfront** provides:
-- No transaction fees
-- Complete customization freedom
-- Built-in advanced features
-- Full code access and control
+- a regional storefront with catalog, cart, checkout, confirmation, and customer-account routes;
+- a custom operator dashboard for catalog, orders, inventory, fulfillment, markets, payments, shipping, discounts, users, API keys, and settings;
+- Keystone models and GraphQL operations backed by PostgreSQL and Prisma migrations;
+- built-in Stripe, PayPal, and manual payment paths;
+- built-in shipping modules plus database-configured local or HTTP adapter operation fields;
+- one Store configuration consumed by the current dashboard and storefront.
 
-## WooCommerce vs Openfront
+This inventory describes source code; it is not evidence that every workflow has completed the testing required by a deployment.
 
-**WooCommerce** is powerful but WordPress-dependent:
-- Requires WordPress hosting and maintenance
-- Plugin dependency for features
-- Performance issues with large catalogs
-- Complex plugin compatibility management
+## Where Openfront offers control
 
-**Openfront** offers:
-- Modern tech stack (Next.js + KeystoneJS)
-- Built-in features without plugins
-- Better performance and scalability
-- Unified admin and storefront experience
+Because the application source is available to the operator, a team can change its storefront, dashboard, models, GraphQL operations, and integration adapters. The operator also chooses the hosting and database environment.
 
-## Magento vs Openfront
+That control does not make integration work automatic or unconstrained. A new provider still requires a compatible operation contract, secure credential handling, lifecycle integration, failure recovery, and tests. Current payment completion also contains provider-specific branches, and the custom shipping-provider forms do not fully populate external operation URLs.
 
-**Magento** is enterprise-focused but complex:
-- High development and hosting costs
-- Steep learning curve
-- Resource-intensive hosting requirements
-- Complex deployment and maintenance
+## Costs and transaction fees
 
-**Openfront** provides:
-- Simpler development and deployment
-- Lower hosting requirements
-- Modern developer experience
-- Faster time to market
+Openfront does not establish the fees charged by payment providers, shipping services, infrastructure vendors, marketplaces, or implementation partners. Self-hosting also carries database, compute, storage, monitoring, maintenance, and engineering costs. Evaluate those costs against the fees and operating work of an alternative platform rather than assuming that access to the source removes operating costs.
 
-## Custom Built Solutions
+## Security, privacy, and compliance
 
-Building an e-commerce platform from scratch takes significant time and resources. Openfront provides a complete foundation so you can focus on your unique business requirements rather than building basic e-commerce functionality.
+<Callout type="warn">
+Open source and self-hosting do not establish security, privacy, tax, accessibility, or regulatory compliance. Those outcomes depend on the deployed source revision, configuration, hosting, data flows, contracts, operational controls, and independent review.
+</Callout>
 
-### Benefits of Openfront
+Current source contains access-control, session, API-key, OAuth, and provider-integration mechanisms, but each deployment must test ownership and tenant boundaries, secret storage, outbound HTTP policy, webhook verification, retries, reconciliation, backups, and incident response.
 
-- **Complete Control**: Full access to source code
-- **Modern Architecture**: Built with latest web technologies
-- **Flexible Integration**: Easy to integrate with any system
-- **Regional Support**: Manage different regions from one installation
-- **Payment Agnostic**: Integrate any payment provider
-- **Shipping Flexible**: Connect to any shipping service
-- **Self-Hosted**: Keep your data under your control
-- **Community Driven**: Benefit from open source community
+## When Openfront may fit
 
-## When to Choose Openfront
+Consider Openfront when a team:
 
-Openfront is ideal for:
+- wants to own and modify the commerce application source;
+- can operate a Next.js, Keystone, PostgreSQL, and Prisma stack;
+- needs workflows that justify source-level customization;
+- is prepared to test and maintain its payment, shipping, tax, identity, and deployment boundaries.
 
-### E-commerce Businesses
-- **Regional businesses** managing different markets
-- **B2B sellers** needing custom pricing and workflows
-- **Subscription businesses** requiring recurring billing
-- **International sellers** needing multi-currency support
+A hosted or packaged alternative may fit better when rapid vendor-managed setup, an existing certified connector, contracted support, or an established compliance program matters more than source-level control.
 
-### Developers and Agencies
-- **Agencies** building custom solutions for clients
-- **Developers** who want modern tech stack and APIs
-- **Teams** requiring complete customization control
-- **Projects** needing specific integrations
+## Migration expectations
 
-### Use Cases
-- **Custom marketplaces** with unique requirements
-- **White-label solutions** for multiple clients
-- **Enterprise migrations** from legacy systems
-- **Businesses** seeking alternatives to SaaS limitations
-
-## When to Consider Alternatives
-
-Openfront might not be the best choice if:
-
-- **Quick setup** is more important than customization
-- **No technical resources** for hosting and maintenance
-- **Simple stores** that don't need advanced features
-- **Budget constraints** for hosting and development
-
-## Migration from Other Platforms
-
-### From Shopify
-- Export products, customers, and orders
-- Migrate custom code and integrations
-- Set up payment and shipping providers
-- Configure regional settings for different markets
-
-### From WooCommerce
-- Database migration tools available
-- Theme conversion to React/Next.js
-- Plugin functionality replacement
-- Performance optimization opportunities
-
-### From Magento
-- Complex migration requiring planning
-- Architecture modernization benefits
-- Simplified maintenance workflows
-- Cost reduction opportunities
-
-## Technical Advantages
-
-### Modern Stack
-- **Next.js**: Server-side rendering, performance optimization
-- **KeystoneJS**: Flexible content management and APIs
-- **PostgreSQL**: Robust, scalable database
-- **TypeScript**: Type safety and better development experience
-
-### Scalability
-- **Horizontal scaling**: Add servers as needed
-- **Database optimization**: Efficient queries and indexing
-- **CDN integration**: Global content delivery
-- **Caching strategies**: Redis and application-level caching
-
-### Security
-- **Regular updates**: Active maintenance and security patches
-- **Access controls**: Granular permission management
-- **Data protection**: GDPR and privacy compliance features
-- **Secure hosting**: Modern deployment practices
-
-Openfront provides the flexibility and control that growing e-commerce businesses need while maintaining the ease of use that teams require for efficient operations.
+Migration is an implementation project, not a built-in one-click feature. Inventory source-platform exports, map identities and relationships, define money and status semantics, migrate media and secrets separately, reconcile counts and totals, and rehearse rollback before cutover. Build or verify the import tooling required for the exact source and target systems.

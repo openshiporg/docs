@@ -1,39 +1,43 @@
 ---
-title: Coming Soon
-description: Complete hospital platform with patient management and HIPAA compliance
+title: Openfront Hospital
+description: Appointments, intake, patients, clinicians, communications, and clinical operations.
 icon: HeartHandshake
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Openfront Hospital
+[Source](https://github.com/openshiporg/openfront-hospital) · [Catalog](https://openship.org/products/openfront-hospital)
 
-Openfront Hospital gives healthcare providers complete control over their patient relationships and medical data with HIPAA-compliant tools designed specifically for healthcare operations.
+Openfront Hospital is a self-hosted healthcare operations foundation with public provider discovery and booking, intake, patient/clinician records, schedules, communications, and clinical work.
 
-<Steps className="[&>*:last-child]:after:hidden">
-<Step>
-### Storefront
-HIPAA-compliant patient portal with appointment scheduling, medical records access, telehealth integration, and secure provider communication.
-</Step>
+<Callout type="warn">
+This project is not documented as HIPAA compliant, certified clinical software, an EHR, or a medical device. Do not use it for real patient or clinical data without a separate security, privacy, compliance, hosting, and operational program.
+</Callout>
 
-<Step>
-### Dashboard
-Comprehensive healthcare management system for patient records, provider scheduling, compliance tracking, and care coordination workflows.
-</Step>
+## Architecture and schema
 
-<Step>
-### Marketplace
-Open source healthcare booking platform that connects patients with medical providers - no commission fees or vendor lock-in.
-</Step>
-</Steps>
+`Facility` is the practical operating scope, but current source has no dedicated facility-membership tenant table. Staff/provider/patient relationships derive access and one explicit role capability can access all clinical data; this is narrower than a full organization-membership boundary. The active schema includes facilities, departments, rooms/wards/beds, providers and clinicians, appointment types and schedule blocks, patients, portal access, intake forms, appointments, messages, admissions, encounters, care plans, orders, prescriptions, labs, procedures, claims, consent, vital signs, and clinical audit events.
 
-## Key Flows
+Public routes are `/`, `/providers`, `/book`, `/book/[slug]`, and tokenized `/intake/[accessCode]`. Operator routes under `/dashboard/platform` cover registration, appointments, intake, schedules, patients, care queue, inpatient work, clinical operations and fulfillment, communications, claims, and reports.
 
-### Patient Experience
-- **Appointment Management**: Schedule appointments with preferred providers, receive reminders, complete pre-visit forms, and access telehealth consultations
-- **Medical Records Access**: View test results, medication lists, treatment history, and securely share records with other healthcare providers
-- **Care Coordination**: Receive treatment plans, track progress, communicate with care teams, and manage referrals to specialists
+## Main workflow
 
-### Healthcare Operations
-- **Patient Management**: Maintain HIPAA-compliant records, coordinate provider schedules, manage treatment plans, and track patient outcomes
-- **Provider Coordination**: Schedule staff, manage patient load, coordinate with specialists, and ensure compliance with healthcare regulations
+A configured facility publishes providers and appointment types. A patient chooses a slot, submits limited booking information, and receives a controlled intake path. Staff review appointments and intake before creating or updating clinical records through authenticated operations. Consent and clinical audit records are intended as append-only evidence.
+
+## Bounded GraphQL operations
+
+Named clinical operations register patients; arrive appointments; manage care-queue and admission/bed readiness; create and transition encounters, orders, prescriptions, labs, procedures, claims, and care plans; correct lab results; and dispatch clinical outbox work. Tokenized intake uses a dedicated bounded query. These workflow operations do not make a clinical decision safe or compliant; authorized clinicians and release-specific policy remain responsible.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database with synthetic data only. Hospital onboarding seeds Northstar Family Care facilities, departments, providers/clinicians, appointment types/schedules, patients, appointments, intake, messages, and portal access. The seed includes a known literal intake code (`demo-rivera-intake`); it is deliberately discoverable evaluation data and must never be copied into a real patient path. Run onboarding and current schema/static/security/public-flow checks against an isolated database, then test facility/provider/patient scope, access-code expiry/revocation, and clinical lifecycle denial.
+
+## Integrations
+
+The current product does not claim direct patient payment and has no `features/integrations` adapter registry. Email/SMS, labs, insurance, identity, records exchange, file storage, portal invitations, or external clinical systems are not implied by corresponding data/workflow fields. Document an adapter only when its execution, authentication, retries, reconciliation, and failure handling are tested.
+
+## Security and deployment
+
+Patient, intake, encounter, message, consent, audit, insurance, prescription, and lab records need facility/patient/provider scoping and sensitive-field denial. Public access codes must be high-entropy, hashed, expiring, and revocable. Railway configuration builds then migrates at start but is not deployment proof.
+
+Deployment needs reviewed migrations, encryption/key management, backup restoration, access review, audit retention, breach response, monitoring, and jurisdiction-specific privacy/clinical policy beyond this repository. Current source does not establish EHR interoperability, clinical decision support/correctness, billing/RCM, real provider delivery, PHI hosting controls, medical-device status, HIPAA compliance, or any healthcare certification.

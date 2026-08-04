@@ -1,14 +1,17 @@
 ---
-title: Custom Dashboard
-description: Deploy and customize your own Openfront admin dashboard with complete control over the interface and functionality
+title: Dashboard customization
+description: Change the Openship operator interface without moving routing logic into route files.
 ---
 
-import { Card, Cards } from 'fumadocs-ui/components/card';
+Openship's dashboard lives in the same repository as its Keystone and routing source. Custom work should keep App Router pages thin and place shop, channel, match, order and API-key behavior in feature slices and domain operations.
 
-<Cards>
-  <Card 
-    title="Openfront Dashboard" 
-    href="https://github.com/openshiporg/openfront-dashboard" 
-    description="Separate dashboard application for complete customization freedom. Clone, customize, and deploy your own admin interface."
-  />
-</Cards>
+## Keep these boundaries
+
+- route pages parse navigation and delegate;
+- authenticated screens load only the user's scoped records;
+- provider credentials stay in server-side adapter boundaries;
+- order placement, cancellation and tracking transitions use named domain operations;
+- UI controls do not call arbitrary provider URLs supplied by the browser;
+- loading, empty, permission, partial-failure and retry states stay visible.
+
+A separate dashboard can be built against GraphQL, but it does not remove the need for session/API-key scopes, tenant filters, CSRF/origin policy and narrow mutations. Use the [generated API contract](/docs/openship/ecommerce/api-reference) from the same source revision.

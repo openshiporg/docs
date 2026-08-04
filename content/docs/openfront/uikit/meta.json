@@ -1,0 +1,14 @@
+{
+  "title": "UIKit",
+  "description": "Component kits, releases, registry access, orders, payments, and entitlements",
+  "icon": "PanelsTopLeft",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

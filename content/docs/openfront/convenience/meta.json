@@ -1,0 +1,14 @@
+{
+  "title": "Convenience",
+  "description": "Convenience retail, POS, inventory, loyalty, compliance, prepared food, and fuel",
+  "icon": "Store",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

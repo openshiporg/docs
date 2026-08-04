@@ -1,0 +1,92 @@
+---
+title: Getting started with Pharmacy
+description: Install the current source, configure PostgreSQL and sessions, review migrations, run checks, and complete synthetic onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+Current `package.json` requires Node.js 20 or later. The database-backed application uses PostgreSQL, Prisma, Keystone, Next.js, and a long random session secret.
+
+Install the locked dependency tree from the repository root:
+
+```bash
+npm ci
+```
+
+Create a local environment file for a database you are authorized to change:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_pharmacy
+SESSION_SECRET=replace-with-a-long-random-secret
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+Optional integrations have additional variables documented in [Integrations and boundaries](/docs/openfront/pharmacy/integrations-boundaries). Keep provider secrets outside source control.
+
+## Review and apply migrations
+
+The current working source contains eleven migration directories: seven inherited starter migrations plus Pharmacy foundation, behavioral-depth, tenant-identity, and required-relationship changes. Review the complete history and test both an empty database and the actual upgrade path before applying it to any retained data.
+
+```bash
+npm run keystone:build
+npm run migrate
+```
+
+<Callout type="warn">
+Both `npm run dev` and `npm run build` invoke `npm run migrate`. They can change the database referenced by `DATABASE_URL`. Do not point either command at an uncontrolled, shared, or production database. Separate migration deployment from application build before adopting an immutable-image release process.
+</Callout>
+
+Start the local application only after migration review:
+
+```bash
+npm run dev
+```
+
+The storefront is at `/`, the operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`. Do not use schema push or a destructive reset as a substitute for reviewed migrations.
+
+## Create the first operator
+
+The shared dashboard initialization flow creates the first authenticated user. Keep public signup disabled unless a separate enrollment and identity process is designed. Grant only the organization, location, catalog, inventory, recall, patient, prescription, dispensing, order, payment, integration, onboarding, audit, and consequential-approval permissions required by the person's actual job.
+
+A role with dashboard access is not automatically a pharmacist. Pharmacist credential and scope verification happen outside this repository and must be enforced by the deploying organization.
+
+## Pharmacy onboarding
+
+`runPharmacyOnboarding` requires the onboarding permission and creates synthetic evaluation data for an organization, location, drug references, products, lots, a patient/prescriber/prescription path, provider placeholders, and onboarding state. It can create a development-only demo payment provider only when both conditions are true:
+
+```bash
+NODE_ENV=development
+ALLOW_DEMO_PAYMENTS=true
+```
+
+`setPharmacyOnboardingStatus` only requires a signed-in user and changes that user's status; it does not authorize seed execution or pharmacist work. The seeded eRx, wholesaler, insurance, and tax provider records are explicitly unconfigured. Seeded prescriptions, patients, drug references, lots, prices, and provider records are synthetic examples, not validated operating data. Re-run onboarding on an isolated database to check idempotency, then remove or clearly segregate evaluation records before any real deployment.
+
+## Source checks
+
+Current source defines these checks:
+
+```bash
+npm test
+npm run typecheck
+npm run keystone:build
+npm run build
+```
+
+The repository's `lint` script currently delegates to `next lint`; verify that command against the installed Next.js version before treating lint as a release gate. A passing build, test, browser render, or HTTP response proves only the behavior exercised by that check. It does not certify licensure, legal compliance, clinical safety, patient privacy, provider acceptance, physical inventory, or lawful dispensing.
+
+## Deployment sequence
+
+1. Define the licensed organization, authorized locations, accountable pharmacist roles, policies, jurisdictions, providers, retention rules, and incident owners.
+2. Review the dependency tree and resolve security findings under an owner-approved framework baseline.
+3. Back up the target database and test restoration.
+4. Review and deploy migrations as a separate controlled step.
+5. Configure stable session, SMTP, payment, storage, and other secrets through a managed secret system.
+6. Configure only adapters that have contract, credential, webhook, retry, reconciliation, and failure tests.
+7. Run cross-organization, cross-location, patient-privacy, permission, lifecycle, concurrency, idempotency, duplicate-callback, and rollback tests against the exact release snapshot.
+8. Exercise prescription, dispensing, lot, recall, cold-chain, OTC checkout, payment, fulfillment, audit, and recovery workflows with synthetic data and accountable human reviewers.
+9. Stage rollout with monitoring, backups, incident response, provider escalation, rollback, and downtime procedures.
+
+Use [Current limitations](/docs/openfront/pharmacy/limitations) as a minimum pre-deployment review, not a complete jurisdiction-specific checklist.

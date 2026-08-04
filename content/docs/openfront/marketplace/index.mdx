@@ -1,0 +1,41 @@
+---
+title: Openfront Marketplace
+description: Conversational product discovery and delegated commerce across independently operated stores.
+icon: Store
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+[Repository](https://github.com/openshiporg/marketplace) · [Product page](https://openship.org/products/marketplace) · [Marketplace](https://marketplace.openship.org)
+
+Openfront Marketplace is a conversational discovery and cart layer for independently operated stores. It searches a curated store registry, renders product and cart interactions through MCP UI, and hands payment and order completion to the merchant's registered checkout origin.
+
+The marketplace does not have a Keystone, Prisma, or product database. Products, variants, prices, availability, carts, customer accounts, orders, payments, and settlement remain in connected stores. The intended browser state holds store-bound cart capabilities, encrypted store-session envelopes, and optional buyer-supplied OpenRouter configuration. The current encrypted-session browser/server handoff has a documented mismatch, so those primitives are not evidence of a working authenticated cart flow.
+
+<Callout type="warn">
+Current source implements the Openfront ecommerce adapter. Other platform and vertical adapters are not operating merely because a product name appears in the wider family. Each adapter needs a capability contract, conformance tests, credential isolation, egress controls, and an explicit checkout owner.
+</Callout>
+
+## Open marketplace and interoperability vision
+
+A merchant should be able to own its source, storefront, customer relationship, checkout, payment provider, orders, and operating data while participating in many discovery experiences. A marketplace operator curates which stores it trusts; a buyer chooses among those stores; and the merchant remains authoritative for transaction and fulfillment state.
+
+This makes Marketplace distinct from Openfront's database-backed business products and from [Openship](/docs/openship/ecommerce), which coordinates shops, channels, product matches, routed orders, and fulfillment.
+
+## Current customer workflow
+
+A buyer asks for a product, receives results from configured stores, opens a product view, selects variants, creates or updates a store-owned cart, enters address and shipping details through direct MCP UI actions, and requests a merchant checkout link. The link stays on the exact registered store origin. The marketplace does not collect card or wallet credentials and does not mark the merchant order paid.
+
+## Current operator workflow
+
+The operator reviews `marketplace.config.json`, assigns stable store IDs, permits only implemented adapters, deploys the registry, configures AI access and signing secrets, and monitors outbound store failures. Buyers cannot submit arbitrary store URLs. Adding a platform means implementing the adapter and security/conformance boundary before extending the registry allowlist.
+
+<Cards>
+  <Card title="Architecture and workflows" href="/docs/openfront/marketplace/architecture-workflows" description="Routes, MCP tools, store registry, browser capabilities, and merchant checkout handoff." />
+  <Card title="Getting started" href="/docs/openfront/marketplace/getting-started" description="Install, configure trusted stores and AI access, run checks, and deploy." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/marketplace/integrations-boundaries" description="Adapter contract, egress, sessions, cart capabilities, and checkout ownership." />
+  <Card title="Current limitations" href="/docs/openfront/marketplace/limitations" description="Adapter, browser, AI, privacy, reliability, and conformance work still required." />
+</Cards>
+
+A reachable website or successful product request is not evidence that every cart, account, checkout, payment, privacy, or failure path is safe. Verify the exact stores, adapters, tools, and deployment you enable.

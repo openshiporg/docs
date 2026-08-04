@@ -1,0 +1,56 @@
+---
+title: Marketplace architecture and workflows
+description: The conversational UI, MCP tools, curated store registry, browser capabilities, and merchant checkout handoff.
+icon: Network
+---
+
+## Route and feature structure
+
+The public route at `/` owns the conversational marketplace screen; `/ethos` explains the interoperability model. `/api/completion` runs built-in AI chat, and `/api/mcp-transport/[transport]` exposes the MCP server. The thin route files delegate to `features/marketplace` server and screen modules.
+
+There is no local commerce database. `marketplace.config.json` is the reviewed store registry. Connected merchant APIs remain the system of record.
+
+## Store registry and outbound requests
+
+Each store has a stable ID, root HTTPS origin, implemented platform identifier, and optional display metadata. Request-time parsing rejects credentials, queries, fragments, nonstandard ports, local/reserved names, non-public IPv4/IPv6 answers, and unsupported adapters. Every DNS answer must be public. The selected public address is pinned to the request socket, TLS hostname checks remain active, responses and timeouts are bounded, and redirects are refused.
+
+Buyer input selects a known store ID; it does not select an endpoint. This is the critical distinction between a curated marketplace and an authenticated SSRF proxy.
+
+## MCP operation boundary
+
+Current tools cover:
+
+- store discovery and available regions;
+- product search/ranking and product detail;
+- cart creation/view, item add/update/remove, address and shipping selection;
+- account login and store-bound session-envelope primitives (the current browser/server handoff mismatch is documented under limitations);
+- checkout-readiness validation and merchant-origin checkout link generation.
+
+The built-in completion model receives discovery tools only. Cart capabilities and store-session credentials are attached by direct browser MCP calls for the matching store, not included in model messages. Direct marketplace payment initiation and cart completion are not part of the current tool surface.
+
+## Cart capabilities and store sessions
+
+A signed cart capability binds one cart ID to one registered store ID. Existing-cart reads and mutations require the matching capability. Tampered, cross-cart, or cross-store values fail before merchant I/O. The built-in client stores cart IDs and capabilities in browser storage.
+
+The server-side design exchanges store account credentials for a sealed store-session envelope bound to the selected store. Generic incoming `Authorization` and dashboard cookies are not forwarded to merchants. A store credential cannot be reused for another registry entry.
+
+These controls establish narrow possession and routing checks; they do not replace merchant-side cart/customer ownership checks, session expiry, account security, or checkout authorization.
+
+## Customer workflow
+
+1. The buyer's prompt is used to query and rank products from curated stores.
+2. Product detail and variant choice render through MCP UI.
+3. Cart actions call the selected store adapter and preserve a store-bound capability in the browser.
+4. Optional account login is intended to produce a credential envelope for that exact store; the current browser handoff must be repaired before relying on it.
+5. Address and shipping actions update the merchant cart.
+6. Checkout-readiness reports missing cart data.
+7. `getCheckoutLink` verifies the capability and creates a fixed merchant-origin handoff URL.
+8. Payment, order creation, tax, fraud decisions, inventory commitment, and fulfillment remain the merchant's work.
+
+## Operator workflow
+
+The operator reviews registry changes, verifies store ownership and capability support, sets marketplace signing and optional AI secrets, deploys the app, and watches store failures and abuse. Store health, supported operations, freshness, and checkout behavior need separate monitoring; current registry metadata is not a complete capability directory.
+
+## Marketplace versus Openship
+
+Marketplace is the buyer-facing discovery and delegated-cart layer. Openship is an operator-facing order-routing and fulfillment coordinator that links source shops to channels. A merchant may use either or both, but neither should silently take ownership of the other's credentials, state, or responsibility.

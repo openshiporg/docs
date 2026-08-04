@@ -1,0 +1,64 @@
+---
+title: Openfront Salon
+description: Services, stylists, booking, schedules, resources, checkout, memberships, and commissions.
+icon: Sparkles
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-salon) · [Catalog](https://openship.org/products/openfront-salon)
+
+Openfront Salon is a salon/spa storefront and operator workspace for service discovery, stylist profiles, booking and intake, client accounts, appointments, schedules/resources, checkout and retail products, packages/memberships, gift cards, loyalty, waitlist, inventory, and commissions.
+
+<Callout type="warn">
+Current source has product-specific GraphQL commands, but it does not have a strong organization/location membership tenant model. Dashboard capability grants broad access in several list filters. Verify operator scope, client privacy, booking/resource concurrency, money, and provider state before using real records.
+</Callout>
+
+## Customer and operator surfaces
+
+Customer routes cover home, services and detail, team/stylist detail, booking, appointments/account, gallery, reviews, contact, and gift cards. Operator routes under `/dashboard/platform` cover appointments, checkout, clients, catalog, benefits, inventory, schedules, resources, commissions, administration, engagement/waitlist, reports, and integrations.
+
+The main workflow is service/variant/stylist discovery -> availability -> appointment/intake -> resource allocation -> service and retail/package usage -> checkout/payment -> commission, loyalty, inventory, and customer history. Accepted service and price facts belong in appointment and transaction line snapshots rather than mutable catalog relations.
+
+## Schema and scope
+
+The graph includes Location, service categories/services/variants/packages, stylists/schedules, resources, clients/notes/formulas, appointments and lines, intake forms/submissions, memberships/packages/usage, products/sales/inventory movements, salon transactions/lines, providers/sessions/payments/webhook events, gift cards, loyalty/referrals, commissions/payouts, messages, reviews, media, waitlist, and widget settings.
+
+Location is a relationship root, but current source has no Organization or LocationMembership authorization layer. `canOperateSalon` is largely dashboard access and several read filters expose broad operator data. Location IDs and submitted relationships still need explicit same-location validation in every command; generated visibility alone is not a complete tenant boundary.
+
+Protect client notes, intake answers, color formulas, messages, payment details, provider credentials, and history with field-level policy. Third-party clients should use narrow projections and commands rather than generated list CRUD.
+
+## Controlled GraphQL boundary
+
+The current source does register a salon-specific extension in `features/keystone/mutations/index.ts`. It includes:
+
+- availability, stylist, and `salonOperationsWorkspace` projections;
+- appointment booking, deposit/payment, and lifecycle transitions;
+- `completeAppointmentCheckout` and payment processing;
+- gift-card purchase/application and package redemption;
+- waitlist entry/transitions and stylist schedule operations;
+- commission calculation and payout transitions;
+- inventory adjustment and resource availability;
+- onboarding.
+
+These operations are the preferred lifecycle boundary. Remaining work is not absence of a GraphQL extension; it is consistent location ownership, idempotency, transaction/concurrency behavior, immutable settlement/refund evidence, and closure of equivalent generated/server-action paths.
+
+Prove simultaneous stylist/resource bookings, appointment terminal-state denial, package/membership balance consumption, gift-card replay, inventory underflow, checkout amount/currency, commission arithmetic, and refund/reversal behavior against the target database.
+
+## Onboarding and local evaluation
+
+`runSalonOnboarding` and its platform action create synthetic Morrow & Mane identity, locations, services, stylists, schedules, resources, clients, intake/forms, memberships/packages, products, messages, appointments, gallery, and manual/Stripe provider records. Run it twice on an isolated database, inspect location relationships and status, then test customer ownership, booking, package use, checkout, inventory, commission, and operator denial. The seed is not a hosted demo or provider account.
+
+## Payments and integrations
+
+The code-owned payment registry allowlists manual and Stripe adapters. Stripe ingress is `/api/payments/webhooks/[provider]`; verify raw-body signatures, event replay, server-owned amount/currency, session ownership, capture/refund mapping, and reconciliation. Manual settlement must remain operator-only and cannot unlock a public paid state without accountable evidence.
+
+Message logs, templates, widget settings, reviews, and gallery records do not establish SMS/email delivery, marketing automation, booking-widget isolation, review syndication, or media processing. Each external effect needs a typed adapter, secret isolation, signed ingress, durable attempts, consent/retention policy, and operator-visible failure state.
+
+## Deployment and limitations
+
+Railway builds the application and deploys migrations when starting. The package's lint script uses the removed `next lint` command under Next.js 16, so it is not a valid release gate until migrated to the ESLint CLI. Placeholder values in `.env.example` are not deployable credentials.
+
+Before real clients or payments, run reviewed migrations, current schema/type/tests/build, cross-client and cross-location negatives, booking races, webhook replay, refund/reversal, gift-card/package balances, inventory, commission, token/session, responsive browser, backup restoration, monitoring, and incident checks.
+
+Current source does not establish strong multi-location tenancy, payment settlement, external messaging, payroll, tax, identity, professional-licensing, health/safety, privacy, accessibility, or operational certification. A rendered booking or recorded payment row is not evidence that the full external workflow completed.

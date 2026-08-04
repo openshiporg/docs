@@ -1,0 +1,14 @@
+{
+  "title": "Rental",
+  "description": "Accommodation listings, quotes, reservations, trips, host operations, channels, and payments",
+  "icon": "KeyRound",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

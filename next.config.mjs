@@ -14,6 +14,35 @@ const config = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/docs/openship/ecommerce/products',
+        destination: '/docs/openfront/ecommerce/products',
+        permanent: true,
+      },
+      {
+        source: '/docs/openship/ecommerce/how-to-guides/create-payment-integration',
+        destination: '/docs/openfront/ecommerce/how-to-guides/create-payment-integration',
+        permanent: true,
+      },
+      {
+        source: '/docs/openship/ecommerce/how-to-guides/create-shipping-integration',
+        destination: '/docs/openfront/ecommerce/how-to-guides/create-shipping-integration',
+        permanent: true,
+      },
+      {
+        source: '/docs/openship/ecommerce/how-to-guides/custom-payment-provider',
+        destination: '/docs/openfront/ecommerce/how-to-guides/custom-payment-provider',
+        permanent: true,
+      },
+      {
+        source: '/docs/openship/ecommerce/how-to-guides/custom-shipping-provider',
+        destination: '/docs/openfront/ecommerce/how-to-guides/custom-shipping-provider',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

@@ -1,7 +1,6 @@
 ---
 title: Orders and service states
 description: How restaurant orders are modeled, filtered, and moved through service.
-icon: Ticket
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -89,7 +88,7 @@ Those screens are where staff can move from a simple list to the actual work of 
 ```graphql
 query KitchenOrders {
   restaurantOrders(
-    where: { status: { in: [open, sent_to_kitchen, in_progress, ready] } }
+    where: { status: { in: ["open", "sent_to_kitchen", "in_progress", "ready"] } }
     orderBy: { createdAt: desc }
   ) {
     id

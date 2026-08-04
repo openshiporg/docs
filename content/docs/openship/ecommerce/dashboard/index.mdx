@@ -1,138 +1,63 @@
 ---
-title: Platform Overview
-description: Order routing dashboard for managing shops, channels, matches, and order processing in Openship
+title: Operator workspace
+description: Use Openship's order, shop, channel, match, and API-key workspaces.
+icon: LayoutDashboard
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openship has 4 main sections for managing order routing between your shops and fulfillment providers. Built with Next.js 15 and KeystoneJS 6, it gives you a clean interface for connecting everything together.
+Openship's purpose-built dashboard is an operator workspace for user-owned order routing. The current application uses Next.js 16, Keystone 6, React 19, GraphQL, Prisma, and PostgreSQL. It is not a customer storefront or payment platform.
 
-<Callout type="info">
-**Order Routing Platform**: Openship is NOT an e-commerce platform. It's an order routing platform that connects shops (where you sell) to channels (where you fulfill).
+<Callout type="warn">
+The workspace exposes routing records and calls adapter operations. A visible order, match, purchase ID, or tracking row does not prove external fulfillment. Verify the selected adapter, callback, idempotency, and reconciliation path with synthetic systems before connecting real credentials.
 </Callout>
 
-## Platform Sections
+## Current routes
 
-The Openship platform has exactly 4 main sections for order routing management:
+- `/dashboard/platform/orders` — inspect imported orders, lines, match state, cart items, downstream purchases, and tracking;
+- `/dashboard/platform/shops` — configure user-owned order sources and ShopPlatform handlers;
+- `/dashboard/platform/channels` — configure fulfillment destinations and ChannelPlatform handlers;
+- `/dashboard/platform/matches` — search both sides and map exact shop variants to channel variants;
+- `/dashboard/platform/api-keys` — create and revoke machine credentials;
+- `/dashboard/[listKey]` — generated administration for permitted schema records.
 
-### Orders
-Handle customer orders with automatic matching and fulfillment. See orders from your connected shops and route them to the right fulfillment providers.
+The first user is initialized at `/dashboard/init`, not `/init` or `/platform`. Current source has no product onboarding wizard or demo seed; shop/channel/link/match setup is manual.
 
-**Key Features:**
-- Order processing and routing
-- Automated order fulfillment
-- Order status tracking
-- Manual order intervention when needed
+## Task workflow
 
-### Shops  
-Connect e-commerce platforms like Shopify, Openfront, BigCommerce to source products and receive orders.
+1. Create the first operator and sign in.
+2. Configure one synthetic shop against the compiled Shopify/Openfront handler or an isolated custom endpoint.
+3. Configure one synthetic channel against a compiled handler or isolated endpoint.
+4. Create the user-owned Link between those records.
+5. Search source and destination catalogs and create an exact variant Match.
+6. Import or select a synthetic shop order.
+7. Use bounded match/cart/purchase commands to create the downstream purchase.
+8. Authenticate tracking/cancellation events and reconcile all three systems.
 
-**Key Features:**
-- Shop connection management
-- Order source configuration
-- Shop integration settings
-- Platform-specific configurations
+The current custom GraphQL layer includes product/order searches, match operations, cart and placement commands, purchase/cancellation operations, and webhook management. Generated list CRUD is not a replacement for those transition paths.
 
-### Channels
-Manage fulfillment destinations where orders are routed and processed. Connect to suppliers, 3PLs, or other fulfillment providers.
+## Tenancy and credentials
 
-**Key Features:**
-- Channel connection management
-- Fulfillment destination setup
-- Channel integration settings
-- Order routing configuration
+Openship is scoped directly to the owning User; it does not have an organization/workspace tenant graph. Related shop, channel, order, link, match, and item IDs need explicit same-user validation in every custom resolver and HTTP handler.
 
-### Matches
-Map shop items to channel items for automated inventory synchronization and order routing.
+API keys have hashed token material and stored scopes, but scope names and resolver coverage must be verified operation by operation. Shop and Channel access/refresh tokens are stored as model text fields in current source and need stronger field denial/encryption before real provider use.
 
-**Key Features:**
-- Product matching between shops and channels
-- Automated product mapping
-- Inventory synchronization
-- Flexible vendor switching
+## Adapter boundary
 
-## How Openship Works
+Compiled shop and channel adapters currently cover Shopify and Openfront. Database-selected HTTP URLs or function paths can also be executed. No other provider name is built-in merely because a platform row or UI example can be created.
 
-### Order Flow
-1. **Orders arrive** from connected shops (Shopify, Openfront, etc.)
-2. **Openship routes orders** to appropriate channels based on matches
-3. **Channels fulfill orders** and provide tracking information
-4. **Updates flow back** to original shops automatically
+Before enabling configurable execution, add strict egress and import allowlists, credential isolation, bounded payload validation, signed callbacks, provider idempotency, durable attempts/retries, dead-letter visibility, and reconciliation. Current webhook handlers do not all share a durable delivery ledger.
 
-### Two-Tier Architecture
-Openship uses a platform-instance architecture:
+## Deployment shape
 
-- **Platforms** define integration templates (ShopPlatform, ChannelPlatform)
-- **Instances** are actual connections using platform templates (Shop, Channel)
+`npm run dev` and `npm run build` both deploy checked-in migrations before starting/building Next.js. Use a deliberate `DATABASE_URL`; split migration from immutable build if your deployment promotes the same artifact between environments. The checked-in `lint` script invokes the removed Next.js 16 `next lint` command, and the package has no test or typecheck script, so do not represent those gates as passing until the owning repository adds current commands.
 
-This lets you reuse integration logic across multiple connections of the same type.
-
-## Key Capabilities
-
-### Automated Order Routing
-- Connect multiple shops to multiple channels
-- Automatic order forwarding based on product matches
-- Flexible routing rules and conditions
-- Real-time order status updates
-
-### Integration Management
-- Platform adapters for different shop types
-- Channel adapters for different fulfillment providers
-- Webhook processing for real-time updates
-- API integrations for smooth data flow
-
-### Product Matching
-- Map shop products to channel products
-- Support for multiple fulfillment options per product
-- Easy vendor switching without disruption
-- Automatic inventory sync
-
-## Data Models
-
-Openship uses 15 core data models for order routing:
-
-**User & Auth:** User, Role, ApiKey
-**Platforms:** ShopPlatform, ChannelPlatform  
-**Instances:** Shop, Channel
-**Orders:** Order, LineItem, CartItem
-**Products:** ShopItem, ChannelItem, Match
-**Routing:** Link, TrackingDetail
-
-## Getting Started
-
-1. **Access your platform** at `/platform` after installation
-2. **Connect shops** where you receive orders
-3. **Connect channels** where you fulfill orders  
-4. **Create product matches** between shop and channel products
-5. **Set up links** to automate order routing
-6. **Monitor order processing** and adjust as needed
-
-## API Access
-
-Generate API keys through the KeystoneJS admin interface at `/dashboard/ApiKey` to integrate with external systems.
-
-## Next Steps
+Run Openship behind trusted HTTPS with managed session/provider secrets, restricted internal network access, backups and restore tests, request/body limits, centralized logs, and adapter monitoring. Exercise cross-user denial, malformed provider responses, duplicate order webhooks, duplicate purchases, partial channel failure, cancellation, and tracking reconciliation for the exact release.
 
 <Cards>
-  <Card 
-    title="Shops" 
-    href="/docs/openship/ecommerce/shops" 
-    description="Connect Shopify, Openfront, and other shop platforms"
-  />
-  <Card 
-    title="Channels" 
-    href="/docs/openship/ecommerce/channels" 
-    description="Set up fulfillment channels and suppliers"
-  />
-  <Card 
-    title="Order Routing" 
-    href="/docs/openship/ecommerce/getting-started" 
-    description="Learn how to set up automated order routing"
-  />
-  <Card 
-    title="API Reference" 
-    href="/docs/openship/ecommerce/api-reference" 
-    description="GraphQL API for custom integrations"
-  />
+  <Card title="Shops" href="/docs/openship/ecommerce/shops" description="Order-source ownership, adapters, credentials, and commands." />
+  <Card title="Channels" href="/docs/openship/ecommerce/channels" description="Fulfillment destinations, purchases, callbacks, and limitations." />
+  <Card title="Product matching" href="/docs/openship/ecommerce/product-matching" description="Map exact source variants to destination variants." />
+  <Card title="GraphQL API" href="/docs/openship/ecommerce/api-reference" description="Use the custom contract from the exact source revision." />
 </Cards>

@@ -1,6 +1,14 @@
 {
   "title": "Grocery",
-  "description": "Fresh inventory delivery platform",
+  "description": "Grocery catalog, ordering, substitutions, pickup, delivery, purchasing, and subscriptions",
   "icon": "ShoppingBasket",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
 }

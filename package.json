@@ -6,6 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
+    "test": "npm run check:links",
+    "check:products": "node scripts/check-product-coverage.mjs",
+    "check:external": "node scripts/check-advertised-links.mjs",
+    "check:links": "node scripts/check-product-coverage.mjs && node scripts/check-links.mjs",
+    "check:routes": "node scripts/crawl-built-site.mjs",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
   },

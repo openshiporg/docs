@@ -1,39 +1,69 @@
 ---
-title: Coming Soon
-description: Complete gym platform with class booking and membership management
+title: Openfront Gym
+description: Organization-scoped memberships, classes, trainer scheduling, check-in, billing, and member operations.
 icon: Dumbbell
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Openfront Gym
+[Source](https://github.com/openshiporg/openfront-gym) · [Catalog](https://openship.org/products/openfront-gym)
 
-Openfront Gym puts fitness businesses back in control with comprehensive membership and class management tools designed specifically for gyms, studios, and wellness centers.
+Openfront Gym is an organization- and location-scoped membership operations product. It combines public class/facility/instructor discovery, membership signup and account management, class capacity and waitlists, trainer appointments, member and kiosk check-in, billing evidence, and operator reporting.
 
-<Steps className="[&>*:last-child]:after:hidden">
-<Step>
-### Storefront
-Member-facing platform for class booking, membership management, and trainer connections.
-</Step>
+<Callout type="warn">
+The onboarding UI performs dependency-ordered generated mutations and tolerates some class-instance and demo-booking failures; it is not one atomic backend onboarding command. Completion checks only a minimum settings/location/tier/class/instructor/schedule/instance set. Inspect partial data before using the workspace.
+</Callout>
 
-<Step>
-### Dashboard
-Gym operations system for class scheduling, member tracking, and equipment management.
-</Step>
+## Member, kiosk, and operator surfaces
 
-<Step>
-### Marketplace
-Open source fitness platform that connects members with gyms and classes - no commission fees or vendor lock-in.
-</Step>
-</Steps>
+Public/member routes include `/classes`, `/schedule`, `/memberships`, `/join`, `/instructors`, `/facilities`, `/contact`, `/account`, and `/portal`. Member routes expose bookings, membership/profile, instructor work, and a QR/check-in code.
 
-## Key Flows
+Kiosk routes are `/kiosk` and `/kiosk/check-in`, backed by authenticated API routes for member search, member/guest check-in, QR code, and profile. The HTTP kiosk path validates the kiosk credential and member/membership state before persisting a capacity-controlled CheckIn. The legacy GraphQL `kioskCheckIn` operation performs lookup and returns attendance identity but does not itself create the CheckIn row; integrations should not confuse the two paths.
 
-### Member Experience
-- **Sign Up & Onboarding**: Members can easily register, select membership plans, and complete profile setup with fitness goals and preferences
-- **Class Booking**: Browse available classes, check instructor profiles, book spots, and receive reminders with automatic waitlist management
-- **Membership Management**: Track usage, upgrade/downgrade plans, manage payment methods, and access exclusive member benefits
+Operator routes cover billing, scheduling, front-desk check-in, settings, reports, locations, members, membership plans, instructors, class catalog, and rosters under `/dashboard/platform/*`.
 
-### Gym Operations
-- **Staff Coordination**: Schedule trainers, manage class capacity, coordinate equipment maintenance, and track member check-ins
-- **Business Analytics**: Monitor membership growth, class popularity, revenue tracking, and member retention metrics
+## Schema and tenancy
+
+`Organization` is the tenant root in current source. The authenticated session carries one organization; operational models use required organization relationships and tenant filters/ownership checks. Locations, resources, trainer availability, and trainer appointments add location scope. The current source does not expose a multi-organization switcher, even though Organization records can describe multi-location use.
+
+The graph includes members, tiers/memberships/subscriptions, gym/membership payments, methods/providers/sessions/events, locations/settings, exercises/workouts, attendance/check-ins, class types/schedules/instances/bookings/waitlists, instructors, resources, trainer availability, and appointments.
+
+The latest tenant migration creates Organization, GymResource, TrainerAvailability, and TrainerAppointment, backfills legacy rows to `gym_default_organization`, then enforces required organization relations and indexes. Review retained-data ownership before applying those constraints; the backfill does not prove that legacy rows belonged to one real organization.
+
+## Controlled queries and commands
+
+Purpose-built public projections include `publicGymSettings`, class type/schedule/instance collections and detail, instructor collections/detail, and membership-tier collections/detail. They do not expose member or payment records.
+
+Named operations include:
+
+- `checkClassAvailability`, `bookClass`, `cancelClassBooking`, and `promoteFromWaitlist`;
+- `checkIn`, `recordMemberCheckIn`, `checkOutMember`, `markClassAttendance`, and the legacy lookup-oriented `kioskCheckIn`;
+- `bookTrainerAppointment` and `transitionTrainerAppointment`;
+- `upsertGymSettings` and `getBillingStats`;
+- `initiateMembershipCheckout`, setup intent, billing portal, membership cancel/freeze/unfreeze/tier change, recovery-contact recording, and `refundGymPayment`.
+
+Class capacity and lifecycle code rechecks tenant/member ownership and expected state in controlled operations. Prove simultaneous booking, cancellation/promotion, check-in, and trainer/resource conflicts against the deployed PostgreSQL isolation and retry behavior.
+
+`markPaymentRecoveryContacted` records staff follow-up; it is not an automated collection or payment-recovery service.
+
+## Onboarding and synthetic data
+
+The current browser/server action marks onboarding in progress, creates settings, location, tiers, class types, instructor users/profiles, schedules, up to fourteen days of instances, synthetic members/memberships/bookings, exercises/workouts, providers/methods/subscriptions/payments, then marks complete after minimum-count checks.
+
+Instance-creation and demo-booking conflicts can be caught and skipped. A completed status therefore does not guarantee that every optional demo record exists. Run onboarding only against an isolated database, inspect each required relationship and failed step, then test member signup, booking/waitlist, persisted kiosk check-in, trainer appointments, portal ownership, and operator permissions. Seeded Stripe IDs, memberships, receipts, and access codes are fictional and do not create a hosted demo.
+
+## Stripe and provider boundary
+
+The registered adapter set is Stripe plus a test mode. `PAYMENT_TEST_MODE=true` can select test behavior for the Stripe-keyed boundary. The active membership join path calls `initiateMembershipCheckout`; the old `/api/stripe/create-checkout-session` route returns HTTP 410 and must not be used.
+
+Current Stripe source covers hosted subscription checkout, setup intents, billing portal, cancellation/freeze/resume/tier changes, refunds, and raw-body signed webhooks at `/api/stripe/webhook`. Provider credentials are write-only and adapter keys are constrained to server loaders. These controls do not establish provider account approval, correct prices, successful settlement, refund finality, dispute handling, or reconciliation.
+
+No PayPal or other production provider is registered. The QR/check-in path is local membership evidence, not identity proof, physical door control, insurance verification, or medical clearance.
+
+## Deployment and limitations
+
+The npm `dev` and `build` scripts deploy migrations before running Next.js; Railway builds without migration and migrates when the app starts. Separate migration from immutable builds where needed, protect kiosk secrets, use managed Stripe/session/storage secrets, review the organization backfill, and run current schema/type/tests plus responsive member/operator/kiosk flows.
+
+Before real operations, verify cross-organization and cross-member denial, location/resource ownership, simultaneous class and trainer booking, waitlist promotion, kiosk replay, signed webhook duplication, server-derived tier amount/currency, membership transitions, refunds, restore, monitoring, and incident response.
+
+Current source does not provide non-Stripe provider coverage, automated collections, physical access-control guarantees, payroll, insurance processing, medical-safety decisions, or proof of production-load capacity behavior. Do not describe source tests, seed data, or a rendered portal as settlement, identity, safety, accessibility, privacy, or operational certification.

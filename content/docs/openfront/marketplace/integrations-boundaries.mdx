@@ -1,0 +1,52 @@
+---
+title: Marketplace integrations and boundaries
+description: Platform adapters, store egress, credential isolation, MCP tools, AI providers, and merchant checkout ownership.
+icon: Unplug
+---
+
+## Platform adapter contract
+
+A platform adapter translates marketplace operations into one registered store's API. The current Openfront adapter implements store/region, product, cart, address/shipping, account-session, and checkout-handoff calls, but the checked-in browser client and MCP server currently disagree on the encrypted session action/header contract. Treat authenticated cart/session use as unavailable until that handoff and its browser contract test are corrected; see [Current limitations](/docs/openfront/marketplace/limitations).
+
+An adapter must not expose raw private GraphQL or generic CRUD merely because the connected store has it. Each method needs a bounded input, customer-safe output, store identity, timeout behavior, error mapping, and tests for missing capability, wrong store, wrong cart, wrong session, redirects, duplicate calls, and partial failure.
+
+Only the Openfront ecommerce adapter is enabled. Restaurant ordering, appointments, hotel stays, rental reservations, gym memberships, pharmacy workflows, and other vertical nouns need their own capability contracts and authority checks. They must not be simulated by renaming product-cart operations.
+
+## Store egress boundary
+
+The registry is the only source of destinations. The current request path validates root HTTPS origins and public DNS answers, pins the validated address to the socket, preserves TLS hostname validation, refuses redirects, strips generic credentials, and bounds response/time behavior.
+
+Deployment still needs infrastructure-level egress controls, DNS/IPv4/IPv6 test coverage, logs that avoid credentials and customer data, monitoring, rate limits, and an operator kill switch. Application checks are defense in depth, not permission to allow unrestricted network access.
+
+## Credential boundary
+
+- Dashboard cookies and generic incoming authorization are not forwarded to stores.
+- Store sessions are sealed and bound to one registry store.
+- Cart capabilities are signed and bound to one store/cart pair.
+- Capabilities and store sessions stay out of completion-model messages in the built-in client.
+- Buyer-supplied OpenRouter keys remain a browser/completion-route concern and are not merchant credentials.
+
+Connected stores must independently verify cart/customer ownership, session status, pricing, availability, address, shipping, tax, and checkout authorization.
+
+## AI provider boundary
+
+The built-in completion route uses a fixed OpenRouter destination with either operator or buyer configuration. Prompts, tool results, and model output should be treated as data crossing an external provider boundary. Minimize customer and merchant data, disclose processing, cap tokens and tool access, handle provider refusal/outage, and never put store sessions, cart capabilities, passwords, payment credentials, or unrelated store data into model context.
+
+Model recommendations are not merchant facts. Price, availability, variants, shipping, policy, and checkout state must come from the selected store operation at the time they are needed.
+
+## Merchant checkout boundary
+
+`getCheckoutLink` checks the signed cart capability and builds a fixed path on the registered merchant origin. Payment credentials, fraud checks, tax finalization, order creation, settlement, cancellation, refunds, and fulfillment remain with the merchant.
+
+The marketplace must not claim success because it generated a link or because a merchant page returned HTTP 200. A future embedded settlement design would need a merchant-signed, ownership-checked, idempotent contract with exact amount/currency, replay protection, terminal-state rules, reconciliation, and recovery. Current source intentionally does not expose that flow.
+
+## Adding an adapter
+
+1. Define capability names using the vertical's actual workflow nouns.
+2. Implement the typed adapter against a dedicated synthetic fixture.
+3. Add customer-safe projections and reject private/raw fields.
+4. Prove registry-only destinations, credential isolation, capability and session binding, and redirect/private-network denial.
+5. Test idempotency, concurrency, timeout, duplicate request, stale data, partial response, provider error, and handoff behavior.
+6. Add health/capability metadata and an operator disable path.
+7. Extend the code-owned allowlist only after review.
+

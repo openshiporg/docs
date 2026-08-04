@@ -1,14 +1,8 @@
 ---
-title: Custom Dashboard
-description: Deploy and customize your own Openfront admin dashboard with complete control over the interface and functionality
+title: External dashboards
+description: Give an LLM the dashboard skill to adapt Openfront's built-in operator experience or create a separate dashboard.
 ---
 
-import { Card, Cards } from 'fumadocs-ui/components/card';
+To create a custom dashboard, copy the skill and give it to your LLM. It will first ask which Openfront product and codebase you are using, whether you want to adapt the built-in dashboard or build a separate client, what you want to preserve, and what you want to change.
 
-<Cards>
-  <Card 
-    title="Openfront Dashboard" 
-    href="https://github.com/openshiporg/openfront-dashboard" 
-    description="Separate dashboard application for complete customization freedom. Clone, customize, and deploy your own admin interface."
-  />
-</Cards>
+The skill tells the LLM to inspect that product's built-in dashboard, feature slices, GraphQL schema, operations, access rules, and authentication boundary before proposing work. Tell it what feels wrong in the existing dashboard, which operator workflows you need, who will use them, and any visual or interaction direction you already have.

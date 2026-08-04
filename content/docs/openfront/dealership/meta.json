@@ -1,6 +1,14 @@
 {
   "title": "Dealership",
-  "description": "Vehicle inventory management platform",
+  "description": "Vehicle inventory, leads, deals, test drives, trade-ins, finance intake, and service",
   "icon": "Car",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
 }

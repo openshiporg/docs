@@ -52,7 +52,6 @@ export interface VerticalConfig {
   icon: React.ReactNode;
   shortDescription: string;
   meta: string;
-  status: string;
   starCount: number;
   tooltips: {
     graphql: string;
@@ -66,19 +65,18 @@ function DisplayCard({
   icon,
   title = "Featured",
   description = "Discover amazing content",
-  meta = "v1.0.0",
-  status = "Live",
+  meta = "Product",
   starCount = 0,
   tooltips,
   showTooltips = false,
   href,
+  sourceHref,
 }: {
   className?: string;
   icon?: React.ReactNode;
   title?: string;
   description?: string;
   meta?: string;
-  status?: string;
   starCount?: number;
   tooltips?: {
     graphql?: string;
@@ -87,10 +85,8 @@ function DisplayCard({
   };
   showTooltips?: boolean;
   href?: string;
+  sourceHref?: string;
 }) {
-  const isComingSoon =
-    status === "α" || status === "Alpha" || status === "Coming Soon";
-
   const CardContent = () => (
     <div
       className={cn(
@@ -113,20 +109,21 @@ function DisplayCard({
                 </span>
               </div>
             </h3>
-            <a
-              href="https://github.com/openshiporg/openfront"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-            >
-              <Github className="size-3 sm:size-4 mr-1 sm:mr-1.5" />
-              {starCount > 0 && starCount}
-            </a>
+            {sourceHref && showTooltips ? (
+              <a
+                href={sourceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${title} source repository`}
+                className="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                <Github className="size-3 sm:size-4 mr-1 sm:mr-1.5" />
+                {starCount > 0 && starCount}
+              </a>
+            ) : null}
           </div>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-[425]">
-            {isComingSoon
-              ? `${description} - Coming soon to the platform`
-              : description}
+            {description}
           </p>
         </div>
 
@@ -139,8 +136,7 @@ function DisplayCard({
               >
                 <span
                   className={cn(
-                    "flex items-center justify-center rounded-full size-5 text-xs bg-blue-500/15 text-blue-800 border border-blue-600/20",
-                    isComingSoon ? "opacity-50" : "cursor-help"
+                    "flex items-center justify-center rounded-full size-5 cursor-help text-xs bg-blue-500/15 text-blue-800 border border-blue-600/20"
                   )}
                 >
                   <ShoppingCart className="size-3" strokeWidth={2} />
@@ -153,8 +149,7 @@ function DisplayCard({
               >
                 <span
                   className={cn(
-                    "flex items-center justify-center rounded-full size-5 text-xs bg-lime-500/15 text-lime-800 border border-lime-600/20",
-                    isComingSoon ? "opacity-50" : "cursor-help"
+                    "flex items-center justify-center rounded-full size-5 cursor-help text-xs bg-lime-500/15 text-lime-800 border border-lime-600/20"
                   )}
                 >
                   <LayoutDashboard className="size-3.5" />
@@ -167,8 +162,7 @@ function DisplayCard({
               >
                 <span
                   className={cn(
-                    "flex items-center justify-center rounded-full size-5 text-xs bg-fuchsia-500/15 text-fuchsia-800 border border-fuchsia-600/20",
-                    isComingSoon ? "opacity-50" : "cursor-help"
+                    "flex items-center justify-center rounded-full size-5 cursor-help text-xs bg-fuchsia-500/15 text-fuchsia-800 border border-fuchsia-600/20"
                   )}
                 >
                   <svg
@@ -194,14 +188,9 @@ function DisplayCard({
             </div>
             <a
               href={href || "#"}
-              className={cn(
-                "flex items-center gap-1 text-xs hover:underline",
-                isComingSoon
-                  ? "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-              )}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
             >
-              {isComingSoon ? "Coming Soon" : "Learn More"}
+              Learn More
               <ArrowRight className="size-3" />
             </a>
           </div>

@@ -1,0 +1,43 @@
+---
+title: Openfront Real Estate
+description: Listings, leads, showings, offers, transactions, and brokerage operations.
+icon: House
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-realestate) · [Catalog](https://openship.org/products/openfront-real-estate)
+
+Openfront Real Estate combines a public listing site with brokerage work for leads, showings, offers, deals, documents, inspections, title/escrow milestones, commissions and reports.
+
+<Callout type="warn">
+Escrow, mortgage, title and commission models record workflow facts. They do not prove fund custody, lending, title services, settlement, MLS authorization or regulatory compliance.
+</Callout>
+
+## Architecture and schema
+
+`Brokerage` and active `BrokerageMembership` are the tenant roots; agent assignment narrows selected records. Access helpers and lifecycle hooks validate brokerage relationships rather than treating a listing feed or team as a tenant. The graph includes brokerage settings, properties/media/neighborhoods, listings/syndication, leads/activities/routing, saved properties/searches/alerts, showings/feedback/open houses, market comps/valuations, offers/deals, disclosures/inspections/documents, transaction milestones, title orders, escrow and commission records, mortgage applications, source feeds, agent teams/tasks and users.
+
+The public site has listing index/detail plus inquiry and showing-request flows. Operator routes under `/dashboard/platform` cover listings, leads, pipeline, showings, operations, and reports.
+
+## Main workflow
+
+A brokerage publishes a listing. A visitor or agent creates a lead, saved search, showing request or offer. Operators qualify the lead, schedule the showing, move the offer/deal through controlled states, and track inspection, disclosure, title and closing milestones. External settlement remains outside the current payment boundary.
+
+## Bounded GraphQL operations
+
+Public projections expose brokerage identity and published listings; customer operations submit inquiries and showing requests, save properties/searches, and manage alerts. `platformProjections` and `platformCommands` provide task-oriented operator reads/actions. Commands record lead activity, routing and dedupe; schedule and complete showings; create/counter/transition offers; move deals and milestones; manage disclosures, documents and commissions; and queue/replay source and outbox work. Mortgage, title, escrow, and commission commands preserve local workflow facts but do not execute regulated settlement.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database. `runRealEstateOnboarding` creates a synthetic brokerage, membership, settings, listings, leads, and pipeline data for local evaluation. Run it twice on an isolated current database, then test public listing projections, lead ownership and routing, showing conflicts, lifecycle snapshots, and deal transitions. Seeded brokerage data is not a hosted demo.
+
+## Integrations
+
+`SourceFeed` and ListingSyndication describe local inbound/outbound state, but current source has no integration adapter registry. There is no evidenced MLS/IDX, title, escrow, mortgage, calendar, messaging, signing, or payment adapter. Credentials must be unreadable, and a feed is not working until fetch/auth, mapping, dedupe, retries, provenance, and reconciliation pass. Payment processing is currently N/A.
+
+## Security and deployment
+
+Protect source credentials, lead contact data, mortgage applications, disclosures, and documents. Keep accepted/closed snapshots immutable. Railway builds then migrates at start. The checked-in lint script uses the removed `next lint` command under Next.js 16, and the README references a missing `env.example`; neither is a valid release instruction without repair.
+
+Deploy only after reviewed migrations, current schema/type/tests/build, cross-brokerage/agent negatives, public-intake abuse controls, showing conflicts, lifecycle replay/terminal denial, source-feed failures, restore, and responsive transaction workflow checks. Current source does not custody escrow, originate mortgages, provide title/settlement, execute commission payments, connect an MLS, or establish brokerage/regulatory certification.

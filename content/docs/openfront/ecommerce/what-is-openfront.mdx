@@ -1,21 +1,26 @@
 ---
-title: What is Openfront
-description: Introducing Openfront, a comprehensive e-commerce platform for building and managing online stores.
-icon: CircleQuestionMark
+title: What is Openfront Ecommerce?
+description: Self-hosted commerce across catalog, storefront, checkout, orders, payments, and fulfillment.
 ---
 
-Openfront is a comprehensive e-commerce platform that provides everything you need to build and manage online stores. It includes a powerful admin dashboard, customer storefront, payment processing, and inventory management.
+Openfront Ecommerce is a self-hosted, single-Store commerce application built from Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The operator owns the source, database, storefront and customer relationships. Regions, countries, currencies, locations, and sales channels configure commerce behavior; they are not proven independent tenant boundaries.
 
-## Basic concepts
+It also establishes application patterns used by other Openfront products. Restaurant, Grocery, Hotel, Construction and other products reuse its source/data ownership and feature boundaries while replacing commerce-specific models with their own domain records.
 
-### Admin Dashboard
+## Main surfaces
 
-The admin dashboard is your control center for managing all aspects of your e-commerce business. From here you can manage products, process orders, handle customers, configure payments, and analyze your store's performance.
+### Operator dashboard
+
+The dashboard has feature-owned pages for products, orders, inventory, fulfillment, regions/currencies/countries, payments, shipping, discounts, gift cards, price lists, stores, users, API keys, apps, invoices, business accounts and system settings.
 
 ### Storefront
 
-Your customer-facing storefront provides a complete shopping experience. Customers can browse products, add items to cart, complete checkout, create accounts, and manage their orders. The storefront is fully customizable and mobile-responsive.
+Country-code routes provide home, store, product, category, collection, cart, checkout, confirmation and account journeys. Storefront clients should use narrow data operations and ownership-checked cart/order workflows rather than unrestricted private lists.
 
-### Payment & Fulfillment
+### Payment and fulfillment
 
-Integrated payment processing with support for multiple payment providers including Stripe and PayPal. Built-in order fulfillment with shipping integrations, inventory tracking, and automated order processing workflows.
+Payment and shipping provider models and adapter source exist. Provider records are configuration, not proof of live settlement or shipping. Before enabling an adapter, verify environment secrets, server-derived totals, signed webhooks, replay handling, refunds, failures and reconciliation in the deployed environment.
+
+## Before using real data
+
+Review the source-specific security and limitation notes on each workflow page before using real customer, provider, or payment data.

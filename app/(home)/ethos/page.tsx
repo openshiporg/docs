@@ -63,7 +63,7 @@ export default function EthosPage() {
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               At <a href="https://openship.org" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">Openship</a>, we are creating <a href="https://github.com/openshiporg/openfront" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">open source software as a service platforms</a> for every vertical,
               from hotels to grocery stores to barbershops. Together, these vertical platforms form the
-              foundation of a <a href="https://github.com/openshiporg/marketplace" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">decentralized marketplace</a>, where businesses fully own their storefronts and
+              basis for a <a href="https://github.com/openshiporg/marketplace" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">decentralized marketplace</a>, where businesses fully own their storefronts and
               customer relationships.
             </p>
             <p className="text-fd-muted-foreground leading-relaxed">

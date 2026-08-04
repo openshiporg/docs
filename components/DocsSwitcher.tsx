@@ -23,7 +23,7 @@ export function DocsSwitcher() {
     {
       url: '/docs/openfront/ecommerce',
       title: 'Openfront',
-      description: 'Open-source e-commerce platform',
+      description: 'Open-source platform family',
       icon: <OpenfrontLogoIcon className="w-5 h-5" color="#6366f1" />,
       color: '#6366f1'
     },
@@ -37,11 +37,10 @@ export function DocsSwitcher() {
   ];
 
   const selected = useMemo(() => {
-    const lookup = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
     return options.findLast((item) => {
-      if (item.url === '/docs/openfront/ecommerce') {
-        return pathname.startsWith('/docs/openfront') && !pathname.startsWith('/docs/openship');
-      } else if (item.url === '/docs/openship/ecommerce') {
+      if (item.title === 'Openfront') {
+        return pathname.startsWith('/docs/openfront');
+      } else if (item.title === 'Openship') {
         return pathname.startsWith('/docs/openship');
       } else {
         return pathname.startsWith(item.url);
@@ -60,13 +59,13 @@ export function DocsSwitcher() {
           <div className="size-5">
             {selected.icon}
           </div>
-          <h1 className="mb-1 text-xl font-semibold tracking-tight">
+          <span className="mb-1 text-xl font-semibold tracking-tight max-[360px]:hidden">
             {selected.title === 'Openfront' ? (
               <>open<span className="font-normal">front</span></>
             ) : (
               <>open<span className="font-normal">ship</span></>
             )}
-          </h1>
+          </span>
         </div>
       </div>
       <ChevronDownIcon className="size-4 text-muted-foreground" />
@@ -89,6 +88,7 @@ export function DocsSwitcher() {
         }}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity outline-none rounded-lg"
         type="button"
+        aria-label="Switch documentation product"
       >
         {trigger}
       </button>
@@ -117,13 +117,13 @@ export function DocsSwitcher() {
                       <div className="size-5">
                         {item.icon}
                       </div>
-                      <h1 className="mb-1 text-xl font-semibold tracking-tight">
+                      <span className="mb-1 text-xl font-semibold tracking-tight">
                         {item.title === 'Openfront' ? (
                           <>open<span className="font-normal">front</span></>
                         ) : (
                           <>open<span className="font-normal">ship</span></>
                         )}
-                      </h1>
+                      </span>
                     </div>
                   </div>
                   <CheckIcon 

@@ -7,7 +7,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-If you want the shortest path to a working restaurant, this is it. The app can be running in a few minutes, and the onboarding flow can seed menu data, kitchen stations, floors, sections, tables, and payment providers for you.
+This guide prepares an isolated local restaurant evaluation. The onboarding flow creates synthetic StoreSettings, menu data, kitchen stations, floor/section/table records, and payment-provider configuration. It does not create a live restaurant, provider account, hosted demo, or multi-location tenant.
 
 ## What you need
 
@@ -16,8 +16,8 @@ If you want the shortest path to a working restaurant, this is it. The app can b
 - A `SESSION_SECRET` that is at least 32 characters long
 - Stripe keys if you want card checkout on day one
 
-<Callout type="info">
-You can explore most of the platform without Stripe, but the storefront card flow and Stripe-based payment screens will not complete until Stripe is configured.
+<Callout type="warn">
+The source expects Stripe variables for card flows. Configuration alone is not payment verification: use test credentials and confirm signatures, replay handling, server-derived totals, failure paths and refunds before enabling a provider.
 </Callout>
 
 ## Install and boot the project

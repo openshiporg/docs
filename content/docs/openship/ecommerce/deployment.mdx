@@ -1,41 +1,25 @@
 ---
 title: Deployment
-description: How to deploy Openship
+description: Deploy Openship with explicit migration, credential, adapter, retry, and recovery ownership.
 icon: Rocket
 ---
 
-## Getting started
+Openship needs a Node.js runtime and persistent PostgreSQL. Each enabled shop or channel integration adds its own credential, network, webhook and operational requirements.
 
-Openship uses Next.js, so naturally, it can be hosted anywhere that supports Node.js. Openship also requires a `postgres` database.
+## Build and migration warning
 
-## 1-Click Deployment
+The current `npm run build` script generates the Keystone schema, deploys Prisma migrations, and builds Next.js. Use one reviewed release job for migrations rather than allowing multiple build workers to race against production.
 
-These deployment services offer `Node.js` and `postgres` databases so Openship can be deployed in 1-click.
+## Release checklist
 
-### Railway
+1. Pin the source revision and install from the lockfile.
+2. Generate the schema and run current static checks.
+3. Back up the target and test migrations on a realistic disposable clone.
+4. Store `DATABASE_URL`, `SESSION_SECRET` and integration credentials in the host's secret manager.
+5. Apply migrations once, deploy the app, and run session/API-key ownership negatives.
+6. Route a synthetic order through every enabled shop/channel pair.
+7. Test duplicate delivery, timeout, retry, partial failure, cancellation, fulfillment and tracking updates.
+8. Verify raw webhook signatures and replay IDs.
+9. Monitor stuck orders and keep an operator reconciliation path.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.com/deploy/openship)
-
-### Render
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/openshiporg/openship)
-
-### Vercel
-
-[![Deploy with Vercel](/vercel-deploy-button.svg)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fopenshiporg%2Fopenship&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D&env=SESSION_SECRET,FRONTEND_URL,DATABASE_URL&envDescription=A%20postgres%20connection%20string%20is%20used%20for%20DATABASE_URL)
-
-### Netlify
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/openshiporg/openship)
-
-To deploy on platforms that don't support databases like [Netlify](https://netlify.com) and [Vercel](https://vercel.com), you'll need to pass a `postgres` connection string as the `DATABASE_URL` variable.
-
-Go to site settings > build & deploy > environment and add these variables:
-
-```bash
-FRONTEND_URL=http://localhost:3000
-DATABASE_URL=postgresql://postgres:example@url:3000/postgres
-SESSION_SECRET=oh_please_please_change_me
-```
-
-Replace DATABASE_URL with a postgres database connection string and FRONTEND_URL with the url ending in netlify.app. Redeploy the site.
+Railway, Vercel, Render or other templates can create infrastructure. They do not verify database sizing, migration history, provider reachability, background work, retries, webhooks, backups or incident response. A successful deploy is not an order-routing readiness claim.

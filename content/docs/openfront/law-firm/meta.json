@@ -1,0 +1,14 @@
+{
+  "title": "Law Firm",
+  "description": "Firm-owned intake, conflicts, matters, documents, billing, trust, portal, and governance",
+  "icon": "Scale",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

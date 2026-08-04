@@ -1,0 +1,14 @@
+{
+  "title": "Barbershop",
+  "description": "Services, barber schedules, booking, queue, POS, customers, and reports",
+  "icon": "Scissors",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

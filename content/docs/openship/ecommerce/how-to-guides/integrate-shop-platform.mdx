@@ -4,9 +4,15 @@ description: Learn how to create custom shop integrations
 icon: Store
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 ## Overview
 
-Shops are the places where your customers are already placing orders like marketplaces or e-commerce platforms. Openship has a built-in integration for Shopify so new integrations can be built by following the same pattern.
+Shops are source systems where customer orders originate. Current Openship source contains compiled Shopify and Openfront shop adapters; a new compiled adapter can follow those contracts.
+
+<Callout type="warn">
+Adapter source is not order-source proof. A new shop adapter must enforce user ownership, isolate credentials, validate bounded responses, authenticate callbacks, claim event IDs, preserve source order identity, and reconcile updates. UI examples naming WooCommerce or other providers later in this guide are implementation examples, not built-in adapters.
+</Callout>
 
 ## Shopify Shop Integration Reference
 

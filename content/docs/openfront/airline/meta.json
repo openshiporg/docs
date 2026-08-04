@@ -1,0 +1,14 @@
+{
+  "title": "Airline",
+  "description": "Airline retailing, bookings, passenger service, and disruption operations",
+  "icon": "Plane",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

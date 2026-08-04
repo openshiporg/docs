@@ -1,55 +1,58 @@
 ---
 title: Comparisons
-description: How is Openship different from other existing order management solutions?
-icon: GitCompareArrows
+description: Compare Openship's self-hosted routing model with hosted and custom order-routing approaches.
 ---
 
-## Traditional Order Management Systems
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openship is designed to be a lightweight, flexible alternative to heavy enterprise OMS solutions. Most traditional systems are expensive, difficult to customize, and require significant implementation time.
+Openship is a self-hosted order-routing application. It stores shops, channels, links, matches, orders, and downstream purchase state, then invokes configured adapter operations to read source orders and place fulfillment purchases.
 
-Openship works great if you want more control over your order routing logic, such as adding custom rules, integrating with unique fulfillment partners, or building on top of an existing codebase.
+Its main distinction from a hosted order-management service is ownership: you operate the source, database, deployment, credentials, adapter destinations, retries, and reconciliation.
 
-### Feature Table
+## Compare operating models
 
-| Feature                | Openship | Traditional OMS |
-| ---------------------- | -------- | --------------- |
-| Open Source            | Yes      | No              |
-| Self-Hosted            | Yes      | Limited         |
-| Custom Integrations    | Yes      | Limited         |
-| Order Routing Rules    | Yes      | Yes             |
-| Multi-Channel Support  | Yes      | Yes             |
-| Real-time Updates      | Yes      | Yes             |
-| Cost                   | Free     | $$$             |
-| Setup Time             | Minutes  | Months          |
+| Approach | Integration boundary | Operations responsibility | Typical tradeoff |
+| --- | --- | --- | --- |
+| Openship | Built-in or configured shop/channel adapter operations | The operator owns deployment, credentials, routing behavior, and recovery | Source-level control with corresponding engineering and operational work |
+| Hosted order-management service | Vendor connectors, rules, webhooks, and APIs | The vendor operates the core service; the customer configures it | Less core infrastructure work, within the vendor's connector and rule model |
+| Marketplace or store routing app | One platform's extension surface | Shared between the app vendor and merchant | Faster fit for supported platform workflows, with a narrower platform boundary |
+| Custom routing service | Contracts and workflows designed by the implementing team | Entirely owned by that team | Maximum freedom without Openship's existing models, dashboard, and adapter executors |
 
-## Shopify Flow / Order Routing Apps
+Compare exact connectors, cancellation and fulfillment behavior, retry semantics, audit evidence, support, and total operating cost—not category labels alone.
 
-Many Shopify apps provide basic order routing functionality, but they're limited to the Shopify ecosystem and often lack flexibility.
+## Current Openship integration scope
 
-Openship is platform-agnostic and can work with any e-commerce platform or custom system. It's designed for businesses that sell across multiple channels and need sophisticated routing logic.
+Current compiled source includes Shopify and Openfront handlers on both shop and channel sides. Platform records can also configure operation destinations for independent HTTP route apps or local modules, subject to the executor's contract.
 
-## Custom Built Solutions
+That architecture is extensible, but it is not the same as verified compatibility with every commerce or fulfillment system. Each additional platform needs implementations for the operations it uses, authentication and credential handling, payload validation, webhook verification, idempotency, timeout and retry policy, and reconciliation tests.
 
-Building your own order management system from scratch takes significant time and resources. Openship provides the foundation so you can focus on your unique business logic rather than reinventing basic functionality.
+## Routing behavior
 
-### Benefits of Openship
+Openship can:
 
-- **Open Source**: Full control over your codebase
-- **Platform Agnostic**: Works with any e-commerce platform
-- **Flexible Architecture**: Easy to customize and extend
-- **Modern Tech Stack**: Built with Next.js and Keystone.js
-- **Self-Hosted**: Keep your data under your control
-- **Community Driven**: Benefit from community contributions
+- record source orders and their line items;
+- select configured shop-to-channel links using link filters and rank;
+- use saved item matches to build downstream cart items;
+- call channel adapters to create purchases;
+- retain status and error information for operator review.
 
-## When to Choose Openship
+Delivery latency depends on webhook or polling behavior, queueing, provider availability, and the configured execution path. Current source does not establish a universal real-time delivery guarantee.
 
-Openship is ideal for:
+## Cost and setup
 
-- **Multi-channel sellers** who need unified order management
-- **Dropshippers** who work with multiple suppliers
-- **Agencies** building custom solutions for clients
-- **Developers** who want to integrate order routing into existing systems
-- **Businesses** seeking alternatives to expensive SaaS solutions
+<Callout type="warn">
+Open source does not mean zero operating cost or setup in a fixed number of minutes. A useful evaluation needs a database, deployment, operator account, credentials, shop/channel records, links or matches, webhook configuration, and a tested failure-and-reconciliation path.
+</Callout>
 
-If you need enterprise-level features like advanced reporting, complex inventory management, or extensive compliance features, you might want to consider traditional OMS solutions alongside Openship.
+Infrastructure, provider, marketplace, support, monitoring, and implementation charges remain deployment-specific.
+
+## When Openship may fit
+
+Consider Openship when a team:
+
+- wants to own and modify its order-routing source and data;
+- has a supported adapter or is prepared to implement and test one;
+- needs explicit shop, channel, link, match, and downstream purchase records;
+- can operate retries, reconciliation, credential rotation, and webhook verification.
+
+A hosted or platform-specific alternative may fit better when a required connector, service-level agreement, support program, reporting suite, or compliance program already exists there and source-level customization is not required.

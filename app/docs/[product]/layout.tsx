@@ -6,6 +6,34 @@ import { LogoIcon as OpenfrontLogoIcon } from '@/components/LogoIcon-openfront';
 import { LogoIcon as OpenshipLogoIcon } from '@/components/LogoIcon';
 import { DocsNavTitle } from '@/components/DocsNavTitle';
 import { notFound } from 'next/navigation';
+import openfrontProducts from '@/data/openfront-products.json';
+
+const preferredProductOrder = ['ecommerce', 'restaurant', 'gym', 'hotel', 'grocery'];
+const orderedOpenfrontProducts = [...openfrontProducts].sort((left, right) => {
+  const leftIndex = preferredProductOrder.indexOf(left.id);
+  const rightIndex = preferredProductOrder.indexOf(right.id);
+  if (leftIndex !== -1 || rightIndex !== -1) {
+    if (leftIndex === -1) return 1;
+    if (rightIndex === -1) return -1;
+    return leftIndex - rightIndex;
+  }
+  return left.name.localeCompare(right.name);
+});
+
+function TabIcon({ color, product }: { color: string; product: 'openfront' | 'openship' }) {
+  return (
+    <div
+      className="size-full rounded-lg max-md:border max-md:p-1.5 [&_svg]:size-full"
+      style={{ color, backgroundColor: `${color}10` }}
+    >
+      {product === 'openfront' ? (
+        <OpenfrontLogoIcon className="size-full" color={color} />
+      ) : (
+        <OpenshipLogoIcon className="size-full" />
+      )}
+    </div>
+  );
+}
 
 export default async function Layout({ 
   children, 
@@ -23,6 +51,21 @@ export default async function Layout({
 
   // Get the appropriate source based on product
   const currentSource = product === 'openfront' ? openfrontSource : openshipSource;
+  const sidebarTabs = product === 'openfront'
+    ? [
+        ...orderedOpenfrontProducts.map((item) => ({
+          url: item.href,
+          title: item.id === 'ecommerce' ? 'E-commerce' : item.name,
+          icon: <TabIcon color={item.color} product="openfront" />,
+        })),
+      ]
+    : [
+        {
+          url: '/docs/openship/ecommerce',
+          title: 'Ecommerce',
+          icon: <TabIcon color="#f59e0b" product="openship" />,
+        },
+      ];
 
   return (
     <DocsLayout
@@ -34,49 +77,7 @@ export default async function Layout({
       }}
       tree={currentSource.pageTree}
       sidebar={{
-        tabs: {
-          transform(option, node) {
-            const meta = currentSource.getNodeMeta(node);
-            if (!meta) return option;
-
-            const verticalColors: Record<string, string> = product === 'openfront' ? {
-              ecommerce: '#6366f1',    // indigo-500
-              restaurant: '#f59e0b',   // amber-500  
-              grocery: '#10b981',      // green-500
-              hotel: '#ec4899',        // pink-500
-              dealership: '#ef4444',   // red-500
-              hospital: '#06b6d4',     // cyan-500
-              gym: '#d946ef',          // fuchsia-500
-            } : {
-              ecommerce: '#f59e0b',     // amber-500 for Openship
-            };
-
-            // Extract the vertical from the path - first segment after product
-            const pathSegments = meta.path.split('/');
-            // For openfront/{vertical}/... structure, get the second segment
-            const vertical = pathSegments[1] || pathSegments[0];
-            const color = verticalColors[vertical] || (product === 'openfront' ? '#6366f1' : '#f59e0b');
-            const LogoComponent = product === 'openfront' ? OpenfrontLogoIcon : OpenshipLogoIcon;
-
-            return {
-              ...option,
-              icon: (
-                <div
-                  className="[&_svg]:size-full rounded-lg size-full max-md:border max-md:p-1.5"
-                  style={
-                    {
-                      color: color,
-                      backgroundColor: `${color}10`,
-                    } as object
-                  }
-                >
-                  <LogoComponent className="size-full" color={color} />
-                </div>
-              ),
-              description: option.description,
-            };
-          },
-        },
+        tabs: sidebarTabs,
       }}
     >
       {children}

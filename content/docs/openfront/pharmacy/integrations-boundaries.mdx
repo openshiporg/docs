@@ -1,0 +1,72 @@
+---
+title: Pharmacy integrations and boundaries
+description: Payment, eRx, wholesaler, insurance, tax, messaging, outbox, and agent boundaries in current source.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+An integration record describes a provider choice and validation state. It is not proof that credentials work, a contract exists, a request was transmitted, the provider accepted it, money moved, a claim adjudicated, a product shipped, or a regulator received a report.
+
+## Adapter contract
+
+Current external adapter types distinguish eRx, wholesaler, insurance, and tax providers. Requests carry a provider code, an operation (`submit`, `status`, or `webhook`), a bounded payload, and optional idempotency key. Results can report accepted, pending, or rejected with an external reference and bounded data.
+
+The registries are code-owned; a database value cannot select an arbitrary module. At present, each eRx, wholesaler, insurance, and tax registry contains only an `unconfigured` adapter that fails closed. Onboarding creates corresponding provider placeholders with unconfigured status.
+
+Before adding a provider:
+
+- define a provider-specific typed request and response rather than forwarding a raw internal record;
+- bind credentials to one organization, provider, operation, and destination;
+- keep secrets unreadable through GraphQL and out of logs, audit metadata, and outbox payloads;
+- authenticate inbound traffic from the raw body, claim event IDs, reject stale/replayed callbacks, and make retries idempotent;
+- map pending, accepted, rejected, partial, reversed, and unavailable states without inventing success;
+- add reconciliation, operator exceptions, timeouts, rate handling, redaction, retention, and provider escalation.
+
+## Prescription and eRx
+
+Current source stores prescriber identity, verification state, prescription source, external reference, source-verification state, and pharmacist evidence. It does not include a certified eRx network connection or prove that a prescriber is licensed, has authority for the medication and jurisdiction, signed the prescription, or transmitted it through an accepted network.
+
+Do not auto-approve a prescription because an adapter returned data. The local pharmacist review and dispensing authority remain required. Electronic controlled-substance prescribing needs separate identity proofing, signing, audit, access, retention, and provider certification that this source does not supply.
+
+## Wholesalers and supply chain
+
+Supplier, product, drug-reference, lot, serial, receipt, expiry, cold-chain, movement, and recall relationships create a local evidence graph. The wholesaler registry is unconfigured. There is no current purchase-order transmission, pedigree/trace exchange, inbound ASN, supplier credential check, shortage feed, or automated recall feed.
+
+A wholesaler adapter must preserve organization/location ownership, product and lot identity, quantities, dates, serialized evidence where applicable, duplicate shipment handling, quarantine defaults, and receiving exceptions. Local records do not establish DSCSA or other supply-chain compliance.
+
+## Insurance and patient payment
+
+The insurance registry is unconfigured. Current source does not perform eligibility, benefit, formulary, prior authorization, claim submission, reversal, coordination of benefits, remittance, or patient-cost adjudication.
+
+Do not use a configured record or local price as an insurance result. An insurance adapter needs patient and prescriber privacy controls, purpose limitation, exact transaction types, payer response provenance, reversals, retries, reconciliation, retention, and an operator path for rejects and ambiguous responses.
+
+## Tax
+
+The tax registry is unconfigured. Checkout has tax fields, but no current external tax service establishes product taxability, jurisdiction, exemption, filing, or remittance. Server-owned tax calculation and immutable order snapshots must precede payment; jurisdictional tax review remains external.
+
+## Payments
+
+The code-owned payment registry includes Stripe and a local demo adapter. The demo adapter is disabled in production, requires explicit development enablement, marks its results `demoOnly`, and rejects webhooks. Stripe source can create, capture, refund, and inspect payment intents and contains signature-verification code that expects `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+
+Current application routes do not expose a dedicated Stripe webhook endpoint. Do not describe asynchronous Stripe settlement, refund callbacks, or reconciliation as operating until a bounded route, raw-body verification, replay protection, event ownership, lifecycle mapping, and recovery flow are implemented and tested. Never accept a browser-supplied paid state or amount.
+
+## Messaging, storage, and delivery
+
+SMTP variables and mail utility source exist, but message delivery is not a pharmacy notification service. A deployed system needs consent, channel preference, minimum-necessary content, bounce/failure handling, retry, quiet hours, retention, and an operator record. Do not put medication or patient detail into email/SMS without an approved privacy and security design.
+
+The starter includes S3-related environment support, but current pharmacy workflows do not establish a validated prescription/document vault. Delivery-window and fulfillment records do not establish a courier integration, identity check, chain of custody, temperature-controlled delivery, counseling, or jurisdictional delivery authority.
+
+## Outbox and workers
+
+Domain mutations write bounded outbox events in the same transaction as local state. Operator queries show timeline and failed-delivery state, and a permissioned replay mutation can return failed work to pending. Adapter acknowledgement is intentionally internal rather than exposed through public GraphQL.
+
+An outbox row is not delivery. A production deployment still needs a worker with event claiming, lease/timeout behavior, destination-specific idempotency, redaction, retry/backoff, dead-letter review, metrics, alerting, and reconciliation.
+
+## AI and MCP
+
+Completion and MCP transport are application-assistance surfaces, not pharmacy authority. Browser-configured AI keys and prompts must not receive patient, prescription, payment, credential, or raw provider data. Any agent operation needs explicit allowlisted tools, least privilege, organization/location scope, human review for consequential work, attributable evidence, and a fail-closed response when authority or provider state is uncertain.
+
+<Callout type="warn">
+No adapter, test double, provider row, successful HTTP response, or AI output can certify a pharmacy workflow. Provider contracting, external validation, licensed-human authority, and deployment controls remain separate requirements.
+</Callout>

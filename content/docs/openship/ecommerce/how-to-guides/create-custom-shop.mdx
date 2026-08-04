@@ -4,9 +4,15 @@ description: Learn how to create custom HTTP-based shop integrations
 icon: Globe
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 ## Overview
 
-Instead of using built-in shop integrations like Shopify, you can create custom HTTP endpoints that Openship will call to interact with your shop platform. This approach gives you complete flexibility to integrate with any system - whether it's a custom e-commerce platform, CRM, or even a spreadsheet.
+Instead of a compiled Shopify/Openfront shop adapter, a ShopPlatform can select custom HTTP endpoints that Openship calls for source catalog and order operations. The endpoint must implement the documented request/response contract and remain authoritative for its own products and orders.
+
+<Callout type="warn">
+Current Openship source executes database-selected URLs without a complete destination allowlist, private-address/redirect defense, credential vault, or durable attempt ledger. Add those controls and prove ownership, idempotency, signed callbacks, retries, and reconciliation before using this extension with real store credentials or orders. The docs endpoints are POST-only in-memory examples, not a commerce platform.
+</Callout>
 
 ## How Custom Integrations Work
 

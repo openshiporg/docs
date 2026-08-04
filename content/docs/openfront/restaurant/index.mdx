@@ -1,17 +1,18 @@
 ---
-title: Restaurant platform
-description: What ships in Openfront Restaurant today, and what still needs another pass.
-icon: UtensilsCrossed
+title: Openfront Restaurant
+description: Menu, ordering, POS, service floor, kitchen, inventory, staff, and reporting.
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Openfront Restaurant is the restaurant branch of Openfront. It is not just the e-commerce build with menu labels swapped in. The current codebase already covers the core restaurant loop: publish a menu, take orders from the storefront or staff-facing tools, route them into the kitchen, manage the floor, close the check, and report on the shift afterward.
+[Source](https://github.com/openshiporg/openfront-restaurant) · [Catalog](https://openship.org/products/openfront-restaurant)
 
-<Callout type="info">
-This page reflects the code that is in `code/openfront-restaurant` right now. If something exists in the schema but still feels rough in the product, we say that plainly.
+Openfront Restaurant is the restaurant branch of Openfront. It is not just the ecommerce build with menu labels swapped in. The current codebase covers the core restaurant loop: publish a menu, take orders from the storefront or staff-facing tools, route them into the kitchen, manage the floor, close the check, and report on the shift afterward.
+
+<Callout type="warn">
+Before using real service or payment data, verify payment handling, cart ownership, API-key enforcement, concurrency controls, build checks, and the deployed order flow.
 </Callout>
 
 ## What ships today
@@ -71,7 +72,7 @@ The dashboard covers menu setup, store settings, payment providers, gift cards, 
 
 ## Current shape of the platform
 
-### Strong already
+### Current implementation
 
 - Storefront menu, cart, checkout modal, account area, and order confirmation flow
 - POS order entry with tables, courses, urgency, and special instructions
@@ -81,14 +82,17 @@ The dashboard covers menu setup, store settings, payment providers, gift cards, 
 - Store settings for hours, locale, currency, delivery fees, pickup discounts, and storefront copy
 - Inventory, recipe costing, purchase orders, waste logs, and stock movements
 - Staff scheduling, tip pools, and labor reporting driven by time entries
-- Onboarding seed data for a demo restaurant and MCP-powered AI tooling
+- Synthetic onboarding data for local evaluation and MCP assistant source, subject to the family security gates
 
-### Still getting tightened up
+### Current boundaries
 
-- Stripe is the primary verified payment path today. PayPal support exists in the adapter layer, but it is not wired as evenly through every restaurant workflow yet.
-- Gift cards are further along than discounts. Gift card redemption already shows up in the POS payment flow. Discount modeling and admin screens exist, but automatic discount application still needs more work.
-- Reservations exist as a model and admin route, but the host-stand flow is not as polished as the waitlist flow yet.
-- Permissions, role naming, and API-key scope enforcement still need a cleanup pass before you would call them finished.
+`StoreSettings` is a singleton. Although Organization, RestaurantGroup, and Location models exist, current orders, menu, inventory, floor, payment, and staff aggregates are not comprehensively partitioned by those records. Document and deploy this as one restaurant/one operating location unless the owning source adds and tests direct ownership across every aggregate.
+
+- Stripe, PayPal, and manual adapters exist, but provider behavior is not uniform across every restaurant workflow. Verify the selected adapter's session, capture, refund, webhook, replay, and reconciliation path.
+- Gift-card redemption has controlled POS behavior. Discount models and administration exist, but source does not establish automatic application across every order path.
+- Reservation and waitlist models and commands exist; neither implies SMS delivery or a complete host-stand/provider workflow.
+- Current source does not establish offline POS/device/printer guarantees, a durable check/tab and cash-ledger model, loyalty/CRM, delivery-marketplace dispatch, accounting/payroll export, or multi-location tenancy.
+- Role, API-key scope, ownership, split-check allocation, and concurrent inventory/payment behavior require release-specific negative and runtime tests.
 
 ## Stack and architecture
 

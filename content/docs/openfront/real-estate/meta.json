@@ -1,0 +1,14 @@
+{
+  "title": "Real Estate",
+  "description": "Listings, leads, showings, offers, transactions, and brokerage operations",
+  "icon": "House",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

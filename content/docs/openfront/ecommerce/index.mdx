@@ -1,69 +1,47 @@
 ---
-title: Quick Start
-description: Getting Started with Openfront
-icon: Album
+title: Openfront Ecommerce
+description: Multi-region catalog, storefront, checkout, orders, inventory, payments, and fulfillment.
 ---
 
-## Introduction
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront is a **comprehensive e-commerce platform** that provides everything you need to run an online store. It includes a complete admin dashboard, customer storefront, payment processing, and inventory management.
+[Source](https://github.com/openshiporg/openfront) · [Catalog](https://openship.org/products/openfront-ecommerce)
 
-## Automatic Installation
+Openfront Ecommerce is Openfront's commerce product. It combines a country-aware storefront, an operator dashboard, a Keystone GraphQL/data layer, and provider adapters in one source repository that the operator controls.
 
-A minimum version of Node.js 20 required.
+<Callout type="warn">
+Before using real customer or payment data, verify cart ownership, adapter consistency, provider webhooks, type/build enforcement, and the complete checkout path in the deployed environment.
+</Callout>
 
-```bash tab="npm"
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
-npm install
-```
+## What the source covers
 
-```bash tab="pnpm"
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
-pnpm install
-```
+- catalog: products, variants, options, images, categories, collections, types and tags;
+- regional commerce: stores, regions, countries, currencies, price sets/lists/rules and tax records;
+- inventory and fulfillment: locations, stock movements, shipping profiles/options/providers, labels and fulfillment lines;
+- checkout and orders: carts, addresses, payment sessions/collections, orders, immutable order lines, captures, refunds, returns, swaps and claims;
+- business workflows: customer groups, business-account requests, invoices, checkout links, gift cards, discounts and draft orders;
+- extensibility: API keys, OAuth apps/tokens, webhooks, payment/shipping adapters and Openship installation records.
 
-```bash tab="yarn"
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
-yarn install
-```
+## Architecture
 
-### Environment Setup
+Ecommerce establishes the family pattern: thin App Router pages, operator work in `features/platform`, storefront work in `features/storefront`, schema and GraphQL operations in `features/keystone`, and provider code in `features/integrations`.
 
-Create a `.env` file in the root directory:
+Its model names are specific to commerce. Other verticals reuse the boundaries, not the catalog/order vocabulary.
 
-```bash
-# Required: Change this to a secure random string
-SESSION_SECRET=your-super-secret-session-key-here
+## Main workflow
 
-# Required: Your PostgreSQL database connection string
-DATABASE_URL=postgresql://username:password@localhost:5432/openfront
+A store publishes products and regional prices. A guest or customer creates a cart, selects shipping and payment, and completes checkout. The server writes order and money snapshots so later catalog changes do not rewrite the sale. Operators fulfill, refund, return, swap or claim against that recorded order.
 
-# Optional: SMTP configuration for email notifications
-SMTP_FROM="no-reply@yourdomain.com"
-SMTP_HOST="your-smtp-host"
-SMTP_PASSWORD="your-smtp-password"
-SMTP_PORT="587"
-SMTP_USER="your-smtp-user"
-```
+## Setup, onboarding and deployment
 
-### Start Development
+Use [Getting started](/docs/openfront/ecommerce/getting-started) for a source-backed local path. The checked-in onboarding seed creates the Impossible Tees demo across store, regions, products, variants, prices, categories, collections and provider records. Setup data does not prove external provider execution.
 
-Run the development server:
+Read [Deployment](/docs/openfront/ecommerce/deployment) before choosing a host. Several package commands apply migrations as part of development or build, so release jobs need deliberate migration ownership.
 
-```bash
-npm run dev
-```
-
-This will:
-- Build the Keystone schema
-- Run database migrations
-- Start the development server
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Enjoy!
-
-Your Openfront instance is now running! Start by setting up your store, adding products, and configuring your e-commerce settings.
+<Cards>
+  <Card title="Products" href="/docs/openfront/ecommerce/products" description="Catalog, variants, pricing and inventory relationships." />
+  <Card title="Storefront" href="/docs/openfront/ecommerce/storefront" description="Country-aware product, cart, checkout and account routes." />
+  <Card title="Payments" href="/docs/openfront/ecommerce/payment-providers" description="Provider adapter source and the checks needed before enabling it." />
+  <Card title="API" href="/docs/openfront/ecommerce/api-reference" description="Use the generated GraphQL schema from your exact deployment." />
+</Cards>

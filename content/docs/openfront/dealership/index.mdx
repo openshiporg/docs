@@ -1,39 +1,43 @@
 ---
-title: Coming Soon
-description: Complete dealership platform with vehicle inventory and service scheduling
+title: Openfront Dealership
+description: Vehicle inventory, leads, deals, test drives, trade-ins, finance intake, and service.
 icon: Car
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Openfront Dealership
+[Source](https://github.com/openshiporg/openfront-dealership) · [Catalog](https://openship.org/products/openfront-dealership)
 
-Openfront Dealership empowers automotive retailers with complete control over their vehicle sales and service operations without surrendering control to expensive automotive platform subscriptions.
+Openfront Dealership combines a public vehicle inventory with the operator work that follows an inquiry: leads, test drives, trade-ins, deals and approvals, finance intake, service appointments, repair orders, parts, tasks, and reporting.
 
-<Steps className="[&>*:last-child]:after:hidden">
-<Step>
-### Storefront
-Complete automotive showroom with vehicle browsing, detailed specifications, pricing transparency, test drive scheduling, and financing calculators.
-</Step>
+<Callout type="warn">
+Finance forms are lead intake, not underwriting or lender decisions. Current source does not establish payment processing, credit compliance, identity verification, e-signature, or DMS/accounting parity.
+</Callout>
 
-<Step>
-### Dashboard
-Comprehensive dealership management system for vehicle inventory, sales pipeline, service scheduling, and customer relationship tracking.
-</Step>
+## Architecture and schema
 
-<Step>
-### Marketplace
-Open source automotive marketplace that connects buyers with dealerships - no commission fees or vendor lock-in.
-</Step>
-</Steps>
+`DealerGroup` and active group membership are the tenant root; `Rooftop` and RooftopMembership narrow staff and operational scope. Relationship hooks and custom commands validate rooftop ownership for submitted IDs. The graph includes dealer groups, rooftops and memberships; makes/models, vehicles, images, history, condition and price records; inventory acquisition, stock, feed, merchandising and reconciliation records; leads and interactions; test drives and trade-ins; deals and approvals; financing applications and lender submissions/decisions; service appointments, service orders, repair lines/packages and parts; delivery work, tasks, audit/outbox events, and dealership profiles.
 
-## Key Flows
+Public routes cover inventory/detail/compare, contact, financing, service, test-drive, and trade-in intake. Operator routes under `/dashboard/platform` cover overview, vehicles, CRM, deals, delivery, finance, test drives, trade-ins, service, and analytics.
 
-### Customer Experience
-- **Vehicle Shopping**: Browse inventory, compare models, view detailed specifications, and schedule test drives with preferred sales representatives
-- **Financing & Purchase**: Apply for financing, compare loan options, complete paperwork digitally, and track purchase progress with transparent pricing
-- **Service & Maintenance**: Schedule service appointments, track vehicle history, receive maintenance reminders, and access warranty information
+## Main workflow
 
-### Dealership Operations
-- **Inventory Management**: Track vehicle stock, manage trade-ins, coordinate with manufacturers, and optimize lot layout for maximum sales efficiency
-- **Sales Pipeline**: Manage leads, track customer interactions, coordinate test drives, and monitor sales performance with detailed analytics
+A buyer browses a published vehicle and submits an inquiry, test-drive request, trade-in, finance inquiry, or service request. Staff qualify the lead, schedule work, and move a deal or service order through controlled internal steps. Sensitive financial inputs should be minimized and routed through a purpose-built secure boundary rather than copied into generic notes.
+
+## Bounded GraphQL operations
+
+Public intake mutations submit inquiries, test drives, trade-ins, financing, and service requests with rooftop scope and abuse controls. `operatorProjections`, `operatorWorkspaces`, and `inventoryWorkspace` provide task reads. Named commands cover lead ownership/activity, deal pencils and transitions, financing queue/decisions, inventory acquisition/stock/feed/merchandising/reconciliation, test-drive workflow, trade-in appraisal, service orders, tasks, membership changes, and delivery completion. Finance operations record applicant and lender workflow evidence; they do not underwrite or originate credit.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database. `runDealershipOnboarding` creates a synthetic dealer group, rooftop, membership, profile, and evaluation records. Run it against an isolated current database, verify that a second execution does not duplicate tenant identity, and inspect all seeded names, inventory, leads, applications, and appointments before publishing screenshots. The local seed is not a hosted demo.
+
+## Integrations
+
+The current payment decision is N/A because deal and service fields record externally handled facts. There is no payment adapter directory. Inventory-feed and financing/lender models/routes are local intake and evidence boundaries; no lender, credit bureau, DMS, OEM, e-signature, accounting, identity, or payment adapter was found. Do not claim external execution until adapter authentication, consent, mapping, retries, reconciliation, and privacy controls are implemented and tested.
+
+## Security and deployment
+
+Protect income, credit-range, contact, vehicle-history, deal, approval, and service records. Deal and approval transitions need immutable evidence and restricted raw edits. Railway builds then migrates at start. Current source has targeted onboarding/payment/platform checks, but the repository README's `env.example` instruction points to a missing file and must not be copied as a setup guarantee.
+
+Before deployment, verify public-intake rate/abuse controls, cross-group/rooftop and membership denial, relationship changes, financing-field privacy, inventory acquisition/feed reconciliation, deal/service terminal states, reviewed migrations, audit/outbox, restore, and responsive customer/operator routes. Current source does not underwrite credit, originate loans, settle payments, provide external vehicle history, or establish dealer/lender/compliance certification.

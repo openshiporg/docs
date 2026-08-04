@@ -1,39 +1,88 @@
 ---
-title: Coming Soon
-description: Complete grocery platform with fresh inventory and delivery management
+title: Openfront Grocery
+description: Single-store grocery catalog, ordering, substitutions, pickup, delivery, purchasing, and subscriptions.
 icon: ShoppingBasket
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Openfront Grocery
+[Source](https://github.com/openshiporg/openfront-grocery) · [Catalog](https://openship.org/products/openfront-grocery)
 
-Openfront Grocery empowers independent grocers and food retailers with complete control over their online presence and customer relationships.
+Openfront Grocery is a single-store grocery storefront and operator platform. It combines departments and fresh catalog data, carts, coupons, substitutions, delivery and curbside capacity, shopping lists, subscriptions, supplier purchasing, lot inventory, fulfillment, Stripe payment evidence, refunds, and an operational outbox.
 
-<Steps className="[&>*:last-child]:after:hidden">
-<Step>
-### Storefront
-Complete grocery storefront with fresh produce displays, dietary filters, shopping lists, and delivery scheduling designed for modern food retail.
-</Step>
+<Callout type="warn">
+Current source is not a self-contained multi-store bootstrap. First-user initialization does not create/assign a Store, while `runGroceryOnboarding` requires the signed-in user to already have one. Complete and verify that ownership step on an isolated database before running onboarding. Do not infer organization/location tenancy, payment settlement, supplier execution, or delivery execution from the current records.
+</Callout>
 
-<Step>
-### Dashboard
-Comprehensive grocery management system for inventory tracking, supplier coordination, delivery route optimization, and freshness monitoring.
-</Step>
+## Customer and operator surfaces
 
-<Step>
-### Marketplace
-Open source grocery delivery platform that connects customers with local stores - no commission fees or vendor lock-in.
-</Step>
-</Steps>
+Customer routes cover `/`, departments and product detail, `/cart`, `/checkout`, `/deals`, `/lists`, `/subscriptions`, `/account`, and `/order/[id]`. A shopper can manage an owned guest/account cart, substitution preferences, coupons, lists and recipes, a pickup or delivery window, subscriptions, and pickup check-in.
 
-## Key Flows
+Purpose-built operator routes are:
 
-### Customer Experience
-- **Smart Shopping**: Browse products with dietary filters, search by ingredients, build shopping lists, and receive personalized recommendations
-- **Flexible Fulfillment**: Choose pickup, delivery, or in-store shopping with time slot selection and substitution preferences
-- **Fresh Guarantee**: Track product freshness, receive expiration alerts, and access quality guarantee with easy returns
+- `/dashboard/platform/orders` and `/fulfillment` for picking, substitution, packing, handoff, and delivery state;
+- `/dashboard/platform/delivery` and `/pickup` for slots, capacity, routes, parking, check-in, and handoff;
+- `/dashboard/platform/inventory` for lots, expiry, quantity, and adjustments;
+- `/dashboard/platform/purchasing` and `/suppliers` for purchase-order drafts, transitions, and receipt;
+- `/dashboard/platform/merchandising` for departments/products/coupons;
+- `/dashboard/platform/customers` and `/subscriptions` for account and recurring-order operations.
 
-### Grocery Operations
-- **Inventory Management**: Track stock levels, manage supplier relationships, coordinate deliveries, and optimize product rotation for freshness
-- **Order Fulfillment**: Process online orders, coordinate picking and packing, manage delivery routes, and track customer satisfaction
+Thin route wrappers delegate to `features/storefront`, `features/platform`, and the Keystone mutation/projection layer. Generic list administration remains available only under its permissions.
+
+## Schema and store boundary
+
+The graph includes Store and singleton StoreSettings, users/roles, departments/products, suppliers and purchase orders, lots/adjustments, carts/items, orders and immutable lines, substitutions, delivery/pickup/parking/route records, coupons/loyalty/subscriptions/lists/recipes, providers/sessions/payments/refunds/webhook events, and GroceryOutboxEvent.
+
+The current boundary is one active Store per user/session:
+
+- `User.store` is required in the current model/migration state;
+- `requireSessionStore()` resolves the current user's store for protected commands;
+- public reads select the first active Store;
+- operational records carry direct Store relationships and custom mutations recheck them;
+- `StoreSettings` remains singleton and is not itself related to Store;
+- current backfills use fixed identity `store_juniper`.
+
+This is not an organization or location tenant graph. Model-level access remains role-oriented in several places, so custom command checks and relationship constraints are material. Raw Cart/CartItem writes are operator-only, raw Order lifecycle fields are restricted, and immutable order lines cannot be freely updated.
+
+Catalog pages currently use field-access-controlled generated Product and Department queries rather than bespoke DTOs for every read. Product field access protects cost, low-stock, supplier, and inventory relationships, but those field names remain in the generated schema. Guest order access uses a token-checked resolver returning the Order type. Describe this as controlled raw catalog reads plus named operational projections—not a fully projection-only public API.
+
+## Controlled GraphQL boundary
+
+Customer/public queries include `groceryCart`, `clippedCoupons`, `scaleRecipe`, `activeCartPaymentProviders`, `guestGroceryOrder`, `publicGroceryCoupons`, `publicGroceryAvailability`, pickup-slot queries, and parking availability.
+
+Named customer commands cover:
+
+- add/update/remove/clear/merge cart and substitution preference;
+- clip/unclip/preview/apply coupons;
+- create/update/pause/resume/cancel/skip subscriptions;
+- create/manage shopping lists and add lists/recipes to cart;
+- reserve/release pickup capacity, check in, release parking, and complete handoff;
+- `initiatePaymentSession` and `submitGroceryOrder`.
+
+Operator commands include delivery-route creation/transition, `advanceOrderFulfillment`, substitution recording, `refundPayment`, capacity configuration, lot adjustment, purchase-order draft/remove/transition/receive, and outbox claim/complete/replay/status.
+
+Named task projections are `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, and `groceryPlatformSubscriptions`.
+
+Checkout re-reads product, lot, slot, provider session, amount, and settlement state; allocates eligible lots in expiry order; and writes order/payment/fulfillment/outbox evidence with immutable line snapshots. Those source checks still require runtime concurrency and rollback tests against the target PostgreSQL configuration.
+
+## Onboarding and local data
+
+`runGroceryOnboarding` uses an advisory lock and serializable transaction to create synthetic Juniper settings, departments, suppliers, products, lots, fulfillment capacity, providers, coupons, loyalty, a customer/address/list/subscription, and sample orders/payments. It marks the current user complete and includes repeat/failure-injection logic.
+
+It does not create the Store required by `requireSessionStore()`. On a clean database, first establish and assign a Store through an approved owning-source path, then run onboarding twice and verify stable tenant/catalog relationships. Seeded customers, addresses, prices, orders, and payment records are fictional local data, not a hosted demo or operating evidence.
+
+## Payments and integrations
+
+The current adapter registry exposes Stripe under `pp_stripe_default`. A manual module exists, but it is not registered; the seeded manual row is disabled/operator-only and cannot be described as an available checkout adapter.
+
+The Stripe adapter implements intent create/capture/refund/status/link and raw-body signature verification. Webhook ingress is `/api/payments/webhooks/[providerCode]`; the handler verifies the adapter signature before privileged work, claims replay identity, updates matching payment evidence, and records PaymentWebhookEvent. Provider source/configuration is not proof of authorization, capture, refund, or reconciliation.
+
+Supplier purchasing, tax, loyalty accounting, outbound delivery, notifications, and outbox dispatch have no provider execution implied by their rows. Add each effect behind typed allowlisted adapters, encrypted/denied credentials, signed ingress, idempotency, durable retries, reconciliation, and operator exception handling.
+
+## Deployment and current limitations
+
+Recent migrations add refund relationships, retain Store ownership, convert catalog identity links to relations, and enforce non-null Store/evidence constraints. They include retained-data failure checks and depend on the preceding `store_juniper` backfill. Review and apply the full ordered history; do not cherry-pick the final constraints.
+
+Both the npm `dev` and `build` scripts run migration deployment before Next.js. Railway instead builds without migration and migrates at start. Use deliberate database credentials, separate migration from immutable build where needed, supply real S3/payment secrets, back up/restore-test the target, and run current schema, type, build, ownership, checkout, refund, substitution, capacity, inventory, procurement, webhook, and outbox tests.
+
+Current source does not establish multi-store isolation, organization/location tenancy, complete first-store onboarding, a registered manual provider, provider settlement, delivery/fleet execution, supplier transmission, tax calculation, durable outbox delivery, or production-load inventory safety. Do not use real customer/payment data until those exact release and deployment boundaries have been independently verified.

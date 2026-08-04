@@ -1,0 +1,59 @@
+---
+title: Openfront Rental
+description: Professional short-term accommodation listings, quotes, reservations, guest trips, host operations, channels, and payouts.
+icon: KeyRound
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-rental) · [Catalog](https://openship.org/products/openfront-rental)
+
+Openfront Rental is a professional short-term accommodation and host-property-management product. Current models and routes are accommodation-specific: properties and listings, units/bedrooms/beds, guest search and quote checkout, reservations and trip links, stay agreements, host calendar/pricing/inbox/tasks, channels, payments, payouts, reviews, and owner statements.
+
+<Callout type="warn">
+Historical equipment-rental names remain in old migration/audit history, but they are not the current active model or route graph. Current limitations are live-runtime concerns: no OTA adapter, no customer card processor, unproved booking concurrency, manual settlement, and deployment-specific host/guest/token verification.
+</Callout>
+
+## Guest and host surfaces
+
+Guest routes are `/search`, `/stays/[slug]`, `/checkout/[quoteToken]`, `/trips/[token]`, and `/agreements/[token]`. A guest searches published listings, requests a server-owned quote, creates a reservation, follows token-bound trip information, signs a stay agreement, and can request cancellation through the bounded lifecycle.
+
+Host/operator routes under `/dashboard/platform` cover properties, listings, calendar, pricing, reservations, guests, inbox, channels, payments, payouts, reviews, agreements, and property tasks. These are professional host operations, not equipment inventory or ecommerce product pages.
+
+## Schema and tenancy
+
+`HostOrganization` and active `HostMembership` are the tenant roots. Property, listing, accommodation unit, guest, quote, reservation/line, agreement, payment, payout, channel, task, review, owner, and conversation records carry host organization scope. Access helpers validate active membership, prevent host moves, and verify that submitted related-record IDs belong to the same host—not only that the previous row was visible.
+
+The accommodation graph includes properties/addresses, units, bedrooms/beds, amenities, listings/media, rules, rates/seasonal rates/fees/taxes, quotes, reservations and immutable line snapshots, guest parties/profiles, agreements, conversations/messages, calendar blocks, channel listings/reservations/sync events, property tasks, reviews, deposits/damage claims, payments/refunds/payouts/providers/webhook events, owners/assignments/statements, and marketplace settings.
+
+Host scope is a source boundary, not runtime proof. Test creation, relationship changes, organization switching, inactive membership, and cross-host IDs across every generated and custom path.
+
+## Bounded queries and commands
+
+Public projections are `searchStays`, `publicMarketplaceSettings`, `publicListing`, `publicStayQuote`, `publicTrip`, and `publicStayAgreement`. They expose published/owned facts through exact slugs or opaque tokens instead of raw host records.
+
+Named mutations include `quoteStay`, `createStayReservation`, `requestStayCancellation`, `signStayAgreement`, `transitionStayReservation`, `initiateStayPayment`, `captureStayPayment`, and onboarding status. Reservation and quote snapshots preserve accepted dates, rates, fees, taxes, guest counts, currency, and listing facts. Host calendar actions remain scoped model/action operations rather than one broad workspace projection.
+
+Generated CRUD must not bypass host ownership, quote expiry, reservation snapshots, availability locks, agreement tokens, operator settlement, or payment webhook state. Prove simultaneous quote/reservation behavior and idempotent replay against the deployed database before accepting bookings.
+
+## Onboarding and synthetic runtime
+
+Current `seed.json` creates Commonstay Collective accommodation data: one host organization and membership, properties/listings, units/bedrooms/beds, amenities, guests, reservations, calendar blocks, tasks, channel mappings, messages, reviews, payouts, owner statements, and manual payment evidence.
+
+`seedAccommodationPlatform.ts` is restricted to the named `runtime_rental` local database and writes through a serializable transaction with reservation snapshot/line creation. `runAccommodationOnboardingWorkflow` controls status and cleanup. Run the flow twice on an isolated database and inspect stable host ownership, listing/quote/reservation relations, token access, calendar blocks, agreement state, and seed cleanup. It is not a hosted accommodation service or provider connection.
+
+## Payments and channels
+
+The enabled seed provider is manual `pp_system_default`, intended for operator-recorded settlement. A signed-test provider exists to exercise webhook authentication; it is not a real customer processor. Current source does not establish Stripe, PayPal, bank transfer, deposit custody, payout rails, chargebacks, or customer card checkout.
+
+Channel connection/listing/reservation/sync models are local integration state. No Airbnb, Vrbo, Booking.com, Expedia, or other OTA adapter is implemented by current source. A configured channel or synthetic sync row does not prove authentication, availability exchange, reservation import, cancellation, retries, or reconciliation.
+
+Any provider addition needs code-owned adapter selection, unreadable credentials, server-derived amounts, signed raw-body callbacks, replay IDs, durable attempts, cancellation/refund mapping, and operator reconciliation. Calendar/channel updates must not override accepted reservation snapshots or create double bookings.
+
+## Deployment and current limitations
+
+The repository uses Node.js/PostgreSQL and Railway's build-then-migrate-at-start shape. The checked-in lint script invokes `next lint` under Next.js 16 and is not a valid gate until the owning source migrates it to the ESLint CLI. Do not report lint as passing based on that script.
+
+Before real guest data, run current migrations, schema/type/tests/build, cross-host negatives, token expiry/revocation, simultaneous booking, manual-settlement authorization, signed-test webhook replay, cancellation, channel outage, payout/statement arithmetic, backup restoration, responsive browser, monitoring, and incident checks against the exact source/deployment.
+
+Current source does not provide equipment-rental behavior, customer card processing, OTA synchronization, payout execution, deposit custody, identity verification, property licensing, tax remittance, guest screening, insurance, physical access, or operational certification. The host graph is stronger than the stale cutover warning it replaces, but payment, provider, concurrency, security, privacy, accessibility, and jurisdiction-specific obligations still require independent implementation and verification.

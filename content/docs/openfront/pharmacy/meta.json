@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Pharmacy",
+  "description": "Pharmacist-controlled prescriptions, dispensing, inventory, recall, cold-chain, patient, and commerce workflows",
+  "icon": "Pill",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

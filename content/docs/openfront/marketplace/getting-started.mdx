@@ -1,0 +1,84 @@
+---
+title: Getting started with Marketplace
+description: Install the app, configure signing and AI access, curate stores, run checks, and deploy the stateless marketplace.
+icon: Terminal
+---
+
+## Requirements and installation
+
+Current source requires Node.js 20.9 or later and does not require PostgreSQL.
+
+```bash
+npm ci
+```
+
+Create an environment file with a signing secret of at least 32 random bytes:
+
+```bash
+MARKETPLACE_CAPABILITY_SECRET=replace-with-at-least-32-random-bytes
+```
+
+Cart operations require that secret in every AI mode. A separate `MARKETPLACE_SESSION_SECRET` may be used for store-session envelopes; otherwise current source falls back to the capability secret. Use independent managed secrets in a deployed system.
+
+## AI configuration
+
+Shared OpenRouter mode uses:
+
+```bash
+OPENROUTER_API_KEY=replace-with-an-operator-owned-key
+OPENROUTER_MODEL=openai/gpt-4o-mini
+OPENROUTER_MAX_TOKENS=4000
+```
+
+Without shared values, the built-in UI can accept a buyer's OpenRouter key and store it in browser `localStorage`. That key is sent to the marketplace completion endpoint for requests to the fixed OpenRouter origin. Decide whether browser key storage is acceptable for your audience, threat model, support model, and privacy disclosures before enabling it.
+
+External MCP clients can connect to `/api/mcp-transport/http`. Cart workflows require an MCP UI-capable client and equivalent secure storage/propagation of store-bound capabilities and sessions. Do not expose mutation tools to a client that cannot preserve those boundaries.
+
+## Curate stores
+
+Edit the server-owned `marketplace.config.json`. Every store needs an explicit stable ID, a root public HTTPS origin, and an adapter that current source implements:
+
+```json
+[
+  {
+    "storeId": "northwind-goods",
+    "baseUrl": "https://store.example.com",
+    "platform": "openfront",
+    "name": "Northwind Goods"
+  }
+]
+```
+
+Current source permits `openfront`. Do not add another platform string until its adapter and conformance/security tests exist. Buyers must select registry IDs; do not restore browser endpoint editing or accept request-supplied origins.
+
+A loopback or private development store is intentionally rejected by production egress rules. Use dedicated public test fixtures or an explicitly isolated test harness rather than weakening the deployed policy.
+
+## Run locally and verify
+
+```bash
+npm run dev
+```
+
+Before deployment, run the current project gates:
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Use synthetic merchant accounts and carts. Verify product discovery, variant selection, capability creation, tampered/cross-store capability denial, session isolation, address and shipping updates, checkout readiness, exact-origin handoff, redirect refusal, private-network denial, timeout/response limits, merchant failure, and browser storage cleanup.
+
+## Deployment
+
+The application can run on a Node.js host that supports Next.js server routes and outbound HTTPS. Deployment needs:
+
+- stable signing secrets and optional shared AI credentials in managed secret storage;
+- a reviewed store registry in the deployed artifact;
+- DNS and network behavior compatible with address-pinned HTTPS requests;
+- outbound network policy, timeouts, request/response limits, rate limits, abuse controls, and observability;
+- privacy disclosure for prompts, browser-held keys/capabilities/sessions, connected stores, and AI-provider processing;
+- incident response, registry rollback, secret rotation, and store-disable procedures.
+
+The public marketplace at [marketplace.openship.org](https://marketplace.openship.org) was reachable during the 2026-07-20 documentation check. That reachability is only URL evidence; it does not validate every configured store, tool, checkout, privacy, or failure path.

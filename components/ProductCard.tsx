@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { LogoIcon as OpenFrontIcon } from "./LogoIcon-openfront";
-import { LogoIcon as OpenShipIcon } from "./LogoIcon";
+import { LogoIcon as OpenshipIcon } from "./LogoIcon";
 import { OpensupportLogoIcon as OpenSupportIcon } from "./OpensupportLogoIcon";
 import { Space_Grotesk } from "next/font/google";
 import Link from "next/link";
@@ -188,7 +188,7 @@ export function ProductCard({ title, href, theme, product, className }: ProductC
       case "openfront":
         return <OpenFrontIcon className={`w-8 h-8 ${iconColor}`} />;
       case "openship":
-        return <OpenShipIcon className={`w-8 h-8 ${iconColor}`} />;
+        return <OpenshipIcon className={`w-8 h-8 ${iconColor}`} />;
       case "opensupport":
         return <OpenSupportIcon className={`w-8 h-8 ${iconColor}`} />;
       default:

@@ -1,0 +1,14 @@
+{
+  "title": "Construction",
+  "description": "Construction project controls, field operations, safety, contracts, and billing",
+  "icon": "HardHat",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

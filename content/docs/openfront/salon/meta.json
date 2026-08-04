@@ -1,0 +1,14 @@
+{
+  "title": "Salon",
+  "description": "Services, stylists, booking, schedules, resources, checkout, memberships, and commissions",
+  "icon": "Sparkles",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
+}

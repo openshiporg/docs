@@ -1,40 +1,31 @@
 ---
 title: Deployment
-description: How to deploy Openfront
-icon: Rocket
+description: Deploy Openfront Ecommerce with explicit migration, secret, provider, and rollback ownership.
 ---
 
-## Getting started
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront runs on Next.js, so you can host it anywhere that supports Node.js. You'll also need a `postgres` database.
+Openfront Ecommerce needs a Node.js runtime and persistent PostgreSQL. S3-compatible storage, email, payment, shipping, AI and marketplace secrets depend on the features you enable.
 
-## 1-Click Deployment
+<Callout type="warn">
+The repository's `npm run build` currently generates the Keystone schema, deploys Prisma migrations, and runs the Next.js build. Do not let multiple build workers race to migrate production. Split migration ownership into one reviewed release job where your host permits it.
+</Callout>
 
-These platforms include `Node.js` and `postgres` databases for 1-click deployment.
+## Required planning
 
-### Railway
+1. Pin and review the exact source revision.
+2. Generate the Keystone/Prisma schema and run static checks.
+3. Back up production and test every pending migration on a realistic disposable clone.
+4. Supply `DATABASE_URL` and a random `SESSION_SECRET` through the host's secret manager.
+5. Supply only the provider/storage/email variables used by the deployment.
+6. Apply migrations once, deploy, then run anonymous, authenticated and wrong-owner checks.
+7. Verify checkout totals, inventory, provider signatures/replay, fulfillment, refund and failure recovery.
+8. Keep an application rollback and database forward-recovery plan.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.com/deploy/openfront)
+## Hosting buttons
 
-### Render
+The source repository and catalog may provide Railway, Vercel or other convenience templates. They can create infrastructure, but they cannot verify your migration history, database sizing, object storage, background work, provider webhooks, security headers, backups or compliance needs.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/openshiporg/openfront)
+Openfront can run on a Node-capable host with PostgreSQL if those requirements are met. “Deploy succeeded” is not the same as “commerce workflow is safe.”
 
-### Vercel
-
-[![Deploy with Vercel](/vercel-deploy-button.svg)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fopenshiporg%2Fopenfront&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D&env=SESSION_SECRET,DATABASE_URL&envDescription=A%20postgres%20connection%20string%20is%20used%20for%20DATABASE_URL)
-
-### Netlify
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/openshiporg/openfront)
-
-For platforms like [Netlify](https://netlify.com) and [Vercel](https://vercel.com) that don't include databases, you'll need to add a `postgres` connection string as the `DATABASE_URL` variable.
-
-Go to site settings > build & deploy > environment and add these variables:
-
-```bash
-DATABASE_URL=postgresql://postgres:example@url:3000/postgres
-SESSION_SECRET=your-secure-session-secret-key
-```
-
-Replace DATABASE_URL with a postgres database connection string. Redeploy the site.
+Before putting customer or payment data into the instance, verify authorization, credentials, webhooks, concurrency, migrations, backups, restoration, and rollback against the exact release.

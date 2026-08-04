@@ -1,95 +1,73 @@
 ---
 title: GraphQL API
-description: GraphQL API reference for Openfront
-icon: Binary
+description: Use the generated GraphQL schema from your exact Openfront Ecommerce source and deployment.
 ---
 
-# GraphQL Playground
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Explore the OpenFront GraphQL API with the interactive playground below. You can test queries, view the schema, and build integrations directly in your browser.
+Openfront's Keystone layer exposes GraphQL at `/api/graphql`. The schema is generated from `features/keystone/models` and the registered custom mutations in `features/keystone/mutations`.
 
-<iframe 
-  src="https://impossible-tees.openship.org/api/graphql" 
-  className="w-full h-[80vh] border-0 rounded-lg ring-1 ring-gray-900/5 dark:ring-white/10 shadow-inner not-prose"
-  title="OpenFront GraphQL Playground"
-/>
+<Callout type="warn">
+There is no static hosted API reference that can stay accurate for every Openfront fork. Inspect `schema.graphql` from your source revision or use introspection on an authorized non-production environment. Do not send production credentials to a public demo playground.
+</Callout>
 
-## API Authentication
+## Session and bearer authentication
 
-OpenFront uses Bearer token authentication with comprehensive scope-based permissions.
+Dashboard requests use the application session. Current source also contains API-key and OAuth bearer-token handling. API keys have hashed secret material, status/expiry fields, optional IP restrictions and scope data.
 
-### Generate API Key
+Before relying on bearer scopes, test that each resolver and custom operation enforces the expected scope and tenant/ownership boundary. A scope value stored on a key does not protect an operation unless the operation checks it.
 
-import { Steps } from 'fumadocs-ui/components/steps';
+## Query published products
 
-<Steps>
-### Navigate to API Keys
-Go to your OpenFront dashboard at `your-domain.com/dashboard/platform/api-keys`
+The generated schema uses `title`, `handle`, `status`, `productVariants`, `productImages`, and `productCategories`:
 
-### Create New Key
-Click **"Create Api Key"** to open the key creation form
-
-### Configure Permissions
-1. **Name**: Enter a descriptive name for your API key
-2. **Scopes**: Select the permissions you need from the dropdown:
-   - `read_products`, `write_products` - Product management
-   - `read_orders`, `write_orders` - Order processing 
-   - `read_customers`, `write_customers` - Customer data
-   - `read_fulfillments`, `write_fulfillments` - Order fulfillment
-   - `read_checkouts`, `write_checkouts` - Checkout process
-   - `read_discounts`, `write_discounts` - Discount management
-   - `read_gift_cards`, `write_gift_cards` - Gift card operations
-   - `read_returns`, `write_returns` - Return processing
-   - `read_sales_channels`, `write_sales_channels` - Sales channels
-   - `read_payments`, `write_payments` - Payment processing
-   - `read_webhooks`, `write_webhooks` - Webhook management
-   - `read_apps`, `write_apps` - App integrations
-3. **Expiration** (optional): Set an expiration date for the key
-4. **IP Restrictions** (optional): Limit access to specific IP addresses
-
-### Copy Your Key
-Click **"Create"** and immediately copy the generated API key. It starts with `of_` and can only be viewed once.
-</Steps>
-
-## Making API Calls
-
-Use the Bearer token authentication with your API key:
-
-```bash
-curl -X POST \
-  https://your-domain.com/api/graphql \
-  -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer of_your-api-key-here' \
-  -d '{"query": "{ products { id name } }"}'
-```
-
-## Example Queries
-
-### Get Products
 ```graphql
-query GetProducts {
-  products {
+query PublishedProducts {
+  products(where: { status: { equals: published } }) {
     id
-    name
-    description
-    variants {
+    title
+    handle
+    thumbnail
+    status
+    productVariants {
       id
-      price
-      inventory
+      title
+      sku
+    }
+    productImages {
+      id
+      image {
+        url
+      }
+      imagePath
+      altText
+    }
+    productCategories {
+      id
+      title
+      handle
     }
   }
 }
 ```
 
-### Create Order
-```graphql
-mutation CreateOrder($data: OrderCreateInput!) {
-  createOrder(data: $data) {
-    id
-    displayId
-    email
-    status
-    total
-  }
-}
+Run queries against your own origin:
+
+```bash
+curl https://your-openfront.example/api/graphql \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_KEY' \
+  --data '{"query":"query { products(take: 1) { id title handle } }"}'
 ```
+
+Use a key with only the scope needed for the operation. Keep it out of shell history and logs.
+
+## Custom operations
+
+Checkout, carts, payments, fulfillment, OAuth, apps and other high-value workflows use custom GraphQL operations in addition to generated list CRUD. Read the registered source and generated schema for exact names and inputs. Prefer those domain operations when they enforce ownership, snapshots, idempotency and lifecycle checks.
+
+Generated CRUD is not automatically a safe public storefront API. Verify anonymous, wrong-user, wrong-store, expired-key, missing-scope and replay cases before exposing any operation.
+
+## Schema visualizer
+
+The [schema visualizer](/docs/openfront/ecommerce/schema-visualizer) can help with relationships. The generated `schema.graphql` remains the authoritative API artifact for a source revision.

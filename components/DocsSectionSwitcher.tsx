@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { Space_Grotesk } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import openfrontProducts from '@/data/openfront-products.json';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -12,49 +13,29 @@ const spaceGrotesk = Space_Grotesk({
   adjustFontFallback: false,
 });
 
+const preferredProductOrder = ['ecommerce', 'restaurant', 'gym', 'hotel', 'grocery'];
+const orderedOpenfrontProducts = [...openfrontProducts].sort((left, right) => {
+  const leftIndex = preferredProductOrder.indexOf(left.id);
+  const rightIndex = preferredProductOrder.indexOf(right.id);
+  if (leftIndex !== -1 || rightIndex !== -1) {
+    if (leftIndex === -1) return 1;
+    if (rightIndex === -1) return -1;
+    return leftIndex - rightIndex;
+  }
+  return left.name.localeCompare(right.name);
+});
+
 const sectionsByProduct = {
   openfront: [
-    {
-      url: '/docs/openfront/ecommerce',
-      title: 'Ecommerce',
-      description: 'Open-source e-commerce platform',
-    },
-    {
-      url: '/docs/openfront/restaurant',
-      title: 'Restaurant',
-      description: 'Restaurant ordering and operations',
-    },
-    {
-      url: '/docs/openfront/grocery',
-      title: 'Grocery',
-      description: 'Grocery storefront platform',
-    },
-    {
-      url: '/docs/openfront/hotel',
-      title: 'Hotel',
-      description: 'Hotel booking platform',
-    },
-    {
-      url: '/docs/openfront/dealership',
-      title: 'Dealership',
-      description: 'Vehicle dealership platform',
-    },
-    {
-      url: '/docs/openfront/hospital',
-      title: 'Hospital',
-      description: 'Hospital digital platform',
-    },
-    {
-      url: '/docs/openfront/gym',
-      title: 'Gym',
-      description: 'Gym and membership platform',
-    },
+    ...orderedOpenfrontProducts.map((product) => ({
+      url: product.href,
+      title: product.id === 'ecommerce' ? 'E-commerce' : product.name,
+    })),
   ],
   openship: [
     {
       url: '/docs/openship/ecommerce',
       title: 'Ecommerce',
-      description: 'Multi-channel fulfillment docs',
     },
   ],
 } as const;
@@ -74,24 +55,26 @@ export function DocsSectionSwitcher({ product }: { product: 'openfront' | 'opens
   return (
     <div
       className="relative shrink-0 max-md:flex md:hidden"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
       }}
     >
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen((prev) => !prev);
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen((previous) => !previous);
         }}
         className={cn(
-          'flex items-center gap-1.5 hover:opacity-80 transition-opacity outline-none rounded-lg text-sm text-fd-foreground',
+          'flex items-center gap-1.5 rounded-lg text-sm text-fd-foreground outline-none transition-opacity hover:opacity-80',
           spaceGrotesk.className
         )}
         type="button"
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
-        <span className="text-fd-muted-foreground text-base leading-none">|</span>
+        <span className="text-base leading-none text-fd-muted-foreground">|</span>
         <span className="font-medium">{selected.title}</span>
         <ChevronDownIcon className="size-4 text-muted-foreground" />
       </button>
@@ -99,24 +82,25 @@ export function DocsSectionSwitcher({ product }: { product: 'openfront' | 'opens
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-2 z-50 min-w-56 overflow-hidden rounded-lg border bg-background p-1 shadow-lg">
+          <div
+            className="absolute right-0 top-full z-50 mt-2 max-h-[70vh] w-56 max-w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-lg border bg-background p-1 shadow-lg"
+            role="menu"
+          >
             {options.map((item) => {
               const isActive = item.url === selected.url;
               return (
                 <button
                   key={item.url}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     router.push(item.url);
                     setOpen(false);
                   }}
-                  className="flex w-full items-start gap-2 rounded-lg p-2 hover:bg-accent hover:text-accent-foreground text-left"
+                  className="flex w-full items-center gap-2 rounded-lg p-2 text-left hover:bg-accent hover:text-accent-foreground"
+                  role="menuitem"
                 >
-                  <div className="min-w-0">
-                    <div className={cn('font-medium text-sm', spaceGrotesk.className)}>{item.title}</div>
-                    <div className="text-xs text-fd-muted-foreground">{item.description}</div>
-                  </div>
-                  <CheckIcon className={cn('ms-auto mt-0.5 size-3.5 text-primary', !isActive && 'invisible')} />
+                  <span className={cn('text-sm font-medium', spaceGrotesk.className)}>{item.title}</span>
+                  <CheckIcon className={cn('ms-auto size-3.5 text-primary', !isActive && 'invisible')} />
                 </button>
               );
             })}

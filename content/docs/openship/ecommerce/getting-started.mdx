@@ -1,78 +1,71 @@
 ---
-title: Quick Start
-description: Getting Started with Openfront
-icon: Album
+title: Getting started
+description: Install Openship and prepare an isolated shop-to-channel evaluation.
+icon: Terminal
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
-## Introduction
+## Prerequisites
 
-Openfront is an **order routing platform** that connects the places where you're selling to the places where you're fulfilling. It automatically routes orders from your sales channels to your fulfillment partners, giving you complete control over your order flow.
+- Node.js 20 or newer
+- PostgreSQL
+- Git and npm
+- an empty, isolated database
 
-## Automatic Installation
+<Steps>
+<Step>
+### Clone and install
 
-A minimum version of Node.js 20 required.
-
-<Tabs items={['npm', 'pnpm', 'yarn']}>
-<Tab value="npm">
 ```bash
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
+git clone https://github.com/openshiporg/openship.git
+cd openship
 npm install
 ```
-</Tab>
-<Tab value="pnpm">
-```bash
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
-pnpm install
-```
-</Tab>
-<Tab value="yarn">
-```bash
-git clone https://github.com/openshiporg/openfront.git
-cd openfront
-yarn install
-```
-</Tab>
-</Tabs>
+</Step>
+<Step>
+### Configure the local environment
 
-### Environment Setup
-
-Create a `.env` file in the root directory:
+Copy the repository's `.env.example` when present and set at least:
 
 ```bash
-# Required: Change this to a secure random string
-SESSION_SECRET=your-super-secret-session-key-here
-
-# Required: Your PostgreSQL database connection string
-DATABASE_URL=postgresql://username:password@localhost:5432/openfront
-
-# Optional: SMTP configuration for email notifications
-SMTP_FROM="no-reply@yourdomain.com"
-SMTP_HOST="your-smtp-host"
-SMTP_PASSWORD="your-smtp-password"
-SMTP_PORT="587"
-SMTP_USER="your-smtp-user"
+DATABASE_URL="postgresql://username:password@localhost:5432/openship"
+SESSION_SECRET="replace-with-a-random-string-at-least-32-characters"
 ```
 
-### Start Development
-
-Run the development server:
+Add only the SMTP, AI, shop or channel secrets required by the handler you intend to test. Keep credentials out of source control.
+</Step>
+<Step>
+### Review migrations and start
 
 ```bash
 npm run dev
 ```
 
-This will:
-- Build the Keystone schema
-- Run database migrations
-- Start the development server
+The current script generates the Keystone schema, runs `prisma migrate deploy`, and starts Next.js. Confirm the database target and migration history before running it.
+</Step>
+<Step>
+### Create the first dashboard user
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `/dashboard/init`, create the first operator, and sign in at `/dashboard`. Current source has no Openship onboarding mutation or seed, so platform, shop, channel, link, and match records are configured manually. Do not copy credentials from a public example.
+</Step>
+<Step>
+### Build one synthetic route
 
-### Enjoy!
+Create one test shop, one test channel, a link, and one exact variant match. Current compiled handlers cover Shopify and Openfront; the docs site's POST-only demo endpoints can exercise custom-handler shapes with in-memory synthetic data. Route a synthetic order and inspect both Openship and the downstream test system.
+</Step>
+</Steps>
 
-Your Openfront instance is now running! Start by connecting your first shop and setting up fulfillment channels.
+## Evaluation checks
+
+- API keys and sessions cannot read another user's shops, channels, matches or orders.
+- Shop and Channel credential fields are denied or encrypted before real secrets are stored.
+- Database-selected HTTP/function destinations are constrained to reviewed allowlists and cannot reach private or metadata networks through DNS or redirects.
+- retries do not create duplicate downstream purchases.
+- webhook signatures and event IDs are checked before state changes.
+- a partial channel failure remains visible and can be retried or reconciled.
+
+<Callout type="warn">
+`npm run build` currently deploys migrations before building, the checked-in `lint` script uses the removed Next.js 16 `next lint` command, and the package has no test or typecheck script. Do not represent a release as fully verified or connect a production shop/supplier until the owning source adds current gates and the exact handler passes product, order, ownership, egress, credential, cancellation, fulfillment, tracking, replay, retry, and reconciliation tests.
+</Callout>

@@ -1,39 +1,69 @@
 ---
-title: Coming Soon
-description: Complete hotel platform with booking management and guest services
+title: Openfront Hotel
+description: Single-property room inventory, booking, guest access, front desk, folios, housekeeping, channels, and payments.
 icon: Bed
 ---
 
-import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Openfront Hotel
+[Source](https://github.com/openshiporg/openfront-hotel) · [Catalog](https://openship.org/products/openfront-hotel)
 
-Openfront Hotel puts hospitality businesses back in control with comprehensive booking and management tools designed specifically for hotels and accommodation providers.
+Openfront Hotel is a single-property hotel/PMS-style application. It combines room-night inventory, rates and direct booking, token-bound guest access, front-desk and reservation work, folios, payments, housekeeping, maintenance, channel records, group blocks, business date/night audit, audit, and outbox evidence.
 
-<Steps className="[&>*:last-child]:after:hidden">
-<Step>
-### Storefront
-Guest-facing booking platform with room availability and reservation management.
-</Step>
+<Callout type="warn">
+Current source has no full multi-property tenant graph or native Booking.com/Expedia adapter. HotelSettings is a singleton, most records are database-global, and literal `the-alder-house` property keys scope selected jobs/evidence only. A channel row or successful local sync event can exist without any remote endpoint call.
+</Callout>
 
-<Step>
-### Dashboard
-Hotel operations system for property management, housekeeping, and guest services.
-</Step>
+## Guest and operator workflows
 
-<Step>
-### Marketplace
-Open source accommodation booking platform that connects travelers with hotels - no commission fees or vendor lock-in.
-</Step>
-</Steps>
+Guest routes cover `/rooms`, room detail, `/book`, `/booking/[id]`, `/bookings/lookup`, `/account`, amenities, location, contact, and PayPal return. The guest can search availability/quotes, create a booking under a room-inventory transaction, establish access using confirmation number/email, receive a signed cookie backed by a hashed token, review an owned booking, initiate payment, cancel, or request modification.
 
-## Key Flows
+Operator routes include `/dashboard/platform/front-desk`, reservations, rooms, rate plans, guests, payments/providers, folios, channels, housekeeping, maintenance, and analytics. Named actions assign rooms, update stay/status, manage housekeeping and maintenance, post/reverse folio entries, run night audit, create/pick up groups, and replay failed outbox work.
 
-### Guest Experience
-- **Room Booking**: Search availability, compare room types, select dates, and complete reservations with special requests and preferences
-- **Check-in/Check-out**: Digital check-in process, room access management, billing review, and seamless departure experience
-- **Guest Services**: Request amenities, book spa services, order room service, and access concierge recommendations
+## Schema and property boundary
 
-### Hotel Operations
-- **Property Management**: Manage room inventory, coordinate housekeeping schedules, track maintenance requests, and optimize occupancy rates
-- **Staff Coordination**: Assign housekeeping tasks, coordinate front desk operations, manage guest requests, and track service quality metrics
+The graph includes HotelSettings, room types/rooms/images, rates and seasonal rates, room inventory, guests/documents, bookings and immutable reservation lines, assignments, providers/sessions/payments/events, folios/entries, channels/reservations/sync events, housekeeping, maintenance, loyalty, daily metrics, business dates/night audits, groups/allocations, audit events, and outbox events/attempts.
+
+There is no Organization, Property, or Location ownership relationship across those aggregates. Role permissions are global within the database. Newer audit/outbox/night-audit records carry `propertyKey`, but that does not filter every booking, guest, room, payment, or channel. Deploy one property per database unless the owning source adds direct property ownership and cross-property tests throughout.
+
+Booking create/update/delete and reservation-line writes are denied through raw model operations. Controlled commands snapshot room, rate, plan, dates, guests, currency, and pricing so later configuration changes do not silently rewrite accepted reservation facts. Some legacy Booking monetary fields remain Float dollars while snapshots, folios, and payment paths use integer minor units; the schema is not uniformly fixed-point.
+
+## Bounded GraphQL boundary
+
+Public projections include `publicHotelSettings`, `bookingPaymentProviders`, `activeBookingPaymentSession`, `storefrontRoomTypes`, `storefrontRoomType`, `storefrontAvailability`, `storefrontQuote`, `guestBooking`, and `guestBookings`. Guest queries recheck the signed cookie, booking IDs, and email rather than returning arbitrary reservations.
+
+Named mutations include:
+
+- guest access, `createStorefrontBooking`, modification request/resolution, and cancellation;
+- booking status, room assignment, stay-date change, and snapshot repair;
+- payment-session initiation/completion and operator payment recording;
+- folio posting and exact reversal;
+- room operational state, housekeeping, maintenance, inventory controls, and rate publication;
+- channel inventory push/reservation pull/retry;
+- onboarding, night audit, outbox replay, and group create/pickup/status.
+
+Availability and booking source uses serializable room-inventory work, but runtime oversell, retry, and deadlock behavior must be tested under target load. Guest tokens and cookies need expiry, rotation, guessed-booking, wrong-email, wrong-cookie, and revocation tests.
+
+## Onboarding and synthetic data
+
+`runHotelOnboarding` uses an advisory lock and transaction. Minimal/full templates create the singleton settings, rooms/rates/inventory, guests/bookings/payments, housekeeping/maintenance, channel records/events, loyalty, metrics, snapshots, guest access, and folios; `custom` currently normalizes to minimal.
+
+Full data includes Booking.com/Expedia-looking rows with demo credential metadata, manual/offline payments, and fictional guests/bookings. Those records exercise local screens only. Run onboarding twice on an isolated database and test stable identity, booking/folio relations, room search, concurrent booking, token access, payment/cancellation/refund, front-desk assignment, housekeeping, night audit, group folio routing, and protected routes.
+
+## Payments, channels, and workers
+
+Static payment loaders register Stripe and PayPal for customer payment plus manual/operator-recorded ledger payments. Manual is excluded from customer checkout. Stripe implements PaymentIntent/refund/status and raw-body signature checks; PayPal implements order create/capture/refund/status and calls PayPal's webhook-verification API. Ingress is `/api/payment-providers/[providerCode]/webhook` and claims replay identity before payment finalization.
+
+Channel integration is generic configured HTTP, not native OTA source. `/api/webhooks/channel/[channelId]` verifies configured HMAC and provider event identity before reservation mapping. `pushInventoryToChannel` can record local success when no remote endpoint is configured, and `pullReservationsFromChannel` can return an empty list and record success in the same condition. Treat those as no-op local outcomes, never proof of OTA acceptance or synchronization.
+
+Channel polling jobs run in the application process only when `CHANNEL_SYNC_JOBS_ENABLED=true`. Outbox delivery jobs likewise require `HOTEL_OUTBOX_JOBS_ENABLED=true`, a dispatch URL, and a dispatch secret. Otherwise events remain pending. Review duplicate-job behavior before horizontally scaling the web process; a dedicated worker deployment is safer than assuming every app instance should poll.
+
+Email/confirmation source, worker loops, provider rows, local webhook responses, or pending outbox records do not establish guest notification, remote channel exchange, payment settlement, or reconciliation.
+
+## Deployment and current limitations
+
+The npm `dev` and `build` scripts deploy migrations before running/building Next.js. Railway builds without migration and runs migration at application start. Recent migrations enforce required/restricted relationships, business date and immutable night audit, group allocation and folio routing, and outbox leases/attempt/retry/dead-letter fields. Review retained data before applying these constraints.
+
+For release, back up and restore-test the target, apply reviewed migrations separately, configure provider/channel/worker secrets, run current tests/type/build, and exercise single-property access, booking concurrency, guest tokens, room assignment, folio balance/reversal, night audit, group pickup, payment webhook replay, channel no-endpoint behavior, outbox retries, and multi-process jobs.
+
+Current source does not establish multi-property isolation, native OTA connectivity, uniform minor-unit money, guaranteed email delivery, external worker supervision, payment/channel acceptance, or hotel regulatory, PCI, privacy, identity, accessibility, or operational certification. Do not use real guest, document, or payment data until those exact deployment controls are independently verified.

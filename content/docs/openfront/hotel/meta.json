@@ -1,6 +1,14 @@
 {
   "title": "Hotel",
-  "description": "Property booking management platform",
+  "description": "Rooms, rates, booking, guest access, front desk, housekeeping, channels, and payments",
   "icon": "Bed",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
 }

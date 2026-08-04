@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Marketplace",
+  "description": "Conversational discovery and delegated commerce across independently operated stores",
+  "icon": "Store",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

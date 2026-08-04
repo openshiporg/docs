@@ -1,112 +1,53 @@
 ---
-title: Store Configuration
-description: Managing your store settings and configuration in Openfront
-icon: Store
+title: Store configuration
+description: Configure the identity and shared settings used by the current Openfront Ecommerce application.
 ---
 
-Openfront provides a comprehensive store management system that allows you to configure and customize your e-commerce store. Your store serves as the foundation for your entire e-commerce operation.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Store Management
+The current dashboard and storefront read the first `Store` record as shared application configuration. The operator page is available at `/dashboard/platform/store`.
 
-### What is a Store?
+<Callout type="warn">
+Current Ecommerce source behaves as a single-store application. Although the schema can hold Store records and includes organization-related models elsewhere, products, carts, orders, regions, and other core aggregates do not form a complete organization-partitioned tenant graph.
+</Callout>
 
-A **Store** in Openfront represents your complete e-commerce environment with:
+## Dashboard-managed settings
 
-- **Store Information** - Basic store details like name and description
-- **Currency Settings** - Default currency and supported currencies
-- **Regional Settings** - Localization and regional preferences
-- **Templates** - Email and link templates for customer communications
-- **Metadata** - Additional configuration data
+The Store settings screen currently reads and updates:
 
-### Store Configuration
+- store name;
+- logo SVG;
+- logo color;
+- homepage title;
+- homepage description.
 
-Your store can be configured with essential settings:
+The server action sanitizes submitted logo SVG with SVGO before saving it. Updates require the backend permission used to manage sales-channel settings; hiding or showing the dashboard page is not the authorization boundary.
 
-```
-Store Configuration
-├── Name: "Your Store Name"
-├── Default Currency: "USD"
-├── Supported Currencies: ["USD", "EUR", "GBP"]
-├── Payment Link Template: Custom payment page URLs
-├── Swap Link Template: Product exchange page URLs
-└── Invite Link Template: Customer invitation URLs
-```
+## Additional Store fields
 
-## Core Features
+The Keystone `Store` model also contains:
 
-### Currency Management
-- **Default Currency** - Primary currency for your store operations
-- **Multi-currency Support** - Accept payments in different currencies
-- **Currency Relationships** - Manage exchange rates and currency settings
+- `defaultCurrencyCode`;
+- related currencies;
+- payment, swap, and invite link templates;
+- JSON metadata;
+- a computed payment-provider configuration derived from installed providers and public Stripe or PayPal environment values.
 
-### Regional Support
-- **Country-based Routing** - Different storefronts for different regions (e.g., /us/, /uk/)
-- **Regional Pricing** - Currency-specific pricing for different markets
-- **Localized Content** - Adapt content based on customer location
+Those fields are part of the GraphQL model, but they are not all editable in the current Store settings screen. Use the generated schema from the same revision before building another administrative client.
 
-### Store Templates
-- **Payment Templates** - Customize payment flow URLs
-- **Communication Templates** - Email and notification templates
-- **Invitation Links** - Customer invitation and referral systems
+## Currency and market configuration
 
-## Getting Started with Store Setup
+The Store record is not the complete market model. Regions, countries, currencies, prices, tax rates, payment providers, and shipping options have their own records and workflows. Configure and test those relationships separately rather than assuming that changing `defaultCurrencyCode` converts prices or establishes a security boundary.
 
-### Step 1: Configure Basic Settings
+## Operational checks
 
-1. Navigate to **Store Settings** in the admin dashboard
-2. Update your store information:
-   - Store name and description
-   - Default currency selection
-   - Regional preferences
-3. Configure store templates and links
-4. Set up metadata for additional customization
+Before publishing configuration changes:
 
-### Step 2: Currency Configuration
+1. verify the dashboard permission and API access path;
+2. preview branding on the built-in storefront at desktop and mobile sizes;
+3. confirm each region's currency, prices, countries, tax, payment, and shipping behavior;
+4. validate link templates against an allowlisted application origin;
+5. keep private provider credentials out of Store metadata and public environment variables;
+6. test rollback for a malformed logo or template.
 
-1. Access **Currency Settings**
-2. Set your default currency
-3. Add additional supported currencies
-4. Configure currency relationships and exchange rates
-
-### Step 3: Regional Setup
-
-1. Configure regional settings
-2. Set up country-specific routing
-3. Configure regional pricing and availability
-4. Test regional storefront variations
-
-## Store Analytics
-
-### Performance Tracking
-- **Sales Metrics** - Track revenue and conversion rates
-- **Regional Performance** - Compare performance across different regions
-- **Currency Analysis** - Monitor transactions by currency
-- **Customer Demographics** - Regional customer insights
-
-### Reporting Features
-- **Store Overview** - Comprehensive store performance dashboard
-- **Regional Reports** - Region-specific analytics and insights
-- **Currency Reports** - Multi-currency transaction analysis
-- **Custom Analytics** - Build custom reports for your needs
-
-## Best Practices
-
-### Store Configuration
-- Use clear, descriptive store names
-- Set appropriate default currencies for your primary market
-- Configure regional settings to match your target markets
-- Keep store metadata organized and documented
-
-### Regional Management
-- Plan your regional strategy carefully
-- Ensure consistent branding across regions
-- Monitor regional performance regularly
-- Adapt content for different markets
-
-### Currency Handling
-- Choose stable currencies as defaults
-- Monitor exchange rate impacts
-- Provide clear currency information to customers
-- Test currency conversion functionality
-
-Openfront's store management system provides the foundation for building a successful e-commerce operation, with support for regional variations and multi-currency operations to help you reach customers worldwide.
+For independent operator clients, use a bounded Store projection and an allowlisted update input. Do not expose unrestricted generic Store mutation access to a browser.

@@ -1,6 +1,14 @@
 {
   "title": "Hospital",
-  "description": "Patient scheduling platform",
+  "description": "Appointments, intake, patients, clinicians, communications, and clinical operations",
   "icon": "HeartHandshake",
-  "root": true
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront"
+  ]
 }

@@ -1,0 +1,43 @@
+---
+title: Openfront Barbershop
+description: Services, barber schedules, booking, queue, POS, customers, and reports.
+icon: Scissors
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-barbershop) · [Catalog](https://openship.org/products/openfront-barbershop)
+
+Openfront Barbershop is a service-booking branch with public services and barber profiles, scheduled appointments, walk-in queues, customer history, packages/memberships, POS/manual payments, commissions, inventory, and reports.
+
+<Callout type="warn">
+Current source provides shop-scoped booking, queue, checkout, inventory, commission, and customer workflows. The only registered payment adapter is manual and has no public webhook behavior; the presence of a webhook route does not establish card settlement.
+</Callout>
+
+## Architecture and schema
+
+`Shop` is the tenant root. `ShopMembership`, active-shop selection, and managed-shop checks scope appointments, services, staff, customers, transactions, payment sessions, inventory, commissions, and queue records. The graph includes shop settings, service categories/services, barbers, chairs and schedules, customers/notes/grooming notes, appointments and immutable line items, queue/waitlist records, packages/memberships, products/lots/suppliers, transactions, tips/commissions, waivers, payment providers/sessions, and webhook events.
+
+Public routes cover `/services`, `/barbers`, `/book`, and `/appointment`. Operator routes under `/dashboard/platform` cover booking, customers, POS, queue, reports, services, staff, and barbershop operations.
+
+## Main workflow
+
+The shop publishes services, barber availability and policies. A guest books a service or joins the walk-in flow. Staff assign the work, check the client in, complete service and checkout, then record tips, commission and customer history. Appointment lines keep the accepted service and price context.
+
+## Bounded GraphQL operations
+
+Current platform queries provide booking and customer workspaces. Named operations add customer notes; set customer state; mark no-shows; record and return product sales; transition and pay approved commissions; reconcile payment sessions; select the active shop; and drive booking, queue, checkout, and membership work through scoped actions. Generated CRUD remains for permitted configuration, but appointment, stock, payment, and commission transitions need the named transaction and evidence paths.
+
+## Setup and onboarding
+
+Use a disposable PostgreSQL database. `runBarbershopOnboarding` invokes a dependency-ordered custom seed runner for synthetic Stack & Fade shop, services, barbers/schedules, customers, packages/memberships, appointments, queue, retail inventory, transactions, and manual payment records. It does not use the canonical shared hook filename and is not a hosted demo. Run it twice on an isolated database, then test active-shop selection, cross-shop relations, guest-token ownership, queue/appointment transitions, commission and inventory evidence, and concurrent slot requests.
+
+## Integrations
+
+The current registered payment shape is manual-only. The manual adapter is operator/offline-oriented and does not register webhooks. Although `/api/payment-webhooks/[providerCode]` exists, the domain utility rejects providers without an allowlisted public-settlement webhook adapter. No Stripe or PayPal adapter is current. A public flow must never mark itself paid from the existence of a session or route.
+
+## Security and deployment
+
+Appointment and queue lookup should use opaque hashed tokens. Booking capacity needs database serialization. Customer notes, waivers, payment records and provider credentials need narrow access. Railway configuration builds then migrates at start, but does not prove deployment.
+
+Deploy only after current schema/type/tests, reviewed migrations, cross-shop and active-membership negatives, concurrent booking/queue, public-token, manual-settlement, stock, commission, restore, and responsive operator/customer checks pass. Current source does not establish external card processing, barber licensing, messaging, payroll, tax, accessibility, privacy, or operating certification.

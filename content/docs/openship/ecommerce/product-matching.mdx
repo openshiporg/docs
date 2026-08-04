@@ -1,57 +1,71 @@
 ---
-title: Product Matching
-description: Link products across different shops and channels for automated routing.
+title: Product matching
+description: Link exact shop items to channel items for order routing.
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-# Product Matching
+A `Match` records how one or more source `ShopItem` records map to one or more destination `ChannelItem` records. Openship uses these saved mappings when an order is configured with `matchOrder`.
 
-Product Matching is the "brain" of Openship. It allows the system to understand that "Product A" in your Shopify store is the same as "Product B" in your supplier's fulfillment system.
+## Match records
 
-## How Matches Work
+A match has:
 
-A **Match** is a many-to-one or one-to-one relationship between a **Shop Item** (where you sell) and a **Channel Item** (where you fulfill).
+- `input`: the shop-side product ID, variant ID, quantity, shop, and owning user;
+- `output`: the channel-side product ID, variant ID, quantity, saved price, channel, and owning user;
+- an owning user used by access filters and order matching.
 
-### Variant-Level Matching
-Openship supports granular matching at the variant level. You can map a "Large Red T-Shirt" in Shopify to a specific SKU in your 3PL system, even if the names or SKUs don't match exactly.
+The relationships are many-to-many. A one-input, one-output match covers a direct variant mapping; one input with several outputs can represent a bundle.
 
-### Automated Routing
-When an order arrives from a Shop:
-1. **Identification**: Openship looks at the line items in the order.
-2. **Lookup**: It searches for an active **Match** for each item.
-3. **Routing**: If a match is found, Openship knows exactly which **Channel** to send the fulfillment request to and which product ID to use.
-
-## Creating Matches
+## Create a match
 
 <Steps>
 <Step>
-### Import Items
-Connect your Shop and Channel. Openship will automatically import your product catalog.
+### Connect a shop and channel
+
+Configure credentials and verify that both adapter search operations work. Current compiled handlers cover Shopify and Openfront. Other platforms require compatible configured operations.
 </Step>
 <Step>
-### Select Shop Item
-Navigate to the **Matches** page and select a product from your Shop.
+### Search each platform
+
+The Matches workspace calls the selected shop and channel adapters to search products on demand. This is not a background import of either complete catalog.
 </Step>
 <Step>
-### Link to Channel Item
-Search for and select the corresponding item from your fulfillment Channel.
+### Select exact items
+
+Choose the source and destination product/variant identities and quantities. Current source does not provide an automatic SKU-matching workflow, so confirm each mapping explicitly.
 </Step>
 <Step>
-### Confirm Variants
-Map the individual variants between the two systems. You can use the "Auto-match by SKU" feature to speed up this process if your SKUs are consistent.
+### Save and test
+
+Creating a `Match` reuses or creates the corresponding `ShopItem` and `ChannelItem` records. Route a synthetic order and inspect the generated cart items before enabling downstream purchase creation.
 </Step>
 </Steps>
 
-## Advanced Matching Scenarios
+## How an order uses matches
 
-### Bundling
-Map a single Shop Item to multiple Channel Items. When the Shop Item is sold, Openship will trigger fulfillment for all linked items in the bundle.
+When a new order has `matchOrder` enabled and does not take the separate link-routing path, current source:
 
-### Multi-Channel Sourcing
-Map a Shop Item to different Channels based on availability or shipping destination (coming soon).
+1. loads the order and its line items;
+2. searches matches owned by the same user using product ID, variant ID, and quantity;
+3. first looks for a combined match covering all order lines, then tries individual line matches;
+4. reads each matched destination product through its channel adapter;
+5. creates downstream `CartItem` records from the saved outputs;
+6. records a price-change error when the current destination price differs from the saved match price;
+7. optionally calls downstream purchase placement when `processOrder` is enabled.
 
-## Benefits
-- **Zero Manual Data Entry**: Once matched, orders flow automatically.
-- **Error Reduction**: Eliminates the risk of sending the wrong product to fulfillment.
-- **Scale**: Manage thousands of SKUs across multiple vendors with ease.
+If no suitable match is found, Openship records a match error and leaves the order for operator handling rather than proving successful fulfillment.
+
+<Callout type="warn">
+Matching is exact application logic, not probabilistic product identification. Product IDs, variant IDs, quantities, ownership, adapter responses, and current prices must all be tested. Retries and downstream purchase creation also need idempotency and reconciliation coverage before live routing.
+</Callout>
+
+## Current boundaries
+
+- There is no automatic full-catalog import in the current Matches workflow.
+- There is no implemented automatic SKU-matching action.
+- Availability- or destination-based selection among several channels is not implemented by the Match lookup.
+- Inventory synchronization is eligible only for one-input/one-output matches where both quantities are `1` and both adapters expose inventory values.
+- No checked-in benchmark establishes a supported catalog size or routing throughput.
+- A saved match does not guarantee that a destination item is still available, unchanged, or purchasable; the channel response and resulting errors still require review.

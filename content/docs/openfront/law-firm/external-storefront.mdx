@@ -1,0 +1,8 @@
+---
+title: External storefronts
+description: Give an LLM the Law Firm storefront skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Law Firm storefront, copy the skill and give it to your LLM. The skill will first explain that current Law Firm source has no canonical `features/storefront` layer, then inspect the actual public or portal routes and identify any backend contracts needed before treating them as a storefront.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Law Firm codebase before proposing work.

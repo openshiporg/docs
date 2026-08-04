@@ -1,288 +1,40 @@
 ---
 title: Products
-description: Managing products and inventory in Openfront
+description: The current catalog, variant, option, price, image, category, collection, and inventory relationships.
 ---
 
-Openfront gives you everything you need to manage products. Create, organize, and manage your entire catalog - from simple products with one default variant to complex products with multiple option-driven variants.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Product Structure
+A `Product` is the catalog aggregate in Openfront Ecommerce. It has title, description, handle, subtitle, gift-card/discount flags, thumbnail, status and metadata plus relationships to variants, options, images, categories, collections, tags, type, shipping profile, tax and discount records.
 
-### Basic Product Information
+## Variants and options
 
-Every product in Openfront contains:
+`ProductVariant` is the sellable unit. Variants have titles and SKUs and connect to option values and money amounts. `ProductOption` and `ProductOptionValue` describe choices such as size or color without flattening them into arbitrary product JSON.
 
-- **Core Details** - Title, description, handle, and metadata
-- **Media** - Images and product galleries
-- **Organization** - Categories, collections, and tags
-- **Visibility** - Status and publishing state
-- **Variants** - The sellable units that carry SKU, pricing, and inventory
+## Prices
 
-### Product Types
+Pricing is relational. Money amounts connect sellable variants to price sets and regional/currency context. Price lists and rules provide additional pricing policy. Store accepted price and total facts on order lines so a later catalog change does not rewrite an order.
 
-You can create different product types:
+## Images and organization
 
-- **Simple Products** - Single items sold through one default variant
-- **Variable Products** - Products with options (size, color, etc.) and multiple variants
+- `ProductImage` stores image URL and alt text.
+- categories can form a hierarchy.
+- collections group products for merchandising.
+- tags and product types add classification.
+- shipping profiles and tax relationships affect fulfillment and checkout policy.
 
-## Product Variants
+## Inventory
 
-### What are Variants?
+Inventory uses locations and stock movements rather than one marketing-page number. The exact available quantity depends on the variant, location, movements, reservations/fulfillment behavior and the operation reading it.
 
-**Product Variants** allow you to offer the same product in different options such as:
+<Callout type="warn">
+Current source does not justify blanket claims for CSV import/export, forecasting, automatic low-stock alerts, video galleries or every kind of digital/subscription/bundle product. Document those only when the corresponding model, workflow and test exist in your fork.
+</Callout>
 
-- **Size** - Small, Medium, Large, XL
-- **Color** - Red, Blue, Green, Black
-- **Material** - Cotton, Polyester, Silk
-- **Style** - Classic, Modern, Vintage
-- **Custom Options** - Any attribute you define
+## Operator path
 
-### Variant Management
+The dashboard has product list, create and detail routes plus category, collection and inventory pages. Use those feature screens for ordinary work and domain operations for price/inventory changes that need validation or audit. Generic list CRUD should not bypass order snapshots, tenant access or inventory accounting.
 
-```
-Product: "T-Shirt"
-├── Variant 1: Small, Red → SKU: TSHIRT-S-RED → Stock: 10
-├── Variant 2: Small, Blue → SKU: TSHIRT-S-BLUE → Stock: 15
-├── Variant 3: Medium, Red → SKU: TSHIRT-M-RED → Stock: 8
-└── Variant 4: Large, Blue → SKU: TSHIRT-L-BLUE → Stock: 12
-```
+## API example
 
-Each variant can have:
-- Unique SKU and barcode
-- Individual pricing
-- Separate inventory tracking
-- Distinct images
-- Custom attributes
-
-## Inventory Management
-
-### Stock Tracking
-
-Openfront tracks inventory in real-time:
-
-- **Real-time Updates** - Automatic stock adjustment on orders
-- **Low Stock Alerts** - Notifications when inventory runs low
-- **Backorder Support** - Accept orders when out of stock
-- **Reserved Inventory** - Hold stock for pending orders
-- **Multi-location** - Track inventory across multiple warehouses
-
-### Inventory Operations
-
-- **Stock Adjustments** - Manual inventory corrections
-- **Bulk Updates** - Update multiple products simultaneously
-- **Import/Export** - CSV-based inventory management
-- **Audit Trail** - Complete history of inventory changes
-- **Forecasting** - Predict inventory needs based on sales data
-
-## Product Organization
-
-### Categories
-
-Organize products into hierarchical categories:
-
-```
-Electronics
-├── Computers
-│   ├── Laptops
-│   ├── Desktops
-│   └── Accessories
-├── Mobile Devices
-│   ├── Smartphones
-│   ├── Tablets
-│   └── Accessories
-└── Audio
-    ├── Headphones
-    ├── Speakers
-    └── Accessories
-```
-
-### Collections
-
-Create curated product groups:
-
-- **Seasonal Collections** - Holiday, summer, winter items
-- **Featured Products** - Highlighted or promoted items
-- **New Arrivals** - Recently added products
-- **Best Sellers** - Top-performing products
-- **Sale Items** - Discounted or clearance products
-
-### Tags and Attributes
-
-Add flexible metadata:
-
-- **Tags** - Free-form labels for product discovery
-- **Attributes** - Structured product specifications
-- **Custom Fields** - Store-specific product data
-- **Search Terms** - Additional keywords for findability
-
-## Product Creation Workflow
-
-When you create a product, the main thing to understand is the **Variant setup** section.
-
-That section gives you two paths:
-
-### Default variant
-
-The UI says:
-
-> **Best for simple products with one price, one SKU, and no options.**
-
-Choose **Default variant** when the product does not have customer-selectable options.
-
-Examples:
-- a single book edition
-- a mug with one version
-- a digital product with one plan
-- any product where the shopper is not choosing size, color, material, or another option
-
-When you use this path, Openfront creates a single default variant for the product. The default variant is titled **Default Title** unless you change it.
-
-In that form you can set:
-- variant title
-- SKU
-- inventory quantity
-- manage inventory
-- allow backorders
-- regional pricing
-- compare-at pricing
-
-For pricing, the UI lets you:
-
-> **Set prices for the regions you want to sell in. Leave blank to add later.**
-
-That is the right path for simple products because pricing in Openfront lives on variants. A simple product still needs one sellable variant so it can carry the price, SKU, and inventory.
-
-### Multiple variants
-
-The UI says:
-
-> **Use options like size or color and manage generated variant combinations.**
-
-Choose **Multiple variants** when the shopper needs to choose from combinations such as:
-- size
-- color
-- material
-- style
-- any other option group you define
-
-After the product exists, the variant workspace is organized into three tabs:
-
-1. **Variants**
-2. **Options**
-3. **Changes**
-
-### How the tabs work
-
-#### Variants
-This tab shows the sellable combinations that currently exist.
-
-This is where you review things like:
-- variant titles
-- SKU and barcode data
-- inventory
-- per-variant pricing
-- per-region prices
-- variant images
-
-#### Options
-This tab is where you define the option model.
-
-For example, you might add:
-- **Color** → Blue
-- **Size** → Small, Medium, Large, XL
-
-Those option values are what Openfront uses to determine which sellable combinations should exist.
-
-#### Changes
-This tab shows the difference between the option combinations you now have and the variants that already exist.
-
-It helps you review:
-- variants to create
-- variants that stay unchanged
-- variants that should be removed
-
-### Example: T-shirt flow
-
-Say you want to sell a T-shirt in **Blue** with sizes **Small, Medium, Large, and XL**.
-
-In **Options**, you would add:
-- **Color** → Blue
-- **Size** → Small, Medium, Large, XL
-
-Openfront then treats these as the intended combinations.
-
-That means the **Variants** tab will represent these sellable variants:
-- Blue / Small
-- Blue / Medium
-- Blue / Large
-- Blue / XL
-
-If you later add another color like **Black**, Openfront will detect the new combinations and show them in **Changes** before you save them.
-
-That way you can review what is being added instead of blindly generating new variants.
-
-## Advanced Product Features
-
-### Product Options and Variants
-
-Openfront handles complex product variants:
-
-- **Multiple Options** - Size, color, material, style combinations
-- **Variant Pricing** - Individual pricing per variant
-- **Inventory Tracking** - Per-variant stock management
-- **Variant Images** - Unique images for each variant
-
-## Product Analytics
-
-### Performance Metrics
-
-Track product success with:
-
-- **Sales Volume** - Units sold over time
-- **Revenue Generation** - Total revenue per product
-- **Conversion Rates** - Product page to purchase conversion
-- **Inventory Turnover** - How quickly products sell
-- **Customer Reviews** - Ratings and feedback analysis
-
-### Optimization Insights
-
-- **Top Performers** - Best-selling products and variants
-- **Slow Movers** - Products needing attention
-- **Search Terms** - How customers find products
-- **Abandonment Analysis** - Products removed from carts
-- **Pricing Analysis** - Price sensitivity insights
-
-## Best Practices
-
-### Product Information
-
-- Write clear, detailed product descriptions
-- Use high-quality, consistent product images
-- Implement logical category structures
-- Maintain accurate inventory levels
-- Optimize for search engines
-
-### Inventory Management
-
-- Set up automated low-stock alerts
-- Regularly audit inventory accuracy
-- Plan for seasonal demand fluctuations
-- Use forecasting for purchasing decisions
-- Implement barcode scanning for efficiency
-
-### Performance Optimization
-
-- Monitor product analytics regularly
-- A/B test product descriptions and images
-- Optimize product pages for conversions
-- Update pricing based on market conditions
-- Regularly review and update product data
-
-### Customer Experience
-
-- Provide detailed product specifications
-- Include multiple product images and videos
-- Enable customer reviews and ratings
-- Implement related product suggestions
-- Ensure mobile-optimized product pages
-
-The product management system gives you everything needed to create, organize, and optimize your catalog for better sales and happy customers.
+The [GraphQL API page](/docs/openfront/ecommerce/api-reference) shows a query using the current generated field names. Always check `schema.graphql` from the same source revision as the deployment.

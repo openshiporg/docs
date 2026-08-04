@@ -1,0 +1,137 @@
+---
+title: Openfront Law Firm
+description: Firm-owned intake, conflicts, matters, documents, billing, trust, portal, and governance.
+icon: Scale
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+[Source](https://github.com/openshiporg/openfront-law-firm) · [Catalog](https://openship.org/products/openfront-law-firm)
+
+Openfront Law Firm is an open-source legal-practice operations application. It gives a firm one data model for intake, conflicts, matters, calendars, communications, documents, billing, payments, trust records, client sharing, integrations, retention evidence, and controlled agent work.
+
+<Callout type="warn">
+The software supplies configurable controls and evidence. It does not guarantee legal-ethics, privilege, trust-accounting, privacy, retention, signature, security, or jurisdiction-specific compliance. Each deployment still needs qualified firm policy, legal, security, and provider review.
+</Callout>
+
+## Install and configure
+
+The application uses Node.js, Next.js, Keystone, Prisma, and PostgreSQL. Install dependencies from the repository root:
+
+```bash
+npm install
+```
+
+Configure a local PostgreSQL database and independent secrets:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/runtime_law_firm?schema=public
+SESSION_SECRET=<long-random-value>
+MACHINE_CREDENTIAL_PEPPER=<independent-long-random-value>
+INTEGRATION_CREDENTIAL_KEY=<base64url-encoded-32-byte-key>
+OPENFRONT_PUBLIC_ORIGIN=https://law-firm.local
+OPENFRONT_INTERNAL_ORIGIN=https://law-firm.local
+```
+
+The machine-credential pepper and integration-encryption key must remain stable, separate, and outside source control. Production requires explicit public and internal HTTPS origins; authenticated internal requests do not derive their destination from forwarded host headers.
+
+Compile the schema and application without touching the database:
+
+```bash
+npm run schema:build
+npm run typecheck
+npm test
+npm run lint
+npm run build:app
+```
+
+Do not use `prisma db push` or a destructive reset. Schema changes are represented by reviewed migrations.
+
+## Architecture
+
+`Firm` is the tenant root. Offices, memberships, and firm-specific roles establish ordinary operator access. Matters can add narrower team assignments and ethical walls. Keystone list definitions under `features/keystone/models` are authoritative; `schema.graphql` and `schema.prisma` are generated evidence.
+
+Every non-global domain record carries a firm relationship even when ownership could be inferred through a parent. Matter access uses controlled `authorizedUsers` and `blockedUsers` relations derived from team and ethical-wall evidence. Raw clients cannot edit those authorization indexes.
+
+Money uses integer minor units and explicit currency codes. Issued invoice lines, document versions, conflict dispositions, matter events, trust transactions and entries, signature events, webhook attempts, retention actions, audit events, and agent-action events preserve history through append-only records or compensating operations.
+
+## Data model
+
+- **Firm operations:** firms, offices, users, roles, memberships, contacts, addresses, and contact methods.
+- **Intake and conflicts:** intakes, participants, submissions, consultations, conflict checks, terms, matches, and human dispositions.
+- **Matters and work:** practice areas, matters, parties, teams, ethical walls, courts, dockets, entries, deadlines, and tasks.
+- **Communications and documents:** threads, participants, messages, deliveries, documents, immutable versions, signature requests, signers, and events.
+- **Billing and trust:** rate cards and rules, time, expenses, retainers, invoices and lines, payments, allocations, refunds, trust accounts, client/matter subledgers, transactions, entries, snapshots, and reconciliations.
+- **Portal and integrations:** portal accounts and exact matter/resource grants, provider connections, external record links, webhook subscriptions, deliveries, and attempts.
+- **Governance and agents:** retention policies, holds and actions, audit events, API keys, OAuth clients and tokens, agent principals, credentials, grants, actions, and action events.
+
+Core relationships are explicit rather than hidden in JSON. Provider payloads and metadata are bounded supplements, not the only representation of a matter, balance, payment, document, or authorization decision.
+
+## Workflows
+
+Sensitive state changes use named GraphQL operations instead of raw status writes.
+
+- First-firm onboarding atomically creates the firm, office, administrator role, membership, practice area, and active-firm assignment. Authenticated users without a firm are routed to `/dashboard/onboarding`.
+- Conflict operations run a check, record a reviewer disposition, and finalize the result before a matter can proceed.
+- Matter-team and ethical-wall operations update policy evidence and materialized access together, including overlapping-wall reconciliation.
+- Invoice and payment operations control approval, issue, capture, allocation, exact allocation reversal, independently reviewed refunds, and provider outcomes.
+- Trust posting requires one firm, account, currency, balanced positive minor-unit entries, serializable execution, idempotency, and exact reversal rather than history edits.
+- Portal operations invite a contact, grant exact matter capabilities, share exact resources, and revoke access without broad list reads.
+- Provider operations rotate encrypted credentials and record communication, signature, connection, and webhook state transitions.
+- Agent operations require an active principal, credential, exact-firm and optional exact-matter grant, bounded capability, idempotent request, and immutable result evidence. Consequential actions can require digest-bound human approval.
+
+Purpose-built operator routes now cover intake, contacts, matters/work, communications, documents, time and expenses, billing, accounting, portal administration, integrations, governance, data operations, and reports. Generated list administration and onboarding remain available. Public intake and a client-facing portal UI are not supplied by current source.
+
+## Bounded GraphQL operations
+
+Firm and practice workspace queries return scoped operational projections. Named operations handle onboarding, intake/conflict and matter access, document and communication evidence, invoice/payment/refund and trust posting, portal invitations and exact-resource sharing, provider/webhook state, retention holds, API/OAuth credentials, and controlled agent requests/execution. Raw status, money, access indexes, credentials, and immutable evidence stay outside ordinary GraphQL writes.
+
+## Synthetic local workflow
+
+The repository includes a deterministic local-only seed. It creates an administrator, firm, office, practice area, synthetic contact, matter, conflict check, invoice, and payment. The guard accepts only the loopback database named `runtime_law_firm`:
+
+```bash
+export MIGRATION_CONFIRM_DATABASE=runtime_law_firm
+export ALLOW_LOCAL_DEMO_SEED=runtime_law_firm
+npm run seed:runtime
+```
+
+Rerunning the seed reuses its fixture IDs. `npm run verify:complete-runtime` creates additional synthetic records and exercises restricted-matter access, conflicts, billing, refunds, portal grants, provider records, retention, API keys, OAuth, and controlled agents. It must be explicitly enabled with `ALLOW_RUNTIME_PROOF=runtime_law_firm` and must not target real firm data.
+
+## Integrations
+
+The application implements records and controlled transitions for provider connections, encrypted credential envelopes, external record links, communication deliveries, signatures, and webhooks. It also implements API-key authentication, OAuth authorization code with S256 PKCE, refresh rotation, and grant-scoped agent credentials.
+
+Those boundaries do not send real email or SMS, store real documents, collect real payments, calculate court deadlines, submit court filings, or obtain signatures by themselves. Each provider needs a separate adapter, inbound verification, retry and reconciliation policy, sandbox certification, least-privilege credentials, and deployment monitoring.
+
+## Security
+
+Access fails closed when the user, firm, membership, role, active firm, machine scope, matter assignment, or ethical-wall decision does not authorize the request. Restricted matters require explicit team access; a firm administrator does not silently bypass an ethical wall. Credential material is omitted from GraphQL reads.
+
+The HTTP GraphQL boundary accepts POST requests, requires JSON for ordinary calls, restricts multipart requests to the configured public origin, bounds bodies and uploads, caps list results, limits query depth and self-reference, disables HTTP introspection, and redacts internal error extensions. Portal sessions receive exact resource shares rather than general list access.
+
+These application controls do not replace managed key storage, centralized rate limits, logging and alerting, incident response, penetration testing, backup restoration, provider review, or firm-specific legal and security decisions.
+
+## Deployment
+
+The repository includes four current migrations and a guarded script for its maintained **local synthetic** database. For an existing local runtime, the guard requires the exact loopback target, matching migration history and checksums, no interrupted migration, a recent PostgreSQL custom-format backup, its SHA-256 reference, and an advisory deployment lock:
+
+```bash
+export MIGRATION_CONFIRM_DATABASE=runtime_law_firm
+export MIGRATION_BACKUP_PATH='/absolute/path/to/pre-deploy.dump'
+export MIGRATION_BACKUP_REFERENCE='sha256:<verified-dump-digest>'
+npm run migrate:maintained
+```
+
+That command is deliberately limited to the named loopback synthetic runtime and is not a general deployment procedure. For any release, run the current schema build/runtime verification, test suite, lint, typecheck, application build, migration-history/checksum checks, authenticated firm/matter/portal workflows, GraphQL boundary negatives, and browser checks against the exact source snapshot and target configuration.
+
+A deployment for real firm data needs its own reviewed migration and restore procedure, managed secrets and encryption keys, implemented and tested provider adapters, monitoring, centralized rate limits, incident response, staged rollout and rollback, retention policy, and jurisdiction-specific legal review. Current source does not itself send communications, store document bodies in an object service, collect payments, submit filings, obtain signatures, or guarantee trust-accounting or deadline-rule compliance.
+
+## Extension paths
+
+- Add or change domain records in `features/keystone/models`, register every list explicitly in `features/keystone/models/index.ts`, generate the schemas, and add a reviewed migration.
+- Put sensitive lifecycle changes in a narrow operation under `features/keystone/mutations`; do not reopen raw writes to protected status, money, access, credential, or evidence fields.
+- Add provider adapters behind `IntegrationConnection` and the provider workflow boundary. Keep credentials in encrypted envelopes, verify callbacks, claim provider event IDs, and record attempts and reconciliation evidence.
+- Build operator pages under `app/dashboard` and separate public intake or portal routes from the generated administrator lists. Public and portal surfaces should call narrow operations, not raw legal-domain CRUD.
+- Add machine capabilities by mapping explicit API, OAuth, or agent scopes to existing domain permissions and exact tenant/matter checks. High-risk agent actions need immutable requests and human approval where policy requires it.
+- Extend tests with cross-firm, restricted-matter, ethical-wall, credential, lifecycle, idempotency, concurrency, and failed-provider cases before enabling a new path.

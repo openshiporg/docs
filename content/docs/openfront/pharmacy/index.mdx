@@ -1,0 +1,40 @@
+---
+title: Openfront Pharmacy
+description: Pharmacist-controlled prescription, dispensing, recall, cold-chain, patient, OTC, order, and fulfillment workflows.
+icon: Pill
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Pharmacy is a self-hosted pharmacy commerce and operations application. It combines a public over-the-counter catalog and checkout with authenticated prescription intake and review, pharmacist-authorized dispensing, patient-safe views, lot and expiry inventory, recalls, temperature-excursion evidence, order fulfillment, audit history, and integration boundaries.
+
+<Callout type="warn">
+Openfront Pharmacy does not grant pharmacy licensure, pharmacist authority, prescribing authority, dispensing authority, or regulatory approval. It is not documented as HIPAA compliant, a certified e-prescribing system, an insurance-adjudication system, a controlled-substance system, a validated cold-chain monitoring system, or a certified recall system. Each deployment needs independent legal, regulatory, clinical-safety, privacy, security, provider, and operational validation.
+</Callout>
+
+## Human authority is the control boundary
+
+Prescription acceptance, review, dispensing authorization, physical dispensing, prescription transfer approval, inventory receipt or adjustment, recall disposition, temperature-excursion disposition, and consequential fulfillment transitions are human-controlled work. Current operations require an authenticated role with the relevant location scope; high-consequence mutations also require a reason and explicit attestation and record bounded `HumanApproval`, audit, inventory-movement, or outbox evidence.
+
+AI and MCP features do not replace a pharmacist, prescriber, technician operating under authorized supervision, recall coordinator, privacy officer, or other accountable professional. An agent may help find information or prepare a request only within a separately approved scope. It must not diagnose, prescribe, approve, substitute, dispense, override a hold, release recalled or cold-chain-affected inventory, or claim that an external provider accepted an action.
+
+## Product surfaces
+
+- The public storefront exposes pharmacy locations and non-prescription products, a guest-safe cart, payment-session initiation, and checkout. GraphQL has a token-scoped guest-order projection, but current source has no public order-status route or client flow for it.
+- Pharmacy operators have focused queues and task pages for prescriptions, inventory lots, recalls, orders, patients, POS catalog, integration state, audit history, and outbox delivery state.
+- Prescription products cannot enter the public cart. They follow the authorized prescription path.
+- Private records are not exposed to customer screens as raw Keystone lists. Customer and operator pages use pharmacy-specific GraphQL projections and named operations.
+
+<Cards>
+  <Card title="Architecture and workflows" href="/docs/openfront/pharmacy/architecture-workflows" description="Product routes, conceptual data model, bounded GraphQL operations, and human-controlled lifecycles." />
+  <Card title="Getting started" href="/docs/openfront/pharmacy/getting-started" description="Runtime requirements, migrations, onboarding, local checks, and deployment sequencing." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/pharmacy/integrations-boundaries" description="Payments, eRx, wholesalers, insurance, tax, outbox, and credential boundaries." />
+  <Card title="Current limitations" href="/docs/openfront/pharmacy/limitations" description="Operational, legal, safety, privacy, provider, and deployment work that remains outside the source." />
+</Cards>
+
+## Ownership and tenancy
+
+`Organization` is the business boundary; `PharmacyLocation` is the operating scope for inventory, prescriptions, fulfillment, and many staff permissions. Active organization and location memberships constrain operator reads. Patient access is separately bounded to the linked user or an authorized organization member. Sensitive customer-facing results use explicit projections that omit hashes, contact details, raw consent evidence, provider configuration, audit metadata, and outbox payloads.
+
+The application uses Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The Pharmacy pages document its medication, evidence, and human-authority boundaries.
