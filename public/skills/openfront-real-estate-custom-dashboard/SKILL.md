@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Real Estate operator dashboard or create a 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-real-estate>
+- Repository: <https://github.com/openshiporg/openfront-realestate>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Real Estate-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`. Slices: `listings`, `leads`, `showings`, `pipeline`, `tasks`, `people`, `routing`, `reports`, `operations`, `store-settings`, `onboarding`, plus shared `components` and `lib` (navigation in `features/platform/lib/navigation.ts`).
 - Thin route entry points under `app/dashboard/(admin)/platform/**`: `listings`, `listings/new`, `listings/[id]`, `leads`, `leads/[id]`, `showings`, `showings/[id]`, `pipeline`, `pipeline/[id]`, `tasks`, `people`, `routing`, `reports`, `operations`, `store-settings`. Generic list pages are `app/dashboard/(admin)/[listKey]/**`; first-user setup is `/dashboard/init`.

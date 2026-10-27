@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Coffee Shop storefront or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-coffee-shop>
+- Repository: <https://github.com/openshiporg/openfront-coffeeshop>
 - Built-in Coffee Shop customer experience, screens, components, data loaders (`features/storefront/lib/data`), cart storage, and UI composition: `features/storefront`.
 - Thin customer-facing route entry points: `app/page.tsx` for `/`, and `app/(storefront)/**` for `/menu/[id]`, `/checkout`, `/order-confirmed`, `/catering`, `/account`, and `/account/reset`. There is no country or region prefix.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (wired in `mutations/index.ts`), `schema.graphql`, and `docs/schema-map.md`.

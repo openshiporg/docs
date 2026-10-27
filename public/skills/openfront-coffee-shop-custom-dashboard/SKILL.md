@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Coffee Shop operator dashboard or create a 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-coffee-shop>
+- Repository: <https://github.com/openshiporg/openfront-coffeeshop>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, onboarding host, and admin client: `features/dashboard`.
 - Coffee Shop-specific operator navigation (`features/platform/lib/navigation.ts`), screens, server actions, and workflows mounted into that shell: `features/platform`. Slices: `orders`, `menu`, `pos`, `reports`, `register`, `inventory`, `suppliers`, `recipes`, `coffee-operations`, `loyalty`, `catering`, `subscriptions`, `kds`, `store-settings`, and `onboarding`.
 - Thin route entry points: `app/dashboard/(admin)/platform/**`. Current routes: `/dashboard/platform/orders`, `/menu`, `/pos`, `/reports`, `/register` and `/register/[id]`, `/inventory` and `/inventory/[id]`, `/suppliers` and `/suppliers/[id]`, `/recipes` and `/recipes/[id]`, `/coffee-operations`, `/loyalty` and `/loyalty/[id]`, `/catering` and `/catering/[id]`, `/subscriptions` and `/subscriptions/[id]`, `/kds`, `/store-settings`. Generic list pages are `/dashboard/[listKey]`.

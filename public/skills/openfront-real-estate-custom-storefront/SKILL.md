@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Real Estate storefront or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-real-estate>
+- Repository: <https://github.com/openshiporg/openfront-realestate>
 - Built-in Real Estate customer experience: `features/storefront`. Screens in `features/storefront/screens` (home, listings, listing detail, inquiry and showing forms, account pages, login, password reset); data loaders and server actions in `features/storefront/lib/data` (`settings`, `properties`, `leads`, `showings`, `saved`, `account`, `neighborhoods`); calendar, sitemap, robots, and brand-mark helpers in `features/storefront/lib`.
 - Thin route entry points in `app/(storefront)`: `/`, `/listings`, `/listings/[slug]`, `/account` (parallel `@login` and `@dashboard` slots), `/account/showings/[id]`, `/account/questions`, `/account/saved`, `/account/profile`, `/password-reset`, `/calendar/showing/[id]`, `/calendar/open-house/[slug]/[id]`, `/brand-mark.svg`; plus `app/sitemap.ts` and `app/robots.ts`.
 - Server fields the storefront uses: `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `submitListingInquiry`, `requestPropertyShowing`, `registerRealEstateCustomer`, `customerShowingHistory`, `cancelCustomerShowing`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser`, and Keystone auth and password reset mutations.

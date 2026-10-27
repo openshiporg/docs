@@ -146,7 +146,7 @@
     "description": "Pharmacist-controlled prescription, dispensing, recall, lot, cold-chain, patient, OTC, order, and fulfillment workflows.",
     "color": "#0d9488",
     "href": "/docs/openfront/pharmacy",
-    "sourceUrl": null,
+    "sourceUrl": "https://github.com/openshiporg/openfront-pharmacy",
     "catalogUrl": null
   },
   {
@@ -186,7 +186,7 @@
     "description": "Component-kit catalog, releases and files, review evidence, checkout, entitlements, registry keys, and package delivery.",
     "color": "#475569",
     "href": "/docs/openfront/uikit",
-    "sourceUrl": null,
+    "sourceUrl": "https://github.com/openshiporg/openfront-uikit",
     "catalogUrl": null
   },
   {
