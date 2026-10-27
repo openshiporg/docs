@@ -1,0 +1,123 @@
+---
+title: Getting started with Medspa
+description: Install the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, and run practice onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [medspa.openship.org](https://medspa.openship.org). It is a shared evaluation instance with sample data; do not enter real client or clinical information.
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`); the README targets Node.js 22 for Next.js 16.
+- npm (the repository ships `package-lock.json`).
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage. The Keystone config reads all five S3 variables at load time, so the app does not start without them.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-medspa
+cd openfront-medspa
+npm ci
+```
+
+## Environment
+
+Create a `.env` file in the repository root:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_medspa
+SESSION_SECRET=replace-with-at-least-32-random-characters
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+S3_ENDPOINT=https://your-s3-endpoint
+```
+
+`SESSION_SECRET` must be at least 32 characters; the config throws otherwise. Generate one with `openssl rand -hex 32`. Sessions are stateless cookies with a seven-day lifetime, marked `secure` when `NODE_ENV=production`.
+
+Optional variables used by the code:
+
+| Variable | Used for |
+|---|---|
+| `MEDSPA_PRACTICE_SLUG` | Pin the practice the public storefront serves when the database holds more than one published practice |
+| `TAX_RATE` | Checkout tax as a fraction between 0 and 1; overrides the practice's own `taxRate` |
+| `MEDSPA_INTAKE_MAX_AGE_DAYS` | Maximum age, in days, of reviewed intake evidence accepted for clinical work. When unset, plan approval and treatment-readiness checks that need intake evidence fail with "Current reviewed intake policy is unavailable" |
+| `PATIENT_RIGHTS_RESPONSE_DAYS` | Due-date window for patient rights requests (defaults to 30 days) |
+| `REFUND_MANAGER_APPROVAL_THRESHOLD_MINOR` | Read by the checkout settlement reversal path, which is currently disabled |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment adapter and webhook verification |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset, appointment request receipts, and gift card emails |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI assistant completion route |
+| `CLINICAL_ASSET_KMS_KEY_ID`, `CLINICAL_ASSET_REGION` | Recorded on clinical asset upload intents; intents are marked fail-closed when no key is configured |
+
+See [Integrations and boundaries](/docs/openfront/medspa/integrations-boundaries) for what each provider does today.
+
+## Migrations
+
+The repository has 15 checked-in Prisma migrations in `migrations/`: the inherited starter migrations followed by the Medspa core, relationship, provider publication, storefront presentation, logo, and practice tax-rate changes.
+
+```bash
+npx keystone build --no-ui
+npm run migrate
+```
+
+`npm run migrate` runs `prisma migrate deploy`. `npm run migrate:gen` builds Keystone, regenerates Prisma and the dashboard view order, then runs `prisma migrate dev`; use it only against a disposable database when you change the schema.
+
+<Callout type="info">
+`npm run dev` and `npm run build` do not apply migrations. Apply them explicitly before starting the app.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+`dev` runs `keystone build --no-ui` and then `next dev`. Use the URL it prints:
+
+- `/` is the public storefront.
+- `/dashboard` is the operator dashboard.
+- `/api/graphql` is the Keystone GraphQL API.
+
+## Create the first operator
+
+On an empty database, open `/dashboard/init` to create the first user, then sign in at `/dashboard/signin`. The `User` list does not allow direct creates, so additional staff join through invitations: an operator with `canManagePeople` sends an invitation from `/dashboard/platform/staff` (the `inviteStaff` mutation), and the invitee accepts it at `/join?token=...` (`acceptStaffInvitation`). Clients create their own accounts on the storefront through `registerCustomer`, or one is created when they book.
+
+## Practice onboarding
+
+The dashboard shows an onboarding dialog until the practice is set up. It calls `runMedSpaOnboarding`, which requires an active user whose role has `canManageOnboarding`. Three setups are offered:
+
+| Setup | What it creates |
+|---|---|
+| Sample med spa | Practice and location, four service categories, three rooms, six treatments, two providers with weekly hours, a medical-history intake form, a form template, an appointment reminder message template, Cash (manual) and Stripe payment providers, and a published storefront |
+| Start small | Your location, one consultation treatment, and one provider; published |
+| Custom | The same seed data, editable before it is created |
+
+The seed data lives in `features/platform/onboarding/lib/seed.json`. Onboarding creates the `Practice`, `Location`, `StorefrontSetting`, roles, and `PracticeMembership` records, and it refuses to run a second time once practice setup has completed. Seeded providers, treatments, prices, and hours are examples; replace them, and register real provider credentials and treatment authorizations, before taking bookings.
+
+## Deployment
+
+The production scripts are:
+
+```bash
+npm run build   # keystone build --no-ui, prisma generate, view-order generation, next build --webpack
+npm run migrate # prisma migrate deploy
+npm start       # next start
+```
+
+A deployment needs PostgreSQL, S3-compatible storage, and the environment above. The repository includes `railway.toml`, which builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run at container start where the database is reachable. The README also includes a Vercel deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and the S3 variables; add `S3_ENDPOINT` as well, since the config requires it.
+
+Before a real deployment:
+
+1. Back up the target database and review every pending migration.
+2. Set a stable `SESSION_SECRET` and keep provider secrets in a secret manager.
+3. Configure the Stripe webhook endpoint (`/api/payments/webhooks/<provider code>`) if you use Stripe.
+4. Set `MEDSPA_INTAKE_MAX_AGE_DAYS` if the practice will run consultation, plan, and treatment workflows.
+5. Review roles so each person only has the capabilities their job needs.
+6. Read [Current limitations](/docs/openfront/medspa/limitations).

@@ -11,15 +11,15 @@ Use this skill to adapt the built-in Airline storefront or create a separately d
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-airline>
-- Built-in Airline customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Source repository: `https://github.com/openshiporg/openfront-airline`. Confirm the exact checkout path and revision the user wants to target. `docs/schema-map.md` in the repo maps lists, workflows, and storefront coverage.
+- Built-in Airline traveler experience: `features/storefront`. `components/FlightShop.tsx` runs search, hold, booking, manage-booking, payment, seats, and check-in in `book`, `manage`, and `check-in` modes. `FlightStatusSearch.tsx`, `Timetable.tsx`, `StorefrontChrome.tsx`, and `PublicPageShell.tsx` cover status, timetable, and layout. `lib/carrier.ts`, `lib/network.ts`, `lib/booking-intent.ts`, `lib/branding.ts`, and `lib/theme.ts` load carrier identity, routes, booking documents, and brand palette.
+- Thin traveler route entry points are top-level under `app/` (no route group): `/` (book), `/destinations`, `/status`, `/manage-booking`, `/check-in`, `/manage` (redirect), `/help`, `/contact`.
+- Server contract: `features/keystone/mutations/storefront.ts`, `storefrontAccess.ts`, `storefrontPayments.ts`, `features/keystone/models/**`, `features/keystone/access.ts`, and `schema.graphql`. Public operations: `publicCarrierIdentity`, `publicAirlineFlightOptions`, `publicFlightStatuses`, `customerBooking`, `createCustomerOffer`, `createCustomerBooking`, `startCustomerCheckout`, `completeCustomerCheckout`, `assignCustomerSeat`, `checkInCustomerBooking`, `cancelCustomerBooking`, `rotateCustomerBookingAccessToken`, `recoverCustomerBookingAccess`.
+- Provider boundaries: `features/integrations/payment` (Stripe Checkout and manual settlement), `pages/api/payments/webhooks/[providerKey].ts`, the worker's hold and unpaid-booking expiry, and SMTP mail for access recovery.
 
-Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
+Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, booking access tokens (stored per record locator in `localStorage`, hashed on the server), shopping session tokens, and the Stripe redirect. It should guide what is preserved or changed. Every public call is pinned to one carrier (`STOREFRONT_CARRIER_CODE` or the first carrier), and selling also needs storefront branding and direct sales.
 
-The current product focus is shopping and offers, passenger/segment selection, booking, trip access, check-in/service, baggage, and disruption states. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is nonstop flight search and 15-minute fare holds, booking with a record locator and access code, optional Stripe payment, seat selection, check-in and boarding passes, cancellation, access-code rotation and recovery, flight status with disruption summaries, and a route timetable. There are no traveler accounts, ancillary sales, service requests, or exchanges. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around shopping and offers, passenger/segment selection, booking, trip access, check-in/service, baggage, and disruption states. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around flight search and fare holds, passenger details, booking, trip access by record locator and access code, payment, seats, check-in and boarding passes, cancellation, and flight status and disruption states. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

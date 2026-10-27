@@ -1,0 +1,63 @@
+---
+title: Medspa current limitations
+description: What the current Medspa source does not do, across clinical authority, payments, storefront, inventory, communications, and deployment.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+This page describes source boundaries. It is not legal or clinical advice and not a complete readiness checklist. Requirements depend on the practice's treatments, staff, jurisdictions, and providers.
+</Callout>
+
+## No license, certification, or compliance claim
+
+The repository does not license a practice, verify provider licenses with an issuing board, establish supervision or delegation rules, or certify HIPAA, payment-card, device, accessibility, or any other compliance. Records such as `ProviderCredential`, `ProviderAuthorization`, `ConsentRecord`, and `DeviceReadinessEvent` are entered by staff and checked for consistency; the application cannot tell whether they are true. Tests, builds, and migrations are engineering evidence only.
+
+## Clinical work
+
+- Readiness checks confirm that plan, order, consent, intake, contraindication, and resource records exist and match. They do not judge clinical appropriateness, dosing, or candidacy.
+- There is no e-prescribing, lab, imaging, or EHR integration, and no drug-interaction or allergy checking.
+- Clinical workflows that need intake evidence fail closed until `MEDSPA_INTAKE_MAX_AGE_DAYS` is set.
+- Intake templates are versioned; a template that changes after a clinical order is issued is rejected at treatment time ("Required intake template changed after the clinical order was issued").
+- Clinical photos and documents (`ClientAsset`) have mutations but no encrypted upload path and no dashboard page.
+
+## Payments and money
+
+- Checkout records operator-entered cash only. There is no card terminal, online card payment, or split tender beyond package credit.
+- Online deposits (`processAppointmentDeposit`) and online gift card purchase (`purchaseGiftCard`) are disabled in code.
+- Processor refunds are refused; `refundPayment` only covers manual deposit sessions, and checkout settlement reversal (`reverseAppointmentSettlement`) is disabled.
+- The Stripe adapter and webhook route exist, but no current flow creates a Stripe charge.
+- Tax is a single rate (`Practice.taxRate` or `TAX_RATE`); there is no tax-service integration.
+
+## Storefront
+
+- One practice per storefront: the pinned `MEDSPA_PRACTICE_SLUG` or the only published practice.
+- Booking creates a `pending` request that staff confirm; there is no instant confirmation or payment at booking.
+- Gift cards, memberships, and packages are not sold online.
+- `WidgetConfiguration` records exist, but no embeddable booking widget consumes them.
+
+## Benefits, loyalty, and inventory
+
+- `LoyaltyProgram`, `ClientPoints`, and `Referral` are schema only; no workflow writes them.
+- `ResourceScheduleBlock` (room and device downtime) has no mutation, although readiness checks read it.
+- Purchase orders are drafted, transitioned, and received in the application; there is no transmission to vendors or vendor catalog feed.
+- `ProductSale` is a legacy list kept for reports.
+
+## Communications and automation
+
+- Email covers password reset, appointment request receipts, and gift card emails when SMTP is configured. There are no SMS messages, scheduled reminders, or marketing campaigns.
+- `OutboxEvent` has no delivery worker, so no events reach an external system.
+- The MCP endpoint is disabled and returns HTTP 503. The AI chat sidebar's completion route loads its tools from that endpoint, so with MCP disabled the assistant has no working tool connection and cannot read or change records.
+
+## Accounts and tenancy
+
+- The `User` list does not allow direct creates. The first operator comes from `/dashboard/init`; other staff join by invitation at `/join`, and clients register on the storefront.
+- Practice onboarding runs once per database outside the isolated local runtime.
+- The data model supports several practices, but there is no operator UI for creating or switching between practices.
+
+## Deployment
+
+- The app requires S3-compatible storage at startup, even if no images are uploaded.
+- `npm run dev` and `npm run build` do not run migrations; `railway.toml` runs `npm run migrate` at start.
+- There is no background job runner, so time-based work (expiring memberships or lots, overdue follow-ups, patient rights due dates) only changes when an operator acts on it.

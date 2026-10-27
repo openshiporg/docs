@@ -6,75 +6,81 @@ description: Categories, items, modifiers, imagery, and service metadata.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The menu layer is one of the stronger parts of Openfront Restaurant already. The data model is flexible enough for a real restaurant menu, and the admin screens make that model usable instead of hiding it behind raw CRUD.
+The menu is shared by the storefront, POS, service floor, and KDS. There is one set of menu records for all of them.
 
-## What a menu item can carry
+## Screens
 
-A `MenuItem` can already include:
+- `/dashboard/platform/menu` is the **Menu Architect** and the menu entry in the sidebar. It shows categories and items in one view and opens create and edit drawers for categories, items, and modifiers.
+- `/dashboard/platform/menu-categories`, `/dashboard/platform/menu-items`, and `/dashboard/platform/menu-modifiers` are list screens. They are not in the sidebar.
+- The generic Keystone list screens under `/dashboard/[listKey]` also work for every menu list.
+
+## What a menu item holds
+
+A `MenuItem` can include:
 
 - price in cents
-- rich description content
-- images
-- availability
-- featured and popular flags
-- prep time
-- calorie count
-- kitchen station
-- allergen tags
-- dietary flags
-- meal-period tags
-- a category link
-- one or more modifiers
+- a rich-text description
+- images (`MenuItemImage`); the first image is the thumbnail
+- available, featured, and popular flags
+- prep time and calories
+- kitchen station: `grill`, `fryer`, `salad`, `dessert`, `bar`, or `expo` (default `grill`)
+- allergens: gluten, dairy, eggs, nuts, shellfish, soy, fish
+- dietary flags: vegan, vegetarian, gluten free, dairy free, keto
+- meal periods: breakfast, lunch, dinner, all day
+- a category and its modifiers
 
-That is enough to drive both the storefront and the kitchen-facing workflow.
+`MenuCategory` has a name, icon, description, meal periods, and sort order. `PrepStation` can link a menu item to a kitchen station with a preparation time.
 
-## Modifiers are first-class data
+## Modifiers
 
-Modifier groups already support:
+Each `MenuItemModifier` belongs to one menu item and has:
 
-- required or optional selection
-- min and max selections
-- default-selected values
-- price adjustments
-- group labels like "Choose your side" or "Add-ons"
+- a group: size, temperature, addons, removals, sides, dressings, cheese, toppings, sauces, patty, ice, dipping
+- a group label shown to guests, such as "Patty Size"
+- required flag and min and max selections
+- default selected flag
+- price adjustment in cents (can be negative)
+- calories
 
-That makes them useful for both guest ordering and staff-assisted ordering.
+The server checks modifier rules every time an item is added to a cart or order. Selected modifiers cannot make the item price negative.
 
 ## How to build the menu
 
 <Steps>
 <Step>
 ### Create categories
-Start with `MenuCategory` records. These control menu structure, sorting, and meal-period tagging.
+Add `MenuCategory` records. Sort order controls the storefront section order.
 </Step>
 <Step>
-### Add the items
-Create `MenuItem` records with pricing, imagery, availability, station routing, and customer-facing details.
+### Add items
+Create `MenuItem` records with price, image, availability, station, and guest-facing details.
 </Step>
 <Step>
 ### Attach modifiers
-Use `MenuItemModifier` records to define sizes, toppings, sides, sauces, removals, temperatures, and similar choice sets.
+Add `MenuItemModifier` records for sizes, add-ons, sides, sauces, removals, and similar choices.
 </Step>
 <Step>
-### Publish through the same data layer
-The storefront, POS, and KDS all read from the same underlying menu records. You are not maintaining three different menus.
+### Set service windows
+If items should only sell at certain times, set meal periods on items or categories, and set the meal period windows in store settings.
 </Step>
 </Steps>
 
-## What the current menu tooling is good at
+## Availability rules
 
-- one shared menu for guest and staff surfaces
-- clean category sorting
-- item imagery and featured sections on the storefront
-- availability control for sold-out items
-- dietary and allergen tagging
-- kitchen station routing from the item record
-- modifier pricing and validation rules
+When an item is added to a cart or order, the server refuses it if:
 
-## What is present but not fully matured yet
+- the item is marked unavailable;
+- the restaurant is closed, or within the ordering cutoff before closing;
+- the item or its category has meal periods and the current time is outside them.
 
-Meal periods are already modeled and filterable through the API, but the platform is not yet doing a deeply automated schedule-driven menu swap by itself. The fields are there. The last mile still depends on how far you want to take it.
+Meal period windows are set in store settings as venue-local open and close times.
+
+## Limits
+
+- Modifiers belong to one item. There are no shared modifier groups across items.
+- Kitchen stations on menu items are a fixed list. Station names on the KDS are matched to these values.
+- There are no menu versions, scheduled price changes, or per-channel prices.
 
 <Callout type="info">
-If you only have time for one careful setup pass before launch, spend it here. A clean menu model pays off everywhere else in the restaurant.
+Order items keep snapshots of name, price, modifiers, and station. Editing the menu does not change past orders.
 </Callout>

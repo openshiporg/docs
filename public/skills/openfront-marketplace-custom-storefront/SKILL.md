@@ -12,13 +12,18 @@ Use this skill to adapt Marketplace's current conversational UI or create a sepa
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/marketplace>
-- Marketplace is not a Keystone vertical and has no `features/dashboard`, `features/platform`, `features/storefront`, `features/keystone`, or `schema.graphql` layer.
-- Main UI: `app/page.tsx` and `features/marketplace/**`.
-- Server registry, adapters, egress policy, MCP tools, completion, cart, and session behavior: inspect `features/marketplace/server/**`, transport routes under `app/api/**`, and current tests.
+- Marketplace is not a Keystone vertical. It has no database, no models, no mutations, no migrations, and no `schema.graphql`. A local checkout may contain empty `features/keystone`, `features/platform`, `features/dashboard`, `app/dashboard`, and `migrations` folders; they hold no files and nothing uses them. There are no `/dashboard` routes.
+- Routes: `/` (chat, `app/page.tsx`), `/ethos`, `POST /api/completion`, `GET|POST /api/mcp-transport/[transport]` (clients use `/api/mcp-transport/http`), `POST /api/ai-models`, and `GET /api/marketplace/catalog` (bundled mock data only).
+- Main UI slice: `features/marketplace/**` (chat, store editor, cart dropdown, AI settings, setup dialog, Stripe/PayPal payment UI).
+- Store registry: `marketplace.config.json`, parsed by `app/api/mcp-transport/types/store-config.ts`. Store IDs come from `lib/source-identity.ts` (`source-v2-<platform>-<encoded baseUrl>`).
+- MCP tools: `app/api/mcp-transport/tools/{store,product,cart,region}-tools.ts` — `getAvailableStores`, `getAvailableCountries`, `getAvailableRegions`, `discoverProducts`, `discoverRestaurantMenus`, `getProduct`, `getOrCreateCart`, `createCart` (deprecated), `viewCart`, `getCart`, `addToCart`, `updateCartItem`, `removeCartItem`, `setShippingAddress`, `setShippingMethod`, `setRestaurantFulfillment`, `validateCartForCheckout`, `getCheckoutLink`, `getAvailablePaymentMethods`, `initiatePaymentSession`, `completeCart`, `loginUser`, `authenticateUser`. `tools/graphql-tools.ts` exists but is not exposed.
+- Adapters (the "mutations" this product sends): `app/api/mcp-transport/adapters/openfront` (named operations such as `SearchProducts`, `GetProduct`, `CreateActiveCart`, `UpdateActiveCart`, `AddShippingMethod`, `InitiatePaymentSession`, `CompleteActiveCart`, `GetStore`) and `adapters/openfront-restaurant` (`Marketplace*` operations such as `MarketplaceRestaurantMenu`, `MarketplaceCreateRestaurantCart`, `MarketplaceUpdateRestaurantFulfillment`, `MarketplaceCompleteRestaurantCart`). `shopify`, `bigcommerce`, and `woocommerce` have no adapter.
+- Boundaries in `lib/**`: outbound fetch rules (`remote-endpoint.ts`), request limits (`request-budgets.ts`), model tool allowlist and output filter (`marketplace-ai-boundary.ts`), MCP UI action rules (`mcp-action-policy.ts`), browser storage (`cart-storage.ts`, `session-storage.ts`, `marketplace-storage.ts`, `chat-thread-storage.ts`, `marketplace-profile.ts`), and request headers (`mcp-client-headers.ts`).
+- Environment: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`, `MARKETPLACE_DISABLE_LOCAL_AI`, `MARKETPLACE_CUSTOM_AI_ORIGINS`. Tests live in `tests/*.test.ts`.
 
 Explain this difference before asking what to customize. Do not invent a Keystone dashboard, storefront GraphQL API, or database-backed workflow for Marketplace.
 
-The current product focus is conversational discovery, store selection, delegated cart/session capabilities, and merchant-owned checkout. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is conversational discovery, store selection, store-scoped cart IDs, cart proofs, and session tokens, and merchant-owned checkout. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -64,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around conversational discovery, store selection, delegated cart/session capabilities, and merchant-owned checkout. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around conversational discovery, store selection, store-scoped cart IDs, cart proofs, and session tokens, and merchant-owned checkout. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

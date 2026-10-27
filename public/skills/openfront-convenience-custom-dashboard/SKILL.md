@@ -12,14 +12,17 @@ Use this skill to adapt the built-in Convenience operator dashboard or create a 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-convenience>
-- Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Convenience-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Generic Keystone dashboard shell, list/item screens, authentication helpers (`/dashboard/init`, `signin`, `signup`, `reset`, `no-access`), and admin client: `features/dashboard`.
+- Convenience-specific operator navigation (`features/platform/lib/navigation.ts`), projection loader (`features/platform/lib/projection.ts`), shared server actions (`features/platform/actions.ts`), and onboarding dialog (`features/platform/onboarding`): `features/platform`.
+- Platform slices: `overview`, `pos`, `sales`, `tills`, `staff`, `store-settings`, `fuel`, `reconciliation`, `exceptions`, `recovery`, `products`, `stock`, `inventory`, `purchasing`, `vendors`, `purchase-orders`, `pricing`, `promotions`, `foodservice`, `compliance` (Restricted Sales), `lottery`, `money-services`, `payments`, `customers`, `loyalty`, `reports`, `exports`.
+- Thin route entry points: `app/dashboard/(admin)/platform/**`. Routes: `/dashboard/platform`, `/pos`, `/pos/receipt/[saleId]`, `/store-settings`, `/sales` and `/sales/[id]`, `/tills` and `/tills/[id]`, `/staff` and `/staff/[id]`, `/fuel`, `/reconciliation`, `/exceptions`, `/recovery`, `/products` and `/products/[id]`, `/stock`, `/inventory`, `/purchasing`, `/vendors` and `/vendors/[id]`, `/purchase-orders` and `/purchase-orders/[id]`, `/pricing`, `/promotions`, `/foodservice`, `/restricted-sales`, `/lottery`, `/money-services`, `/payments`, `/customers` and `/customers/[id]`, `/loyalty`, `/reports`, `/exports`.
+- Server contract: `features/keystone/models/**` (95 lists; `Business` is the tenant root, `Employee` joins a `User` to one business, one `Role` with 47 permission flags, and permitted stores), `features/keystone/access.ts`, `features/keystone/mutations/index.ts` (all named queries and mutations), and `schema.graphql`. `docs/schema-map.md` maps each list to its states, access mode, and page.
+- Platform reads: `conveniencePlatformProjection`, `conveniencePlatformNavigation`, `convenienceReportingSummary`, `posSaleReceipt`, `posOperationOutcome`, `downloadExportArtifact`, plus generic list queries. Writes: named, idempotent, audited mutations such as `onboardConvenienceBusiness`, `configureBusinessBrand`, `openRegisterSession`, `createPosCart`, `addPosCartLine`, `completePosSale`, `refundPosSale`, `voidCompletedPosSale`, `configureCatalogItem`, `setRetailPrice`, `receivePurchaseOrder`, `approveInventoryCount`, `completePrepBatch`, `completeFuelTransaction`, `approveStoreDayReconciliation`, `generateDailyAccountingExport`, `recordOfflineReplayBatch`, `replayOutboxEvent`, `createBusinessApiKey`. Staff creation uses generic `createUser` and `createEmployee`.
+- Integrations: `features/integrations/payment` (`manual_external`, `hmac_json_v1`), `app/api/webhooks/payment/[providerId]`, workers in `features/keystone/scripts`, assistant at `app/api/completion` with a read-only MCP endpoint at `app/api/mcp-transport/[transport]`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is POS, cash, inventory, pricing, purchasing, loyalty, restricted sales, prepared food, fuel, reconciliation, and reports. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is POS, tills, sales history, staff, catalog, stock, purchasing, pricing and promotions, loyalty, restricted sales, prepared food, fuel, lottery, money services, payments, store-day reconciliation, exceptions, offline recovery, reports, and accounting exports. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +70,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around POS, cash, inventory, pricing, purchasing, loyalty, restricted sales, prepared food, fuel, reconciliation, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around POS, tills, catalog, stock, purchasing, pricing, loyalty, restricted sales, prepared food, fuel, lottery, money services, store-day reconciliation, and reports. Payment, fuel-controller, lottery, money-service, and accounting systems are recorded, not called; do not show them as live connections. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

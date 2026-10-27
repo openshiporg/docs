@@ -1,69 +1,150 @@
 ---
 title: Openfront Gym
-description: Organization-scoped memberships, classes, trainer scheduling, check-in, billing, and member operations.
+description: Organization-scoped memberships, classes, rosters, check-in, personal training, retail, billing, and member operations.
 icon: Dumbbell
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-gym) · [Catalog](https://openship.org/products/openfront-gym)
+[Source](https://github.com/openshiporg/openfront-gym) · [Live demo](https://gym.openship.org) · [Catalog](https://openship.org/products/openfront-gym)
 
-Openfront Gym is an organization- and location-scoped membership operations product. It combines public class/facility/instructor discovery, membership signup and account management, class capacity and waitlists, trainer appointments, member and kiosk check-in, billing evidence, and operator reporting.
+Openfront Gym is a self-hostable app for gyms and fitness studios. It has a public site for memberships and class booking, member accounts, a staff dashboard, and a staff-unlocked check-in kiosk. It runs on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL.
+
+To install it, see [Getting started](/docs/openfront/gym/getting-started).
+
+## Surfaces
+
+- **Storefront** (`/`, `/classes`, `/schedule`, `/memberships`, `/join`, `/instructors`, `/facilities`, `/policies`, `/waiver`, `/contact`). See [External storefronts](/docs/openfront/gym/external-storefront).
+- **Member account** (`/account` and sub-pages): bookings, membership, profile, participation terms, personal training, and an instructor view for coaches.
+- **Member check-in code** (`/member/check-in-code`): a QR code that rotates every 30 seconds.
+- **Kiosk** (`/kiosk/check-in`): member search, QR or manual member check-in, and guest check-in.
+- **Staff dashboard** (`/dashboard/platform/*` plus generic list pages at `/dashboard/<list-key>`). See [External dashboards](/docs/openfront/gym/external-dashboard).
+
+## Tenancy and roles
+
+`Organization` is the tenant root. A signed-in session carries one organization. Operational records have a required organization relationship, and access rules filter by it. There is no organization switcher.
+
+The storefront serves one organization. It uses `STOREFRONT_ORGANIZATION_ID` when set. Otherwise it uses the only active organization. With more than one active organization and no setting, the public catalog is empty.
+
+An organization can be `active` or `suspended`. A suspended organization keeps sign-in, password recovery, reads, and reconciliation of existing payments. New bookings, sales, check-ins, catalog edits, settings edits, and new charges are refused. Organization currency is fixed to USD.
+
+Roles carry capability flags: `canCreateRecords`, `canManageAllRecords`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManageSettings`, `canManageAppointments`, `canManageCheckIns`, `canManageFacilities`, `canManagePrograms`, `canManageCommunications`, `canManageRetail`, `canManagePayroll`, `canViewReports`, and `isInstructor`. A user cannot grant a role capability they do not hold unless they have `canManageAllRecords`.
+
+## Data model
+
+Models registered in `features/keystone/models/index.ts`:
+
+| Area | Models |
+|---|---|
+| Tenant and people | `Organization`, `User`, `Role`, `Member`, `MemberImportRecord`, `ContactMessage` |
+| Settings and sites | `GymSettings`, `Location`, `GymResource` |
+| Memberships | `MembershipTier`, `Membership`, `MembershipCreditGrant`, `MembershipCreditEntry`, `Subscription` |
+| Classes | `ClassType`, `ClassSchedule`, `ClassInstance`, `ClassBooking`, `Waitlist`, `AttendanceRecord`, `Instructor` |
+| Check-in | `CheckIn` |
+| Personal training | `TrainerAvailability`, `TrainerAppointment`, `TrainingPackage`, `TrainingCreditEntry`, `CoachingAssignment`, `TrainingLead` |
+| Workouts | `Exercise`, `WorkoutLog`, `WorkoutSet` |
+| Payments | `MembershipPayment`, `GymPayment`, `PaymentMethod`, `PaymentProvider`, `PaymentSession`, `PaymentEvent`, `MembershipBillingAttempt`, `GymRefundAttempt`, `CounterPaymentAttempt` |
+| Retail | `RetailItem`, `RetailSale`, `RetailReturn`, `RetailStockEntry`, `RetailClose` |
+| Operations | `OperationalNotice`, `ParticipationPolicy`, `ParticipationEvidence`, `OperationsCase`, `IntegrationCredential` |
+| System | `OnboardingRun`, `StaffIntent`, `AuthRateLimitBucket` |
+
+Some notes on how they fit:
+
+- Class booking works on dated `ClassInstance` rows. Each booking is `confirmed`, `waitlist`, or `cancelled`. The separate `Waitlist` model is an older schedule-level list; live booking uses the per-session waitlist on `ClassBooking`.
+- Class credits come from a `MembershipCreditGrant` per service period, with every change in `MembershipCreditEntry`.
+- Training packages hold prepaid credits. Each use, refund, or adjustment is a `TrainingCreditEntry`.
+- `StaffIntent` stores the exact form request a person submitted, so a lost response can be retried without applying it twice.
+- `CounterPaymentAttempt` records a counter card sale or refund before Stripe is called.
+
+## Named GraphQL operations
+
+Custom operations are defined in `features/keystone/mutations/index.ts` and the files it merges. Generated Keystone CRUD is also available, subject to model access rules.
+
+**Public storefront queries** (scoped to the storefront organization, no member or payment data): `publicGymSettings`, `storefrontOrganization`, `publicGymClassTypes`, `publicGymClassType`, `publicGymSchedules`, `publicGymSchedule`, `publicGymClassInstances`, `publicGymClassInstance`, `publicGymInstructors`, `publicGymInstructor`, `publicGymMembershipTiers`, `publicGymMembershipTier`.
+
+**Member account:** `memberProfile`, `updateMemberProfile`, `memberCheckInCode`, `myUpcomingBookingPage`, `registerMember`, `changeMemberPassword`, `requestEmailChange`, `confirmEmailChange`, `refreshMyEntitlement`.
+
+**Classes and scheduling:** `checkClassAvailability`, `bookClass`, `cancelClassBooking`, `promoteFromWaitlist`, `cancelClassInstance`, `markClassAttendance`, `schedulingWorkspace`, `saveGymClassSchedule`, `saveGymClassInstance`, `generateUpcomingClassInstances` (1 to 12 weeks), `updateClassScheduleCapacity`, `updateClassInstanceCapacity`, `rosterSessions`, `rosterDetail`, `instructorAccount`.
+
+**Check-in:** `frontDeskWorkspace`, `recordMemberCheckIn`, `checkOutMember`, `authorizeKioskSession`, `kioskSearchMembers`, `kioskRecordMemberCheckIn`, `kioskRecordGuestCheckIn`.
+
+**Personal training:** `trainingWorkspace`, `bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment`, `saveTrainerAvailability`, `recordTrainingPackage`, `refundTrainingPackage`, `assignCoaching`, `transitionCoaching`, `saveTrainingLead`, `eligibleCoachAccounts`, `createCoachProfile`.
+
+**Billing:** `getBillingStats`, `billingWorkspace`, `initiateMembershipCheckout`, `completeMembershipCheckout`, `createStripeSetupIntent`, `getStripeBillingPortal`, `cancelMembership`, `freezeMembership`, `unfreezeMembership`, `changeMembershipTier`, `markPaymentRecoveryContacted`, `refundGymPayment`, `replayPaymentEvent`.
+
+**Retail and counter card payments:** `retailWorkspace`, `retailSaleItems`, `saveRetailItem`, `quoteRetailSale`, `sellRetail`, `returnRetail`, `closeRetail`, `reconcileCounterPayment`.
+
+**People and settings:** `inviteMember`, `setMemberAccountStatus`, `importMemberContacts` (1 to 100 rows, with dry run), `gymSettingsEditor`, `upsertGymSettings`, `publishGymParticipationTerms`, `reportsDashboard`, `submitContactForm`.
+
+**Operations:** `operationsWorkspace`, `participationWorkspace`, `runOperationsCommand`, `exportOperatingData` (payments, members, or cases), `updateGymResourceAllocation`, `reconcileGymEntitlements`.
+
+**Partner discovery:** `discoveryClasses`, `discoveryBookClass`.
+
+**Onboarding and system:** `runDeterministicOnboarding`, `transitionOnboardingStatus`, `redirectToInit`, `beginStaffIntent`, `settleStaffIntent`, `myStaffIntent`, `myPendingStaffIntents`.
+
+## Key workflows
+
+**Joining.** A visitor picks a plan and cycle on `/join`. If participation terms are published, they accept them first. The server action calls `initiateMembershipCheckout`, which opens a Stripe-hosted subscription checkout. On return, `/join/success` calls `completeMembershipCheckout` to provision the membership. Without Stripe, members join at the front desk.
+
+**Booking a class.** `bookClass` checks, inside one transaction: same organization, session not cancelled or past, schedule and location active, member active and linked to a user, no duplicate booking, an active membership, remaining class credits, and the room's state. A full session puts the member on the waitlist. Cancelling a confirmed booking can promote the next waitlisted member.
+
+**Check-in.** Staff record entry and exit on `/dashboard/platform/check-in`. The kiosk exchanges `KIOSK_API_TOKEN` for a 12-hour HttpOnly session cookie, then checks members in by search or QR code, and records guests with an idempotency key.
+
+**Personal training.** Staff set trainer availability and sell packages (cash or settled tender, or card through a Stripe counter checkout). Members with a package can book, reschedule, and cancel appointments from `/account/training`. Coaching assignments move between staff and member.
+
+**Retail.** Staff keep items per location, take sales and returns, record stock entries, and close the drawer with a variance reason.
+
+**Operations.** The Operations page handles member notices, cases (incident, inspection, facility closure, financial reconciliation, integration exception, privacy review), policy and waiver records, facility resources, partner credentials, data exports, and payment event replay.
+
+## Onboarding
+
+The onboarding dialog calls `runDeterministicOnboarding` with template `minimal`, `full`, or `custom`. The whole run is one database transaction under a per-organization lock, so a failed run leaves nothing behind. It creates or reuses:
+
+- store settings (an existing record is kept; only a missing logo icon is filled);
+- one location;
+- membership tiers and class types;
+- a bounded instructor role (dashboard access and `isInstructor` only);
+- instructor users and profiles;
+- weekly class schedules at that location;
+- dated class sessions for the next 14 days;
+- a Stripe `PaymentProvider` record.
+
+Instructor users get a reserved `example.invalid` address and a random password, so nobody can sign in as them. Sessions that conflict with a coach, room, closure, or qualification are skipped and listed in the result. Setup never publishes participation terms; publish your own from Store Settings.
+
+A completed run is not re-applied. Running it again with the same configuration returns the stored result. A different configuration is refused; edit plans, classes, and coaches on their own pages instead.
+
+The result includes a readiness checklist. Required steps are store settings, an open location, plans, class types, active coaches, and a schedule with upcoming sessions. When online checkout is on, at least one plan needs a Stripe product ID and a price ID above zero. These IDs are format-checked only, not verified with Stripe.
+
+## Integrations
+
+**Stripe** is the only registered payment adapter (`features/integrations/payment`). It covers hosted subscription checkout, setup intents, the billing portal, cancel, freeze, resume, tier changes, refunds, and counter card checkouts for retail and training packages. Signed webhooks arrive at `/api/stripe/webhook`. Handled events include checkout session, subscription, invoice, charge refund and dispute, refund, and payout events. Online checkout requires exactly one installed Stripe merchant organization. Per-tenant connected accounts are not supported. `PAYMENT_TEST_MODE` swaps in a test adapter for isolated tests and is refused in production.
+
+**Mail** is SMTP through `MAIL_ENABLED` and `SMTP_*`. It sends password reset links, email-change confirmations, email-changed notices, and staff copies of contact messages.
+
+**Partner discovery** exposes `GET /api/discovery/classes`, `POST /api/discovery/bookings`, and `GET /api/discovery/calendar` (an iCalendar feed, up to 1,000 sessions). Partners send a key in `x-discovery-api-key` or a bearer token, plus `x-discovery-partner`. Keys come from the Operations page (`gym_`-prefixed, stored as a hash, with scopes `classes:read` and `bookings:create`) or from the `DISCOVERY_*` environment variables. Requests are rate limited.
+
+**MCP** is served at `/api/mcp-transport/[transport]`. It forwards the caller's session cookie to GraphQL and offers generic tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. Access is whatever the session's role allows.
+
+**AI chat** in the dashboard calls `/api/completion` with OpenRouter when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set.
+
+**Storage** is one S3-compatible bucket (`my_images`) for images such as member profile photos.
+
+## Limitations
 
 <Callout type="warn">
-The onboarding UI performs dependency-ordered generated mutations and tolerates some class-instance and demo-booking failures; it is not one atomic backend onboarding command. Completion checks only a minimum settings/location/tier/class/instructor/schedule/instance set. Inspect partial data before using the workspace.
+These are gaps in the current source. Plan around them before running a real gym on it.
 </Callout>
 
-## Member, kiosk, and operator surfaces
-
-Public/member routes include `/classes`, `/schedule`, `/memberships`, `/join`, `/instructors`, `/facilities`, `/contact`, `/account`, and `/portal`. Member routes expose bookings, membership/profile, instructor work, and a QR/check-in code.
-
-Kiosk routes are `/kiosk` and `/kiosk/check-in`, backed by authenticated API routes for member search, member/guest check-in, QR code, and profile. The HTTP kiosk path validates the kiosk credential and member/membership state before persisting a capacity-controlled CheckIn. The legacy GraphQL `kioskCheckIn` operation performs lookup and returns attendance identity but does not itself create the CheckIn row; integrations should not confuse the two paths.
-
-Operator routes cover billing, scheduling, front-desk check-in, settings, reports, locations, members, membership plans, instructors, class catalog, and rosters under `/dashboard/platform/*`.
-
-## Schema and tenancy
-
-`Organization` is the tenant root in current source. The authenticated session carries one organization; operational models use required organization relationships and tenant filters/ownership checks. Locations, resources, trainer availability, and trainer appointments add location scope. The current source does not expose a multi-organization switcher, even though Organization records can describe multi-location use.
-
-The graph includes members, tiers/memberships/subscriptions, gym/membership payments, methods/providers/sessions/events, locations/settings, exercises/workouts, attendance/check-ins, class types/schedules/instances/bookings/waitlists, instructors, resources, trainer availability, and appointments.
-
-The latest tenant migration creates Organization, GymResource, TrainerAvailability, and TrainerAppointment, backfills legacy rows to `gym_default_organization`, then enforces required organization relations and indexes. Review retained-data ownership before applying those constraints; the backfill does not prove that legacy rows belonged to one real organization.
-
-## Controlled queries and commands
-
-Purpose-built public projections include `publicGymSettings`, class type/schedule/instance collections and detail, instructor collections/detail, and membership-tier collections/detail. They do not expose member or payment records.
-
-Named operations include:
-
-- `checkClassAvailability`, `bookClass`, `cancelClassBooking`, and `promoteFromWaitlist`;
-- `checkIn`, `recordMemberCheckIn`, `checkOutMember`, `markClassAttendance`, and the legacy lookup-oriented `kioskCheckIn`;
-- `bookTrainerAppointment` and `transitionTrainerAppointment`;
-- `upsertGymSettings` and `getBillingStats`;
-- `initiateMembershipCheckout`, setup intent, billing portal, membership cancel/freeze/unfreeze/tier change, recovery-contact recording, and `refundGymPayment`.
-
-Class capacity and lifecycle code rechecks tenant/member ownership and expected state in controlled operations. Prove simultaneous booking, cancellation/promotion, check-in, and trainer/resource conflicts against the deployed PostgreSQL isolation and retry behavior.
-
-`markPaymentRecoveryContacted` records staff follow-up; it is not an automated collection or payment-recovery service.
-
-## Onboarding and synthetic data
-
-The current browser/server action marks onboarding in progress, creates settings, location, tiers, class types, instructor users/profiles, schedules, up to fourteen days of instances, synthetic members/memberships/bookings, exercises/workouts, providers/methods/subscriptions/payments, then marks complete after minimum-count checks.
-
-Instance-creation and demo-booking conflicts can be caught and skipped. A completed status therefore does not guarantee that every optional demo record exists. Run onboarding only against an isolated database, inspect each required relationship and failed step, then test member signup, booking/waitlist, persisted kiosk check-in, trainer appointments, portal ownership, and operator permissions. Seeded Stripe IDs, memberships, receipts, and access codes are fictional and do not create a hosted demo.
-
-## Stripe and provider boundary
-
-The registered adapter set is Stripe plus a test mode. `PAYMENT_TEST_MODE=true` can select test behavior for the Stripe-keyed boundary. The active membership join path calls `initiateMembershipCheckout`; the old `/api/stripe/create-checkout-session` route returns HTTP 410 and must not be used.
-
-Current Stripe source covers hosted subscription checkout, setup intents, billing portal, cancellation/freeze/resume/tier changes, refunds, and raw-body signed webhooks at `/api/stripe/webhook`. Provider credentials are write-only and adapter keys are constrained to server loaders. These controls do not establish provider account approval, correct prices, successful settlement, refund finality, dispute handling, or reconciliation.
-
-No PayPal or other production provider is registered. The QR/check-in path is local membership evidence, not identity proof, physical door control, insurance verification, or medical clearance.
-
-## Deployment and limitations
-
-The npm `dev` and `build` scripts deploy migrations before running Next.js; Railway builds without migration and migrates when the app starts. Separate migration from immutable builds where needed, protect kiosk secrets, use managed Stripe/session/storage secrets, review the organization backfill, and run current schema/type/tests plus responsive member/operator/kiosk flows.
-
-Before real operations, verify cross-organization and cross-member denial, location/resource ownership, simultaneous class and trainer booking, waitlist promotion, kiosk replay, signed webhook duplication, server-derived tier amount/currency, membership transitions, refunds, restore, monitoring, and incident response.
-
-Current source does not provide non-Stripe provider coverage, automated collections, physical access-control guarantees, payroll, insurance processing, medical-safety decisions, or proof of production-load capacity behavior. Do not describe source tests, seed data, or a rendered portal as settlement, identity, safety, accessibility, privacy, or operational certification.
+- Only Stripe is supported for payments. There is no PayPal, terminal hardware, or other provider.
+- Stripe Connect and per-tenant merchant accounts are not supported. Online checkout needs exactly one installed Stripe organization.
+- Currency is fixed to USD.
+- Dashboard self-signup is not supported. The first user comes from `/dashboard/init`; other staff are added by an operator.
+- There is no organization switcher. Each session and the storefront are bound to one organization.
+- Training packages are sold by staff. There is no public package checkout.
+- Onboarding instructor accounts cannot sign in. Handing them over to real coaches is not implemented.
+- `markPaymentRecoveryContacted` only records that staff followed up. There is no automated dunning or collections.
+- The QR code and kiosk record membership-based entry. They do not prove identity or control doors.
+- Health notes and participation terms are stored records. The app does not make medical or legal decisions.
+- There is no payroll, even though a `canManagePayroll` flag exists on roles.
+- No background worker runs in the source. Failed payment events are replayed by staff from the Operations page.
+- The repository has a small test suite (`tests/`). Concurrency of bookings, check-ins, and trainer appointments under real load should be tested against your own PostgreSQL deployment.

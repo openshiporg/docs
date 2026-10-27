@@ -5,20 +5,23 @@ description: Plan and build a custom Openfront Law Firm storefront by explaining
 
 # Openfront Law Firm custom storefront
 
-Use this skill to determine and build the appropriate customer/client experience for Law Firm. Current source has no canonical built-in storefront, so do not pretend there is one to adapt. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Law Firm public site, customer consultation account, and client portal, or to build a separate client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-law-firm>
-- Current source has no canonical `features/storefront` directory. Do not describe the root page or portal as a complete storefront without inspecting it.
-- Inspect `app/**` for the actual public, portal, token, inquiry, or client-facing routes that exist.
-- Inspect `features/platform/**` for operator-owned workflow state and `features/keystone/**` plus `schema.graphql` for any safe public projections or commands.
+- Storefront slice: `features/storefront` (`screens/`, `actions/` for account, reset, and consultation requests, `lib/` for consultation data, attorneys, and `storefront-settings.ts`, `content.ts`, `navigation.ts`).
+- Client portal: `features/storefront/portal` (`screens/`, `actions.ts`) and `features/portal`; server helpers in `features/keystone/lib/portal-auth.ts` and `features/keystone/mutations/portalWorkflows.ts`.
+- Thin route files at the top of `app/` (no route group): `/`, `/practice-areas`, `/practice-areas/[slug]`, `/attorneys`, `/attorneys/[slug]`, `/about`, `/contact`, `/privacy`, `/disclaimer`, `/accessibility`, `/consultation`, `/consultation/received`, `/consultation/payment/[id]` (legacy redirect to the appointment), `/account`, `/account/signin`, `/account/signup`, `/account/reset`, `/account/appointments/[id]`, `/portal`, `/portal/accept`, `/portal/signin`, `/portal/share/[shareId]`.
+- Server contract: `features/keystone/models/**` (notably `PracticeArea`, `AttorneyProfile`, `PublicSitePolicy`, `Consultation`, `Intake`, `PortalAccount`, `PortalMatterAccess`, `PortalShare`, `PortalSession`), `features/keystone/mutations/customerConsultations.ts`, and `schema.graphql`.
 
-Explain that a new customer/client experience may require new bounded backend contracts before presentation work can start.
+Customer operations: queries `consultationCatalog`, `consultationCatalogPage`, `consultationService`, `consultationAvailability`, `customerConsultations`, `customerConsultationPage`, `customerConsultation`, `portalSharedResource`; mutations `registerConsultationAccount`, `bookClientConsultation`, `cancelOwnConsultation`, `acceptPortalInvitation`, plus Keystone's `authenticateUserWithPassword`, `sendUserPasswordResetLink`, and `redeemUserPasswordResetToken`.
 
-The current product focus is client portal, intake, or public legal-service experiences; current source has portal routes but no canonical features/storefront layer. This list is orientation, not proof that every flow is safe or complete.
+Gates in current source: the public site serves exactly one active firm; accounts need a published privacy notice and booking needs a published first-contact notice (`PublicSitePolicy`); anonymous intake is off (`PUBLIC_INTAKE_ENABLED = false`); booking hours are fixed weekdays 9:00 to 17:00; consultation fees are displayed but not collected; portal clients see only explicitly shared documents, invoices, and threads.
+
+Explain that features beyond these (payments, anonymous intake, portal uploads) need new bounded backend contracts before presentation work can start. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -66,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around client portal, intake, or public legal-service experiences; current source has portal routes but no canonical features/storefront layer. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around the public firm site, consultation booking, customer accounts, and the client portal. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

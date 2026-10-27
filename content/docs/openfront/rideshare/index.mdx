@@ -1,0 +1,55 @@
+---
+title: Openfront Rideshare
+description: Self-hosted ride booking and fleet operations for independent drivers and fleets, with manual dispatch, trip lifecycle, safety, support, and manual payment records.
+icon: Car
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Rideshare is a self-hostable ride-booking and fleet-operations application. Riders browse a fleet's ride services, get a priced quote, request a ride, and follow the trip on a status page. Fleet operators set up service areas, ride services, and fare versions; onboard drivers and vehicles with compliance documents and eligibility reviews; dispatch requests to drivers by hand; move trips through their lifecycle; and handle cancellations, messages, reviews, support cases, safety incidents, and manually recorded payments and refunds.
+
+<Callout type="warn">
+Dispatch is manual: an operator chooses the driver and vehicle for each request. Route distance and duration come from a built-in estimate, not a mapping provider. The only installed payment adapter is manual and does not move money. Driver payouts are modeled in the schema but have no workflow. See [Current limitations](/docs/openfront/rideshare/limitations).
+</Callout>
+
+## Who it is for
+
+- **Fleet owners and dispatchers** who run a small fleet or a group of independent drivers and want their own booking site and operations dashboard.
+- **Drivers** who use the "My driving" workspace to go online, accept or decline offers, and advance their assigned trips.
+- **Riders** who book as guests or with an account when the fleet opens rider accounts.
+
+## What the codebase contains
+
+- **Schema:** 38 Keystone lists in `features/keystone/models/**`, grouped into identity (fleets, memberships, drivers, riders), operations (vehicles, compliance documents, policies, provider connections), service (areas, ride services, availability, fare rules, quotes), ride (requests, offers, trips, events, location events, cancellations), safety (incidents, support cases, conversations, messages, reviews), finance (payment providers, payments, refunds, observations, ledger entries, payouts), and integration records (notifications, marketplace registration).
+- **Custom GraphQL:** named queries and mutations in `features/keystone/mutations/**` for quoting, requesting, dispatching, trip transitions, cancellations, payments, fleet setup, and onboarding. Generic create and delete are closed on tenant lists, so records are created through these commands.
+- **Operator surfaces:** `features/platform/**` mounted at `/dashboard/platform/*` for dispatch, my driving, trips, services and fares, drivers, vehicles, safety and support, reviews, finance, team, and settings. The shared Keystone admin shell lives in `features/dashboard`.
+- **Storefront:** `features/storefront/**` serving `/`, `/book`, `/rides/[confirmationCode]`, and rider account pages under `/account`.
+- **Onboarding:** a dashboard onboarding dialog that calls `bootstrapRideshare` with a `minimal` or `full` demo template, plus a custom setup path built from the fleet setup mutations.
+
+## Ownership and tenancy
+
+`Fleet` is the tenant boundary. Almost every list is scoped to the fleets where the signed-in user has an active `FleetMembership` whose role grants the needed capability:
+
+| Capability | Membership roles |
+|---|---|
+| operations | owner, dispatcher |
+| drivers | owner, dispatcher |
+| finance | owner, finance |
+| safety | owner, support |
+| fleetAdmin | owner |
+
+A `viewer` membership grants none of these capabilities. A global admin role (`canManageRoles`) sees every fleet. Tenant relationships such as `fleet`, `driver`, `vehicle`, and `trip` are immutable after creation, and dispatch-gating status fields (driver status, driver dispatch status, vehicle status) change only through review and dispatch mutations.
+
+Riders are `User` records, optionally with a `RiderProfile`. Account riders own requests through `RideRequest.rider`. Guests hold a signed request proof in the browser; private trip data is reached with that proof or a trip token, never with a confirmation code alone.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/rideshare/getting-started" description="Requirements, environment, migrations, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/rideshare/architecture-workflows" description="Data model, dispatch and trip lifecycles, GraphQL operations, and access control." />
+  <Card title="External dashboards" href="/docs/openfront/rideshare/external-dashboard" description="Operator pages and the skill for building a custom dashboard." />
+  <Card title="External storefronts" href="/docs/openfront/rideshare/external-storefront" description="Rider routes, journeys, and the skill for building a custom storefront." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/rideshare/integrations-boundaries" description="Payment, mapping, notification, storage, email, AI, and MCP boundaries." />
+  <Card title="Current limitations" href="/docs/openfront/rideshare/limitations" description="What the current source does not do." />
+</Cards>
+
+The application uses Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreSQL.

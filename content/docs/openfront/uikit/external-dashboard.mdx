@@ -6,3 +6,39 @@ description: Give an LLM the UIKit dashboard skill to adapt the built-in experie
 To create a custom UIKit dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains UIKit's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied UIKit codebase before proposing work.
+
+Skill file: [`/skills/openfront-uikit-custom-dashboard/SKILL.md`](/skills/openfront-uikit-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server actions live in `features/platform/<slice>`. Sidebar groups come from `features/platform/lib/navigation.ts`.
+
+| Page | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/orders`, `/[id]` | `orders`, `commerce` | Order list with status tabs. Order detail shows items, payments, refunds, and entitlements; refund a captured payment (`RefundKitPayment`), reconcile a pending refund (`ReconcileKitRefund`), revoke an entitlement (`RevokeKitAccess`) |
+| `/dashboard/platform/store` | `store-settings` | Studio identity: name, mark, hue, logo icon and color, tagline, description, email, website, copyright (`GetStoreSettings`, `UpdateStoreSettings` → `updateUIKitBrandSettings`) |
+| `/dashboard/platform/catalog` | `catalog` | Products list with stable release info (`CatalogStableReleases`) |
+| `/dashboard/platform/catalog/new` | `catalog` | Create a kit product (`createUIKitProduct`) |
+| `/dashboard/platform/catalog/[id]` | `catalog` | Edit product terms, price, visibility, design system (`updateUIKitProduct`); create a release draft from JSON source files (`CreateHumanProductDraft` → `createComponentDraft`); check whether the product is in the public catalog (`KitEditorPublicPreview`) |
+| `/dashboard/platform/components` | `registry-components` | Browse component files, package exports, and usage examples |
+| `/dashboard/platform/design-systems` | `design-systems` | Create and edit design systems and tokens (`createUIKitDesignSystem`, `updateUIKitDesignSystem`, `createUIKitDesignToken`, `updateUIKitDesignToken`) |
+| `/dashboard/platform/studio` | `studio` | Releases in `draft` or `review` |
+| `/dashboard/platform/studio/[id]` | `studio` | Edit draft source (`saveComponentDraft`), validate (`validateComponentDraft`), submit (`submitComponentReleaseForReview`), approve or request changes (`decideComponentReview`), publish (`publishComponentRelease`) |
+| `/dashboard/platform/releases` | `releases` | All releases by status; deprecate a stable release (`DeprecateRelease`) |
+| `/dashboard/platform/quality` | `quality` | Quality gate counts: approved reviews, passed accessibility audits, supported compatibility targets, from `uikitOperations` |
+| `/dashboard/platform/access` | `access` | Entitlements list; revoke access |
+| `/dashboard/platform/payments` | `payments` | Payments by status |
+| `/dashboard/platform/refunds` | `refunds` | Refunds by status; reconcile pending refunds |
+| `/dashboard/platform/payment-providers` | `payment-providers` | Edit provider records and install status (`UpdatePaymentProvider`, `UpdatePaymentProviderStatus`) |
+| `/dashboard/platform/api-keys` | `api-keys` | All registry API keys; revoke (`revokeStorefrontRegistryApiKey`) |
+| `/dashboard/platform/audit` | `audit` | Audit events and outbox events, read-only |
+| `/dashboard/platform/settings` | none | Redirects to `/dashboard/platform/store` |
+| `/dashboard/platform/registry` | none | Redirects to `/dashboard/platform/catalog` |
+
+Other dashboard routes:
+
+- `/dashboard` home, and the generic Keystone list pages `/dashboard/<listKey>`, `/create`, `/<id>` for lists without a dedicated page (for example `User`, `Role`, `PaymentEvent`, `ChangelogEntry`, `IntegrationRecipe`). Many lists deny direct writes, so these pages may be read-only.
+- `/dashboard/init`, `/signin`, `/signup`, `/reset`, `/no-access`.
+- `/dashboard/brand-settings/*` redirects to `/dashboard/platform/store`.
+
+Page access is checked with `uikitOperatorAccess`, which returns `canReadProducts`, `canManageProducts`, `canReadOrders`, `canManageOrders`, `canReadPayments`, `canManagePayments`, `canManageOnboarding`, and `canReadEvidence`. Offline settlement (`settleKitOrderOffline`) exists as a mutation, but no current platform screen calls it.

@@ -1,0 +1,56 @@
+---
+title: Rideshare integrations and boundaries
+description: Payment, mapping, notification, storage, email, AI assistant, and MCP integrations in current source, with their environment variables and limits.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Integration code lives in `features/integrations/**`. A `ProviderConnection` row records which adapter a fleet uses for a kind of provider (mapping, notification, identity, background check) and its status; it does not prove that a provider was contacted.
+
+## Payments
+
+`features/integrations/payment/index.ts` registers one adapter, `manual`. `PaymentProvider` rows name the adapter functions; onboarding installs `pp_manual`.
+
+| Function | Manual adapter behavior |
+|---|---|
+| create | Returns `pending` with a `manual:` external reference. Records an obligation; does not authorize or move money. |
+| capture | Returns `pending`. Cannot claim receipt of funds. |
+| refund | Returns `processing`. Cannot issue a refund. |
+| status | Returns `pending`; there is no external status. |
+| webhook | Throws; webhooks are not accepted. |
+
+A finance operator confirms collection with `confirmManualPayment` and refunds with `confirmManualRefund`, which post `LedgerEntry` rows. There is no card or wallet provider in source. Adding one means a new adapter module in the registry, a `PaymentProvider` row, webhook verification, and reconciliation for indeterminate outcomes (the existing flow already keeps the durable intent when an outcome is unknown).
+
+## Mapping
+
+`features/integrations/mapping/manual.ts` estimates distance and duration from a hash of the pickup and drop-off labels. Results are marked `authoritative: false` with the disclosure that no mapping provider was contacted. There is no geocoding, routing, live ETA, or map display provider.
+
+## Notifications
+
+The only notification adapter is `console`, which logs the intent (channel, template, idempotency key) and returns `simulated`. It throws when `NODE_ENV` is `production`. There is no SMS, push, or email notification provider for trip events.
+
+## File storage
+
+When `S3_BUCKET_NAME` is set, Keystone is configured with an S3-compatible image storage using `S3_BUCKET_NAME`, `S3_REGION` (default `auto`), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_ENDPOINT`, with signed URLs. Compliance documents store issuer and a masked reference, not uploaded files.
+
+## Email
+
+`features/keystone/lib/mail.ts` sends password reset email over SMTP using `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`.
+
+## AI assistant and MCP
+
+- `/api/mcp-transport/[transport]` is an MCP server that introspects the GraphQL schema and exposes generic tools: `listModels`, `searchModels`, `getFieldsForType`, `lookupInputType`, `queryData`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. It forwards the caller's session cookie, so Keystone access rules still apply, and closed create/delete operations stay closed.
+- `/api/completion` is the dashboard assistant. It requires dashboard access and `OPENROUTER_API_KEY` plus `OPENROUTER_MODEL` (optional `OPENROUTER_MAX_TOKENS`), and uses the MCP endpoint for tools. Without those variables it returns 503.
+
+<Callout type="warn">
+An agent acting through MCP has the permissions of the signed-in user. It should not dispatch, transition trips, confirm payments, or close safety cases without a person deciding to.
+</Callout>
+
+## Marketplace
+
+Each fleet can have a `MarketplaceRegistration` describing its discovery listing. The public `marketplaceRideshare*` queries and the quote and request mutations are the contract a marketplace or external booking client uses.
+
+## Out of scope
+
+Identity verification and background checks have `ProviderConnection` kinds but no adapters that contact a provider. There are no webhooks for any provider, no automated matching, no live GPS tracking beyond coarse location events submitted through `recordTripLocation`, and no payout transfers.

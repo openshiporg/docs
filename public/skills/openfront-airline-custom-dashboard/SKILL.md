@@ -11,15 +11,17 @@ Use this skill to adapt the built-in Airline operator dashboard or create a sepa
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-airline>
-- Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Airline-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Source repository: `https://github.com/openshiporg/openfront-airline`. Confirm the exact checkout path and revision the user wants to target. `docs/schema-map.md` in the repo maps lists, workflows, and page coverage.
+- Generic Keystone dashboard shell, list/item screens (`/dashboard/<list-key>`), authentication pages (`init`, `signin`, `signup`, `reset`, `no-access`), onboarding dialog mount, AI chat, and admin client: `features/dashboard`.
+- Airline-specific operator navigation (`features/platform/lib/navigation.ts`), screens, server actions, worklists, and workflows mounted into that shell: `features/platform`. Older desks render from `features/platform/screens/Canonical/PlatformDeskPages.tsx` with `components/BookingDesk.tsx`, `DepartureDesk.tsx`, `NetworkDesk.tsx`, `RecoveryDesk.tsx`, and `ShoppingResults.tsx`. Newer slices: `network`, `fares`, `flight-ops`, `stations`, `baggage`, `tickets`, `refunds`, `payment-providers`, `store-settings`, `onboarding`.
+- Thin route entry points: `app/dashboard/(admin)/platform/**` (`network`, `fares`, `schedules`, `flight-ops`, `inventory`, `offers`, `bookings`, `tickets`, `passengers`, `departures`, `baggage`, `disruptions`, `payments`, `refunds`, `payment-providers`, `manifests`, `stations`, `store-settings`, `settings`, most with `/[id]` detail pages), plus `app/dashboard/(admin)/operations` (Carrier operations home), `onboarding`, and legacy redirects (`departures`, `network`, `recovery`, `shopping`).
+- Server contract: `features/keystone/models/**` (59 lists; `Carrier` is the tenant, `Airport` is shared), `features/keystone/access.ts` (carrier-scoped, command-only, and station-scoped access), `features/keystone/lib/lifecycle.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Custom commands the dashboard calls: `registerAirport`, `provisionDatedFlight`, `setDatedFlightSalesStatus`, `setInventoryAuthorization`, `updateFlightOperations`, `airlineFlightOptions`, `createOfferFromShopping`, `createBookingFromOffer`, `cancelBooking`, `reissueBookingAccessCode`, `operatorBookingReceipt`, `recordReceivedPayment`, `approveManualPaymentEvidence`, `rejectManualPaymentEvidence`, `captureBookingPayment`, `issueBookingTickets`, `processBookingRefund`, `departureManifest`, `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger`, `acceptCheckedBag`, `boardBookingPassenger`, `offloadBookingPassenger`, `recordBagEvent`, `publishFlightDisruption`, `reaccommodateBooking`, `completeCarrierOnboarding`, `dismissCarrierOnboarding`, `updateCarrierStorefrontSettings`, `issueMachineCredential`, `revokeMachineCredential`, `machineCredentialSummaries`. Routes, schedules, cabins, fares, ancillaries, station assignments, and payment providers use generic Keystone create/update mutations.
+- Providers and runtime: `features/integrations/**` (manual and Stripe payment adapters, outbox worker, hold reaper, booking expiry), `pages/api/**` (GraphQL, payment and integration webhooks, settlement import), and `scripts/runtime-worker.ts`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is network and inventory, offers, bookings, tickets/EMDs, airport service, baggage, disruption recovery, and operations. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is network and schedules, fares and inventory, offers, bookings with maker-checker manual settlement or Stripe Checkout, tickets and coupons, departures (documents, check-in, bags, boarding), baggage tracking, flight operations, disruption recovery, station access, and storefront settings. Service requests, EMDs, exchanges, and agency sales have models but no commands. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around network and inventory, offers, bookings, tickets/EMDs, airport service, baggage, disruption recovery, and operations. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around network and schedules, fares and inventory, offers, bookings and settlement, tickets and coupons, airport service, baggage, flight operations, and disruption recovery. EMDs, service requests, and exchanges have no commands yet. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

@@ -1,0 +1,46 @@
+---
+title: Openfront Social
+description: Self-hosted personal publishing with creator-owned sites, collections, versioned items, publication snapshots, destination consent, and privacy review.
+icon: PenLine
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Social is a self-hosted personal publishing application. A creator signs in to a studio, sets up one personal site, organizes work into collections, drafts items, and publishes versions to a public site at `/<handle>`. Visitors read published profiles, collections, items, and an RSS feed. People managers add creators and review privacy requests.
+
+<Callout type="warn">
+External destinations (X, Instagram, Threads) are consent records only. The current source has no dispatcher and no provider credentials, so nothing is ever sent to a social network. A recorded external publication is a local intent, not a delivered post.
+</Callout>
+
+## Who it is for
+
+- **Creators** who want a site they control for notes, writing, runs, projects, albums, films, books, links, or custom work.
+- **Operators** (people managers) who host the application for one or more creators, add creator accounts when public sign-up is closed, and decide privacy requests.
+- **Developers** who want a small, owner-scoped Keystone and Next.js publishing codebase to extend.
+
+## What the codebase contains
+
+| Area | Location | Purpose |
+|---|---|---|
+| Schema and workflows | `features/keystone/models`, `features/keystone/mutations` | Ten Keystone lists and the GraphQL commands, public reads, and privacy queue |
+| Operator and creator dashboard | `features/platform`, `app/dashboard/(admin)/platform/**` | Items, collections, site, publications, destinations, activity, your data, creators, privacy requests |
+| Admin shell | `features/dashboard` | Authentication, first-user init, generic list and item screens |
+| Public site | `features/personal-site`, `app/[handle]/**`, `app/feeds/[handle]` | Profile, collection, and item pages, RSS, sitemap, themes, and logos |
+| Landing and account | `features/storefront`, `app/page.tsx`, `app/account/**` | Product landing page, creator sign-in, and sign-up when it is open |
+| Onboarding | `features/platform/onboarding` | Theme choice and a fictional demo site from `seed.json`, or a blank site |
+
+The schema map in the source repository (`docs/schema-map.md`) lists every list, field, and workflow; [Architecture and workflows](/docs/openfront/social/architecture-workflows) summarizes it.
+
+## Ownership and tenancy
+
+There is no organization or tenant model. The ownership boundary is the creator: each `User` owns at most one `PersonalSite`, and every collection, item, publication, publish job, connected account, and media asset is scoped through that site to its owner. Access rules in `features/keystone/access.ts` filter all of these lists to the signed-in owner, generic create, update, and delete are closed, and every write goes through the `studioCommand` mutation. Public pages use separate sudo queries that return only published, exposable content.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/social/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/social/architecture-workflows" description="Lists, publish lifecycle, studio commands, public queries, and roles." />
+  <Card title="External dashboards" href="/docs/openfront/social/external-dashboard" description="Platform pages and the dashboard skill." />
+  <Card title="External storefronts" href="/docs/openfront/social/external-storefront" description="Public site routes and the storefront skill." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/social/integrations-boundaries" description="S3 images, SMTP, RSS, share links, destinations, and AI." />
+  <Card title="Current limitations" href="/docs/openfront/social/limitations" description="What the current source does not do." />
+</Cards>

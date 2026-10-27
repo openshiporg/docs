@@ -1,0 +1,167 @@
+---
+title: Getting started with Law Firm
+description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first user, onboard a firm, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You can try the hosted demo at [law-firm.openship.org](https://law-firm.openship.org) before installing anything.
+
+## Requirements
+
+- Node.js `^20.9.0` or `>=21.1.0` (the `engines` field in `package.json`).
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- An S3-compatible bucket if you want to upload document files.
+- An SMTP relay if you want password-reset, portal sign-in, portal invitation, or outbound message email.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-law-firm.git
+cd openfront-law-firm
+npm install
+```
+
+## Configure `.env`
+
+Create a `.env` file in the repository root. Never commit it.
+
+```bash
+# Required
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_law_firm
+SESSION_SECRET=replace-with-a-long-random-value
+
+# Document file storage (all five are needed; uploads are disabled otherwise)
+S3_BUCKET_NAME=
+S3_REGION=
+S3_ENDPOINT=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+
+# Credential protection
+MACHINE_CREDENTIAL_PEPPER=another-long-random-value
+INTEGRATION_CREDENTIAL_KEY=base64url-encoded-32-byte-key
+
+# Email (optional)
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM=
+SMTP_STORE_LINK=https://your-public-origin
+
+# Optional
+PUBLIC_SIGNUPS_ALLOWED=false
+WEBHOOK_ALLOWED_HOSTS=
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=
+OPENROUTER_MAX_TOKENS=
+```
+
+What each group does in current code:
+
+| Variable | Read by | Notes |
+|---|---|---|
+| `DATABASE_URL`, `SESSION_SECRET` | `features/keystone/index.ts` | Required in production. Only a production build may run without them. Generate the secret with `openssl rand -hex 32`. |
+| `S3_*` (five values) | `features/platform/documents/lib/documentStorage.ts` | Document versions are stored in this bucket. Downloads use short-lived signed links. If any value is missing, file upload is unavailable. |
+| `MACHINE_CREDENTIAL_PEPPER` | `features/keystone/lib/machine-auth.ts` | Hashes API keys, OAuth secrets, and agent credentials. Falls back to `SESSION_SECRET`. Must be at least 32 bytes. |
+| `INTEGRATION_CREDENTIAL_KEY` | `features/keystone/lib/secret-envelope.ts` | Encrypts provider credentials and webhook signing secrets. Must decode (base64url) to exactly 32 bytes. Required before you rotate a credential or webhook secret. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | `features/keystone/lib/mail.ts`, `features/keystone/webhooks/communication-dispatcher.ts` | Without them, password reset links, portal emails, and email deliveries are not sent. |
+| `SMTP_STORE_LINK` | `features/keystone/lib/mail.ts` | Origin used in email links. Email links fail without it. |
+| `PUBLIC_SIGNUPS_ALLOWED` | `features/dashboard/lib/authFlow.ts` | The dashboard sign-up page is open only when this is `true`. |
+| `WEBHOOK_ALLOWED_HOSTS` | `features/keystone/webhooks/destination.ts` | Comma-separated hosts (optionally `host:port` or `*.example.com`). Outbound webhooks go nowhere else. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | `app/api/completion`, `features/dashboard/actions/ai-chat.ts` | Shared key for the dashboard AI chat sidebar. Optional. |
+
+Keep the pepper and the encryption key stable. Changing them makes stored credentials unreadable.
+
+## Apply migrations
+
+```bash
+npm run schema:build
+npm run migrate
+```
+
+`schema:build` runs `keystone build --no-ui`, `prisma generate`, and the view-order generator. `migrate` runs `prisma migrate deploy` with the checked-in migrations under `migrations/`. Back up any database that holds data before you migrate it.
+
+`npm run migrate:gen` creates new development migrations. Use it only against a disposable database.
+
+## Run the app
+
+```bash
+npm run dev
+```
+
+`npm run dev` rebuilds the schema and starts Next.js. It does not apply migrations.
+
+| Path | What it is |
+|---|---|
+| `/` | Public firm site |
+| `/dashboard` | Staff dashboard |
+| `/account` | Customer consultation account |
+| `/portal` | Client portal |
+| `/api/graphql` | GraphQL API (POST only) |
+| `/api/health` | Database health check |
+
+## Create the first user
+
+On an empty database every request is redirected to `/dashboard/init`. Enter a name, email, and password. This user gets a bootstrap role with every permission but no firm yet.
+
+## Onboard the firm
+
+After sign-in, a user with no firm is sent to `/dashboard/onboarding`. The form asks for:
+
+- legal firm name and workspace slug;
+- optional display brand, short brand, tagline, and support email;
+- logo icon and color, and a storefront accent;
+- first office name and code;
+- IANA time zone and three-letter currency code;
+- default practice area (defaults to "General Practice").
+
+Submitting calls `completeFirmOnboarding`. In one serializable transaction it creates the firm, the office, a "Firm administrator" role with every permission, four standard roles (Attorney, Paralegal, Billing, Intake coordinator), your membership, and the practice area. It sets your active firm and writes an audit event.
+
+The "Add sample services, clients and matters" box is only enabled on an owned offline test database (checked by `viewerCanSeedSyntheticDemo`). On a normal database you get a clean firm with no sample records.
+
+After onboarding:
+
+1. Invite staff under **People & access** (`/dashboard/platform/team`).
+2. Add offices and change defaults under **Firm & offices**.
+3. Publish the public site, practice areas, and attorney profiles under **Public site**. Customer accounts and booking stay closed until the privacy notice and first-contact notice are published.
+4. Set up rate cards, trust accounts, and portal policy as needed.
+
+<Callout type="info">
+The public site only serves customers when exactly one firm is active. A firm marked as demo is never served to the public unless it runs on an owned offline fixture.
+</Callout>
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+```
+
+## Deploy
+
+Build, then apply migrations as a release step before starting:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. Either way, you still need to provision PostgreSQL, the bucket, SMTP, and the other secrets yourself.
+
+Outbound webhooks and email deliveries are sent by a separate worker, not by the web server. Run it on a schedule next to the app:
+
+```bash
+npx tsx features/keystone/webhooks/run.ts
+```
+
+It prints counts only. There is no HTTP or GraphQL entry point for it.
+
+## Local synthetic database scripts
+
+The repository also has guarded scripts for its own local test databases: `npm run seed:runtime`, `npm run verify:complete-runtime`, and `npm run migrate:maintained`. They refuse to run unless specific `ALLOW_*` and `MIGRATION_*` variables name an exact loopback database. They are not a general deployment path. Do not point them at real firm data.

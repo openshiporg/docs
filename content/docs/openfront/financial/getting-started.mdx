@@ -1,0 +1,116 @@
+---
+title: Getting started with Financial
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js matching `package.json` `engines` (`>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
+- npm. The repository ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage in production. Keystone's image storage is configured from the `S3_*` variables.
+
+## Live demo
+
+A hosted demo runs at [financial.openship.org](https://financial.openship.org). It is a demonstration instance with seeded paper data. No orders reach an exchange and no money moves.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-financial.git
+cd openfront-financial
+npm ci
+cp env.example .env
+```
+
+The example file is named `env.example` (no leading dot).
+
+## Environment
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL`. `SESSION_SECRET` and the five `S3_*` values fall back to local placeholders outside production and are required when `NODE_ENV=production`. A session secret shorter than 32 characters is rejected. Sessions expire after 12 hours.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_financial
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+Optional settings read by the code:
+
+| Variable | Used for |
+|---|---|
+| `PUBLIC_SIGNUPS_ALLOWED` | When `true`, anyone can create a `User` (storefront sign-up). Otherwise only `canManagePeople` can create users. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email. `SMTP_STORE_LINK` must use HTTPS in production. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared-key dashboard AI chat (`/api/completion`) |
+| `ALPACA_PAPER_API_KEY`, `ALPACA_PAPER_API_SECRET` | Paper credentials read when a connection's credential reference is `env://ALPACA_PAPER`. A reference like `env://ALPACA_PAPER_<NAME>` reads `ALPACA_PAPER_<NAME>_API_KEY` and `..._API_SECRET`. |
+| `FINANCIAL_WEBHOOK_SECRET_ALPACA_PAPER` | HMAC secret for the signed webhook route; at least 32 characters. The name is built from the provider key. |
+| `FINANCIAL_MACHINE_CREDENTIAL_PEPPER` | Server-side pepper for hashing machine-credential secrets. Required to issue machine credentials. |
+| `NEXT_PUBLIC_BACKEND_URL` | When set, the storefront sends GraphQL to `<value>/api/graphql` instead of the current origin |
+
+Keep `.env` out of source control. Never put credential values in a connection record; connections store only an opaque reference.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
+
+<Callout type="warn">
+Both `npm run dev` and `npm run build` apply migrations to whatever `DATABASE_URL` points at. Do not point them at a shared or production database you have not backed up.
+</Callout>
+
+Once running:
+
+- Client portal: `/`
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+
+## First operator
+
+Visit `/dashboard/init` on an empty database. While no users exist, every page redirects there. The first user gets an `Admin` role with every capability flag set, including the financial ones. Then sign in at `/dashboard/signin`.
+
+Create other operators with only the flags their job needs. Approvals and compliance decisions need a second person: the source refuses an approval or review decided by the same user who requested it or who owns the record.
+
+## Onboarding
+
+Open the onboarding dialog from the dashboard sidebar. It calls `runFinancialOnboarding`, which needs `canManageOnboarding`. The run is idempotent and holds a database lock so two runs cannot race. It loads `features/platform/onboarding/lib/seed.json` and creates, for the signed-in operator:
+
+- store settings for a demo firm ("Meridian Invest") with paper trading on;
+- four sandbox institution providers (`alpaca-paper`, `open-banking-import`, `custodian-import`, `digital-asset-import`) and an `alpaca-paper` broker adapter;
+- 15 assets, 2 verified bank accounts, 1 paper Alpaca connection, 3 brokerage accounts, and 17 positions;
+- orders, trades, transfers, balanced ledger journals, 90 days of portfolio snapshots, dividends, three months of statements, watchlists, portfolio alerts, two trade recommendations, advisor rules, and public-profile settings;
+- a KYC check, a risk profile, and a compliance case;
+- two approval policies: orders of 25,000 or more and transfers of 10,000 or more need approval.
+
+All seeded records are synthetic and tagged with onboarding provenance. Store settings can be changed later at `/dashboard/platform/store-settings`. The storefront shows an "unconfigured" screen until store settings exist.
+
+## Checks
+
+`package.json` defines `npm test`, `npm run lint`, and a set of `test:financial-*` integration scripts. In the current checkout `tests/unit` and `tests/integration` are empty, so those scripts have nothing to run. See [Current limitations](/docs/openfront/financial/limitations).
+
+## Deployment
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui`, `prisma migrate deploy`, then `next build` |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+
+```bash
+npm run build
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also has a Vercel import button. Either way, provision PostgreSQL, S3-compatible storage, and SMTP yourself, and share the same database, `SESSION_SECRET`, and storage across all application processes.
+
+There is no background worker in the source. Outbox delivery and webhook processing are driven by callers: an operator in `/dashboard/platform/tasks`, or a machine credential calling `/api/financial/agent`.

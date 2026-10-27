@@ -1,0 +1,137 @@
+---
+title: Getting started with UIKit
+description: Clone the source, configure PostgreSQL and environment variables, apply migrations, create the first user, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You can try the app first on the live demo: [uikit.openship.org](https://uikit.openship.org).
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`). The README suggests Node.js 22.
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-uikit.git
+cd openfront-uikit
+npm install
+```
+
+## Configure `.env`
+
+Copy `.env.example` to `.env` and fill in values. Never commit `.env`.
+
+```bash
+# Required. The app throws on start if either is missing.
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_uikit
+SESSION_SECRET=replace-with-at-least-32-random-characters
+
+# Object storage
+S3_BUCKET_NAME=
+S3_REGION=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=
+
+# Dashboard sign-up page (/dashboard/signup); off unless "true"
+PUBLIC_SIGNUPS_ALLOWED=false
+
+# Email (password reset)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM=no-reply@example.com
+SMTP_STORE_LINK=https://your-domain.example
+
+# Stripe (offered at checkout only when both are set)
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# PayPal (offered at checkout only when all three are set)
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_WEBHOOK_ID=
+NEXT_PUBLIC_PAYPAL_SANDBOX=true
+
+# Dashboard AI assistant (optional)
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=
+OPENROUTER_MAX_TOKENS=
+```
+
+Notes from the code:
+
+- `SESSION_SECRET` must be at least 32 characters. `openssl rand -hex 32` works.
+- Of the `S3_*` variables, current code reads only `S3_ENDPOINT`, to allow that host for `next/image`. No Keystone file or image storage is configured, so the other four are not used yet.
+- Without `SMTP_HOST`, password reset email is not available.
+- `NEXT_PUBLIC_VIEW_ORDER` is a fallback for the dashboard field-view order. You normally do not set it; the build generates it.
+- The registry CLI reads `OPENFRONT_REGISTRY_URL` and `OPENFRONT_TOKEN` on the customer's machine, not on the server.
+
+## Migrations
+
+```bash
+npm run migrate
+```
+
+This runs `prisma migrate deploy` with the checked-in `migrations/` folder. `npm run dev` also runs `keystone build --no-ui` and `npm run migrate` before `next dev`.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Use a local or disposable database. `npm run migrate:gen` creates new migrations with `keystone prisma migrate dev`; only run it against a development database.
+</Callout>
+
+## Start and create the first user
+
+```bash
+npm run dev
+```
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql`
+
+On an empty database every request redirects to `/dashboard/init`. Enter name, email, and password. That user gets an Admin role with every permission.
+
+After an admin exists, customers can create accounts at `/account/signup`. The dashboard sign-up page stays closed unless `PUBLIC_SIGNUPS_ALLOWED=true`. Signed-in users without `canAccessDashboard` are sent to `/dashboard/no-access`.
+
+## Onboarding
+
+Open the dashboard as the admin. The sidebar shows onboarding cards. Pick **Complete Setup** (`full`) or **Basic Setup** (`minimal`), adjust the studio name, mark, hue, email, website, tagline, and description, and run it. This calls `runUIKitOnboarding`, which needs `canManageOnboarding` and `canManageProducts`.
+
+It creates brand settings, a design system with tokens, sample products with stable releases, and payment provider records (Stripe, PayPal, and Manual for `full`; Stripe and Manual for `minimal`). It is safe to run again. See [Openfront UIKit](/docs/openfront/uikit) for the exact seed.
+
+Then:
+
+1. Edit studio identity at `/dashboard/platform/store`.
+2. Replace or hide sample products at `/dashboard/platform/catalog`.
+3. Check payment providers at `/dashboard/platform/payment-providers`. A provider record does not enable checkout; the env variables above do.
+4. Point your Stripe webhook to `/api/payment-providers/pp_stripe_stripe/webhook` and your PayPal webhook to `/api/payment-providers/pp_paypal_paypal/webhook`.
+
+## Deploy
+
+The repo includes `railway.toml`:
+
+- build: `keystone build --no-ui && next build`
+- start: `npm run migrate && next start`
+
+So migrations run when the container starts. For other hosts, use the same order:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. Set payment, SMTP, and other variables yourself.
+
+Before you sell paid kits:
+
+- Back up the database and test a restore.
+- Use test provider credentials first. Run a paid checkout, a webhook replay, a refund, and an entitlement revocation.
+- Create a registry key, pull a paid item with the CLI, revoke the key, and confirm the pull fails.
+- Note that draft validation only runs on macOS hosts (see [Openfront UIKit](/docs/openfront/uikit) limitations). On Linux, Studio drafts cannot reach review.

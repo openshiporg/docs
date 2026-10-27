@@ -3,55 +3,46 @@ title: Implement a shipping adapter
 description: Implement shipping operations in a local module or external route app.
 ---
 
-Use `features/keystone/utils/shippingProviderAdapter.ts` as the dispatch contract. The built-in `manual.ts`, `shippo.ts`, and `shipengine.ts` files are local examples; an independently deployed app can implement the same operations through URLs stored on the `ShippingProvider` record.
+Use `features/keystone/utils/shippingProviderAdapter.ts` as the dispatch contract. The `shippo.ts` and `shipengine.ts` files in `features/integrations/shipping` are working examples. `manual.ts` is a mock. A separately deployed app can implement the same operations through URLs stored on the `ShippingProvider` record.
 
 ## Operations
 
 ```ts
 getRatesFunction({ provider, order, dimensions })
 validateAddressFunction({ provider, address })
-createLabelFunction({ provider, order, rateId, dimensions, lineItems })
+createLabelFunction({ provider, order, rateId, dimensions, lineItems, idempotencyKey })
 trackShipmentFunction({ provider, trackingNumber })
 cancelLabelFunction({ provider, labelId })
 ```
 
-For an HTTP adapter, Openfront sends `POST` JSON containing `provider` plus the operation arguments. The route app translates that payload to its carrier, aggregator, warehouse, local courier, or custom fulfillment API and returns the provider-neutral result expected by Openfront.
+For an HTTP adapter, Openfront sends `POST` JSON with `provider` plus these arguments. The body does not name the operation, so use one URL per operation or infer it from the payload.
 
-## Provider-neutral results
+## What the callers expect back
 
-Return only the data needed by the domain caller:
+The GraphQL result types show the shapes:
 
-- rates: stable rate ID, service, carrier, price, currency, and delivery estimate;
-- validation: validity, normalized/suggested address, and safe errors;
-- labels: status, label/tracking identifiers and URLs, carrier, service, rate, and bounded metadata;
-- tracking: status, estimate, tracking URL, and normalized events;
-- cancellation: provider result and final cancellation state.
-
-Validate these runtime responses before creating or updating fulfillment records.
+- rates: a list of `ShippingRate` with `id`, `provider`, `service`, `carrier`, `price` and `estimatedDays`;
+- validation: `AddressValidationResult` with `isValid`, `normalizedAddress` and `errors`;
+- label: `ProviderShippingLabel` data with `status`, `trackingNumber`, `trackingUrl` and `labelUrl`;
+- tracking: `ShipmentTrackingResult` with `status`, `estimatedDeliveryDate` and `trackingEvents`;
+- cancellation: `LabelCancellationResult` with `success`, `refundStatus` and `error`.
 
 ## Rules
 
-- check operator authority, order ownership/scope, unfulfilled quantities, address, parcel, and rate eligibility before calling the adapter;
-- authenticate calls from Openfront to an external route app;
-- forward only the provider and customer/order fields required by that operation;
-- treat label purchase and cancellation as idempotent intents;
-- use timeouts and reconcile an uncertain label purchase before retrying;
-- redact access tokens, addresses, labels, and provider payloads from logs and browser errors;
-- deduplicate tracking callbacks or polling observations;
-- keep fulfillment lifecycle and audit evidence in Openfront rather than the adapter app.
+- Openfront checks permissions, the order and unfulfilled quantities before calling the adapter. Do not repeat that logic, but do validate input.
+- Pass `idempotencyKey` to the carrier when buying labels.
+- Authenticate requests from Openfront to an HTTP adapter. The bridge sends no signature.
+- Use the `provider.accessToken` Openfront sends; do not log it.
+- Return errors for operations you do not support.
 
-## Current configuration gap
+## Configuration gap
 
-The backend supports HTTP operation fields, but the current custom-provider forms do not wire them correctly: one stores `metadata.apiUrl`, and another selects a nonexistent local `custom` module. Configure the operation URLs through a trusted administrative path until those forms are repaired and covered by an end-to-end test.
+The dashboard forms do not set URL operation fields. One stores `metadata.apiUrl`; the other sets a local `custom` module that does not exist. Set the five fields on the generic `/dashboard/shipping-providers` editor.
 
-## Verification
+## Verify
 
-- unit-test request/response translation;
-- contract-test malformed, delayed, unauthorized, and replayed route calls;
-- run sandbox rates, validation, label, tracking, and cancellation;
-- retry one label intent and assert one purchase;
-- reject rate/address/order/line mismatches;
-- verify endpoint and credential edits require privileged operator authority;
-- reconcile label cost, state, tracking, and cancellation with the fulfillment record.
+- Run rates, validation, label, tracking and cancellation in the carrier sandbox.
+- Retry one label purchase with the same idempotency key and confirm a single label.
+- Send malformed and slow replies and confirm no fulfillment record is written.
 
-See [Add a shipping adapter](/docs/openfront/ecommerce/how-to-guides/custom-shipping-provider) for configuration details.
+See [Add a shipping adapter](/docs/openfront/ecommerce/how-to-guides/custom-shipping-provider) for configuration.

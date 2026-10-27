@@ -1,96 +1,93 @@
 ---
 title: Inventory and food costing
-description: Ingredients, recipes, purchase orders, waste logs, and stock depletion.
+description: Ingredients, recipes, purchase orders, receiving, lots, counts, transfers, waste, and stock depletion.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Inventory is where a restaurant platform either becomes useful or stays decorative.
+Openfront Restaurant links menu sales to ingredient cost and stock. Every stock change is written as a `StockMovement`.
 
-Openfront Restaurant already includes the core pieces you need to connect menu sales to ingredient cost and stock movement.
+## Screens
+
+| Route | What it does |
+|---|---|
+| `/dashboard/platform/ingredients` | Ingredient list by category, stock counts, transfers between locations, and operations recovery |
+| `/dashboard/platform/inventory/purchase-orders` | Purchase orders, status changes, receiving, invoices, credits, and lots |
+| `/dashboard/platform/inventory/recipes` | Recipes and food cost. Not in the sidebar |
+| `/dashboard/platform/inventory/waste` | Waste log and reversals |
+
+Vendors and inventory locations are managed through the generic list screens (`/dashboard/vendors`, `/dashboard/inventory-locations`).
 
 ## What is in the inventory layer
 
 ### Ingredients
-Ingredients track:
-
-- stock quantity
-- unit of measure
-- category
-- par level
-- reorder point and reorder quantity
+- current stock and unit (g, ml, kg, lb, oz, liter, gallon, each, case, box)
+- category (produce, meat, dairy, dry goods, beverages, spices, seafood, other)
+- par level, reorder point, and reorder quantity
 - cost per unit
-- vendor
-- storage location
+- vendor and storage location
 - expiration date and SKU
 
 ### Recipes
-Recipes link menu items to their ingredient usage. Each recipe can store:
-
 - the linked menu item
-- ingredient list as structured JSON
-- yield
-- prep time
-- instructions
-- total cost
-- cost per serving
-- food cost percentage
+- ingredients as JSON: `{ ingredientId, quantity, unit }` per row
+- yield, prep time, and instructions
+- calculated total cost, cost per serving, and food cost percentage
 
 ### Purchasing and waste
-The platform also includes:
+- `Vendor`, `InventoryLocation`, `PurchaseOrder`, `StockMovement`, `WasteLog`
 
-- vendors
-- inventory locations
-- purchase orders
-- stock movements
-- waste logs
+## Stock operations
+
+All of these need `canManageInventory` and take an idempotency key, so a retry does not double-post.
+
+- **Receive** a purchase order with `receivePurchaseOrder`: line quantities, a reference, and optional lot code and expiry date per line.
+- **Match invoices and credits** with `recordRestaurantPurchaseInvoice` and `recordRestaurantPurchaseCredit`. `restaurantPurchaseEvidence` shows received, billed, and credited amounts.
+- **Lots**: `restaurantIngredientLots` lists lots for an ingredient. `setRestaurantLotHold` puts a lot on hold or releases it.
+- **Count** with `countIngredientStock`: counted vs expected stock with a reason.
+- **Adjust** with `adjustInventory`.
+- **Transfer** with `transferRestaurantStock` between two ingredient records with the same SKU in active locations.
+- **Waste** with `recordWaste` (spoilage, preparation error, overproduction, plate waste, expired, damaged, other) and undo with `reverseWaste`.
+
+Purchase order statuses: `draft`, `sent`, `confirmed`, `shipped`, `partially_received`, `received`, `cancelled`. `transitionPurchaseOrder` moves draft to sent, sent to confirmed, confirmed to shipped, and any open status to cancelled. Received states are only set by posting a receipt.
 
 ## The practical workflow
 
 <Steps>
 <Step>
-### Create ingredients first
-Add your raw materials with unit, cost, vendor, and baseline stock information.
+### Create ingredients
+Add raw materials with unit, cost, vendor, location, and starting stock.
 </Step>
 <Step>
-### Build recipes for menu items
-Create a recipe record, link it to a menu item, and add the ingredients that make up that dish.
+### Build recipes
+Create a recipe, link it to a menu item, and add ingredient rows.
 </Step>
 <Step>
 ### Review food cost
-Once the recipe is in place, the app can calculate total cost, cost per serving, and food cost percentage.
+The recipe page shows total cost, cost per serving, and food cost percentage.
 </Step>
 <Step>
-### Complete real orders
-When an order is completed and a linked recipe exists, the order hooks can deplete ingredient stock automatically and write stock-movement records.
+### Close real orders
+When an item is ordered, its recipe is frozen as a snapshot. When the order is completed, or cancelled after the kitchen started the item, the app writes `sale` stock movements from that snapshot.
 </Step>
 <Step>
-### Track purchasing and waste
-Use purchase orders to manage restocking and waste logs to understand where margin is leaking.
+### Purchase and log waste
+Send and receive purchase orders, match invoices, and log waste.
 </Step>
 </Steps>
 
-## Why this part matters
+## Recovery
 
-A lot of restaurant software stops at "we sold the burger." The better question is whether you sold it at a number that still makes sense once the bun, beef, cheese, labor, and waste are all in the picture.
-
-This build is already moving in that direction.
-
-## Current strengths
-
-- ingredient records are detailed enough for real kitchen use
-- recipes already calculate cost metrics
-- waste has a dedicated model and screen
-- purchase orders have a useful workflow and status model
-- completed orders can write stock movement automatically
+If stock depletion fails after an order closes, it is logged as needing recovery. The Ingredients page shows these (`restaurantOperationsRecovery`). Staff can retry (`retryRestaurantOperations`) or record a review for items from older versions without a recipe snapshot (`reviewLegacyRestaurantRecipes`). `reconcileOrderInventory` re-runs depletion for one closed order.
 
 ## Current gaps
 
-- recipe ingredients are stored as JSON today, so this layer works best when your team is comfortable with structured admin data
-- unit conversion and purchasing normalization still have room to grow
-- the value of this module jumps once you commit to keeping recipe data current
+- Recipe ingredients are stored as JSON, not as related records.
+- Depletion fails if a recipe ingredient's unit no longer matches the ingredient's stocking unit. There is no general unit conversion.
+- Recipe food cost does not feed the reports.
+- There is no automatic reorder based on par levels.
 
 <Callout type="info">
-The inventory module is already worth documenting because it does real work. It just gets much better as your operational discipline improves.
+Very small recipe quantities can round to zero. Use grams or milliliters as stocking units when recipes use small amounts.
 </Callout>

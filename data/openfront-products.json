@@ -188,5 +188,115 @@
     "href": "/docs/openfront/uikit",
     "sourceUrl": null,
     "catalogUrl": null
+  },
+  {
+    "id": "cannabis",
+    "repository": "openfront-cannabis",
+    "name": "Cannabis",
+    "description": "Dispensary menu, package custody, recalls, in-store POS, cash shifts, and state-reporting queues.",
+    "color": "#16a34a",
+    "href": "/docs/openfront/cannabis",
+    "sourceUrl": "https://github.com/openshiporg/openfront-cannabis",
+    "catalogUrl": "https://openship.org/products/openfront-cannabis"
+  },
+  {
+    "id": "vape",
+    "repository": "openfront-vape",
+    "name": "Vape",
+    "description": "Age-gated vape retail with product evidence, jurisdiction rule sets, and a compliance-gated checkout.",
+    "color": "#0ea5e9",
+    "href": "/docs/openfront/vape",
+    "sourceUrl": "https://github.com/openshiporg/openfront-vape",
+    "catalogUrl": "https://openship.org/products/openfront-vape"
+  },
+  {
+    "id": "collectibles",
+    "repository": "openfront-collectibles",
+    "name": "Collectibles",
+    "description": "Card shop with set checklists, singles by condition, graded slabs, sealed pre-orders, and a buylist.",
+    "color": "#d97706",
+    "href": "/docs/openfront/collectibles",
+    "sourceUrl": "https://github.com/openshiporg/openfront-collectibles",
+    "catalogUrl": "https://openship.org/products/openfront-collectibles"
+  },
+  {
+    "id": "medspa",
+    "repository": "openfront-medspa",
+    "name": "Med Spa",
+    "description": "Med spa booking, treatment authority, consent, checkout, inventory, memberships, and practice operations.",
+    "color": "#db2777",
+    "href": "/docs/openfront/medspa",
+    "sourceUrl": "https://github.com/openshiporg/openfront-medspa",
+    "catalogUrl": "https://openship.org/products/openfront-medspa"
+  },
+  {
+    "id": "scheduling",
+    "repository": "openfront-scheduling",
+    "name": "Scheduling",
+    "description": "Event types, availability, bookings, teams, routing forms, payments, calendars, workflows, and embeds.",
+    "color": "#0284c7",
+    "href": "/docs/openfront/scheduling",
+    "sourceUrl": "https://github.com/openshiporg/openfront-scheduling",
+    "catalogUrl": "https://openship.org/products/openfront-scheduling"
+  },
+  {
+    "id": "social",
+    "repository": "openfront-social",
+    "name": "Social",
+    "description": "Creator-owned personal sites with collections, versioned publishing, destination consent, and privacy review.",
+    "color": "#8b5cf6",
+    "href": "/docs/openfront/social",
+    "sourceUrl": "https://github.com/openshiporg/openfront-social",
+    "catalogUrl": "https://openship.org/products/openfront-social"
+  },
+  {
+    "id": "rideshare",
+    "repository": "openfront-rideshare",
+    "name": "Rideshare",
+    "description": "Fleet-scoped ride booking, manual dispatch, driver and vehicle readiness, trips, safety, and support.",
+    "color": "#0f766e",
+    "href": "/docs/openfront/rideshare",
+    "sourceUrl": "https://github.com/openshiporg/openfront-rideshare",
+    "catalogUrl": "https://openship.org/products/openfront-rideshare"
+  },
+  {
+    "id": "sportsbook",
+    "repository": "openfront-sportsbook",
+    "name": "Sportsbook",
+    "description": "Markets, wagers, trading, results, settlement, responsible gaming, and compliance operations.",
+    "color": "#dc2626",
+    "href": "/docs/openfront/sportsbook",
+    "sourceUrl": "https://github.com/openshiporg/openfront-sportsbook",
+    "catalogUrl": "https://openship.org/products/openfront-sportsbook"
+  },
+  {
+    "id": "financial",
+    "repository": "openfront-financial",
+    "name": "Financial",
+    "description": "Paper brokerage with a client portal, operator console, double-entry ledger, approvals, and compliance review.",
+    "color": "#15803d",
+    "href": "/docs/openfront/financial",
+    "sourceUrl": "https://github.com/openshiporg/openfront-financial",
+    "catalogUrl": "https://openship.org/products/openfront-financial"
+  },
+  {
+    "id": "analytics",
+    "repository": "analytics",
+    "name": "Analytics",
+    "description": "Cookieless website analytics with goals, funnels, segments, web vitals, and shared dashboards.",
+    "color": "#f97316",
+    "href": "/docs/openfront/analytics",
+    "sourceUrl": "https://github.com/openshiporg/analytics",
+    "catalogUrl": "https://openship.org/products/openfront-analytics"
+  },
+  {
+    "id": "sports-agents",
+    "repository": "openfront-sports-agents",
+    "name": "Sports Agents",
+    "description": "Early repository on the Openfront dashboard, auth, roles, AI chat, and MCP foundation; the sports-agency domain is not built yet.",
+    "color": "#4f46e5",
+    "href": "/docs/openfront/sports-agents",
+    "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
+    "catalogUrl": null
   }
 ]

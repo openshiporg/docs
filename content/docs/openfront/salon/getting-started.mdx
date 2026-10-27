@@ -1,0 +1,145 @@
+---
+title: Getting started with Salon
+description: Clone the source, set the environment, apply migrations, create the first user, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Try the live demo
+
+A hosted demo runs at [salon.openship.org](https://salon.openship.org). The storefront is at `/` and the dashboard at `/dashboard`.
+
+## Requirements
+
+- Node.js 20 or later (`package.json` sets `"node": ">=20.0.0"`; the README suggests Node 22).
+- npm.
+- A PostgreSQL database you can migrate.
+- For production: S3-compatible object storage.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-salon.git
+cd openfront-salon
+npm install
+```
+
+## Environment
+
+Copy the example file and replace every placeholder:
+
+```bash
+cp .env.example .env
+```
+
+Required:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_salon
+SESSION_SECRET=replace-with-at-least-32-random-characters
+```
+
+The app will not start without `DATABASE_URL` and `SESSION_SECRET`. The secret must be at least 32 characters. Generate one with `openssl rand -hex 32`.
+
+File storage. Required when `NODE_ENV=production`. Outside production the app falls back to placeholder values, so uploads will not work until you set real ones:
+
+```bash
+S3_BUCKET_NAME=
+S3_REGION=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=
+```
+
+Optional variables the code reads:
+
+| Variable | Used for |
+| --- | --- |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open the dashboard sign-up page. Default is closed. Storefront client sign-up at `/account/signup` does not use this switch. |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe adapter and webhook signature checks. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Booking confirmation, gift-card, and password-reset email. Nothing is sent unless `SMTP_HOST` and `SMTP_FROM` are set. |
+| `SMTP_STORE_LINK` | Link shown in email footers and reset links. |
+| `MAIL_USER` | If it contains `ethereal.email`, the app logs a preview URL for test mail. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared key for the dashboard assistant. |
+| `TAX_RATE` | Tax rate for checkout and payments. Default `0.08`. |
+| `CLIENT_CANCELLATION_NOTICE_MINUTES`, `CLIENT_RESCHEDULE_NOTICE_MINUTES` | How late a client may cancel or reschedule online. Default 1440 (24 hours). |
+| `CLIENT_BOOKING_POLICY_VERSION` | Version string clients must accept when booking. Default `salon-booking-v2`. |
+| `NEXT_PUBLIC_BACKEND_URL` | Storefront GraphQL origin. If unset, the current request origin is used. |
+
+`.env.example` also lists `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `INTERNAL_BACKEND_URL`, and `AI_CHAT_ENABLED`. The current application code does not read them.
+
+Never commit `.env`.
+
+## Migrations
+
+The repo has checked-in Prisma migrations in `migrations/`. Apply them with:
+
+```bash
+npm run migrate
+```
+
+<Callout type="warn">
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes whatever database `DATABASE_URL` points at. Use a database you own and can throw away.
+</Callout>
+
+`npm run migrate:gen` creates new development migrations after a model change. Run it only against a disposable database.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql`
+
+## First user
+
+On an empty database, open `/dashboard/init`. The form asks for name, email, and password. That user gets an Admin role with every permission, including `canManageOnboarding` and `canManageCareRecords`.
+
+Create other staff and roles from the dashboard. Give each role only the flags the job needs. Clients create accounts at `/account/signup` once the first user exists; they get a client profile and no role.
+
+## Onboarding
+
+After sign-in, the dashboard sidebar shows onboarding cards. Open the setup dialog and pick a template:
+
+- **Complete Salon Setup**: the full sample seed.
+- **Essential Booking Setup**: a smaller subset for booking.
+- **Custom Setup**: copy the seed JSON, edit it, and paste it back.
+
+The dialog calls `runSalonOnboarding` once. It creates the sample salon "Morrow & Mane" with a location, resources, services, stylists, schedules, sample clients, a consultation form, memberships, a package, a product, appointments, gallery images, and payment providers. It reports created and reused counts. Running it again reuses existing rows.
+
+This is sample data. Replace the salon name, hours, services, prices, and staff before real use, and delete the sample clients and appointments.
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```
+
+`tests/` holds Node test files (`*.test.cjs`) for helpers and security rules. They need no database. `package.json` has no `test` script, so run them with `node --test tests/`.
+
+## Deploy
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run on each start. `npm run build` alone does not migrate.
+
+For any host:
+
+1. Provision PostgreSQL and S3-compatible storage.
+2. Set `DATABASE_URL`, `SESSION_SECRET`, the five `S3_*` values, and any optional integrations.
+3. Back up the database.
+4. Build, apply migrations, then start:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+5. Create the first user at `/dashboard/init` and run onboarding or enter your own data.
+6. For Stripe, point the webhook at `/api/payments/webhooks/pp_stripe` (or your provider's code). The route only accepts an installed Stripe provider. `PaymentProvider` records cannot be created or edited through GraphQL, and the seed's Stripe record is not installed, so turning it on needs a direct database change or a custom seed.
+
+All app processes must share the same database, `SESSION_SECRET`, and storage settings.

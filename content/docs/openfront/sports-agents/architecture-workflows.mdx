@@ -1,0 +1,105 @@
+---
+title: Sports Agents architecture and workflows
+description: Current Keystone models, access rules, dashboard workflows, and named GraphQL operations.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+Everything on this page is starter scaffolding. There are no sports-agents models or workflows in the current source.
+</Callout>
+
+## Application surfaces
+
+| Surface | Location | Notes |
+|---|---|---|
+| Landing page | `app/page.tsx` | Starter welcome page |
+| Dashboard auth pages | `app/dashboard/{init,signin,signup,reset,no-access}`, `features/dashboard/screens` | First user, sign-in, optional sign-up, reset, no access |
+| Generic model pages | `app/dashboard/(admin)/[listKey]/**`, `features/dashboard` | List, create, and item pages for each Keystone list |
+| Dashboard home | `app/dashboard/(admin)/page.tsx` | `HomePage` screen with list counts |
+| GraphQL | `pages/api/graphql.ts` → `/api/graphql` | GraphQL Yoga over the Keystone schema, with multipart uploads |
+| AI chat | `app/api/completion/route.ts` | OpenRouter streaming with MCP tools |
+| MCP | `app/api/mcp-transport/[transport]/route.ts` | JSON-RPC tools over the GraphQL API |
+| Route guard | `proxy.ts`, `features/dashboard/middleware.ts` | Redirects for `/dashboard` routes |
+
+Keystone config lives in `features/keystone/index.ts` and is re-exported from `keystone.ts`. Sessions are stateless signed cookies with a maximum age of 360 days.
+
+## Models
+
+**`User`** (`features/keystone/models/User.ts`): `name`, `email` (unique), `password`, `role` (to `Role.assignedTo`), `tasks` (to `Todo.assignedTo`). Password is never readable. A migration also adds password reset token fields used by Keystone auth.
+
+**`Role`** (`Role.ts`): `name`, `assignedTo`, and seven checkbox flags:
+
+| Flag | What it allows |
+|---|---|
+| `canAccessDashboard` | Use `/dashboard` and the shared AI chat |
+| `canManagePeople` | Create and delete users, set roles, change other users' passwords |
+| `canSeeOtherPeople` | Read other users |
+| `canEditOtherPeople` | Update other users |
+| `canManageRoles` | Create, update, and delete roles (any signed-in user can read roles) |
+| `canCreateTodos` | Create todos and create, update, or delete todo images |
+| `canManageAllTodos` | Read and change todos assigned to other users, and set `assignedTo` |
+
+**`Todo`** (`Todo.ts`): example model. `label`, `description` (document), grouped status fields (`isComplete`, `status` with todo / in_progress / done / blocked, `priority` 1 to 5, `tags` multiselect), planning fields (`dueDate`, `weight`, `budget`), advanced fields (`isPrivate`, `largeNumber`, `metadata`, `secretNote`), `coverImage`, `todoImages`, and `assignedTo`. On create, `assignedTo` defaults to the signed-in user.
+
+**`TodoImage`** (`TodoImage.ts`): `image`, `imagePath`, `altText`, `todos`, `metadata`.
+
+## Access rules
+
+Rules live in `features/keystone/access.ts`.
+
+- All lists require a signed-in user for most operations.
+- `User` create is open to anyone only when `PUBLIC_SIGNUPS_ALLOWED=true`; otherwise it needs `canManagePeople`.
+- `rules.canReadPeople` and `rules.canUpdatePeople` limit users without the matching flag to their own record.
+- `rules.canReadTodos` limits users without `canManageAllTodos` to todos assigned to them. With the flag, a user sees their own todos, unassigned private todos, and all non-private todos.
+- `rules.canManageTodos` limits update and delete the same way.
+- The Keystone `ui.isAccessAllowed` check and the route guard both require `canAccessDashboard`.
+
+## Workflow: first run
+
+1. `proxy.ts` calls `getAuthenticatedUser`, which runs the `authenticatedItem` query and `redirectToInit`.
+2. If `redirectToInit` is true (no users), every `/dashboard` route redirects to `/dashboard/init`.
+3. The init form calls `createInitialUser`. Keystone creates the user and an `Admin` role with every flag on, then signs them in.
+
+## Workflow: sign-in, sign-up, reset
+
+- Sign-in calls `authenticateUserWithPassword` and sets the session cookie. The `from` redirect is sanitized to same-site dashboard paths.
+- Sign-up at `/dashboard/signup` only works when `PUBLIC_SIGNUPS_ALLOWED=true`. It calls `createUser` with no role, so the new user lands on `/dashboard/no-access` until an admin gives them a role.
+- Reset calls `sendUserPasswordResetLink`, then `redeemUserPasswordResetToken` from the emailed link. Without `SMTP_HOST` the reset page says email is not available.
+- Sign-out calls `endSession`.
+
+## Workflow: manage records
+
+The generic pages under `/dashboard/<list-path>` (for example `/dashboard/todos`, `/dashboard/users`, `/dashboard/roles`, `/dashboard/todo-images`) read Keystone admin meta and build list, filter, sort, create, and edit screens from it. Keystone `ui` options hide create and delete buttons when the role lacks the flag. The server still enforces access on every operation.
+
+## Workflow: AI chat
+
+1. A dashboard user opens the right sidebar chat.
+2. The client posts to `/api/completion` in shared mode (server keys) or local mode (keys from the browser).
+3. In shared mode the route checks the session and `canAccessDashboard`, and needs `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
+4. The route connects to `/api/mcp-transport/http` with the caller's cookie and gives the model those tools for up to 10 steps.
+5. The model can query, create, update, and delete records the user is allowed to change.
+
+## GraphQL operations
+
+Custom operations added in `features/keystone/mutations/index.ts`:
+
+| Operation | Type | Purpose |
+|---|---|---|
+| `redirectToInit` | Query | Returns `true` when there are no users |
+
+Keystone auth operations used by the dashboard:
+
+| Operation | Used by |
+|---|---|
+| `authenticatedItem` | Route guard, `AuthenticatedUser` query in `features/dashboard/actions/auth.ts` |
+| `authenticateUserWithPassword` | Sign-in |
+| `createInitialUser` | First-user setup |
+| `createUser` | Sign-up |
+| `sendUserPasswordResetLink`, `validateUserPasswordResetToken`, `redeemUserPasswordResetToken` | Password reset |
+| `endSession` | Sign-out |
+
+Named dashboard queries: `KsFetchAdminMeta` (`getAdminMetaAction`), `KsFetchItem` (`getItemAction`), `GetListItems` (`getListItemsAction`). Item create, update, and delete use the generated `create<List>`, `update<List>`, `delete<List>`, and `delete<Lists>` mutations from `features/dashboard/actions/item-actions.ts`.
+
+Generated CRUD exists for each list: `users`, `user`, `usersCount`, `createUser`, `updateUser`, `deleteUser`, and the same shape for `Role`, `Todo`, and `TodoImage`. See `schema.graphql` for the full schema.

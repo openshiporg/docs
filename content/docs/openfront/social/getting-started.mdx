@@ -1,0 +1,120 @@
+---
+title: Getting started with Social
+description: Install the source, configure PostgreSQL, sessions, and S3, apply migrations, create the first user, run creator setup, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [social.openship.org](https://social.openship.org). It is a shared demonstration instance; do not put real content or personal data in it.
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`; the README recommends Node.js 22 for Next.js 16).
+- A PostgreSQL database you are allowed to migrate.
+- npm (the repository ships `package-lock.json`).
+- Optional: an S3-compatible bucket for profile images, item covers, and images inside item bodies.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-social.git
+cd openfront-social
+npm ci
+```
+
+## Environment
+
+`features/keystone/index.ts` throws at startup when `DATABASE_URL` or `SESSION_SECRET` is missing. The five S3 settings are read for the `my_images` storage and are only needed once someone uploads an image.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_social
+SESSION_SECRET=replace-with-output-of-openssl-rand-hex-32
+
+# Image storage (optional until an upload happens)
+S3_BUCKET_NAME=
+S3_REGION=auto
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=
+
+# Public origin used for RSS, sitemap, robots, and share links
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Creator self sign-up at /account/signup (closed unless exactly "true")
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+| Variable | Used by | Notes |
+|---|---|---|
+| `DATABASE_URL` | Keystone and Prisma | Required |
+| `SESSION_SECRET` | Stateless Keystone sessions (30-day max age) | Required; long and random |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | `my_images` storage | Signed reads with a 5000-second expiry; path-style addressing except for `storageapi.dev` endpoints |
+| `NEXT_PUBLIC_APP_URL` or `RAILWAY_PUBLIC_DOMAIN` | `publicSiteOrigin()` | Must be an origin with no path; HTTPS in production |
+| `PUBLIC_SIGNUPS_ALLOWED` | `createCreatorAccount`, landing page, `/account/signup` | Only `true` opens sign-up |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email | Optional |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | `/api/completion` | Optional; see [limitations](/docs/openfront/social/limitations) |
+
+Never commit `.env`.
+
+## Migrations
+
+The repository has checked-in Prisma migrations, including the personal publishing, versioned publishing, site logo, avatar, creator image, and media asset changes.
+
+```bash
+npx keystone build --no-ui
+npm run migrate
+```
+
+`npm run migrate` runs `prisma migrate deploy`. `npm run migrate:gen` builds the schema, regenerates the list view order, and runs `keystone prisma migrate dev`; use it only against a disposable development database when you change models.
+
+<Callout type="info">
+`npm run dev` and `npm run build` run `keystone build --no-ui` and Next.js. They do not apply migrations, so run `npm run migrate` yourself first.
+</Callout>
+
+## Run
+
+```bash
+npm run dev
+```
+
+- Landing page: `/`
+- Dashboard: `/dashboard` (platform pages at `/dashboard/platform/*`)
+- GraphQL API: `/api/graphql` (the playground is enabled outside production)
+
+## First user and onboarding
+
+1. On an empty database, open `/dashboard/init` and create the first user. That user receives an `Admin` role with every capability, including `canUseStudio` and `canManagePeople`.
+2. Open `/dashboard/onboarding` (Creator setup). Choose a theme (`paper`, `midnight`, or `forest`) and either create the fictional demo site or a blank site.
+   - The demo calls `onboardMyPersonalSite`, which creates a site with a generated `-demo-` handle, three public collections, and eight published sample items from `features/platform/onboarding/lib/seed.json`. Sample publications are flagged, so the demo site can be deleted later with the "start over" action.
+   - A blank site uses the `createSite` studio command.
+3. Finish the profile at `/dashboard/platform/site`: address (handle), display name, bio, location, website, image, logo, theme, and visibility.
+4. Add creators. With `PUBLIC_SIGNUPS_ALLOWED=true`, creators register at `/account/signup`; otherwise a people manager adds them at `/dashboard/platform/users` (`adminCreateCreator`). Creators receive the `creator` role, which can use the studio and onboarding but cannot see or manage other people.
+
+## Checks
+
+```bash
+npm test        # node --test tests/*.test.cjs
+npm run lint    # eslint .
+```
+
+## Deployment
+
+The app needs PostgreSQL, the environment above, and (for uploads) an S3-compatible bucket. Migrations are a separate release step from the build.
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` sets the build to `keystone build --no-ui && next build` and the start command to `npm run migrate && next start`, because Railway builds cannot reach internal databases. The README also has a Vercel import button that asks for `DATABASE_URL` and `SESSION_SECRET`; it does not provision a database, bucket, or mail service.
+
+Before deploying:
+
+1. Back up the database and test the migration on a copy.
+2. Set `NEXT_PUBLIC_APP_URL` (or rely on `RAILWAY_PUBLIC_DOMAIN`) to the public HTTPS origin so feeds, sitemap, and share links resolve.
+3. Decide whether creator sign-up is open, and configure SMTP if password reset should send email.
+4. Configure the S3 bucket before creators upload images.

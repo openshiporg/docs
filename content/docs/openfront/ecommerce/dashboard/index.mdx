@@ -6,39 +6,61 @@ description: The current operator routes and the boundary between dashboard UI a
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The dashboard is the authenticated operator surface for Openfront Ecommerce. App Router pages delegate to feature slices under `features/platform`; Keystone models and domain mutations remain in `features/keystone`.
+The dashboard is the signed-in operator surface at `/dashboard`. Route files in `app/dashboard/(admin)/platform/<route>/page.tsx` import a screen from `features/platform/<slice>`. Models and custom mutations stay in `features/keystone`. The sidebar groups come from `features/platform/lib/navigation.ts`.
+
+## Platform pages
+
+| Route under `/dashboard/platform` | Slice | What operators do there |
+|---|---|---|
+| `/orders`, `/orders/[id]` | `orders` | Order list with status tabs; order detail with payments, fulfillment history, returns and claims |
+| `/orders/[id]/fulfill` | `orders` | Get rates, buy labels and create fulfillments for unfulfilled lines |
+| `/orders/create` | `orders` | Build a cart for a customer and complete it as an order |
+| `/analytics` | `analytics` | Sales, customer, product and cart reports by date range |
+| `/markets`, `/regions-management` | `regions` | Region list (both routes render the same screen) |
+| `/regions` | `regions` | Regional settings with Regions, Countries and Currencies tabs |
+| `/countries`, `/currencies` | `countries`, `currencies` | Country and currency lists |
+| `/store` | `store-settings` | Store name, logo SVG, logo color, homepage title and description |
+| `/products`, `/products/create`, `/products/[id]` | `products` | Products, variants, options, prices, images and stock counts |
+| `/product-categories`, `/product-collections` | `product-categories`, `product-collections` | Catalog organization |
+| `/inventory` | `inventory` | Inventory list. See the limitation below. |
+| `/users` | `users` | Customers and staff users |
+| `/business-account-requests` | `business-account-requests` | Review, approve or reject business account requests |
+| `/invoices` | `invoices` | Business accounts (the nav calls this "Business Accounts"), their line items and invoices |
+| `/discounts`, `/price-lists`, `/gift-cards` | same names | Promotions and alternate prices |
+| `/shipping-options` | `shipping-options` | Customer-facing shipping options per region |
+| `/shipping-providers`, `/shipping` | `shipping-providers` | Shipping provider records (both routes render the same list) |
+| `/payment-providers` | `payment-providers` | Payment provider records and regions |
+| `/claims` | `claims` | Claim list and status |
+| `/apps` | `apps` | OAuth apps: suspend, activate, edit redirect URIs, delete |
+| `/api-keys` | `api-keys` | Create, edit and revoke `of_` API keys with scopes and IP limits |
+| `/order-management-system` | `order-management-system` | OAuth install page used when an external order system requests access |
+| `/system` | `system` | Tabs for settings, stores and payment providers |
+
+Lists without a dedicated page (for example `Role`, `Team`, `TaxRate`, `WebhookEndpoint`, `Return`, `StockMovement`) use the generic `/dashboard/<list-key>` pages, which follow each list's access rules.
+
+## Current limitations
 
 <Callout type="warn">
-A visible dashboard control does not prove its backend transition, provider call, or authorization. Test the exact action, wrong-role case, retry, and failure state before relying on it.
+- `/dashboard/platform/inventory` queries an `inventoryItems` list that does not exist in the current schema, so it shows a load error. Stock is stored on `ProductVariant.inventoryQuantity`. The `adjustInventory` mutation writes a `StockMovement`, but no platform screen calls it.
+- The "Create draft order" button on `/orders/create` is a placeholder. It waits two seconds and shows a success message without saving anything.
+- The order-level "new shipping provider" form and the "Custom Provider" option in the provider drawer do not set working adapter fields. See [Shipping providers](/docs/openfront/ecommerce/shipping-providers).
 </Callout>
-
-## Current route groups
-
-- Catalog: products, product categories and collections.
-- Orders: list, detail, creation and fulfillment pages.
-- Markets: regions, countries, currencies, shipping options and store settings.
-- Inventory and fulfillment: inventory, shipping and shipping-provider pages.
-- Commerce: payment providers, discounts, gift cards, claims, price lists and invoices.
-- Access and extension: users, API keys, apps/OAuth, business-account requests and system settings.
-- Reporting: an analytics route and dashboard summary components.
-
-Generic Keystone list pages also expose models permitted by the current role. Those pages are useful for administration, but sensitive lifecycle changes should still use a named operation rather than unrestricted field edits.
 
 ## Setup order
 
-1. Create the first permitted dashboard user.
-2. Run the [onboarding flow](/docs/openfront/ecommerce/getting-started) against an isolated database.
-3. Verify store, region, currency, country and price relationships.
-4. Review products and inventory.
-5. Configure only providers you can test end to end.
-6. Exercise cart -> checkout -> order -> fulfillment/refund with synthetic data.
+1. Create the first user at `/dashboard/init`.
+2. Run [onboarding](/docs/openfront/ecommerce/getting-started) on an empty database.
+3. Check store, region, currency, country and price relationships.
+4. Review products and stock.
+5. Configure only the providers you can test end to end.
+6. Run cart, checkout, order, fulfillment and refund with test data.
 
 ## Customization
 
-Change screens inside the relevant `features/platform/<domain>` slice and keep route pages thin. If you split the dashboard into another application, preserve session or bearer-token scope, CSRF/origin policy, tenant filters and narrow lifecycle mutations.
+Change screens inside the relevant `features/platform/<slice>` and keep route files thin. If you build a separate dashboard, keep using the same session or bearer token, and call the named lifecycle mutations (`createOrderFulfillment`, `transitionOrderStatus`, `processReturnRefund` and others) instead of editing status fields directly.
 
 <Cards>
   <Card title="Products" href="/docs/openfront/ecommerce/products" description="Catalog, variants, prices and inventory relationships." />
-  <Card title="Custom dashboard" href="/docs/openfront/ecommerce/dashboard/custom" description="Keep a custom operator UI on the same security contract." />
-  <Card title="API" href="/docs/openfront/ecommerce/api-reference" description="Inspect the generated GraphQL contract from your source revision." />
+  <Card title="Custom dashboard" href="/docs/openfront/ecommerce/dashboard/custom" description="Adapt the built-in dashboard or build another one." />
+  <Card title="API" href="/docs/openfront/ecommerce/api-reference" description="Custom GraphQL operations and authentication." />
 </Cards>

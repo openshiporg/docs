@@ -1,0 +1,31 @@
+---
+title: External dashboards
+description: Give an LLM the Cannabis dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Cannabis dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Cannabis's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Cannabis codebase before proposing work.
+
+## Current platform pages
+
+All routes are under `/dashboard/platform`. Each page reads through `cannabisOperationsWorkspace` and writes through named commands.
+
+| Page | Route | What operators do there |
+|---|---|---|
+| Control room | `/platform` | Review today's stock, incidents, and authority at a glance |
+| Authority | `/platform/authority` | Licenses, staff credentials, premises details, sales-rule versions; renew authority and amend rules |
+| Staff | `/platform/staff` | People, roles, permissions and activities; add staff, set a temporary password, suspend or terminate |
+| Compliance | `/platform/compliance` | Customer verification, package holds, and recalls in one queue |
+| Customers | `/platform/customers`, `/platform/customers/[id]` | Eligibility status, evidence, carts, and purchases |
+| Recalls | `/platform/recalls` | Open a recall that holds matching packages; advance stages; close with release or destruction |
+| Inventory | `/platform/inventory` | Package stock and custody history; record lab results, release for sale, place and release holds |
+| Receiving | `/platform/receiving` | Receive packages against transfer manifests into a receiving hold |
+| Menu | `/platform/menu`, `/platform/menu/[id]` | Products, categories from the rule pack, package readiness, recent sales |
+| Store settings | `/platform/store-settings` | Store name, tagline, logo, brand color, description, and publication |
+| POS | `/platform/pos` | New sale with ID check-in, cart lines, order preparation, take payment, cancel |
+| Sales | `/platform/sales`, `/platform/sales/[id]` | Receipts by status, state-reporting state, refunds |
+| Cash | `/platform/cash` | Registers, shifts, drawer ledger, count and close, variance approval, payment types |
+| Reconciliation | `/platform/reconciliation` | Reconciliation runs, state-reporting outbox and retry, integrations, inbound state events |
+| Incidents | `/platform/incidents` | Compliance incidents, severity, and notification deadlines |
+| Audit log | `/platform/audit` | Who did what and when, by record type and action |

@@ -1,0 +1,148 @@
+---
+title: Getting started with Grocery
+description: Clone the source, configure PostgreSQL, sessions and storage, apply migrations, create the first admin, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+To see the app before installing it, open the live demo at [grocery.openship.org](https://grocery.openship.org). The operator dashboard is at `/dashboard` on the same host.
+
+## Requirements
+
+- Node.js 20.9 or later (`engines` in `package.json`).
+- npm.
+- PostgreSQL. The app uses advisory locks, raw SQL, and serializable transactions, so other databases are not supported.
+- An S3-compatible bucket for product images (required in production).
+- Optional: SMTP for email, Stripe for payments, an OpenRouter key for the AI chat.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-grocery.git
+cd openfront-grocery
+npm install
+```
+
+## Configure `.env`
+
+Copy the template and edit it:
+
+```bash
+cp .env.example .env
+```
+
+Core settings:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_grocery
+SESSION_SECRET=replace-with-a-random-value-of-at-least-32-characters
+PUBLIC_STORE_ID=store_juniper
+PUBLIC_SIGNUPS_ALLOWED=false
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+S3_ENDPOINT=https://your-s3-endpoint.example
+```
+
+Generate the session secret yourself, for example with `openssl rand -hex 32`. In production the app refuses to start if `SESSION_SECRET` is shorter than 32 characters or matches a published example.
+
+What the code checks in production (`NODE_ENV=production`):
+
+- `DATABASE_URL` must be a PostgreSQL URL.
+- `SESSION_SECRET` is required.
+- `PUBLIC_STORE_ID` is required and must equal `store_juniper`, the Store row created by the migrations.
+- `NEXT_PUBLIC_SITE_URL` is required and must use HTTPS.
+- All five `S3_*` variables are required.
+
+Outside production, missing values fall back to local defaults, including a local PostgreSQL URL and a development-only session secret.
+
+### Other variables the code reads
+
+| Variable | Purpose |
+|---|---|
+| `SESSION_MAX_AGE_SECONDS` | Session length. Between 900 seconds and 30 days. Default 7 days. |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens `/dashboard/signup`. Shopper registration at `/account/register` is separate. |
+| `TRUSTED_PROXY` | `true` reads the client address from `X-Real-IP`. Only safe behind an edge that overwrites that header. |
+| `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe checkout. Off unless `STRIPE_ENABLED=true` and all three keys are set. |
+| `STRIPE_ALLOW_TEST_MODE` | Allows test keys in production. |
+| `STRIPE_USE_ENVIRONMENT_PROVIDER` | With test mode, treats the seeded Stripe record as installed without a database write. |
+| `PAYMENT_ADAPTER_ALLOWED_ORIGINS` | Comma-separated HTTPS origins allowed for custom remote payment adapters. |
+| `PAYMENT_PROVIDER_ADMIN_USER_IDS` | Comma-separated user ids allowed to change payment provider records. Without it, provider settings are read-only in the app. |
+| `GUEST_ORDER_TOKEN_MAX_AGE_SECONDS` | Lifetime of the signed guest order link. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_SECURE` | Email for password resets and customer messages. |
+| `GROCERY_EVENT_WORKER_USER_ID`, `GROCERY_EVENT_WORKER_ID` | Event worker actor (needs `canManageOnboarding`) and worker id. |
+| `GROCERY_EVENT_WEBHOOK_URL`, `GROCERY_EVENT_WEBHOOK_SECRET` | Optional signed HTTPS endpoint for outbound events. |
+| `GROCERY_SUBSCRIPTION_OPERATOR_ID`, `GROCERY_SUBSCRIPTION_BATCH_SIZE` | Recurring-basket worker actor and batch size. |
+| `REFUND_RECONCILIATION_USER_ID`, `REFUND_RECONCILIATION_STORE_ID`, `REFUND_RECONCILIATION_WORKER_ID`, `REFUND_RECONCILIATION_INTERVAL_MS`, `REFUND_RECONCILIATION_PROVIDER_TIMEOUT_MS`, `REFUND_RECONCILE_LIMIT` | Refund reconciliation worker. |
+| `GROCERY_PAYMENT_TEST_SECRET` | Local test payment adapter. Refused in production. |
+| `MCP_ENABLED` | `true` enables `/api/mcp-transport`. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | AI chat at `/api/completion`. |
+| `SHADOW_DATABASE_URL` | Used only by `npm run migrate:gen`. |
+
+Never commit `.env`.
+
+## Apply migrations
+
+The repository has 46 checked-in migrations. One of them inserts the Store `store_juniper` and backfills existing rows to it. Apply them with:
+
+```bash
+npm run migrate
+```
+
+<Callout type="warn">
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database in `DATABASE_URL`. Point it only at a database you control. `npm run migrate:gen` creates and applies new migrations and is for development databases only.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql` (playground is on outside production)
+- Health check: `/api/health`
+
+## Create the first user
+
+While the database has no users, every page redirects to `/dashboard/init`. That form takes a name, email, and password. It connects the user to the Store in `PUBLIC_STORE_ID` and creates an `Admin` role with all capabilities. After the first user exists the form closes.
+
+Add more staff later from **Staff & privacy** (`/dashboard/platform/staff`). Invitations are accepted at `/staff/accept`.
+
+## Run onboarding
+
+Sign in at `/dashboard`. The onboarding cards open a dialog with three templates: Complete Setup, Basic Setup, and Custom Setup. Running one calls `runGroceryOnboarding`, which seeds store settings, departments, suppliers, products, lots, fulfillment windows, parking spots, the Stripe provider record, and coupons for your Store.
+
+Seeded settings use "Replace with your …" placeholder text. Open **Settings** (`/dashboard/platform/settings`) and enter your real store name, address, contact details, delivery postal prefixes, and logo. Review prices, stock, and slots before taking orders. See [Openfront Grocery](/docs/openfront/grocery#onboarding) for what onboarding does on a second run.
+
+## Deploy
+
+Build, apply migrations as a release step, then start:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`npm run build` does not run migrations. The included `railway.toml` builds without migrations and runs `npm run migrate && next start` at start. The README also has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, `PUBLIC_STORE_ID`, `NEXT_PUBLIC_SITE_URL`, and the five `S3_*` variables.
+
+For a full deployment:
+
+1. Provision PostgreSQL and back it up before migrating.
+2. Set the production variables above, plus SMTP and Stripe if you use them.
+3. Register the Stripe webhook at `/api/payments/webhooks/pp_stripe_default`.
+4. Run `npm run worker:events`, `npm run worker:subscriptions`, and `npm run worker:refund-reconcile` as separate supervised processes. Create staff users for them and set their ids in the worker variables.
+5. Set `TRUSTED_PROXY=true` only behind an edge that overwrites `X-Real-IP`.
+
+## Other commands
+
+- `npm run lint` runs ESLint.
+- `npm run worker:refund-reconcile:once` runs one refund reconciliation pass.
+
+There is no `test` or `typecheck` script in `package.json`.

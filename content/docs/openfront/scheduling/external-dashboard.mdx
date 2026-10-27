@@ -1,0 +1,35 @@
+---
+title: External dashboards
+description: Give an LLM the Scheduling dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Scheduling dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Scheduling's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Scheduling codebase before proposing work.
+
+## Current platform pages
+
+Each page is a thin route under `app/dashboard/(admin)/platform/` that renders a slice in `features/platform/<slice>`.
+
+| Route | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/scheduling` | `scheduling` | Overview of today's and upcoming work |
+| `/dashboard/platform/bookings` | `bookings` | Status tabs, search, event and host filters, inline confirm, decline, cancel, complete, no-show |
+| `/dashboard/platform/bookings/[id]` | `bookings` | Attendees, answers, payment, meeting link, calendar state, resources, series, history, and lifecycle actions |
+| `/dashboard/platform/event-types`, `/new`, `/[id]` | `event-types` | Create and edit event types, hosts, schedule, questions, buffers, payment policy, templates, resource requirements, history, publish |
+| `/dashboard/platform/availability`, `/new` | `availability` | Schedules, weekly hours, date overrides, blocked time |
+| `/dashboard/platform/clients`, `/[email]` | `clients` | Search people who booked; one client's bookings and answers |
+| `/dashboard/platform/payments`, `/[id]` | `payments` | Payment ledger with status tabs; capture, refund, retry |
+| `/dashboard/platform/team` | `team` | Members, roles, suspend, reactivate, remove, transfer ownership, invitations, administration log |
+| `/dashboard/platform/resources` | `resources` | Rooms, equipment, capacity pools, maintenance, managed event templates |
+| `/dashboard/platform/routing-forms`, `/new`, `/[id]` | `routing-forms` | Questions, ordered rules, default event, recent submissions |
+| `/dashboard/platform/workflows`, `/new`, `/[id]` | `workflows` | Triggers, actions, activate, pause, archive, run history with retry, reminders panel |
+| `/dashboard/platform/store` | `store-settings` | Storefront identity, copy, logo, theme |
+| `/dashboard/platform/integrations` | `integrations` | Calendar OAuth, conferencing connections, Stripe and manual payment providers, operation retries |
+| `/dashboard/platform/webhooks` | `webhooks` | Webhook endpoints, notification subscriptions, delivery log with retry |
+| `/dashboard/platform/embeds`, `/new`, `/[id]` | `embeds` | Embed configs, publish releases, install snippet |
+| `/dashboard/platform/api-keys` | `api-keys` | API keys and OAuth clients with scopes |
+| `/dashboard/platform/data-jobs` | `data-jobs` | Imports (dry run or apply) and exports |
+| `/dashboard/platform/analytics` | `analytics` | Booking and payment analytics projections |
+
+Older `/dashboard/platform/scheduling/*` sub-routes redirect to these pages and keep their query strings. The generic Keystone list and item screens (`/dashboard/[listKey]`) remain for records without a dedicated page. Onboarding lives in `features/platform/onboarding` and opens from the dashboard layout.

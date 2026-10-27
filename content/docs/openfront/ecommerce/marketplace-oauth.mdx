@@ -1,53 +1,49 @@
 ---
 title: Marketplace & OAuth
-description: Connect external applications to an Openfront store through OAuth-based access.
+description: Connect external apps to an Openfront store with OAuth apps, API keys, customer tokens and webhooks.
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Openfront includes OAuth-based integration flows for stores that want to connect external apps or build an app ecosystem around the platform.
+External systems, such as an order management system or a marketplace, can reach store data without a dashboard session. The current source has four credential types and an outgoing webhook system.
 
-This is useful when another system needs controlled access to store data without sharing a full admin session.
+## Credentials
 
-## The OAuth flow
+| Credential | Prefix | Issued by | Acts as |
+|---|---|---|---|
+| API key | `of_` | `/dashboard/platform/api-keys` | The key's owner, limited to the key's scopes, optional IP allowlist and expiry |
+| OAuth app token | — | `/api/oauth/authorize` and `/api/oauth/token` | The approving operator, limited to the granted scopes |
+| Customer token | `ctok_` | `regenerateCustomerToken` on the storefront | A business customer (see [B2B accounts](/docs/openfront/ecommerce/b2b-credit-accounts)) |
+| MCP token | `mcp_at_` | `/oauth/*` routes | The approving user, for MCP clients (see [AI assistant](/docs/openfront/ecommerce/ai-assistant)) |
+
+All are sent as `Authorization: Bearer <token>`. API-key and OAuth scopes map to permissions in `features/keystone/oauth/scopes.ts`. Scopes come in read and write pairs for products, orders, customers, fulfillments, checkouts, discounts, gift cards, returns, sales channels, payments, webhooks and apps.
+
+## OAuth app flow
 
 <Steps>
 <Step>
-### App registration
-An app is registered with the credentials and redirect URLs it needs.
-
-That usually includes:
-- client ID and secret
-- redirect URIs
-- requested scopes
+### Register the app
+An `OAuthApp` record holds the name, `clientId`, `clientSecret`, redirect URIs, allowed scopes, status, and optional install, uninstall, webhook, privacy and support URLs. Creating one requires `canManageApps`. `/dashboard/platform/apps` lists apps and can suspend, activate, edit redirect URIs or delete them.
 </Step>
-
 <Step>
-### User authorization
-When the app wants access, the user is sent to an authorization screen where they can see what the app is asking for.
+### Authorize
+The app sends the operator to `/api/oauth/authorize?client_id=...&response_type=code&redirect_uri=...&scope=...`. The operator must be signed in with dashboard access. The redirect URI must be registered, and every scope must be both known and allowed for the app. PKCE (`plain` or `S256`) is supported. The `/dashboard/platform/order-management-system` and `/dashboard/platform/apps` pages show an install dialog when opened with `?install=true` and the same parameters.
 </Step>
-
 <Step>
-### Installation and token use
-Once approved, the app receives the token it needs to call the Openfront API within the granted scope.
+### Exchange the code
+The app posts to `/api/oauth/token` with `grant_type=authorization_code` (or `refresh_token`), its client credentials and, if used, the PKCE verifier.
 </Step>
 </Steps>
 
-## Why this matters
+## Webhooks
 
-OAuth is the safer path when you want third-party access without turning every integration into a custom one-off token exchange.
+`registerWebhookEndpoint(registrationKey, url, events, secret, requiredScope)` creates or updates a subscription for the caller. It needs `canManageWebhooks`, except that a customer token may subscribe only to `fulfillment.created`. URLs must be HTTPS (plain HTTP is allowed for localhost outside production) and cannot contain credentials.
 
-Typical use cases:
-- external order-management systems
-- marketplace connectors
-- custom partner apps
-- internal tools that should not run as full dashboard users
+Deliveries are signed with HMAC-SHA256 using the endpoint secret, in the `X-OpenFront-Webhook-Signature: sha256=...` header. Events include `order.canceled`, `order.archived`, `fulfillment.created` and `payment.captured`, among others raised by the webhook plugin. Failed deliveries are retried only when someone with `canManageWebhooks` calls `retryWebhookDeliveries`.
 
-## Related concepts
-
-These integrations often sit alongside:
-- scoped app permissions
-- idempotency handling for repeated requests
-- webhook subscriptions for syncing data changes
-
-If you are building apps around Openfront instead of just running a single storefront, this is one of the features that starts to matter quickly.
+<Callout type="warn">
+- Scopes only add permissions. They do not narrow a token below its owner's role; test each operation you expose with the exact key.
+- There is no scheduled retry for webhooks.
+- The `MARKETPLACE_TOKEN_SECRET` entry in `.env.example` is not read by the current code.
+</Callout>

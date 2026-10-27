@@ -1,89 +1,84 @@
 ---
 title: AI assistant
-description: Use natural language inside the dashboard to work with restaurant data faster.
+description: Use natural language inside the dashboard to read and change restaurant data.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The AI assistant in Openfront Restaurant is not a canned FAQ bot. It sits on top of the same GraphQL API the rest of the product uses, and it discovers the schema through MCP tools before it makes changes.
+The AI assistant is a chat panel in the dashboard sidebar. It works on top of the same Keystone GraphQL API the rest of the app uses. It finds the schema through MCP tools before it makes changes, so its changes are real changes to your data.
 
-That matters for one simple reason: when the assistant updates a menu item or looks up an order, it is doing real work against real data.
+## What it can do
 
-## What it is good at right now
+- list models and look up their fields and input types
+- query records, such as orders, menu items, reservations, or waitlist entries
+- search a model the same way the dashboard list search does
+- create, update, and delete records through Keystone's generated CRUD mutations
 
-- creating or updating menu items
-- changing availability for an item that is sold out
-- looking up orders, users, and restaurant records
-- working with fields in Keystone lists without you having to remember the exact mutation name
-- acting as a fast admin-side assistant when you already know roughly what you want done
+The MCP server exposes these tools: `listModels`, `searchModels`, `getFieldsForType`, `lookupInputType`, `queryData`, `modelSpecificSearch`, `createData`, `updateData`, and `deleteData`.
+
+It does not call the custom restaurant operations, such as `createPOSOrder`, `fireCourse`, `processPayment`, or `refundPayment`. Workflows that depend on those must be done in their screens.
 
 ## How it works
 
 <Steps>
 <Step>
-### It connects to your live schema
-The assistant uses MCP transport endpoints exposed by the app to inspect your GraphQL schema. That lets it discover list names, input types, and available fields instead of guessing.
+### The chat posts to the completion route
+The dashboard sends messages to `/api/completion`. Only the last 20 messages are kept.
 </Step>
 <Step>
-### It maps your request to the right operation
-If you ask for something natural, like updating a menu item or finding a reservation, the assistant searches for the right model and resolves the actual GraphQL operation name.
+### It connects to the MCP endpoint
+The route opens an MCP client to `/api/mcp-transport/http` on the same app. Only the session cookie is forwarded, and only to that one endpoint.
 </Step>
 <Step>
-### It executes the same API the app already uses
-Queries and mutations run against your existing Keystone GraphQL API. There is no hidden side channel.
+### The MCP server reads your schema
+The MCP route fetches the GraphQL schema with your cookie and builds its tools from it.
 </Step>
 <Step>
-### It respects your session
-The assistant uses your current authenticated session. In practice, that means it can only do what your account can already do.
+### Calls run as you
+Every query and mutation runs against `/api/graphql` with your session. Keystone access rules apply as for any other request.
 </Step>
 </Steps>
 
-## Key pieces in the codebase
-
-The current assistant flow is built around these parts:
+## Key files
 
 - `app/api/completion/route.ts`
+- `app/api/completion/scopedMcpFetch.ts`
 - `app/api/mcp-transport/[transport]/route.ts`
 - `features/dashboard/actions/ai-chat.ts`
-
-If you want to customize the assistant, those are the files to start with.
+- `features/dashboard/components/dual-sidebar/ai-chat-sidebar.tsx`
 
 ## Configuration
-
-You can run the assistant with shared OpenRouter credentials or with user-provided local keys.
 
 ### Shared keys
 Set these environment variables:
 
 ```bash
-OPENROUTER_API_KEY="sk-or-v1-..."
-OPENROUTER_MODEL="anthropic/claude-3.5-sonnet"
+OPENROUTER_API_KEY="your-openrouter-key"
+OPENROUTER_MODEL="provider/model-name"
 OPENROUTER_MAX_TOKENS="4000"
 ```
 
+With shared keys, the route requires a signed-in user whose role can access the dashboard. If `OPENROUTER_API_KEY` or `OPENROUTER_MODEL` is missing, shared mode is unavailable.
+
 ### Local keys
-The dashboard UI also supports storing a per-user OpenRouter key and model choice in local settings.
+A user can instead enter their own OpenRouter key and model in the chat settings. The browser sends them with each request.
+
+The route checks the key against OpenRouter before each chat.
+
+## Be careful
+
+- The assistant can delete records if your role allows it. Review what it plans before confirming bulk changes.
+- Generic CRUD skips the checks built into custom restaurant operations. Orders, order items, payments, kitchen tickets, and gift cards block direct create and update, so the assistant cannot change them. Lists such as menu items, tables, and store settings do allow direct writes for permitted roles.
+- Give assistant access only to managers and admins.
+
+## Example prompts
+
+- "Mark The Big Stack as unavailable."
+- "Show waiting parties with a quoted wait over 20 minutes."
+- "List menu items tagged for dinner, sorted by name."
+- "Add a modifier called Extra Pickles to the Classic Burger."
 
 <Callout type="info">
-If you are rolling this out to staff, shared keys are the cleaner default. Local keys are useful when you want power users to bring their own model access.
+It is not a customer-facing chat. It runs only inside the dashboard.
 </Callout>
-
-## What to be careful about
-
-- The assistant is only as safe as the underlying access rules.
-- It is best used by managers and admins, not as a substitute for a locked-down permissions model.
-- For bulk changes, review the result just like you would review a spreadsheet import.
-
-## Good first use cases
-
-Try prompts like these inside the dashboard:
-
-- "Mark The Big Stack as unavailable tonight."
-- "Show me all waiting parties with a quoted wait longer than 20 minutes."
-- "Find menu items tagged as dinner and sort them by name."
-- "Create a new modifier called Extra Pickles for the Classic Burger."
-
-## What it is not
-
-It is not a customer-facing chat widget, and it is not a replacement for a finished permissions audit. Think of it as a practical admin operator that already knows your schema.

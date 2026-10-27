@@ -1,0 +1,74 @@
+---
+title: Analytics integrations and boundaries
+description: The tracking script, the collector HTTP API, server-side events, imports, country headers, API keys, MCP, AI chat, email, and storage.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Tracking script
+
+`/assets/script.js` reads its settings from the script tag:
+
+| Attribute | Effect |
+|---|---|
+| `data-site-id` (or `data-website-id`) | The site's `publicId`; required |
+| `data-host-url` | Collector base URL, if different from the script's origin |
+| `data-auto-pageview="false"` | Turn off automatic pageviews and history tracking |
+| `data-vitals="false"` | Turn off Core Web Vitals |
+| `data-outbound-links="true"` | Send an `Outbound Link: Click` event for links to other hosts |
+| `data-do-not-track="true"` | Respect the browser's Do Not Track setting |
+| `data-exclude-search="true"` | Drop the query string from page URLs |
+| `data-domains` | Comma-separated hostnames; other hostnames send nothing |
+| `data-allow-localhost="true"` | Allow hits from `localhost` and `127.*` |
+
+The script always honors Global Privacy Control, and it sends nothing if `localStorage` key `openfront_analytics_ignore` is `true`. It counts single-page-app navigations by wrapping `pushState` and `replaceState` and listening for `popstate`. It exposes `window.openfrontAnalytics` with `track(name, data)`, `identify(id)`, and `pageview()`. Elements with `data-analytics-event="Name"` send a custom event on click; `data-analytics-event-<key>` attributes become properties. Web vitals are sent once when the page is hidden. Requests use `text/plain` and `credentials: 'omit'`.
+
+## Collector API
+
+`POST /api/track` accepts JSON:
+
+```json
+{ "type": "event", "payload": { "siteId": "site_...", "name": "Signup", "url": "https://example.com/signup", "data": { "plan": "pro" }, "revenue": 49, "eventId": "optional-idempotency-id" } }
+```
+
+- `type` is `pageview`, `event` (custom when `name` is set), or `vitals` / `performance`. Some Umami-style aliases are accepted (`website`, `websiteId`, `props`, `uuid`).
+- Responses: 200 recorded or duplicate; 202 ignored (bot, inactive site, hostname not in the site); 400 invalid body; 403 origin not part of the site; 404 unknown site; 413 body over 32 KB; 422 revenue currency does not match the site.
+- Server-side calls should send the visitor's `User-Agent` and `X-Forwarded-For`, as the snippet on the site's Settings tab shows. Without them, every server hit hashes to the same visitor. A request without a User-Agent is treated as a bot.
+- There is no authentication on `/api/track`. The site id is public, and the origin check applies only when a browser sends `Origin`.
+
+## Client IP and country
+
+<Callout type="warn">
+The collector trusts the first `X-Forwarded-For` value, then `X-Real-IP`, with no trusted-proxy list. Run it behind a proxy that overwrites these headers, or visitors can choose their own hash.
+</Callout>
+
+Country comes from the first valid header among `cf-ipcountry`, `x-vercel-ip-country`, `cloudfront-viewer-country`, `fly-client-country`, and `x-country-code`. If none is set, it is guessed from the browser timezone the script sends. No GeoIP database is bundled, and region and city are not filled in by the collector.
+
+## Importing data
+
+`importSiteSessions` takes up to 500 visits per call (each with a `key`, `startedAt`, visit fields, and 1 to 50 events). It needs `canManageSites`. Re-sending the same keys is skipped. There is no importer for another tool's export format; you convert the data yourself.
+
+## API keys
+
+Create keys at `/dashboard/platform/api-keys`. The token is generated in the browser as `of_` plus 32 random characters, shown once, and stored as a bcrypt hash with a short preview. Send it as `Authorization: Bearer of_...` to `/api/graphql`. A key works only when it is `active`, not expired, has valid scopes, and (if `restrictedToIPs` is set) the request IP matches. The key's `lastUsedAt` is updated on use. Revoked keys cannot be turned back on.
+
+| Scope | Allows |
+|---|---|
+| `read_analytics` | Read sites and their reports |
+| `write_sites` | Read and manage sites, goals, funnels, segments, visits, and events, and import or delete data |
+| `write_shared_links` | Read sites and manage shared links and public visibility |
+
+## MCP and AI chat
+
+- `/api/mcp-transport/[transport]` is a JSON-RPC MCP server. It forwards only the caller's `Cookie` header to `/api/graphql`, so tools run with the signed-in user's permissions. An API-key bearer header is not forwarded. The generic schema tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) work against this schema. The tool list also includes commerce tools inherited from Openfront E-commerce (`searchProducts`, `createCart`, `placeOrder`, and others); this schema has no products, carts, or orders, so those tools fail.
+- `/api/completion` is the dashboard AI chat. It needs a signed-in user with `canAccessDashboard`, uses OpenRouter with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (or a key the user supplies in the browser), and talks to the MCP endpoint through a fetch that forwards the cookie only to that one URL.
+
+## Email and storage
+
+- Email is used only for password reset, through `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`.
+- Keystone is configured with an S3 image store (`S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`; path-style is chosen from the endpoint). No current list has an image or file field, so nothing is uploaded today, but the variables are still required in production.
+
+## Not included
+
+There are no outgoing webhooks, scheduled email reports, alerts, Search Console or ad-platform connections, data warehouse export, or payment providers in current source.

@@ -1,0 +1,39 @@
+---
+title: External storefronts
+description: Give an LLM the Collectibles storefront skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Collectibles storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Collectibles' current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Collectibles codebase before proposing work.
+
+## Current storefront routes
+
+Route files are in `app/(storefront)/[countryCode]/**` and import screens from `features/storefront/screens`. The card UI shared with the dashboard (card grid and tile, checklist rows, card art, rarity marks, condition run, filter bar, binder summary, price history, graded slab, sealed box) is in `features/storefront/components/cards`.
+
+| Route | What customers do there |
+|---|---|
+| `/[countryCode]` | Home: set checklist with stock, market prices, and add buttons |
+| `/[countryCode]/sets`, `/sets/[handle]` | Browse sets and one set's full checklist (`publicCardSets`, `publicSetChecklist`) |
+| `/[countryCode]/cards/[id]` | One card's market reading and history (`publicCardMarket`) and stocked conditions |
+| `/[countryCode]/products/[handle]` | Product page for a single, slab, or sealed product |
+| `/[countryCode]/store`, `/categories/[...category]`, `/collections/[handle]` | Shelves by category and collection |
+| `/[countryCode]/search` | Search; signed-in customers can save searches |
+| `/[countryCode]/trade-in` | "Sell to us": buylist offers per condition, build a sell list, choose cash or credit, submit (`publicBuylist`, `submitTradeIn`) |
+| `/[countryCode]/cart`, `/checkout` | Cart and checkout; pre-order limits are enforced at the cart |
+| `/[countryCode]/order/confirmed/[id]` | Order confirmation |
+| `/[countryCode]/account` | Sign in or account overview |
+| `/account/orders`, `/orders/details/[id]` | Order history and detail |
+| `/account/binder` | Binder: owned cards, condition, cost, market value, set completion (`activeBinder`, `addToBinder`, `removeFromBinder`) |
+| `/account/wishlist` | Want list with worst acceptable condition, maximum price, and which wants the shop can fill (`activeWantList`, `toggleWantList`) |
+| `/account/saved-searches`, `/trade-ins`, `/profile`, `/addresses` | Saved searches, trade-in history (`activeTradeIns`), collector profile, addresses |
+| `/account/invoices`, `/invoicing`, `/checkout-link` | Business-account invoices and checkout links |
+
+## Customer journeys
+
+1. **Find and buy a card:** set checklist or search → card or product page → choose condition → cart → checkout (Stripe or bank transfer) → confirmation → account orders.
+2. **Pre-order sealed product:** sealed product page → add up to the per-customer limit → checkout.
+3. **Sell cards to the shop:** sign in → `/trade-in` → build a sell list → submit → follow status in `/account/trade-ins` while staff inspect and quote.
+4. **Track a collection:** add cards to the binder; add wants with a condition and price ceiling; the want list shows matching stock on each visit.
+
+A separate client can build against the same GraphQL API at `/api/graphql`, using the public projections for browsing and the customer operations for cart, checkout, and account data.

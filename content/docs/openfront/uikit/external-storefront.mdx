@@ -6,3 +6,41 @@ description: Give an LLM the UIKit storefront skill to adapt the built-in experi
 To create a custom UIKit storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement UIKit's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied UIKit codebase before proposing work.
+
+Skill file: [`/skills/openfront-uikit-custom-storefront/SKILL.md`](/skills/openfront-uikit-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/`. Screens live in `features/storefront/screens`, data loaders in `features/storefront/lib`, and sign-in forms in `features/storefront/auth`.
+
+| Route | Customer journey | Main calls |
+|---|---|---|
+| `/` | Home: studio name, about, component list. Shows a "not configured" page until brand settings exist | `PublicBrand`, `StorefrontKitProducts` |
+| `/components` | Catalog of active, visible products (up to 24) | `StorefrontKitProducts` |
+| `/components/[slug]` | Detail: files (locked if paid and not owned), usage examples, screenshots, compatibility, changelog, install command | `getResolvedRegistryManifest` (server-side, reads the stable release and access summary) |
+| `/components/[slug]/checkout` | Unlock a free item or pay with Stripe or PayPal; on return, completes the order | `StorefrontCreateKitCheckoutSession`, `StorefrontCompleteKitOrder` |
+| `/kits`, `/kits/[slug]`, `/kits/[slug]/checkout` | Redirect to the matching `/components` route, keeping query params | none |
+| `/docs/registry` | How to use the registry and CLI | none |
+| `/account` | Name, email, and owned products; redirects to sign in when signed out | `AccountViewer`, `RegistryViewerAccessSummary` |
+| `/account/signin`, `/account/signup`, `/account/reset` | Sign in, create an account, reset password | `SignInAccount`, `CreateCustomerAccount`, `RequestCustomerPasswordReset`, `ResetCustomerPassword` |
+| `/account/token` | Create and revoke registry API keys (token shown once) | `RegistryApiKeysPage`, `RegistryAccessSummaryPage`, `CreateRegistryApiKey`, `RevokeRegistryApiKey` |
+
+Non-page routes in the storefront group:
+
+| Route | Purpose |
+|---|---|
+| `/r/registry.json` | shadcn registry index for the catalog |
+| `/r/<code>.json` | Stable release manifest for one item. Accepts `?version=` and `?includeLockedMetadata=1` |
+| `/openfront-ui.js` | Downloads the registry CLI with an `X-Openfront-CLI-SHA256` header |
+
+Other public endpoints: `/api/registry/<code>` (same manifest service as `/r/<code>.json`), `/api/payment-providers/<providerCode>/webhook`, and `/api/validation-artifacts/<validationId>/screenshots/<name>` (only for passed validations of stable releases).
+
+`/v1`, `/v2`, and `/v2/components/*` redirect permanently to `/` and `/components`.
+
+## Journey boundaries
+
+- Checkout needs a signed-in user. Guests are sent to sign in or create an account.
+- Only providers with full env configuration appear at checkout. Manual payment is never offered to customers.
+- Registry requests authenticate with `Authorization: Bearer <token>` or `x-openfront-token`, or fall back to the browser session. Without access, paid items return 401 or 402 with public metadata and `next` links.
+- A product without a stable release with a manifest hash cannot be checked out.
+- There is no cart. Each checkout is for one product.

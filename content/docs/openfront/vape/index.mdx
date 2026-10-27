@@ -1,0 +1,40 @@
+---
+title: Openfront Vape
+description: Self-hosted commerce for regulated vapor products, with merchant authority, product evidence, jurisdiction rule sets, and a fail-closed checkout gate.
+icon: Wind
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Vape is a self-hosted commerce application for a retailer of vapor products (ENDS devices, e-liquids, components, and accessories) that sells to adults 21 and older. It combines the Openfront retail stack (catalog, variants, regional pricing, inventory, carts, orders, fulfillment, returns, invoices, discounts, gift cards) with regulated-product controls: merchant profiles and licenses, jurisdictions, signed rule sets, per-variant product classification and authorization evidence, provider approvals, an append-only compliance ledger, evidence reports, and an emergency kill switch.
+
+<Callout type="warn">
+Regulated checkout fails closed. The current source has no adapter that records age-verification, regulated tax, or carrier-eligibility evidence, so a regulated cart is denied at checkout today. Openfront Vape does not provide legal advice, licensure, PACT Act registration, FDA authorization, age-verification certification, or any regulatory approval. Recorded approvals are records an operator entered, not proof that a provider, regulator, or carrier accepted anything.
+</Callout>
+
+## Who it is for
+
+- **Operators:** a shop owner or manager running catalog, inventory, orders, and fulfillment; a compliance lead maintaining merchant authority, jurisdictions, rule sets, product evidence, provider approvals, the ledger, and reports.
+- **Shoppers:** adults who pass the storefront age gate and browse, build a bag, sign in, and reach checkout, where the compliance decision is shown.
+- **Developers:** teams adapting the operator dashboard or storefront, or wiring real identity, tax, carrier, and registry providers behind the existing adapter contracts.
+
+## What the codebase contains
+
+- **Architecture:** Next.js 16 App Router with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL. Keystone lists live in `features/keystone/models` (about 98 lists, including `RegulatedAuthority.ts`, `RegulatedProduct.ts`, `RegulatedTransaction.ts`, and `RegulatedReporting.ts`). The regulated decision engine, release gate, policy validation, and the draft `us-ends` policy pack live in `features/regulated-commerce`.
+- **Operator surfaces:** the shared Openfront dashboard shell in `features/dashboard`, plus Vape-specific workspaces in `features/platform` mounted at `/dashboard/platform/*`: Overview, Compliance Center, merchant profiles, jurisdictions and rule sets, product evidence, provider approvals, compliance ledger, compliance reports, and the retail workspaces.
+- **Storefront:** country-scoped routes at `/[countryCode]/**` in `features/storefront`, with a 21+ age gate, store, category, collection, and product pages, bag, checkout with a compliance panel, account, privacy, invoices, and policy pages.
+- **Onboarding:** a dashboard onboarding dialog seeds a store, a `us` region, shipping options, categories, collections, ten draft products, a Manual payment provider, and a draft merchant profile with the kill switch on. Onboarding never enables regulated transactions.
+
+## Ownership and tenancy
+
+One deployment serves one store. There is no multi-tenant organization model: operator authority comes from role permission flags such as `canManageProducts`, `canManageOrders`, `canReadCompliance`, `canManageCompliance`, `canReviewComplianceDecisions`, `canManageComplianceReports`, `canAccessIdentityEvidence`, and `canOperateComplianceKillSwitch`. Customer reads are scoped to the signed-in user (or a guest order `secretKey`), and customer tokens never carry administrative permissions. API keys and OAuth tokens need both a credential scope and the owner's current role permission. Compliance records are never deleted through GraphQL, and ledger records (decisions, events, verification attempts, tax quotes, carrier decisions, report runs) are written only by system code.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/vape/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/vape/architecture-workflows" description="Data model, go-live gate, publish, checkout, fulfillment, safety stop, and reporting." />
+  <Card title="External dashboards" href="/docs/openfront/vape/external-dashboard" description="Skill and page map for adapting or replacing the operator dashboard." />
+  <Card title="External storefronts" href="/docs/openfront/vape/external-storefront" description="Skill and route map for adapting or replacing the age-gated storefront." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/vape/integrations-boundaries" description="Payments, shipping, regulated provider contracts, storage, MCP, and webhooks." />
+  <Card title="Current limitations" href="/docs/openfront/vape/limitations" description="What the current source does not do, including the closed checkout path." />
+</Cards>

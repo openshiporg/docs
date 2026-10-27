@@ -1,0 +1,51 @@
+---
+title: External dashboards
+description: Give an LLM the Sportsbook dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Sportsbook dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Sportsbook's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Sportsbook codebase before proposing work.
+
+Skill file: [`/skills/openfront-sportsbook-custom-dashboard/SKILL.md`](/skills/openfront-sportsbook-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`. Most actions need operator two-factor assurance, and sensitive ones go through the Approval inbox.
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform` | Control room: today's queues, exceptions, exposure, latest wagers, and shortcuts into each workflow |
+| `/dashboard/platform/onboarding` | Preview and apply sandbox setup, resume a partial setup, see stage progress (needs MFA) |
+| `/dashboard/platform/catalog`, `/events` | Create events with a first market and browse the catalog (`/events` renders the same screen) |
+| `/dashboard/platform/catalog/[eventId]`, `/events/[eventId]` | Event detail: participants, schedule history, venue, season, stage, markets; add markets, reschedule |
+| `/dashboard/platform/catalog/reference` | Sports, competitions, seasons, stages, venues, competitors: create, activate, deactivate |
+| `/dashboard/platform/trading`, `/trading/[marketId]`, `/markets/[marketId]` | Market status and prices; set prices, open, suspend, close; event trading state; trader overrides; status history |
+| `/dashboard/platform/wagers`, `/[wagerId]` | Look up wagers, accepted terms, acceptance decisions, cash-out offers, exposure, tax; open an investigation |
+| `/dashboard/platform/risk` | Exposure, limit profiles and rules, correlation rules (request and apply) |
+| `/dashboard/platform/results` | Enter results, send for approval, withdraw, approve after an independent decision |
+| `/dashboard/platform/grading` | Grade selections from approved results |
+| `/dashboard/platform/settlements`, `/[wagerId]` | Settlement runs; settle, resettle, and correct cash-outs under dual control |
+| `/dashboard/platform/customers`, `/[playerId]` | Players: verification, AML, restrictions, consents, statements, sessions, devices, closures, notifications |
+| `/dashboard/platform/compliance` | Verification, AML screening, location, affordability, privacy requests, integrity cases |
+| `/dashboard/platform/responsible-gaming` | Player limits, cool-offs, self-exclusions |
+| `/dashboard/platform/closures` | Account closure requests and their blockers (read-only) |
+| `/dashboard/platform/support`, `/[caseId]` | Support cases and disputes; status changes, dispute resolution proposals, dispute timeline |
+| `/dashboard/platform/notifications` | Messages sent to customers and staff (read-only) |
+| `/dashboard/platform/finance` and its detail routes | Journals, payments, adjustments; sandbox deposits and withdrawals, chargebacks, ledger adjustments |
+| `/dashboard/platform/finance/reconciliation` and run, item, safeguarding detail | Reconciliation runs and items, safeguarding reconciliation |
+| `/dashboard/platform/finance/tax` | Tax rules and assessments on settled wagers |
+| `/dashboard/platform/promotions`, `/[promotionId]` | Create campaigns, request and apply activation; rule versions, budget, redemptions, awards |
+| `/dashboard/platform/providers` | Provider health, certification runs, trading replays, operational state |
+| `/dashboard/platform/integrations`, `/[connectionId]`, `/inbox`, `/webhooks`, `/dlq` | Provider connections, inbound messages, webhook endpoints and deliveries, dead letters, replay |
+| `/dashboard/platform/recovery` | Background jobs, worker heartbeats, retry stuck work |
+| `/dashboard/platform/incidents` | Open, mitigate, and resolve incidents |
+| `/dashboard/platform/reports` | Compliance reports, data exports, retention dry runs and executions |
+| `/dashboard/platform/configuration`, `/configuration/jurisdictions` | Channels, currencies, locales, house rules, feature flags, effective policy values; legal entities and jurisdictions |
+| `/dashboard/platform/settings` | Store branding (name, logo icon, color) and typed setting changes |
+| `/dashboard/platform/roles` | Roles, grants, revocations, operator admission, independent approver bootstrap |
+| `/dashboard/platform/security` | Enrol and verify operator two-factor |
+| `/dashboard/platform/approvals` | Approve or reject other operators' requests |
+| `/dashboard/platform/audit`, `/[auditId]` | Hash-chained audit events, chain check, anchors |
+
+Lists without a dedicated page are shown on the generic `/dashboard/<list-key>` pages. Most Sportsbook lists hide create and delete there, so those pages are for reading.

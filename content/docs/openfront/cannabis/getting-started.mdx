@@ -1,0 +1,98 @@
+---
+title: Getting started with Cannabis
+description: Install the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first user, and run dispensary onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [cannabis.openship.org](https://cannabis.openship.org). It is a shared evaluation instance; do not enter real customer, license, or payment information.
+
+## Requirements
+
+- Node.js 20 or later (`engines.node` is `>=20.0.0`; the README recommends Node 22 for Next.js 16).
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage. In production the storage variables are required at configuration load time.
+- npm (the repository ships a `package-lock.json`).
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-cannabis.git
+cd openfront-cannabis
+npm ci
+```
+
+## Environment
+
+`features/keystone/config/environment.ts` reads the runtime configuration:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_cannabis
+SESSION_SECRET=replace-with-at-least-32-random-characters
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+- `DATABASE_URL` and `SESSION_SECRET` are always required. `SESSION_SECRET` must be at least 32 characters; generate one with `openssl rand -hex 32`.
+- The five `S3_*` variables are required when `NODE_ENV=production`. Outside production the code falls back to placeholder values, so uploads only work once you set real ones.
+- Optional: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK` for password-reset email; `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS` for the dashboard AI chat. See [Integrations and boundaries](/docs/openfront/cannabis/integrations-boundaries).
+
+Never commit `.env`.
+
+## Migrations
+
+The repository has eleven migration directories: seven inherited starter migrations and four Cannabis migrations (bounded core, premises storefront settings, store logo, currency and command recovery).
+
+```bash
+npx keystone build --no-ui
+npm run migrate
+```
+
+`npm run migrate` runs `prisma migrate deploy`. `npm run migrate:gen` builds the schema, regenerates the dashboard view order, and runs `prisma migrate dev`; use it only against a disposable development database.
+
+<Callout type="info">
+Neither `npm run dev` nor `npm run build` applies migrations. Run `npm run migrate` yourself before starting the app.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+- Public menu: `/`
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+
+Other scripts: `npm run typecheck`, `npm run lint`, and `npm test` (Node's test runner over `tests/*.test.ts`).
+
+## First user and onboarding
+
+1. On an empty database, open `/dashboard/init` to create the first administrator, then sign in.
+2. The dashboard shell shows a setup launcher that opens the onboarding dialog. Choose a blank pack or the sample store.
+3. Fill in the authority pack: organization and legal name, jurisdiction code, premises name, code, address, IANA timezone and ISO currency, license number, type, regulator and validity, owner credential, sales rules (minimum ages, operating hours, purchase limits, tax and discount rules, allowed tender types, label, return, outage, privacy and retention rules), tender configurations, and a traceability provider code.
+4. Submit. `runCannabisOnboarding` requires the `canManageOnboarding` permission and creates the `Organization`, `Premises`, `CannabisLicense`, an Owner `Role`, the owner's `StaffCredential`, a `JurisdictionRulePack`, `TenderConfiguration` records, an unconfigured traceability `IntegrationInstallation`, and `StorefrontSettings`.
+
+The dialog can also load a sample store from `features/platform/onboarding/lib/seed.json`. Its license, credential, lab, and manifest details are fictional and must be replaced before any real use. `dismissCannabisOnboarding` hides the setup prompt without installing anything.
+
+After onboarding, review licenses, staff, rules, registers, products, and package inventory before selling.
+
+## Deployment
+
+The repository includes `railway.toml`:
+
+- Build: `keystone build --no-ui && next build` (same as `npm run build`).
+- Start: `npm run migrate && next start`, so migrations run at start, when the database is reachable.
+
+The README also has a Vercel deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and the four S3 credentials; add `S3_ENDPOINT` as well. On any host:
+
+1. Provision PostgreSQL and S3-compatible storage, and back up the database before upgrades.
+2. Set `NODE_ENV=production`, `DATABASE_URL`, `SESSION_SECRET`, and all five `S3_*` variables through the host's secret store.
+3. Run `npm run migrate` as a deploy or start step, then `npm start`.
+4. Create the first user at `/dashboard/init` and complete onboarding with your own license and rule data.

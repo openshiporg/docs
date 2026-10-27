@@ -1,0 +1,105 @@
+---
+title: Getting started with Coffee Shop
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js matching `package.json` `engines` (`>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
+- npm (the repository ships a `package-lock.json`).
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage for menu images in production.
+
+## Live demo
+
+A hosted demo runs at [coffee-shop.openship.org](https://coffee-shop.openship.org). It is a demonstration instance with demo data.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-coffee-shop.git
+cd openfront-coffee-shop
+npm install
+cp .env.example .env
+```
+
+## Environment
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL`, and rejects a `SESSION_SECRET` shorter than 32 characters. The five S3 values fall back to development placeholders outside production and are required when `NODE_ENV=production`.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_coffee_shop
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+Other settings the code reads:
+
+| Variable | Used for |
+|---|---|
+| `SHADOW_DATABASE_URL` | Prisma shadow database, used by `npm run migrate:gen` |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens the dashboard sign-up page and public user creation. Storefront customer sign-up uses its own command and does not need this |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset emails |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Online card payment through Stripe Checkout, and online refunds. Both must be set before the Store Settings switch has any effect |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENVIRONMENT` | PayPal adapter (`sandbox` by default, or `live`). Checkout does not offer PayPal today |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
+
+Keep `.env` out of source control.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `prisma migrate dev`. Commit model changes and their migrations together.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+Once running:
+
+- Storefront: `/`
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+- Health check: `/api/health`
+
+## First operator and onboarding
+
+1. Visit `/dashboard/init` on an empty database to create the first administrator, then sign in. The first user gets a role with every permission.
+2. The dashboard sidebar shows an onboarding card until you complete or dismiss it. Open the dialog from it and pick **Starter cafe**, **Full neighborhood cafe**, or **Custom setup** (paste your own JSON). Onboarding creates the store, menu, modifiers, inventory items with opening stock, recipes, and payment providers. Only Manual / Cash is enabled. Running it again skips records that already exist.
+3. Open `/dashboard/platform/store-settings`. Set the store name, contact email, address, timezone, weekly hours, pickup lead time, window, and orders per window, sales tax, and logo.
+4. Review prices, modifiers, and their inventory mapping on `/dashboard/platform/menu`, and count real stock on `/dashboard/platform/coffee-operations` or `/dashboard/platform/inventory`.
+5. To take card payments online, set the Stripe variables, point a Stripe webhook at `/api/payment-providers/pp_stripe_stripe/webhook`, and turn on online payment in Store Settings.
+
+## Deployment
+
+Scripts in `package.json`:
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`. Does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Unit tests under `features` and `app` with `tsx --test` |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also has a Vercel import button. Either way, provision PostgreSQL, S3-compatible storage, SMTP, and any Stripe credentials yourself. Share the same database, `SESSION_SECRET`, and storage across all app processes. There is no background worker in source.

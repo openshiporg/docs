@@ -19,7 +19,19 @@ Before asking implementation questions, briefly tell the user where the current 
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is accommodation listings, availability/calendar, quotes, reservations, guests, agreements, payments, channels, and host operations. This list is orientation, not proof that every flow is safe or complete.
+Current slices in `features/platform`: `operations` (Today), `workspaces` (properties, listings, agreements, guests, inbox, pricing, payments, reviews list/detail and create/edit screens), `calendar`, `tasks`, `reservations`, `owners` (payouts and owner statements), `reports`, `channels`, `store-settings`, `onboarding`, `routing`, and `lib` (sidebar entries and permissions in `lib/navigation.ts`).
+
+Current routes under `/dashboard/platform`: `today`, `properties` (+ `create`, `[id]`), `listings` (+ `create`, `[id]`, `[id]/edit`), `calendar`, `tasks`, `reservations` (+ `[id]`), `agreements` (+ `[id]`), `guests` (+ `[id]`), `inbox` (+ `[id]`), `pricing` (+ `create`, `[id]`, `[id]/edit`), `payments` (+ `[id]`), `payouts` (+ `[id]`, `statements/[id]`), `reports`, `channels`, `reviews` (+ `[id]`), and `store-settings`. Generic Keystone screens are `/dashboard/[listKey]`, `/create`, and `/[id]`.
+
+Tenancy: `HostOrganization` is the tenant root and `HostMembership` (role `owner|admin|manager|operations|finance`, status `invited|active|suspended`) grants access. Users whose role has `canManagePeople` or `canManageRoles` see all hosts. Role permissions are `canRead*`/`canManage*` pairs for properties, listings, calendar, pricing, reservations, guests, messages, payments, payouts, reports, channels, and reviews, plus settings, onboarding, people, and roles flags.
+
+Key models: `Property`, `AccommodationUnit`, `Listing`, `RatePlan`, `SeasonalRate`, `FeeDefinition`, `TaxRule`, `CancellationPolicy`, `CalendarBlock`, `StayQuote`, `Reservation`, `ReservationAmendment`, `StayAgreement`, `GuestProfile`, `Conversation`, `Payment`, `Refund`, `SecurityDeposit`, `DamageClaim`, `PropertyOwner`, `OwnerStatement`, `Payout`, `PropertyTask`, `TaskRule`, `ChannelConnection`, `ChannelListing`, `Review`, `MarketplaceSettings`, `OutboxEvent`.
+
+Key host mutations: `hostStayCommand(command, input)` (commands `transition`, `amend`, `reassign`, `listing_allocate`, `party_amend`, `party_invites_amend`, `payment_record_manual`, `payment_cancel_attempt`, `refund_create`, `refund_record_manual`, `refund_process`, `refund_decline`, `refund_assess`, `deposit`, `claim_create`, `claim_transition`, `agreement_void`, `agreement_reissue`, `conversation_reply`, `conversation_status`, `conversation_link_revoke`, `conversation_link_reissue`, `review_moderate`, `catalog_transition`), plus `transitionStayReservation`, `amendConfirmedStay`, `reassignStayReservation`, `initiateStayPayment`, `captureStayPayment`, `refundStayPayment`, `transitionSecurityDeposit`, `createStayDamageClaim`, `transitionDamageClaim`, `generateOwnerStatement`, `transitionOwnerStatement`, `createOperationsTask`, `transitionPropertyTask`, `runPropertyTaskRules`, `importListingCalendar`, `exportListingCalendar`, `exportHostArchive`, `deliverOutboxEvents`, and `rentalOnboarding`. Host queries include `hostOperationsReport`, `ownerFinanceSummary`, `listingReadinessIndex`, and `permittedHostOrganizations`.
+
+Known limits: Stripe card payments are test mode only; no OTA adapter exists (channels are `direct` and availability-only `ical`); owner statements and payouts are records and move no money; the outbox has no dispatcher installed.
+
+This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

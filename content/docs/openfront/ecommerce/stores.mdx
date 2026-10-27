@@ -5,49 +5,42 @@ description: Configure the identity and shared settings used by the current Open
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The current dashboard and storefront read the first `Store` record as shared application configuration. The operator page is available at `/dashboard/platform/store`.
+The dashboard and storefront read the first `Store` record (`stores(take: 1)`) as shared application settings. The operator page is `/dashboard/platform/store`.
 
-<Callout type="warn">
-Current Ecommerce source behaves as a single-store application. Although the schema can hold Store records and includes organization-related models elsewhere, products, carts, orders, regions, and other core aggregates do not form a complete organization-partitioned tenant graph.
+<Callout type="info">
+One deployment is one store. Products, carts, orders and regions are not linked to a `Store` record, so extra Store rows do not create separate shops.
 </Callout>
 
 ## Dashboard-managed settings
 
-The Store settings screen currently reads and updates:
+The Store settings screen reads and updates:
 
 - store name;
-- logo SVG;
-- logo color;
+- logo SVG (`logoIcon`);
+- logo color (`logoColor`);
 - homepage title;
 - homepage description.
 
-The server action sanitizes submitted logo SVG with SVGO before saving it. Updates require the backend permission used to manage sales-channel settings; hiding or showing the dashboard page is not the authorization boundary.
+The server sanitizes the logo SVG against an allowlist of SVG elements and attributes, both in the server action and in a field hook on the model. An SVG that does not survive sanitizing is rejected. Creating, updating and deleting Store records requires `canManageSalesChannels`. Anyone can read the Store.
 
-## Additional Store fields
+## Other Store fields
 
-The Keystone `Store` model also contains:
+The `Store` model also has:
 
 - `defaultCurrencyCode`;
-- related currencies;
-- payment, swap, and invite link templates;
-- JSON metadata;
-- a computed payment-provider configuration derived from installed providers and public Stripe or PayPal environment values.
+- related `currencies`;
+- `paymentLinkTemplate`, `swapLinkTemplate` and `inviteLinkTemplate`;
+- `metadata` (JSON);
+- a computed `paymentProviders` field. It lists installed Stripe or PayPal providers whose environment variables are set, with their publishable key.
 
-Those fields are part of the GraphQL model, but they are not all editable in the current Store settings screen. Use the generated schema from the same revision before building another administrative client.
+These fields are not on the settings screen. Edit them on the generic `/dashboard/stores` page or through GraphQL. `/dashboard/platform/system` also has a Stores tab.
 
-## Currency and market configuration
+## Markets
 
-The Store record is not the complete market model. Regions, countries, currencies, prices, tax rates, payment providers, and shipping options have their own records and workflows. Configure and test those relationships separately rather than assuming that changing `defaultCurrencyCode` converts prices or establishes a security boundary.
+The Store is not the market model. Regions, countries, currencies, prices, tax rates, payment providers and shipping options have their own records, managed under `/dashboard/platform/regions` and the related pages. Changing `defaultCurrencyCode` does not convert prices.
 
-## Operational checks
+## Before you publish changes
 
-Before publishing configuration changes:
-
-1. verify the dashboard permission and API access path;
-2. preview branding on the built-in storefront at desktop and mobile sizes;
-3. confirm each region's currency, prices, countries, tax, payment, and shipping behavior;
-4. validate link templates against an allowlisted application origin;
-5. keep private provider credentials out of Store metadata and public environment variables;
-6. test rollback for a malformed logo or template.
-
-For independent operator clients, use a bounded Store projection and an allowlisted update input. Do not expose unrestricted generic Store mutation access to a browser.
+1. Preview branding on the storefront at desktop and mobile sizes.
+2. Check each region's currency, prices, countries, tax rate, payment providers and shipping options.
+3. Keep provider secrets out of Store metadata and out of `NEXT_PUBLIC_` variables.

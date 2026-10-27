@@ -6,3 +6,38 @@ description: Give an LLM the Airline storefront skill to adapt the built-in expe
 To create a custom Airline storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Airline's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Airline codebase before proposing work.
+
+Skill file: [`/skills/openfront-airline-custom-storefront/SKILL.md`](/skills/openfront-airline-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes are top-level files under `app/` (there is no route group). Most of the logic is in `features/storefront/components/FlightShop.tsx`, which runs in three modes: `book`, `manage`, and `check-in`. Carrier identity comes from `features/storefront/lib/carrier.ts` and the route timetable from `features/storefront/lib/network.ts`.
+
+| Route | Traveler journey | Operations |
+|---|---|---|
+| `/` | Homepage with the carrier's title and description, flight search (origin, destination, date, 1 to 9 travelers), results with cabin, fare description, and included bags, then hold, passenger details, and booking. Also shows the timetable | `publicCarrierIdentity`, `publicAirlineFlightOptions`, `createCustomerOffer`, `createCustomerBooking` (named `CustomerBookingCommand`) |
+| `/destinations` | Active routes in a timetable; each links to a prefilled search | server-side read of routes and flights |
+| `/status` | Flight status by flight number and date, with gates, times, and any published disruption summary | `publicFlightStatuses` |
+| `/manage-booking` | Retrieve by record locator and access code. Pay now (if Stripe is active), choose seats, check in, view boarding passes, replace the access code, cancel. "Your trips" lists bookings saved in this browser. Recover access by email if SMTP is set | `customerBooking` (named `CurrentCustomerBooking`), `startCustomerCheckout`, `completeCustomerCheckout`, `assignCustomerSeat`, `checkInCustomerBooking`, `rotateCustomerBookingAccessToken`, `cancelCustomerBooking`, `recoverCustomerBookingAccess` |
+| `/check-in` | Same retrieval, focused on seats, check-in, and boarding passes | `customerBooking`, `assignCustomerSeat`, `checkInCustomerBooking` |
+| `/manage` | Redirects to `/manage-booking` | |
+| `/help` | Links to status, manage booking, check-in, and contact | |
+| `/contact` | Customer service email, phone, and hours from Storefront settings | `publicCarrierIdentity` |
+
+`/robots.txt` and `/sitemap.xml` redirect to handlers under `/api`.
+
+## Journey rules
+
+- **Selling needs setup.** Search and booking show only when the carrier has a homepage title, description, approved brand colour, and direct sales turned on. Otherwise the homepage says online booking is not available. Servicing pages still work for any saved carrier.
+- **One carrier.** Every public operation takes a `carrierCode`. It must match `STOREFRONT_CARRIER_CODE`, or the first carrier if that is unset.
+- **Holds expire.** A held offer lasts 15 minutes. Booking needs the same shopping session token used to create the offer.
+- **Access codes.** `createCustomerBooking` returns a one-time access token. The browser stores it in `localStorage` per record locator. A custom client must show it to the traveler and keep it safe; the server stores only a hash.
+- **Payment.** Without an active Stripe provider, bookings are pay-the-airline: an operator records payment in the dashboard. Unpaid storefront bookings expire after 24 hours when the worker runs.
+- **Stripe return.** Stripe returns to `/manage-booking?ref=<locator>&checkout=<session id>`. The page then calls `completeCustomerCheckout`, which checks the session with Stripe before recording payment and issuing tickets.
+- **Rate limits.** Offer, booking, manage-booking, and checkout calls are rate limited per shopping session or client.
+
+## Not in the storefront
+
+- No traveler accounts or sign-in.
+- No ancillary purchase, special service requests, or ticket exchange.
+- No multi-segment or connecting itineraries in search.

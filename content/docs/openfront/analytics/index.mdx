@@ -1,0 +1,43 @@
+---
+title: Openfront Analytics
+description: Self-hosted web analytics with a cookieless tracking script, a site dashboard, goals, funnels, realtime, Core Web Vitals, and public or shared dashboards.
+icon: ChartLine
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Analytics is a self-hosted web analytics application. You add a small script to your website. It records pageviews, custom events, optional revenue, and Core Web Vitals. The dashboard turns those records into traffic, sources, pages, locations, devices, goals, funnels, realtime, visit timelines, and performance reports. Any site can also be shown on a public dashboard or opened through a private shared link.
+
+<Callout>
+The tracker sets no cookies and uses no browser storage for tracking. A visitor is identified by a hash of a daily salt, the site, the IP address, and the User-Agent. The IP address is not stored. This is how the code works; it is not a legal opinion about consent rules in any country.
+</Callout>
+
+## Who it is for
+
+- **Site owners and their teams:** people who want to see traffic, sources, goals, funnels, and performance for one or more websites, and who manage sites, shared links, and API keys.
+- **Public viewers:** anyone who opens a site's public dashboard or a shared link. They see aggregate reports only.
+- **Developers:** teams who send events from a server, import historical visits, read reports through GraphQL, or build their own dashboard or public site.
+
+## Product surfaces
+
+- **Tracking script:** `public/assets/script.js`, served at `/assets/script.js`. It posts to `/api/track`. Servers can post to `/api/track` directly.
+- **Operator dashboard:** the shared Openfront dashboard shell in `features/dashboard`, plus analytics pages in `features/platform` mounted at `/dashboard/platform/*`: Sites (with Overview, Realtime, Visits, Goals, Funnels, Events, Performance, and Settings tabs), Shared Links, Store Settings, and API Keys.
+- **Public site:** routes in `app/(storefront)` and `features/storefront`. The home page `/` lists public dashboards, `/sites/<slug>` shows one public dashboard, and `/share/<slug>` opens a shared link. There are no customer accounts, carts, or orders.
+- **APIs:** Keystone GraphQL at `/api/graphql` with custom report queries such as `siteOverview` and `siteBreakdown`, an MCP endpoint at `/api/mcp-transport/[transport]`, and a dashboard AI chat at `/api/completion`.
+- **Onboarding:** a dashboard setup dialog that loads demo sites (Northwind Coffee, Northwind Journal, Northwind App) with goals, funnels, segments, shared links, and generated traffic.
+
+## Ownership and tenancy
+
+One deployment holds one set of sites. There is no organization or team model, and sites have no owner field. Every user whose role has `canReadSites` can read every site, and every user with `canManageSites` can change every site. Access comes from role checkboxes: `canAccessDashboard`, `canReadSites`, `canManageSites`, `canManageSharedLinks`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canManageSettings`, and `canManageOnboarding`.
+
+API keys belong to the user who created them. A key carries scopes (`read_analytics`, `write_sites`, `write_shared_links`), and each request needs both the scope and the owner's current role permission. Public and shared dashboards run on the server with elevated access, but they return only aggregate reports for the one site the slug or link points to.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/analytics/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/analytics/architecture-workflows" description="Data model, tracking, reports, goals, funnels, sharing, and GraphQL operations." />
+  <Card title="External dashboards" href="/docs/openfront/analytics/external-dashboard" description="Skill and page map for adapting or replacing the operator dashboard." />
+  <Card title="External storefronts" href="/docs/openfront/analytics/external-storefront" description="Skill and route map for the public dashboard site." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/analytics/integrations-boundaries" description="Tracker, collector, import, API keys, MCP, AI chat, email, and storage." />
+  <Card title="Current limitations" href="/docs/openfront/analytics/limitations" description="What the current source does not do." />
+</Cards>

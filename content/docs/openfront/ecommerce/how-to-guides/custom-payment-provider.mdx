@@ -5,16 +5,14 @@ description: Connect a local payment module or an independently deployed HTTP ad
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront's payment adapter dispatcher supports two provider modes:
+The payment dispatcher supports two modes:
 
-- a local adapter module such as `stripe`, `paypal`, or `manual` under `features/integrations/payment`;
-- an external HTTP route app, selected by storing an HTTP endpoint in each operation field on the `PaymentProvider` record.
-
-This database configuration is intentional: a merchant can connect or replace an external payment app without adding that app's implementation to the Openfront repository.
+- a local module such as `stripe`, `paypal` or `manual` in `features/integrations/payment`;
+- an external HTTP app, chosen by storing a URL in an operation field on the `PaymentProvider` record.
 
 ## How dispatch works
 
-`features/keystone/utils/paymentProviderAdapter.ts` reads the configured field for the requested operation:
+`features/keystone/utils/paymentProviderAdapter.ts` reads the field for the requested operation:
 
 - `createPaymentFunction`
 - `capturePaymentFunction`
@@ -23,54 +21,48 @@ This database configuration is intentional: a merchant can connect or replace an
 - `generatePaymentLinkFunction`
 - `handleWebhookFunction`
 
-If the value starts with `http`, Openfront sends a JSON `POST` to that URL. Otherwise, it imports `features/integrations/payment/<value>.ts` and invokes the export named by the operation field.
+If the value starts with `http`, Openfront sends a JSON `POST` to that URL. Otherwise it imports `features/integrations/payment/<value>.ts` and calls the export named after the field.
 
-For example, payment creation sends the external route a body shaped like:
+Payment creation sends a body like:
 
 ```json
 {
-  "provider": "the configured provider record",
-  "cart": "the current cart projection",
+  "provider": "the PaymentProvider record",
+  "cart": "the cart projection",
   "amount": 2500,
-  "currency": "USD"
+  "currency": "usd"
 }
 ```
 
-Other routes receive the same `provider` object plus operation-specific values such as `paymentId`, `amount`, `event`, or `headers`. The route's JSON response must match the provider-neutral result expected by the Openfront caller.
+Other operations send `provider` plus `paymentId`, `amount`, `currency`, `idempotencyKey`, `event` or `headers`. See [Implement a payment adapter](/docs/openfront/ecommerce/how-to-guides/create-payment-integration) for the expected replies.
 
-## Configure an external route app
+## Configure a provider
 
-1. Deploy one trusted HTTPS route per operation, or deliberately route several operation fields to one app that can distinguish the request shape.
-2. Create a `PaymentProvider` record with its name, `pp_…` code, enabled state, credentials/metadata, regions, and operation URLs.
-3. Implement only the operations the payment app actually supports, while ensuring unsupported calls fail explicitly.
-4. Test the provider against a disposable Openfront host and provider sandbox.
-5. Verify payment initiation, browser handoff, capture, refund, status, payment-link, webhook, timeout, and reconciliation behavior required by the intended checkout.
+1. Deploy the adapter, or add a module under `features/integrations/payment`.
+2. Create a `PaymentProvider` with a name, a `code`, `isInstalled` on, credentials or metadata, and the six operation fields. The dashboard drawer at `/dashboard/platform/payment-providers` only offers Stripe, PayPal and Manual presets, so set custom fields on the generic `/dashboard/payment-providers` editor.
+3. Link the provider to each region it serves.
+4. Point the provider's webhook at `/api/payment-webhooks/<providerId>`.
+5. Test in a sandbox before taking real payments.
 
 <Callout type="warn">
-The current HTTP bridge trusts database-configured destinations and sends the selected provider object plus operation data. Treat provider configuration as privileged executable integration configuration. Use trusted HTTPS destinations, tightly restrict who can change them, authenticate Openfront to the adapter app, minimize forwarded credentials/data, validate responses, add timeouts, and apply an outbound-network policy appropriate to the deployment. These are hardening requirements for the route-adapter design—not a reason to remove it.
+The `code` decides whether checkout will show the provider. Only codes starting with `pp_stripe` (needs Stripe env vars), `pp_paypal` (needs PayPal env vars), `pp_manual` or `pp_system_default` pass the configuration check. Codes containing `manual` cannot complete checkout or refunds. Any other code is hidden from checkout until you extend `features/keystone/utils/paymentProviderConfig.ts`.
 </Callout>
 
-## Current source limitations
+## Current source limits
 
-The generic dispatcher supports external payment routes, but the complete Ecommerce flow is not yet provider-neutral:
+- The HTTP bridge sends only a JSON content-type header. It has no timeout, request signature, destination allowlist or response schema.
+- The provider record, including `credentials`, is sent to the HTTP adapter on every call.
+- Webhook processing only recognizes Stripe and PayPal event types and amount formats.
+- `generatePaymentLinkFunction` exists in the adapter, but no checkout or invoice path calls it.
 
-- the dashboard creation UI exposes built-in presets rather than a complete external-route form;
-- `completeActiveCart.ts` and invoice completion still switch on the built-in Stripe, PayPal, and manual provider codes instead of completing through the configured adapter contract;
-- webhook ingress and signature handling must be verified against each route app's raw-body requirements;
-- the bridge currently has no built-in timeout, destination policy, adapter authentication, or runtime response schema.
+## Required checks
 
-Therefore a custom external adapter can participate in generic adapter calls, but a complete checkout cannot be claimed until the target revision removes the hard-coded completion switch and passes end-to-end tests.
-
-## Required verification
-
-- unauthorized users cannot create or alter provider routes or credentials;
-- each operation reaches only its configured adapter destination;
-- the adapter authenticates the Openfront caller and rejects replay where relevant;
-- amounts and currency come from persisted server state;
-- duplicate create/capture/refund requests have one provider effect;
-- malformed, oversized, delayed, or partial adapter responses fail closed;
-- provider credentials and payment data do not appear in logs or client responses;
-- invalid and replayed webhooks make no state change;
-- uncertain responses reconcile before another payment action.
+- Only trusted operators can create providers or change their fields.
+- Each operation reaches only its configured destination.
+- The adapter authenticates calls from Openfront.
+- Duplicate capture or refund requests have one provider effect.
+- Malformed or slow adapter replies fail without changing orders.
+- Credentials do not appear in logs or browser responses.
+- Bad and replayed webhooks change nothing.
 
 See [Payment providers](/docs/openfront/ecommerce/payment-providers).

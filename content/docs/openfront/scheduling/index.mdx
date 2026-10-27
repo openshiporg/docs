@@ -1,0 +1,53 @@
+---
+title: Openfront Scheduling
+description: Self-hosted booking pages and team scheduling with event types, availability, bookings, routing forms, payments, calendars, workflows, and embeds.
+icon: CalendarClock
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Scheduling is a self-hosted booking and team-scheduling application for appointment businesses such as studios, clinics, agencies, and consultancies. A team publishes bookable event types with hosts, weekly schedules, intake questions, buffers, optional payment, conferencing, and room or equipment requirements. Customers book on the public booking pages, through an embed on another site, or after answering a routing form. Hosts and team admins then confirm, decline, reschedule, cancel, complete, or mark bookings as no-shows from the operator dashboard.
+
+The source lives at [github.com/openshiporg/openfront-scheduling](https://github.com/openshiporg/openfront-scheduling). A hosted demo runs at [scheduling.openship.org](https://scheduling.openship.org).
+
+<Callout type="info">
+Calendar sync, conferencing, Stripe payments, SMTP email, SMS, and outbound webhooks call external providers only after you configure their credentials. Until then, those paths fail at the point of use and the booking flows that do not depend on them keep working.
+</Callout>
+
+## What the codebase contains
+
+The application uses Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL.
+
+| Directory | Contents |
+|---|---|
+| `features/keystone/models` | 62 Keystone lists covering identity and teams, event types and availability, bookings, routing, workflows, payments, calendars, conferencing, webhooks, embeds, machine access, data jobs, and analytics |
+| `features/keystone/mutations` | Named GraphQL commands such as `createStorefrontBooking`, `transitionBooking`, `inviteTeamMember`, `configureEventPaymentPolicy`, and `publishEmbedConfig` |
+| `features/keystone/lib` | Availability engine, host assignment, routing engine, workflow engine, payment transitions, and the scheduling outbox worker |
+| `features/platform` | Operator dashboard slices: bookings, event types, availability, clients, payments, team, resources, routing forms, workflows, store settings, integrations, webhooks, embeds, API keys, data jobs, analytics, and onboarding |
+| `features/storefront` | Public booking pages, guest booking management, customer account pages, and the embed widget screens |
+| `features/integrations` | Calendar (Google, Microsoft), conferencing (Google Meet, Microsoft Teams, Zoom), payment (Stripe, manual), and reminder/webhook delivery adapters |
+| `features/mcp` | An MCP endpoint with generic GraphQL schema and data tools that run under the signed-in user's session |
+
+## Operator surfaces
+
+Operators sign in at `/dashboard`. Scheduling work happens under `/dashboard/platform/*`: an overview, a bookings list and booking detail, event types, availability schedules, clients, payments, team members and invitations, resources and managed templates, routing forms, workflows and reminders, storefront settings, integrations, webhooks, embeds, API keys, data jobs, and analytics. The generic Keystone list and item screens stay available for permitted records. See [External dashboards](/docs/openfront/scheduling/external-dashboard) for the full route table.
+
+## Storefront
+
+The public application shows one team's booking pages: the home page at `/`, the event list at `/book`, an event page with time selection at `/book/[slug]`, host pages, routing forms at `/routes`, an embed gallery at `/embed`, and the iframe widget at `/embed/[slug]`. Guests manage a booking through a private link at `/book/manage`. Customers with an account see their history at `/account`. See [External storefronts](/docs/openfront/scheduling/external-storefront).
+
+## Onboarding
+
+On an empty database, `/dashboard/init` creates the first administrator. The dashboard onboarding dialog then runs `bootstrapSchedulingOnboarding` in one of two modes. Demo mode creates the fictional Northstar Studio team with sample hosts, a schedule, event types, questions, a routing form, an embed, a reminder, a webhook, a manual payment provider, and sample bookings. Merchant mode creates your own team from a business name, slug, time zone, owner display name, and logo, with sample data optional. See [Getting started](/docs/openfront/scheduling/getting-started).
+
+## Ownership and tenancy
+
+`Team` is the tenant root. Almost every list is team-owned through `teamOwnedListAccess`: reads are scoped to teams where the user has an active `Member` row, and create, update, and delete need an `owner` or `admin` membership in the owning team. Hosts can confirm and decline bookings they are assigned to. Viewers can read. A record cannot be moved from one team to another, even by someone who manages both. Lists marked command-only (for example `Booking`, `Member`, `Resource`, `ApiKey`, `PaymentBooking`) reject raw create, update, and delete and change only through named mutations that take an `idempotencyKey` and write an audit event. The global `Role` flags control dashboard access, people and role administration, and onboarding. They do not bypass team scoping.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/scheduling/getting-started" description="Requirements, environment, migrations, first admin, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/scheduling/architecture-workflows" description="Schema by domain, booking and payment lifecycles, GraphQL commands, and access control." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/scheduling/integrations-boundaries" description="Calendars, conferencing, payments, email, SMS, webhooks, embeds, machine access, MCP, and storage." />
+  <Card title="Current limitations" href="/docs/openfront/scheduling/limitations" description="What the current source does not do." />
+</Cards>

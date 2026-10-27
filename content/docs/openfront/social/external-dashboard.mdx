@@ -1,0 +1,29 @@
+---
+title: External dashboards
+description: Give an LLM the Social dashboard skill to adapt the built-in creator studio or create a separate client.
+---
+
+To create a custom Social dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Social's product-specific creator and operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Social codebase before proposing work.
+
+Skill file: [`/skills/openfront-social-custom-dashboard/SKILL.md`](/skills/openfront-social-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+All routes are under `/dashboard`. Reads use the owner-scoped `studio*` queries; writes go through `studioCommand` from server actions in `features/platform/lib/studio-actions.ts`.
+
+| Page | Route | Slice | What creators and operators do there |
+|---|---|---|---|
+| Items | `/platform/library`, `/platform/library/[id]`, `/platform/library/create` | `features/platform/items` | Status tabs with counts, filters, markdown editor with preview and occurredAt, publish, unpublish, archive, restore, version history, share links |
+| Collections | `/platform/site/collections`, `/[id]`, `/create` | `features/platform/collections` | Visibility tabs with counts, items per collection, reorder, remove when empty, create drawer |
+| Site | `/platform/site` | `features/platform/site` | Handle, display name, bio, location, website, image, logo, theme, visibility, start over |
+| Publications | `/platform/history`, `/platform/history/[id]` | `features/platform/publications` | Destination and status tabs; snapshot, consent, and job attempts; cancel an unsent external request |
+| Destinations | `/platform/destinations`, `/platform/destinations/[id]` | `features/platform/destinations` | Status tabs, add a destination label, edit the label, revoke, consent records |
+| Activity | `/platform/activity` | `features/platform/activity` | The creator's own event log |
+| Your data | `/platform/your-data` | `features/platform/your-data` | Export by category, file a privacy request, see its review status |
+| Creators | `/platform/users` | `features/platform/creators` | People managers see every creator with site and content counts and add a creator |
+| Privacy requests | `/platform/users/privacy-requests` | `features/platform/privacy-requests` | People managers grant or decline requests and carry out granted erasures |
+| Creator setup | `/onboarding` | `features/platform/onboarding` | Choose a theme and create the demo or a blank site |
+
+`/platform/items`, `/platform/publications`, `/platform/collections`, `/platform/creators`, `/platform/privacy-requests`, and the legacy `/dashboard/studio/*` routes redirect to the pages above. The generic `/dashboard/[listKey]` screens remain for users and roles; the creator lists are hidden there.

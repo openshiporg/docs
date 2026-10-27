@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Medspa",
+  "description": "Medical-aesthetics booking, treatment authority, consent, checkout, inventory, memberships, and practice operations",
+  "icon": "Sparkles",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

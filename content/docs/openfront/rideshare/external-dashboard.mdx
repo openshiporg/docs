@@ -1,0 +1,36 @@
+---
+title: External dashboards
+description: Give an LLM the Rideshare dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Rideshare dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Rideshare's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Rideshare codebase before proposing work.
+
+Skill file: [`/skills/openfront-rideshare-custom-dashboard/SKILL.md`](/skills/openfront-rideshare-custom-dashboard/SKILL.md)
+
+## Current operator pages
+
+Platform routes are thin files under `app/dashboard/(admin)/platform/**` that render screens from `features/platform/<slice>`. The generic list and item pages at `/dashboard/[listKey]` remain for configuration records such as `ProviderConnection`, `PaymentProvider`, `Policy`, `User`, and `Role`.
+
+| Route | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/dispatch` | `dispatch` | Review open requests, search eligible driver and vehicle candidates, send offers, and view cancelled and expired history. Needs the operations capability. |
+| `/dashboard/platform/my-driving` | `driver-workspace` | Drivers go online or offline, accept or decline offers, and advance assigned trips. |
+| `/dashboard/platform/trips` | `trips` | Trip board of scheduled, active, and completed trips. |
+| `/dashboard/platform/trips/[id]` | `trips` | Trip timeline, transitions, cancellation and reassignment, payments and refunds, messages, support and safety cases, and reviews. |
+| `/dashboard/platform/services` | `services` | Service areas, ride services, and fare rule versions: add, activate, pause. |
+| `/dashboard/platform/drivers` | `drivers` | Driver list with readiness and missing-document flags; add a driver. |
+| `/dashboard/platform/drivers/[id]` | `drivers` | Review track, online toggle, document accept/reject, vehicles, weekly hours, time off, eligibility checks, and trips. |
+| `/dashboard/platform/vehicles` | `vehicles` | Vehicles by status, add, approve, maintenance, retire, documents, and driver assignment. |
+| `/dashboard/platform/safety` | `safety` | Safety incident and support case queues: triage, assign to me, resolve, close. Needs the safety capability. |
+| `/dashboard/platform/reviews` | `reviews` | Pending, published, and hidden reviews; publish or hide. |
+| `/dashboard/platform/finance` | `finance` | Payment status review with links to the trip for payment actions. Needs the finance capability. |
+| `/dashboard/platform/team` | `team` | Fleet members: add by email, change role, suspend, reactivate. |
+| `/dashboard/platform/settings` | `settings` | Create a fleet, go-live checklist (status, manual dispatch, rider accounts), and storefront branding. |
+
+The sidebar entries come from `features/platform/lib/navigation.ts`. `/dashboard` itself renders the generic Keystone home page from `features/dashboard`. `features/platform/overview/screens/OverviewPage.tsx` (counts of waiting requests, active trips, active drivers, and open incidents) exists in source but no route renders it.
+
+The onboarding dialog and custom setup steps live in `features/platform/onboarding`. The GraphQL documents for setup and review actions on the settings, team, services, drivers, vehicles, trips, safety, and reviews pages are collected in `features/platform/setup/setupMutations.ts`.
+
+Dispatch, safety, and finance probe `dispatchQueueScope`, `safetyQueueScope`, and `financeQueueScope` before loading. The other pages rely on Keystone list access, which filters records to the fleets where the member's role grants the capability.

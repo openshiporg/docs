@@ -6,38 +6,118 @@ icon: HeartHandshake
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-hospital) · [Catalog](https://openship.org/products/openfront-hospital)
+[Source](https://github.com/openshiporg/openfront-hospital) · [Live demo](https://hospital.openship.org) · [Catalog](https://openship.org/products/openfront-hospital)
 
-Openfront Hospital is a self-hosted healthcare operations foundation with public provider discovery and booking, intake, patient/clinician records, schedules, communications, and clinical work.
+Openfront Hospital is a self-hosted care-booking and hospital-operations application. Visitors browse care services, clinicians, and locations, request an appointment, and complete a one-time intake form. Staff work registration, appointments, intake, care queue, encounters, inpatient beds, clinical fulfillment, claims, communications, and reports from `/dashboard/platform`.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), PostgreSQL with Prisma, and Tailwind CSS 4.
 
 <Callout type="warn">
 This project is not documented as HIPAA compliant, certified clinical software, an EHR, or a medical device. Do not use it for real patient or clinical data without a separate security, privacy, compliance, hosting, and operational program.
 </Callout>
 
-## Architecture and schema
+Start with [Getting started](/docs/openfront/hospital/getting-started).
 
-`Facility` is the practical operating scope, but current source has no dedicated facility-membership tenant table. Staff/provider/patient relationships derive access and one explicit role capability can access all clinical data; this is narrower than a full organization-membership boundary. The active schema includes facilities, departments, rooms/wards/beds, providers and clinicians, appointment types and schedule blocks, patients, portal access, intake forms, appointments, messages, admissions, encounters, care plans, orders, prescriptions, labs, procedures, claims, consent, vital signs, and clinical audit events.
+## Tenancy and access
 
-Public routes are `/`, `/providers`, `/book`, `/book/[slug]`, and tokenized `/intake/[accessCode]`. Operator routes under `/dashboard/platform` cover registration, appointments, intake, schedules, patients, care queue, inpatient work, clinical operations and fulfillment, communications, claims, and reports.
+There is one install-wide `HospitalProfile` (public name, logo, theme, address, contact). It is a branding record, not an organization boundary.
+
+`Facility` is the data boundary. Staff users are linked to facilities through `Facility.staff`. Most read rules let a user see a record when they are on the facility's staff, are the record's provider, or are the patient linked to their user account. A role with `canAccessAllClinicalData` bypasses those filters and sees every facility.
+
+`Role` has 19 permission flags: `canAccessDashboard`, `canManageAppointments`, `canManageScheduling`, `canManagePatients`, `canManageProviders`, `canManageIntake`, `canManageCommunications`, `canManageBilling`, `canManageInventory`, `canManageIntegrations`, `canManageDataPortability`, `canManageRetention`, `canViewReports`, `canManageOnboarding`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, and `canAccessAllClinicalData`. Sensitive fields (patient contact, intake responses, message bodies, audit metadata) are gated by specific flags as well as by facility scope.
+
+Dashboard sidebar visibility is presentation only. Keystone list and field access, plus checks inside each workflow mutation, enforce access.
+
+## Models
+
+The schema has 63 lists in `features/keystone/models`. They fall into two groups.
+
+**Master data** uses normal Keystone CRUD behind permissions, usually `canAccessAllClinicalData`:
+
+- Practice: `HospitalProfile`, `Facility`, `Department`, `Ward`, `Room`, `Bed` (create only; status changes go through workflows), plus `FacilityImage`, `DepartmentImage`.
+- Care team and catalog: `Provider`, `Clinician`, `ClinicianImage`, `AppointmentType`, `ProviderScheduleBlock`, `LabTest`.
+- Staff: `User`, `Role`.
+
+**Controlled records** deny or omit GraphQL create, update, and delete. Every write goes through a named workflow mutation that takes an `operationKey` (idempotency) and usually an `expectedVersion` (optimistic concurrency). Each transition writes a `WorkflowTransition` and an audit row, and may queue a `ClinicalOutboxEvent`.
+
+- Patients: `Patient`, `PatientIdentifier` (masked MRN and external IDs), `PatientRegistration` (provenance and duplicate resolution), `PatientConsent` (versioned, superseding chain), `PatientPortalAccess`.
+- Visits: `Appointment`, `IntakeForm`, `CareQueueTicket`, `Encounter`, `EpisodeClosurePolicy`.
+- Clinical: `VitalSign`, `MedicalOrder`, `Specimen`, `LabResult` (versioned with a correction chain), `Prescription`, `Procedure`, `CarePlan`, `ClinicalDocument` (sign, amend, entered in error).
+- Inpatient: `Admission`, `BedReservation`, `BedOccupancyEvent`.
+- Revenue: `PatientCoverage`, `InsuranceClaim`, `ClaimVersion`, `PatientPayment`, `PatientRefund`.
+- Communications: `PatientMessage`, `CommunicationTemplate`, `CommunicationPreference`.
+- Supplies: `InventoryItem`, `InventoryMovement`, `ImportBatch`.
+- Platform: `IntegrationInstallation`, `MachineCredential`, `IntegrationDeliveryAttempt`, `IntegrationWebhookReceipt`, `ClinicalOutboxEvent`, `ExternalIdentityLink`, `RetentionPolicy`, `RecordHold`, `RetentionDisposition`, `ExportJob`.
+- Evidence and system: `WorkflowTransition`, `ClinicalAuditLog`, `PhiReadAudit` (written by the GraphQL endpoint when PHI fields are read), `PasswordResetRequest`, `RequestRateLimitBucket`.
+
+The repository's `docs/schema-map.md` lists fields, relationships, and state machines for every list.
 
 ## Main workflow
 
-A configured facility publishes providers and appointment types. A patient chooses a slot, submits limited booking information, and receives a controlled intake path. Staff review appointments and intake before creating or updating clinical records through authenticated operations. Consent and clinical audit records are intended as append-only evidence.
+1. **Set up:** profile, facilities, departments, wards, rooms, beds, staff and roles.
+2. **Publish the catalog:** providers and clinicians, appointment types (duration, buffers, providers, status `bookable` / `internal` / `paused`), and provider schedule blocks.
+3. **Book:** the public site calls `requestAppointment`. That creates or matches a `Patient`, a `requested` `Appointment`, an `IntakeForm` with a one-time access code, and a `PatientConsent`. Staff confirm with `transitionAppointment`.
+4. **Intake:** the patient opens `/intake#accessCode=…` and calls `submitIntakeForm`. Staff review with `transitionIntakeReview`.
+5. **Arrive and treat:** `arriveAppointment` creates a `CareQueueTicket`; `transitionCareQueue` calls the patient; `openEncounter` and `transitionEncounter` run the encounter. Closing an encounter is checked against the facility's `EpisodeClosurePolicy`.
+6. **Clinical work:** vitals, orders, specimens, lab results, prescriptions, procedures, care plans, and clinical documents, each through its own workflow mutation.
+7. **Inpatient:** reserve a bed, admit, transfer, discharge, then move the bed through cleaning back to available.
+8. **Walk-in registration:** `registerPatient` creates the patient, MRN identifier, registration record, and consent, with duplicate review.
+9. **Revenue:** coverage, claims with immutable claim versions, manual payments and refunds.
+10. **Oversight:** reports, clinical audit log, and workflow transition trail.
 
-## Bounded GraphQL operations
+## Named GraphQL operations
 
-Named clinical operations register patients; arrive appointments; manage care-queue and admission/bed readiness; create and transition encounters, orders, prescriptions, labs, procedures, claims, and care plans; correct lab results; and dispatch clinical outbox work. Tokenized intake uses a dedicated bounded query. These workflow operations do not make a clinical decision safe or compliant; authorized clinicians and release-specific policy remain responsible.
+Custom operations are registered in `features/keystone/mutations/index.ts`.
 
-## Setup and onboarding
+| Area | Operations |
+|---|---|
+| Public storefront | `hospitalBranding`, `bookableAppointmentTypes`, `bookableProviders`, `availableAppointmentSlots`, `requestAppointment`, `intakeFormByAccessCode`, `submitIntakeForm` |
+| Accounts | `bootstrapHospital`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`, `updateActiveUser`, `redirectToInit` |
+| Appointments and scheduling | `transitionAppointment`, `appointmentScheduleConflicts` |
+| Registration and consent | `registerPatient`, `recordConsentDecision` |
+| Intake | `transitionIntakeReview`, `issueIntakeForm` |
+| Care queue and encounters | `arriveAppointment`, `transitionCareQueue`, `openEncounter`, `transitionEncounter`, `reviewEpisodePolicy`, `episodePolicyWorkspace`, `episodeClosureWorkspace`, `episodeChildWorkspace`, `recoverEpisodeClosure` |
+| Inpatient | `reserveBed`, `releaseBedReservation`, `admitPatient`, `transitionAdmission`, `transitionBedReadiness` |
+| Clinical | `placeMedicalOrder`, `transitionMedicalOrder`, `collectSpecimen`, `transitionSpecimen`, `recordLabResult`, `transitionLabResult`, `correctLabResult`, `labResultReadback`, `recordPrescription`, `transitionPrescription`, `scheduleProcedure`, `transitionProcedure`, `establishCarePlan`, `transitionCarePlan`, `draftClinicalDocument`, `transitionClinicalDocument`, `amendClinicalDocument`, `recordVitalSign`, `workflowPatientCandidates`, `workflowEncounterCandidates` |
+| Billing | `recordPatientCoverage`, `transitionPatientCoverage`, `prepareInsuranceClaim`, `transitionInsuranceClaim`, `recordPatientPayment`, `transitionPatientPayment`, `requestPatientRefund`, `transitionPatientRefund` |
+| Communications | `sendSecurePatientMessage`, `transitionPatientMessage`, `registerCommunicationTemplate`, `reviseCommunicationTemplate`, `setCommunicationPreference` |
+| Inventory and portability | `registerInventoryItem`, `transitionInventoryItem`, `moveInventory`, `previewInventoryImport`, `applyInventoryImport`, `rollbackInventoryImport`, `requestExportJob`, `processExportJob` |
+| Integrations and retention | `installIntegration`, `transitionIntegrationInstallation`, `issueMachineCredential`, `revokeMachineCredential`, `dispatchIntegrationOutbox`, `dispatchClinicalOutbox`, `linkExternalIdentity`, `establishRetentionPolicy`, `transitionRetentionPolicy`, `placeRecordHold`, `releaseRecordHold`, `recordRetentionDisposition` |
+| Onboarding | `applyHospitalOnboarding`, `createOnboardingAppointment` |
 
-Use a disposable PostgreSQL database with synthetic data only. Hospital onboarding seeds Northstar Family Care facilities, departments, providers/clinicians, appointment types/schedules, patients, appointments, intake, messages, and portal access. The seed includes a known literal intake code (`demo-rivera-intake`); it is deliberately discoverable evaluation data and must never be copied into a real patient path. Run onboarding and current schema/static/security/public-flow checks against an isolated database, then test facility/provider/patient scope, access-code expiry/revocation, and clinical lifecycle denial.
+Some of these have no dashboard caller yet, for example `transitionPatientPayment`, `transitionPatientRefund`, `transitionInventoryItem`, `reviseCommunicationTemplate`, `transitionIntegrationInstallation`, `revokeMachineCredential`, `transitionRetentionPolicy`, `releaseRecordHold`, `transitionClinicalDocument`, `amendClinicalDocument`, and `transitionSpecimen`. They are reachable through GraphQL with the right role.
+
+These operations record what staff did. They do not make a clinical decision safe or correct; authorized clinicians remain responsible.
+
+## Onboarding
+
+When a user with `canManageOnboarding` signs in, the dashboard offers three templates: **Complete Practice Setup**, **Basic Booking Setup**, and **Custom Setup** (edit the setup JSON before applying). All three call `applyHospitalOnboarding`, which requires both `canManageOnboarding` and `canAccessAllClinicalData`.
+
+The full template seeds the fictional practice "Northstar Family Care": 2 departments (Primary Care, Behavioral Health), 2 facilities (a downtown clinic and a telehealth site), 3 providers and clinicians, 3 appointment types, 5 schedule blocks, 2 patients, 2 appointments, 2 intake forms, and 2 manual phone follow-up messages. Patients are created through `registerPatient`, appointments through `createOnboardingAppointment`, intake through `issueIntakeForm`, and messages through `sendSecurePatientMessage`, so seeded data follows the same rules as staff-created data.
+
+Onboarding is idempotent: it upserts by stable keys (department code, facility slug, onboarding key, MRN). It returns one-time intake links (`/intake#accessCode=…`) that expire after 7 days. The links are shown once; only a hash is stored. Onboarding rejects a `portalAccess` section because no portal invite workflow exists.
 
 ## Integrations
 
-The current product does not claim direct patient payment and has no `features/integrations` adapter registry. Email/SMS, labs, insurance, identity, records exchange, file storage, portal invitations, or external clinical systems are not implied by corresponding data/workflow fields. Document an adapter only when its execution, authentication, retries, reconciliation, and failure handling are tested.
+There is no provider adapter registry. Integration support is a generic, signed webhook layer:
 
-## Security and deployment
+- **Outbound:** `installIntegration` creates an `IntegrationInstallation` (kind `communications`, `payment`, `laboratory`, `pharmacy`, or `webhook`) with an endpoint URL, allowed event types, and an encrypted signing secret. Workflow events land in `ClinicalOutboxEvent`. A separate worker (`npm run worker:outbox`) calls `POST /api/internal/outbox/dispatch` with `OUTBOX_WORKER_SECRET`, and each event is POSTed as JSON with an `x-openfront-signature` HMAC header. Endpoints must use HTTPS and resolve to public addresses; `INTEGRATION_HOST_ALLOWLIST` restricts hosts. Failed deliveries retry and then dead-letter.
+- **Inbound:** `POST /api/integrations/{installationKey}/webhook` accepts signed events from a `MachineCredential` with the `webhook:write` scope. Supported events are `payment.succeeded`, `payment.failed`, `refund.succeeded`, `refund.failed`, `message.sent`, `message.delivered`, `message.failed`, `claim.acknowledged`, and `claim.rejected`, limited by installation kind. Requests outside a 5-minute window or replayed are rejected.
+- **Messages:** `sendSecurePatientMessage` supports `sms`, `email`, and `phone`. Phone messages become `manual_required` tasks. Email and SMS are `queued` for an active `communications` installation; the app does not send email or SMS itself.
+- **Payments:** `PatientPayment` methods are `cash`, `check`, `card_external`, and `bank_external`. Payments are recorded manually; there is no card processor.
+- **Exports:** `requestExportJob` builds encrypted patient, appointment, audit, or inventory exports in CSV or JSON, downloaded from `/api/exports/{jobId}` with a one-time token.
+- **Email:** SMTP is used only for staff password reset links.
+- **AI chat:** the dashboard AI chat needs `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. The MCP endpoint it calls (`/api/mcp-transport/[transport]`) returns 404 in this product, so no MCP tools are exposed.
 
-Patient, intake, encounter, message, consent, audit, insurance, prescription, and lab records need facility/patient/provider scoping and sensitive-field denial. Public access codes must be high-entropy, hashed, expiring, and revocable. Railway configuration builds then migrates at start but is not deployment proof.
+An installation record does not prove an external EHR, lab, payer, or messaging system is connected.
 
-Deployment needs reviewed migrations, encryption/key management, backup restoration, access review, audit retention, breach response, monitoring, and jurisdiction-specific privacy/clinical policy beyond this repository. Current source does not establish EHR interoperability, clinical decision support/correctness, billing/RCM, real provider delivery, PHI hosting controls, medical-device status, HIPAA compliance, or any healthcare certification.
+## Limitations
+
+- No patient accounts or portal. `PatientPortalAccess` exists but nothing issues invites or lets patients sign in.
+- Patient demographics cannot be edited from the dashboard. `Patient` has GraphQL update omitted, and no workflow mutation exists for demographic changes. The patient chart is read-only.
+- The public site shows "Estimate provided by clinic" instead of a price, even though `AppointmentType.priceCents` is stored.
+- Several transition mutations have no dashboard UI (see the list above).
+- No EHR interoperability (HL7, FHIR), e-prescribing, lab interface, clearinghouse, or payment processor. Claims and prescriptions are local records.
+- No clinical decision support. Clinical content is whatever staff record.
+- `features/platform/bootstrap` contains a bootstrap screen that is not mounted on any route. The first user is created at `/dashboard/init`, or by calling `bootstrapHospital` directly.
+- The code does not establish HIPAA compliance, PHI hosting controls, medical-device status, or any certification. Deployers need their own encryption and key management, backup and restore, access review, audit retention, breach response, monitoring, and jurisdiction-specific policy.

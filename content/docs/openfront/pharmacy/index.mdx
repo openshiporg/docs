@@ -1,40 +1,43 @@
 ---
 title: Openfront Pharmacy
-description: Pharmacist-controlled prescription, dispensing, recall, cold-chain, patient, OTC, order, and fulfillment workflows.
+description: Self-hosted pharmacy storefront and operations app with prescription intake, pharmacist review, dispensing, inventory lots, recalls, orders, and payments.
 icon: Pill
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-Openfront Pharmacy is a self-hosted pharmacy commerce and operations application. It combines a public over-the-counter catalog and checkout with authenticated prescription intake and review, pharmacist-authorized dispensing, patient-safe views, lot and expiry inventory, recalls, temperature-excursion evidence, order fulfillment, audit history, and integration boundaries.
+Openfront Pharmacy is a self-hosted pharmacy app built on Next.js, Keystone 6, GraphQL, Prisma, and PostgreSQL. It has two parts:
+
+- A public storefront. Customers pick a location, browse and buy over-the-counter (OTC) products, check an order's status, request refills, and send online registration, transfer, and new-prescription requests.
+- An operator dashboard at `/dashboard`. Staff handle patients, prescribers, prescription intake and review, clinical safety review, fills, dispensing with labels, refills, transfers, products, drug references, suppliers, inventory lots, recalls, orders, point of sale, payments, staff, locations, integrations, and the audit log.
+
+Live demo: [pharmacy.openship.org](https://pharmacy.openship.org). Source: [github.com/openshiporg/openfront-pharmacy](https://github.com/openshiporg/openfront-pharmacy).
 
 <Callout type="warn">
-Openfront Pharmacy does not grant pharmacy licensure, pharmacist authority, prescribing authority, dispensing authority, or regulatory approval. It is not documented as HIPAA compliant, a certified e-prescribing system, an insurance-adjudication system, a controlled-substance system, a validated cold-chain monitoring system, or a certified recall system. Each deployment needs independent legal, regulatory, clinical-safety, privacy, security, provider, and operational validation.
+The software does not license a pharmacy and does not give anyone pharmacist, prescribing, or dispensing authority. It does not certify legal, privacy, security, payment, or clinical compliance. Each deployment needs its own legal, clinical, privacy, security, and provider review.
 </Callout>
 
-## Human authority is the control boundary
+## Human authority
 
-Prescription acceptance, review, dispensing authorization, physical dispensing, prescription transfer approval, inventory receipt or adjustment, recall disposition, temperature-excursion disposition, and consequential fulfillment transitions are human-controlled work. Current operations require an authenticated role with the relevant location scope; high-consequence mutations also require a reason and explicit attestation and record bounded `HumanApproval`, audit, inventory-movement, or outbox evidence.
+Clinical, inventory, and money records cannot be created or edited through the generic GraphQL API. They change only through named commands. Most of those commands need a signed-in user with the right permission and location scope, a written reason, and an explicit attestation. Each one writes a `HumanApproval`, an `AuditEvent`, and an `OutboxEvent` in the same transaction.
 
-AI and MCP features do not replace a pharmacist, prescriber, technician operating under authorized supervision, recall coordinator, privacy officer, or other accountable professional. An agent may help find information or prepare a request only within a separately approved scope. It must not diagnose, prescribe, approve, substitute, dispense, override a hold, release recalled or cold-chain-affected inventory, or claim that an external provider accepted an action.
+The software records these decisions. It does not make them. A pharmacist still decides whether a prescription is valid, whether it is safe for the patient, and whether to dispense it.
 
-## Product surfaces
+## Tenancy
 
-- The public storefront exposes pharmacy locations and non-prescription products, a guest-safe cart, payment-session initiation, and checkout. GraphQL has a token-scoped guest-order projection, but current source has no public order-status route or client flow for it.
-- Pharmacy operators have focused queues and task pages for prescriptions, inventory lots, recalls, orders, patients, POS catalog, integration state, audit history, and outbox delivery state.
-- Prescription products cannot enter the public cart. They follow the authorized prescription path.
-- Private records are not exposed to customer screens as raw Keystone lists. Customer and operator pages use pharmacy-specific GraphQL projections and named operations.
+- `Organization` is the pharmacy business (the tenant). It holds branding, the privacy notice, the cash and sales-tax policy, and the fill policy.
+- `PharmacyLocation` is a store. Products, lots, prescriptions, orders, and recalls belong to a location.
+- `OrganizationMembership` links a user to an organization, either organization-wide or for one location. Its role is one of owner, administrator, pharmacist, technician, cashier, delivery, or read_only. Staff credential evidence is stored on the membership.
+- `Role` holds 19 `can*` permission flags, such as `canReviewPrescriptions`, `canDispenseMedications`, and `canViewPatientPrivateData`.
+
+Operator queries filter by the caller's active memberships. The storefront finds its organization from the request host, matching it against `storefrontKey`, `storefrontHost`, or `slug`. If nothing matches and only one organization is active, that organization is used.
 
 <Cards>
-  <Card title="Architecture and workflows" href="/docs/openfront/pharmacy/architecture-workflows" description="Product routes, conceptual data model, bounded GraphQL operations, and human-controlled lifecycles." />
-  <Card title="Getting started" href="/docs/openfront/pharmacy/getting-started" description="Runtime requirements, migrations, onboarding, local checks, and deployment sequencing." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/pharmacy/integrations-boundaries" description="Payments, eRx, wholesalers, insurance, tax, outbox, and credential boundaries." />
-  <Card title="Current limitations" href="/docs/openfront/pharmacy/limitations" description="Operational, legal, safety, privacy, provider, and deployment work that remains outside the source." />
+  <Card title="Getting started" href="/docs/openfront/pharmacy/getting-started" description="Clone, configure, migrate, create the first user, run onboarding, and deploy." />
+  <Card title="Architecture and workflows" href="/docs/openfront/pharmacy/architecture-workflows" description="Models, lifecycles, and the named GraphQL queries and mutations." />
+  <Card title="External dashboards" href="/docs/openfront/pharmacy/external-dashboard" description="Current platform pages and the custom dashboard skill." />
+  <Card title="External storefronts" href="/docs/openfront/pharmacy/external-storefront" description="Current storefront routes and the custom storefront skill." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/pharmacy/integrations-boundaries" description="Payments, eRx and insurance adapters, webhooks, outbox, and AI." />
+  <Card title="Current limitations" href="/docs/openfront/pharmacy/limitations" description="What the current code does not do." />
 </Cards>
-
-## Ownership and tenancy
-
-`Organization` is the business boundary; `PharmacyLocation` is the operating scope for inventory, prescriptions, fulfillment, and many staff permissions. Active organization and location memberships constrain operator reads. Patient access is separately bounded to the linked user or an authorized organization member. Sensitive customer-facing results use explicit projections that omit hashes, contact details, raw consent evidence, provider configuration, audit metadata, and outbox payloads.
-
-The application uses Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The Pharmacy pages document its medication, evidence, and human-authority boundaries.

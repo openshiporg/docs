@@ -14,12 +14,24 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-salon>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Salon-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each platform route wraps a `features/platform/<slice>/screens/*` component with `withPlatformPermission(Component, [role flags])`; `canManageSalon` overrides, otherwise any listed flag passes.
+- Sidebar entries: `features/platform/lib/navigation.ts`.
+- Server contract: `features/keystone/models/**` (58 lists), `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`), `features/keystone/extendGraphqlSchema/**` (custom queries), and `schema.graphql`. The source repo's `docs/schema-map.md` maps lists, workflows, and pages.
+- Providers: `features/integrations/payment` (`manual`, `stripe`), webhook route `app/api/payments/webhooks/[provider]`, assistant `app/api/completion` and `app/api/mcp-transport/[transport]`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is services, stylists, appointments, schedules/resources, waitlist, checkout, memberships, inventory, commissions, and reports. This list is orientation, not proof that every flow is safe or complete.
+Platform slices in `features/platform`: `appointments`, `checkout`, `sales`, `clients`, `consultations`, `benefits`, `gift-cards`, `loyalty`, `reviews`, `waitlist`, `schedules`, `resources`, `staff`, `catalog`, `commissions`, `store-settings`, `workspaces` (catalog, inventory, administration, reports, integrations, engagement sections), and `onboarding`.
+
+Current routes under `/dashboard/platform`: `appointments`, `appointments/new`, `appointments/[id]`, `checkout`, `checkout/[id]`, `sales`, `sales/[id]`, `store-settings`, `clients`, `clients/[id]`, `engagement`, `consultations`, `loyalty`, `reviews`, `waitlist`, `catalog`, `catalog/[id]`, `benefits`, `gift-cards`, `inventory`, `schedules`, `resources`, `administration`, `staff` (redirects to `administration`), `staff/[id]`, `commissions`, `reports`, `integrations`.
+
+Key models: `Location`, `StoreSettings`, `Stylist`, `StylistSchedule`, `SalonResource`, `Service`, `ServiceCategory`, `Client`, `ClientNote`, `ColorFormula`, consultation templates/versions/submissions/reviews, `Appointment` with line items, segments, and schedule revisions, `WaitlistEntry`, `SalonTransaction`, `Payment`, `PaymentSession`, `TransactionReversal`, `Commission`, `GratuityLedgerEntry`, memberships, packages, `GiftCard`, `LoyaltyProgram`, `ClientPoints`, `Referral`, `Product`, `InventoryMovement`, `Review`.
+
+Key mutations: `bookAppointment`, `transitionAppointment`, `scheduleAppointmentSegments`, `transitionAppointmentSegment`, `processAppointmentDeposit`, `completeAppointmentCheckout`, `reverseSalonTransaction`, `adjustSaleCompensation`, `payoutCommissions`, `payoutGratuities`, `sellClientBenefit`, `setClientBenefitStatus`, `redeemClientPackage`, `purchaseGiftCard`, `confirmGiftCardPurchase`, `applyGiftCardBalance`, `adjustClientPoints`, `completeReferral`, `joinWaitlist`, `transitionWaitlistEntry`, `upsertStylistSchedule`, `setStylistScheduleAvailability`, `setSalonResourceAvailability`, `adjustSalonInventory`, `updateClientCareProfile`, `publishConsultationTemplateVersion`, `reviewConsultation`, `upsertSalonStoreSettings`, `saveSalonRecord`, `runSalonOnboarding`. Key queries: `salonOperationsWorkspace`, `salonManagementWorkspace`, `salonLocationStock`, `checkAvailability`, `calculateCommission`.
+
+Tenancy: one salon per deployment. `Location` is a site, not a tenant; there is no organization or per-location staff membership. `canManageCareRecords` and `canManageOnboarding` are not granted by `canManageSalon`. Most business lists block generated create/update/delete, so writes must go through the custom mutations; some simple lists (plans, loyalty programs, referrals, review moderation, client notes, color formulas, form templates, images) still use generated CRUD.
+
+This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

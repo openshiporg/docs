@@ -13,9 +13,15 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-rental>
 - Built-in Rental customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
+- Thin customer-facing route entry points directly under `app/` (no `(storefront)` group and no country prefix): `app/(home)/page.tsx` for `/`, plus `search`, `stays/[slug]`, `collections`, `collections/[slug]`, `compare`, `checkout/[quoteToken]`, `trips`, `trips/[token]`, `agreements/[token]`, `messages/[token]`, `account`, `account/sign-in`, `account/register`, `account/reset`, `help`, and `policies`.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
 - Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+
+Inside `features/storefront`: `screens/**` (one screen per route), `components/**` (booking panel, guest forms, card payment, trip tools), and `lib/data/**` (server actions and loaders: `marketplace.ts`, `stays.ts`, `stay-actions.ts`, `stay-availability.ts`, `checkout-receipt.ts`, `payment-actions.ts`, `guest.ts`, `guest-actions.ts`, `account-actions.ts`).
+
+Public server operations used today: queries `publicMarketplaceSettings`, `searchStays`, `publicListing`, `publicStayAvailability`, `publicStayQuote`, `publicTrip`, `publicStayAgreement`, `publicGuestThread`, `myGuestAccount`, `guestPasswordResetAvailable`; mutations `quoteStay`, `createStayReservation`, `recoverStayCheckout`, `requestStayCancellation`, `signStayAgreement`, `startGuestStayPayment`, `completeGuestStayPayment`, `submitGuestInquiry`, `replyToGuestThread`, `sendTripMessage`, `submitStayReview`, `recoverStayTrip`, `claimStayTrip`, `openAccountTrip`, `registerGuestAccount`, `updateMyGuestProfile`, `changeGuestPassword`, plus Keystone `authenticateUserWithPassword`, `endSession`, `sendUserPasswordResetLink`, and `redeemUserPasswordResetToken`. Trip, agreement, and message links use 48-character hex tokens. Guest sign-in uses the `keystonejs-session` cookie.
+
+Relevant models: `MarketplaceSettings`, `Listing`, `ListingMedia`, `StayCollection`, `Amenity`, `HouseRule`, `CalendarBlock`, `StayQuote`, `Reservation`, `StayAgreement`, `GuestProfile`, `GuestParty`, `Conversation`, `Message`, `Review`, `Payment`. Card payment is Stripe test mode only and only for test bookings.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 

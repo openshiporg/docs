@@ -1,8 +1,47 @@
 ---
 title: External storefronts
-description: Give an LLM the Convenience storefront skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Convenience storefront skill to adapt the built-in catalog site or create a separate client.
 ---
 
-To create a custom Convenience storefront, copy the skill and give it to your LLM. The skill will first explain that current Convenience source has no canonical `features/storefront` layer, then inspect the actual public or portal routes and identify any backend contracts needed before treating them as a storefront.
+To create a custom Convenience storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the routes in `app/(shop)` and `app/page.tsx` implement Convenience's current public catalog, and which backend queries it reads.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Convenience codebase before proposing work.
+
+Skill file: [`/skills/openfront-convenience-custom-storefront/SKILL.md`](/skills/openfront-convenience-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Route files are thin. Screens live in `features/storefront/screens` (`StorefrontPage.tsx`, `ShopPages.tsx`), loaders in `features/storefront/lib`, and server actions in `features/storefront/actions.ts`.
+
+| Route | Customer journey |
+|---|---|
+| `/` | Store home: name, tagline, address with a directions link, phone, opening hours, fuel prices if the store has fuel, and the first three aisles. Shows "Coming soon" when no storefront is published |
+| `/shop` | Aisles and products. Search with `q`, filter with `category`, 48 products per page |
+| `/shop/[productId]` | Product detail: photo, description, sizes with price, and "In stock" or "Ask at counter" for tracked items |
+| `/basket`, `/checkout` | Redirect to `/shop`. The site has no online ordering |
+| `/account` | Signed out: links to sign in or create an account. Signed in: profile, sign out, rewards balance and recent points, and receipts |
+| `/account/signin`, `/account/signup` | Customer sign-in and sign-up (`[mode]` route) |
+| `/account/receipts/[saleId]` | One receipt: lines, total, time. Signed-in customers only |
+| `/sitemap.xml`, `/robots.txt` | Indexes `/`, `/shop`, aisles, and products; blocks `/dashboard`, `/account`, `/api`, `/basket`, `/checkout` |
+
+## GraphQL the storefront uses
+
+| Operation | Purpose |
+|---|---|
+| `conveniencePublicStorefront` | Published store identity, brand, location, hours, aisles, fuel prices, and a state of `unset`, `unpublished`, `published`, or `unavailable` |
+| `storefrontCatalog(search, category, page, productId)` | Active, non-restricted products sold by unit, with price and stock availability for the storefront store |
+| `storefrontHistory(saleId)` | The signed-in customer's own sales, up to 50 |
+| `storefrontRewards` | The signed-in customer's own loyalty accounts and last 10 points entries |
+| `createUser`, `authenticateUserWithPassword` | Customer sign-up and sign-in (generic Keystone auth) |
+| `revokeCurrentUserSessions`, `endSession` | Sign out |
+| `storefrontBasket`, `updateStorefrontBasket` | Guest or customer basket by cart ID and token. Defined, but no current page calls it |
+
+## Journey boundaries
+
+- The public site shows one business: the one with `storefrontStatus` set to published. If more than one business is published, the site shows nothing.
+- Staff publish or unpublish the site from `/dashboard/platform/store-settings`, or during onboarding.
+- Products with any restricted-sale type (alcohol, tobacco, lottery, OTC medicine, other) never appear. Only active products with an active unit-sold variant are listed.
+- Prices come from the store's default price book, falling back to the variant default price.
+- Receipts and rewards show only records linked to the signed-in user. They are never matched by email. A customer sees a receipt only if staff attached them to the sale at the register.
+- There is no payment, pickup, or delivery flow. A storefront basket cannot be turned into a sale.
+- Customer sign-up is always open on the public site. `PUBLIC_SIGNUPS_ALLOWED` controls only the dashboard sign-up page.

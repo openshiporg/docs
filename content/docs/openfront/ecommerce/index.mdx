@@ -6,42 +6,39 @@ description: Multi-region catalog, storefront, checkout, orders, inventory, paym
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront) · [Catalog](https://openship.org/products/openfront-ecommerce)
+[Source](https://github.com/openshiporg/openfront) · [Live demo](https://e-commerce.openship.org) · [Catalog](https://openship.org/products/openfront-ecommerce)
 
-Openfront Ecommerce is Openfront's commerce product. It combines a country-aware storefront, an operator dashboard, a Keystone GraphQL/data layer, and provider adapters in one source repository that the operator controls.
+Openfront Ecommerce is Openfront's commerce product. It combines a country-aware storefront, an operator dashboard, a Keystone GraphQL API on PostgreSQL, and payment and shipping adapters in one repository that the operator runs.
 
 <Callout type="warn">
-Before using real customer or payment data, verify cart ownership, adapter consistency, provider webhooks, type/build enforcement, and the complete checkout path in the deployed environment.
+Before using real customer or payment data, test the full checkout, webhook, fulfillment and refund path for each provider you enable in your own environment.
 </Callout>
 
 ## What the source covers
 
-- catalog: products, variants, options, images, categories, collections, types and tags;
-- regional commerce: stores, regions, countries, currencies, price sets/lists/rules and tax records;
-- inventory and fulfillment: locations, stock movements, shipping profiles/options/providers, labels and fulfillment lines;
-- checkout and orders: carts, addresses, payment sessions/collections, orders, immutable order lines, captures, refunds, returns, swaps and claims;
-- business workflows: customer groups, business-account requests, invoices, checkout links, gift cards, discounts and draft orders;
-- extensibility: API keys, OAuth apps/tokens, webhooks, payment/shipping adapters and Openship installation records.
+- Catalog: products, variants, options, images, categories, collections, types and tags.
+- Regional commerce: one store record, regions, countries, currencies, money amounts, price sets, price lists, price rules and tax rates.
+- Inventory and fulfillment: variant stock counts, stock movements, locations, shipping options, shipping and fulfillment providers, labels and fulfillments.
+- Checkout and orders: carts, addresses, payment sessions and collections, orders, order line snapshots, captures, refunds, returns and claims.
+- Business accounts: account requests, accounts with credit limits, invoices and invoice payment.
+- Extensibility: API keys, OAuth apps and tokens, outgoing webhooks, MCP tools for AI clients, and payment and shipping adapters.
 
-## Architecture
+## Tenancy
 
-Ecommerce establishes the family pattern: thin App Router pages, operator work in `features/platform`, storefront work in `features/storefront`, schema and GraphQL operations in `features/keystone`, and provider code in `features/integrations`.
+One deployment is one store. The dashboard and storefront read the first `Store` record. Regions, countries and currencies configure where and how you sell. They are not separate tenants. Data is separated by user: customers see their own carts, orders, addresses, accounts and invoices.
 
-Its model names are specific to commerce. Other verticals reuse the boundaries, not the catalog/order vocabulary.
+## Code layout
+
+App Router pages are thin. Operator screens live in `features/platform`, the generic admin shell in `features/dashboard`, storefront screens in `features/storefront`, models and custom GraphQL operations in `features/keystone`, outgoing webhooks in `features/webhooks`, and provider code in `features/integrations`.
 
 ## Main workflow
 
-A store publishes products and regional prices. A guest or customer creates a cart, selects shipping and payment, and completes checkout. The server writes order and money snapshots so later catalog changes do not rewrite the sale. Operators fulfill, refund, return, swap or claim against that recorded order.
-
-## Setup, onboarding and deployment
-
-Use [Getting started](/docs/openfront/ecommerce/getting-started) for a source-backed local path. The checked-in onboarding seed creates the Impossible Tees demo across store, regions, products, variants, prices, categories, collections and provider records. Setup data does not prove external provider execution.
-
-Read [Deployment](/docs/openfront/ecommerce/deployment) before choosing a host. Several package commands apply migrations as part of development or build, so release jobs need deliberate migration ownership.
+A store publishes products with regional prices. A guest or signed-in customer creates a cart, chooses shipping and payment, and completes checkout with `completeActiveCart`. The server checks the provider's amount and currency against the cart, reserves stock and discounts, and writes the order with line snapshots. Operators then fulfill, buy labels, cancel, return, refund or open claims against that order.
 
 <Cards>
+  <Card title="Getting started" href="/docs/openfront/ecommerce/getting-started" description="Requirements, environment, migrations, first user, onboarding and deploy." />
   <Card title="Products" href="/docs/openfront/ecommerce/products" description="Catalog, variants, pricing and inventory relationships." />
   <Card title="Storefront" href="/docs/openfront/ecommerce/storefront" description="Country-aware product, cart, checkout and account routes." />
-  <Card title="Payments" href="/docs/openfront/ecommerce/payment-providers" description="Provider adapter source and the checks needed before enabling it." />
-  <Card title="API" href="/docs/openfront/ecommerce/api-reference" description="Use the generated GraphQL schema from your exact deployment." />
+  <Card title="Payments" href="/docs/openfront/ecommerce/payment-providers" description="Provider adapters, webhooks and current limits." />
+  <Card title="API" href="/docs/openfront/ecommerce/api-reference" description="Custom GraphQL operations and authentication." />
 </Cards>

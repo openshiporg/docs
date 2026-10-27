@@ -1,0 +1,138 @@
+---
+title: Getting started with Sports Agents
+description: Install the current source, set environment variables, run migrations, create the first user, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+The current source is the Next.js and Keystone starter with the shared Openfront dashboard. Following these steps gives you a working dashboard with `User`, `Role`, `Todo`, and `TodoImage`. It does not give you sports-agents features, because they are not in the source yet.
+</Callout>
+
+## Live demo
+
+A hosted instance runs at [sports-agents.openship.org](https://sports-agents.openship.org). Use it to look at the current dashboard. Do not put real data in it.
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`). The README still says Node.js 18; `package.json` is the source of truth.
+- A PostgreSQL database. Keystone is configured with the `postgresql` provider.
+- An S3-compatible bucket for image fields.
+- Optional: an SMTP server for password reset emails.
+- Optional: an OpenRouter API key for the shared AI chat.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-sports-agents.git
+cd openfront-sports-agents
+npm ci
+```
+
+`npm ci` installs the exact tree in `package-lock.json`. Use `npm install` only if you mean to change dependencies.
+
+## Environment
+
+There is no `.env.example` file in the repository, even though the README mentions one. Create `.env` in the repository root yourself. `keystone.ts` loads it through `dotenv/config`.
+
+```bash
+# Required
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_sports_agents
+SESSION_SECRET=replace-with-a-long-random-string
+
+# Image storage (S3-compatible)
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-endpoint
+
+# Optional: allow anyone to create an account at /dashboard/signup
+PUBLIC_SIGNUPS_ALLOWED=false
+
+# Optional: password reset email
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM=no-reply@example.com
+SMTP_STORE_LINK=https://your-app-origin
+
+# Optional: shared AI chat in the dashboard
+OPENROUTER_API_KEY=your-openrouter-key
+OPENROUTER_MODEL=your-model-id
+OPENROUTER_MAX_TOKENS=4000
+```
+
+What the code does with these values:
+
+| Variable | Read in | Notes |
+|---|---|---|
+| `DATABASE_URL` | `features/keystone/index.ts` | Falls back to `file:./keystone.db`, which does not work with the `postgresql` provider. Always set it. |
+| `SESSION_SECRET` | `features/keystone/index.ts` | Signs the stateless session cookie. Falls back to a fixed test string if unset. Always set a long random value. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | `features/keystone/index.ts` | Used by the `my_images` storage. Each has a placeholder default, so uploads fail rather than the app failing to start. Set all five. |
+| `PUBLIC_SIGNUPS_ALLOWED` | `User` access, `features/dashboard/lib/authFlow.ts` | Only the exact value `true` opens sign-up. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | `features/keystone/lib/mail.ts` | Without `SMTP_HOST` the reset page says email is not available. |
+| `SMTP_STORE_LINK` | `features/keystone/lib/mail.ts` | Origin used to build the reset link (`/dashboard/reset?token=...`). |
+| `MAIL_USER` | `features/keystone/lib/mail.ts` | Only checked to print an Ethereal preview link in logs. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | `app/api/completion/route.ts`, `features/dashboard/actions/ai-chat.ts` | Shared AI is off unless key and model are both set. Max tokens defaults to 4000. |
+| `NEXT_PUBLIC_VIEW_ORDER` | `features/dashboard/views/getFieldTypeFromViewsIndex.ts` | Fallback only. Normally the generated `features/keystone/view-order` file is used. |
+
+Keep real secrets out of source control.
+
+## Migrations
+
+The repository has seven Prisma migrations under `migrations/`, all from the starter (initial schema, todo description, more field types, image field, separate `TodoImage`, user reset token, multiselect field).
+
+```bash
+npm run migrate
+```
+
+This runs `prisma migrate deploy`. To change models, edit `features/keystone/models/**` and run:
+
+```bash
+npm run migrate:gen
+```
+
+That builds Keystone, regenerates the dashboard view order, and runs `keystone prisma migrate dev`.
+
+<Callout type="warn">
+`npm run dev` and `npm run build` both run `npm run migrate` against `DATABASE_URL`. Do not point them at a database you are not ready to migrate.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+- Landing page: `http://localhost:3000`
+- Dashboard: `http://localhost:3000/dashboard`
+- GraphQL: `http://localhost:3000/api/graphql`
+
+## First user
+
+When the `User` table is empty, the `redirectToInit` query returns `true` and every dashboard route redirects to `/dashboard/init`. That page creates the first user with name, email, and password. Keystone's `initFirstItem` gives this user a new `Admin` role with all permission flags set. After that, `/dashboard/init` redirects to `/dashboard`.
+
+Create other users and roles from the dashboard. A user needs a role with `canAccessDashboard` to get past `/dashboard/no-access`.
+
+## Onboarding
+
+There is no onboarding flow or seed data in the current source. There is no `features/platform/onboarding` and no seed script. After the first user, the database is empty apart from that user and the Admin role.
+
+## Tests
+
+The `tests/` folder has two Node test files (`starter-security.test.cjs`, `shared-dashboard.test.cjs`). They cover redirect sanitizing, sign-in and sign-up errors, shared AI key handling, scoped MCP fetch, and sidebar visibility. `package.json` has no `test` script; run them with Node's built-in test runner, for example `node --test tests/`. They need the installed `typescript` package and make no network or database calls.
+
+## Deploy
+
+The app runs anywhere that supports Node.js and PostgreSQL.
+
+1. Create the PostgreSQL database and S3 bucket.
+2. Set the environment variables above in your host.
+3. Build: `npm run build` (or `keystone build --no-ui && next build` if the build step cannot reach the database).
+4. Run migrations: `npm run migrate`.
+5. Start: `npm start`.
+
+`railway.toml` already does this split for Railway: the build command is `keystone build --no-ui && next build`, and the start command is `npm run migrate && next start`. The README also links Vercel and Railway deploy buttons, but they point at the original starter template.

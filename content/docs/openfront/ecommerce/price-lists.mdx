@@ -1,42 +1,42 @@
 ---
 title: Price Lists
-description: Override standard pricing for customer groups, regions, currencies, or scheduled sales windows.
+description: Alternate variant prices with a status and an optional date window.
 ---
 
-Price lists let Openfront override a product's usual price when a different pricing rule should win.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-That is useful for things like:
-- wholesale pricing
-- VIP customer groups
-- regional pricing differences
-- scheduled sales windows
-- currency-specific pricing that is not just a live conversion
+A `PriceList` groups alternate prices. Operators manage them at `/dashboard/platform/price-lists`.
 
-## How price lists work
+## Model
 
-When Openfront needs to resolve a price, it checks the active pricing context.
+| Field | Meaning |
+|---|---|
+| `name`, `description` | Labels |
+| `type` | `sale` or `override` |
+| `status` | `active` or `draft` |
+| `startsAt`, `endsAt` | Optional window |
+| `moneyAmounts` | The prices in this list. Each `MoneyAmount` has an amount, currency, optional region, variant, and optional `minQuantity` and `maxQuantity`. |
+| `customerGroups` | Customer groups linked to the list |
 
-That usually includes:
-- who the customer is
-- whether they belong to a customer group
-- which region or currency is active
-- whether a scheduled pricing window is live
+`PriceSet` and `PriceRule` add more pricing structure. A price rule has a `type` (`fixed` or `percentage`), a `value`, a `priority`, and `ruleAttribute` and `ruleValue` fields.
 
-If a price list applies, it can replace the standard price for that context.
+## How a price is calculated
 
-## Common use cases
+`MoneyAmount.calculatedPrice` does the work:
 
-### B2B pricing
-A wholesale account may see a lower price than a retail customer.
+1. If the money amount belongs to a price list that is `active` and inside its date window, that list is reported as applied.
+2. If the money amount belongs to a price set, the lowest valid price in the same currency is used. Prices tied to an inactive or out-of-window list are skipped.
+3. The set's price rules run from highest priority down. `fixed` caps the amount at the rule value; `percentage` takes that percentage off.
 
-### Regional pricing
-The UK market may have its own price points instead of a straight conversion from US pricing.
+The result includes `calculatedAmount`, `originalAmount`, `priceListId` and `priceListType`. The storefront product queries read these fields.
 
-### Scheduled sales
-A seasonal or flash-sale price list can turn on and off automatically.
+<Callout type="warn">
+- `calculatedPrice` does not check the shopper's customer group, so linking a list to customer groups does not limit who sees the price.
+- `PriceRule.ruleAttribute` and `ruleValue` are stored but not evaluated.
+- `minQuantity` and `maxQuantity` are read but not compared with the cart quantity.
+- Cart lines pick the first money amount for the variant in the cart's region. Test which price a cart actually uses before relying on a list.
+</Callout>
 
-## Why teams use it
+## When to use it
 
-Price lists are what you reach for when one base price is no longer enough.
-
-Discounts are often better for promotions. Price lists are better when you want the alternate price to feel like the normal price for a specific audience or context.
+Use a price list for a scheduled sale or an alternate price. Use [discounts](/docs/openfront/ecommerce/dashboard) for codes and promotions. Do not rely on price lists for wholesale or member-only pricing until group eligibility is enforced.

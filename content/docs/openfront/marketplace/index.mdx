@@ -1,41 +1,46 @@
 ---
 title: Openfront Marketplace
-description: Conversational product discovery and delegated commerce across independently operated stores.
+description: Conversational product and menu discovery across independently operated Openfront stores, with carts and checkout kept on each store.
 icon: Store
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-[Repository](https://github.com/openshiporg/marketplace) · [Product page](https://openship.org/products/marketplace) · [Marketplace](https://marketplace.openship.org)
+[Repository](https://github.com/openshiporg/marketplace) · [Product page](https://openship.org/products/marketplace) · [Live demo](https://marketplace.openship.org)
 
-Openfront Marketplace is a conversational discovery and cart layer for independently operated stores. It searches a curated store registry, renders product and cart interactions through MCP UI, and hands payment and order completion to the merchant's registered checkout origin.
+Openfront Marketplace is a chat interface for shopping across several independent stores. A buyer asks for something. The app searches the stores in its registry, shows product or menu cards in the chat through MCP UI, and builds a cart on the chosen store.
 
-The marketplace does not have a Keystone, Prisma, or product database. Products, variants, prices, availability, carts, customer accounts, orders, payments, and settlement remain in connected stores. The intended browser state holds store-bound cart capabilities, encrypted store-session envelopes, and optional buyer-supplied OpenRouter configuration. The current encrypted-session browser/server handoff has a documented mismatch, so those primitives are not evidence of a working authenticated cart flow.
+The marketplace has no database. It does not use Keystone, Prisma, or PostgreSQL. Products, prices, carts, customer accounts, orders, and payments live in the connected stores. The browser keeps chat threads, cart IDs, cart proofs, store session tokens, the store selection, and the AI settings in `localStorage`.
 
-<Callout type="warn">
-Current source implements the Openfront ecommerce adapter. Other platform and vertical adapters are not operating merely because a product name appears in the wider family. Each adapter needs a capability contract, conformance tests, credential isolation, egress controls, and an explicit checkout owner.
+<Callout type="info">
+Current source has two working adapters: `openfront` (Openfront E-commerce) and `openfront-restaurant` (Openfront Restaurant). The platform names `shopify`, `bigcommerce`, and `woocommerce` exist in the type list, but no adapter is implemented for them. A store with one of those platforms fails with an "Unsupported platform" error.
 </Callout>
 
-## Open marketplace and interoperability vision
+## How it works
 
-A merchant should be able to own its source, storefront, customer relationship, checkout, payment provider, orders, and operating data while participating in many discovery experiences. A marketplace operator curates which stores it trusts; a buyer chooses among those stores; and the merchant remains authoritative for transaction and fulfillment state.
+1. The operator lists trusted stores in `marketplace.config.json`. Each entry has a derived `id`, an HTTPS `baseUrl`, and a `platform`.
+2. A buyer opens the app and completes the setup dialog: marketplace name, theme, and AI mode (shared key or their own key).
+3. The buyer chats. The model calls `getAvailableStores`, then `discoverProducts` for retail or `discoverRestaurantMenus` for food.
+4. Product and cart cards render inside the chat. Buttons in those cards call MCP tools directly, without going through the model.
+5. Carts, addresses, shipping, and restaurant pickup or delivery details are saved on the store.
+6. The buyer pays in the chat with Stripe or PayPal (when the store has them set up), or follows a checkout link to the store's own site.
 
-This makes Marketplace distinct from Openfront's database-backed business products and from [Openship](/docs/openship/ecommerce), which coordinates shops, channels, product matches, routed orders, and fulfillment.
+## Who owns what
 
-## Current customer workflow
+- **Operator**: the store registry, AI keys, and deployment.
+- **Buyer**: their browser state and, optionally, their own AI key.
+- **Store**: catalog, prices, inventory, carts, accounts, payment sessions, orders, and fulfillment.
 
-A buyer asks for a product, receives results from configured stores, opens a product view, selects variants, creates or updates a store-owned cart, enters address and shipping details through direct MCP UI actions, and requests a merchant checkout link. The link stays on the exact registered store origin. The marketplace does not collect card or wallet credentials and does not mark the merchant order paid.
+The marketplace never holds card details. Stripe and PayPal elements load in the browser with the store's publishable key, and the store creates and completes the payment session.
 
-## Current operator workflow
+## Related products
 
-The operator reviews `marketplace.config.json`, assigns stable store IDs, permits only implemented adapters, deploys the registry, configures AI access and signing secrets, and monitors outbound store failures. Buyers cannot submit arbitrary store URLs. Adding a platform means implementing the adapter and security/conformance boundary before extending the registry allowlist.
+Marketplace sits in front of database-backed Openfront products such as [Openfront E-commerce](/docs/openfront/ecommerce) and [Openfront Restaurant](/docs/openfront/restaurant). [Openship](/docs/openship/ecommerce) is a separate operator tool for order routing and fulfillment.
 
 <Cards>
-  <Card title="Architecture and workflows" href="/docs/openfront/marketplace/architecture-workflows" description="Routes, MCP tools, store registry, browser capabilities, and merchant checkout handoff." />
-  <Card title="Getting started" href="/docs/openfront/marketplace/getting-started" description="Install, configure trusted stores and AI access, run checks, and deploy." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/marketplace/integrations-boundaries" description="Adapter contract, egress, sessions, cart capabilities, and checkout ownership." />
-  <Card title="Current limitations" href="/docs/openfront/marketplace/limitations" description="Adapter, browser, AI, privacy, reliability, and conformance work still required." />
+  <Card title="Getting started" href="/docs/openfront/marketplace/getting-started" description="Requirements, install, environment, store registry, first run, and deploy." />
+  <Card title="Architecture and workflows" href="/docs/openfront/marketplace/architecture-workflows" description="Routes, MCP tools, browser state, and the buyer workflow." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/marketplace/integrations-boundaries" description="Adapters, named GraphQL operations, egress rules, AI providers, and payments." />
+  <Card title="Current limitations" href="/docs/openfront/marketplace/limitations" description="What the code does not do yet." />
 </Cards>
-
-A reachable website or successful product request is not evidence that every cart, account, checkout, payment, privacy, or failure path is safe. Verify the exact stores, adapters, tools, and deployment you enable.

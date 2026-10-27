@@ -11,15 +11,16 @@ Use this skill to adapt the built-in Barbershop storefront or create a separatel
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-barbershop>
-- Built-in Barbershop customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Repository: <https://github.com/openshiporg/openfront-barbershop>. Confirm the exact checkout path and revision the user wants to target.
+- Built-in Barbershop customer experience: `features/storefront` — `screens` (`HomePage`, `ServicesPage`, `ServiceDetailPage`, `BarbersPage`, `BarberDetailPage`, `BookingPageServer`/`BookingPage`, `AppointmentStatusPage`, `QueuePage`, `ShopPage`, `ShopProductPage`, `MembershipsPage`, `AccountPage`, `AccountResetPage`, `NotFoundPage`, `StorefrontShell`), `components`, and data loaders in `lib/data` (`services.ts`, `availability.ts`, `appointments.ts`, `public-appointments.ts`, `deposits.ts`, `queue.ts`, `offers.ts`, `account.ts`, `settings.ts`, `booking-eligibility.ts`). Access-token cookies are in `lib/access-cookies.ts`.
+- Thin route entry points: `app/(storefront)/page.tsx` and `app/(storefront)/(main)/**` — `/services`, `/services/[id]`, `/barbers`, `/barbers/[id]`, `/book`, `/appointment`, `/queue`, `/shop`, `/shop/[id]`, `/memberships`, `/account`, `/account/reset`, and a `[...missing]` 404.
+- Public operations: `getPublicStorefrontSettings`, `getPublicServiceCatalog`, `getPublicBarbers`, `getPublicBarberWeek`, `getPublicProducts`, `getPublicMembershipOffers`, `getPublicBookingEligibility`, `getPublicPaymentOptions`, `checkBarberAvailability`, `createOnlineBooking`, `recoverGuestBooking`, `createAccountBooking`, `recoverAccountBooking`, `getPublicAppointment`, `managePublicAppointment`, `signPublicWaiver`, `startDepositCheckout`, `confirmDepositCheckout`, `getPublicQueue`, `getPublicQueueEntry`, `getPublicWalkInStatus`, `createPublicQueueEntry`, `accountBookings`, `accountBalances`, `exportMyAccountData`.
+- Server contract: `features/keystone/models/**` (`Shop` is the tenant; the storefront serves the single active shop with `isPublic` set, via `features/keystone/utils/publicShop.ts`), `features/keystone/access.ts`, `features/keystone/mutations/**`, `features/keystone/queries/**`, and `schema.graphql`. `docs/schema-map.md` maps lists and storefront coverage.
+- Provider boundaries: `features/integrations/payment` registers `manual` (offline) and `stripe` (Stripe Checkout for booking deposits only, needs `STRIPE_SECRET_KEY`, confirmed by reading the session back from Stripe, no webhook).
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is service and barber discovery, availability, booking, customer access, packages/memberships, and appointment state. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is service and barber discovery, availability, guest and account booking, appointment self-service (cancel or reschedule with a fee preview, waiver signing, optional online deposit), the walk-in line, retail and membership browsing (bought in the shop, no online purchase), and account visits and balances. Booking and queue access tokens live in HttpOnly cookies, not URLs. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

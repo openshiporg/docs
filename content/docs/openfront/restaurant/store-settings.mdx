@@ -1,57 +1,68 @@
 ---
 title: Store settings
-description: Hours, localization, branding, and ordering defaults from one singleton record.
+description: Hours, localization, branding, delivery, and ordering limits from one singleton record.
 ---
 
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-`StoreSettings` is a singleton in Openfront Restaurant, and it quietly powers a lot of the product.
-
-This is where you control how the restaurant looks to guests and how money, time, and order defaults behave across the app.
+`StoreSettings` is a singleton. There is one record per deployment. It controls how the restaurant looks to guests and how money, time, and ordering rules behave. Edit it at `/dashboard/platform/store-settings`. Saving needs `canManageSettings`.
 
 ## What lives in store settings
 
-- restaurant name, tagline, address, phone, and email
-- currency code and locale
-- timezone and country code
-- operating hours
-- delivery fee and delivery minimum
-- pickup discount
-- estimated pickup and delivery timing
-- hero headline, subheadline, and promo banner
-- rating and review count display data
+- name, tagline, logo icon and logo color, address, phone, and email
+- currency code, locale, timezone, and country code
+- weekly opening hours
+- tax rate
+- delivery on or off, delivery postal code allowlist, delivery fee, and delivery minimum
+- pickup discount percent
+- estimated pickup and delivery times (display text)
+- hero headline, subheadline, tagline, and promo banner
+- rating and review count for display (the rating is only shown when the review count is positive)
+- a read-only `paymentProviders` field that lists configured providers and their public keys
 
-## Why it matters
+Inside the hours setting, the page also stores ordering controls:
 
-The same record feeds multiple surfaces:
+- **Ordering cutoff minutes before closing**: stop new orders this many minutes before close (0 to 240).
+- **Maximum active online orders**: 0 means no limit.
+- **Menu service windows**: open and close times for breakfast, lunch, and dinner, in venue-local time.
 
-- storefront hero copy and banner
-- footer contact information and hours
-- currency formatting in the storefront and reports
-- timezone-aware hour display
-- delivery and pickup math in checkout
+## Where it is used
+
+- storefront hero, banner, logo, footer contact details, and hours
+- open or closed status and the ordering cutoff
+- meal period checks on menu items and categories
+- currency and locale formatting in the storefront, POS, and reports
+- tax, delivery fee, delivery minimum, and pickup discount in checkout and POS totals
+- delivery address checks (country and postal code allowlist)
+- online order capacity
+
+When an order is created, the pricing settings are frozen onto it. Later changes do not reprice open orders. Checks with different frozen pricing cannot be merged.
+
+## Delivery rules
+
+New settings have delivery off and an empty allowlist. Turning delivery on requires a country code and a postal code allowlist. The server rejects an inconsistent setup.
 
 ## Recommended setup order
 
 <Steps>
 <Step>
-### Start with identity
-Add the name, tagline, address, phone number, and email so the storefront stops looking generic.
+### Identity
+Set name, tagline, logo, address, phone, and email.
 </Step>
 <Step>
-### Set localization correctly
-Choose currency, locale, timezone, and country before you start testing prices and reports.
+### Localization
+Set currency, locale, timezone, and country before testing prices and reports.
 </Step>
 <Step>
-### Set your ordering defaults
-Delivery fee, minimums, pickup discount, and estimated timing all feed directly into the guest ordering flow.
+### Hours and ordering limits
+Set weekly hours, the cutoff, the online order limit, and meal windows.
 </Step>
 <Step>
-### Save and verify the storefront
-Check the homepage, footer, and checkout modal to make sure the settings are showing up where you expect.
+### Ordering money
+Set tax rate, pickup discount, and, if you deliver, the delivery allowlist, fee, and minimum.
+</Step>
+<Step>
+### Check the storefront
+Open the home page and checkout to confirm the settings show up.
 </Step>
 </Steps>
-
-## What changed recently
-
-The restaurant build now has better currency and localization support than the early draft docs suggested. Pricing, formatting, and several reporting surfaces already read from store settings instead of assuming a fixed US-only setup.

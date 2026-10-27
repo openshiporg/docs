@@ -6,69 +6,67 @@ description: Station-based ticket management for prep, expo, and timing control.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The KDS is where the restaurant order stops being theoretical and starts becoming service.
+The KDS at `/dashboard/platform/kds` shows kitchen tickets by station. It tracks ticket age, has an all-day view, and lets cooks complete items one at a time. It refreshes every 10 seconds.
 
-Openfront Restaurant already routes tickets by kitchen station, tracks ticket age, supports all-day views, and lets staff complete items individually instead of treating the whole order like a single block.
+## What the KDS does
 
-## What the KDS does today
+- station tabs for each active `KitchenStation`, plus "All Stations"
+- status filter: all, in progress, ready
+- lane filter: prep or expediter (stations whose name contains "expo" or "expediter")
+- urgent tickets highlighted and sorted first
+- warn and critical age thresholds
+- ticket view and all-day view
+- per-station cards with active, ready, and overdue counts and average age
+- mark individual items fulfilled
+- expo cannot bump a ticket to served while prep stations are still working
 
-- groups tickets by kitchen station
-- filters by active status
-- separates prep and expediter lanes
-- highlights urgent tickets
-- tracks overdue and critical timing thresholds
-- supports both ticket view and all-day view
-- shows station throughput cards
-- lets staff mark individual items fulfilled
-- prevents expo from bumping a ticket if prep stations are still working
+## Timing thresholds
 
-## Timing rules in the current UI
-
-The KDS uses two simple age thresholds out of the box:
+The UI uses fixed thresholds in `KDSClient.tsx`:
 
 - **Warn** at 12 minutes
 - **Critical** at 20 minutes
 
-That gives the screen enough tension to be useful during service without turning it into a wall of alerts all the time.
+Age is measured from the ticket's fired time, or the order's creation time if it has none. These values are not configurable in settings.
 
 ## How tickets get into the KDS
 
 <Steps>
 <Step>
 ### Orders are grouped by station
-Each `OrderItem` points at a kitchen station through the menu item. During sync, items are grouped by station and turned into `KitchenTicket` records.
+When an order is in `sent_to_kitchen`, `in_progress`, or `ready`, each item is grouped by its kitchen station snapshot (`grill`, `fryer`, `salad`, `dessert`, `bar`, or `expo`; `expo` if none). One `KitchenTicket` is created per station. If no matching station exists, one is created.
 </Step>
 <Step>
-### The queue is sorted for actual service pressure
-Urgent orders float up. On-hold work drops down. Ticket priority and age break ties after that.
+### The queue is sorted
+Urgent orders go first. Orders on hold go last. Then higher priority, then older tickets.
 </Step>
 <Step>
 ### Cooks work at the item level
-A cook can mark individual items fulfilled. Once every item on a ticket is fulfilled, the ticket moves to ready.
+`fulfillKitchenTicketItem` marks single items done. Ticket status moves with `updateKitchenTicketStatus`: `new` to `in_progress` or `ready`; `in_progress` to `ready`; `ready` to `served` or back to `in_progress` (recall). Any open ticket can be cancelled.
 </Step>
 <Step>
-### Expo controls the final handoff
-If a ticket belongs to an expediter lane, the system checks whether prep stations are finished before it can be bumped to served.
+### Expo controls the handoff
+Before an expediter ticket can be served, every prep ticket on the order must be done. Otherwise the server returns the names of the stations still working.
 </Step>
 </Steps>
 
-## Views that already exist
+Every ticket change also writes a `KitchenTicketEvent` (dispatch, delta, status, item status, recall, cancel). Tickets cannot change while the order is on hold or after the order is served, dispatched, completed, or cancelled.
+
+## Views
 
 ### Ticket view
-This is the default queue view. It is best when the kitchen is working order by order.
+The default queue, order by order.
 
 ### All-day view
-All-day view rolls active demand up by item. It is useful when the line needs a fast answer to a question like, "How many fries are we actually short on right now?"
+Rolls up active demand by item and station, with fulfilled counts.
 
 ### Station metrics
-The KDS also shows simple throughput cards by station, including active tickets, ready tickets, overdue work, and average age.
+Cards per station with active, ready, and overdue counts and average ticket age.
 
-## Current implementation notes
+## Implementation notes
 
-The KDS is fed by ticket sync logic in `features/keystone/mutations/kdsTickets.ts`. It already does a good job of reconciling orders into station tickets and keeping state consistent.
-
-What it is not trying to be yet is a giant custom kitchen-ops platform with device provisioning, printer fallbacks, and every enterprise edge case built in. The important restaurant concepts are already represented.
+Ticket sync lives in `features/keystone/utils/kitchenTicketSync.ts` and runs after order changes. The `syncKitchenTickets` mutation re-syncs all active orders and needs kitchen management permission. KDS mutations need `canManageKitchen`.
 
 <Callout type="info">
-The current KDS feels most at home in kitchens that want clean digital ticket flow, station routing, and better timing visibility without carrying the weight of a legacy POS stack.
+There is no device provisioning, printer fallback, or bump-bar support. The KDS is a web page that polls.
 </Callout>

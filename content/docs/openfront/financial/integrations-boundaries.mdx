@@ -1,0 +1,78 @@
+---
+title: Financial integrations and boundaries
+description: The Alpaca paper adapter, provider imports, signed webhooks, machine credentials, outbox delivery, AI chat, and MCP in current source.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+A provider record or connection describes a choice and its consent state. It is not proof that credentials work, that a provider accepted an order, or that money moved.
+
+## Brokerage adapters
+
+`features/brokerages/registry.ts` lists one adapter: `alpaca`. Other brokers appear only as comments. The registry is code-owned; a database value cannot load an arbitrary module.
+
+The Alpaca adapter (`features/brokerages/alpaca/adapter.ts`) always talks to Alpaca's paper API and throws if the credentials are not marked paper. It can read accounts, positions, activity, and quotes, and it has a `submitOrder` method, but no workflow in the source calls `submitOrder`. Orders placed in the app are filled by a local simulation and never sent to Alpaca.
+
+`syncInstitutionConnection` is the only caller. It needs `canManageIntegrations`, an active paper connection owned by the caller, granted consent covering `accounts:read`, `positions:read`, and `transactions:read`, a credential reference, and the `alpaca-paper` provider in `sandbox` status with execution support off.
+
+## Credentials
+
+Connections store an opaque `credentialReference`, which GraphQL does not return. The only resolver accepts `env://ALPACA_PAPER` or `env://ALPACA_PAPER_<NAME>` and reads `<PREFIX>_API_KEY` and `<PREFIX>_API_SECRET` from the environment. Use a separate prefix per connection so customers do not share one paper account. Error messages do not name the variables.
+
+## Institution providers and imports
+
+Onboarding creates four sandbox providers: `alpaca-paper`, `open-banking-import`, `custodian-import`, and `digital-asset-import`. The three import providers have no adapter. Their data can only arrive through `importProviderSnapshot` or the observation workflow (`admitProviderObservation`, `reviewProviderObservation`), which takes accounts, positions, and transactions as structured input with an idempotency key and observation time. Imports are recorded in `ProviderImportRun`; imported transactions start unmatched and are reconciled by an operator.
+
+`provisionInstitutionConnection` refuses any provider that is not `sandbox` or that supports execution.
+
+## Signed webhooks
+
+`POST /api/webhooks/financial` reads headers `x-financial-provider`, `x-financial-connection`, `x-financial-event-id`, `x-financial-event-type`, `x-financial-timestamp`, and `x-financial-signature`, with a body of at most 256 KB.
+
+- The signature is HMAC-SHA256 over `timestamp.provider.connection.eventId.eventType.body`, using `FINANCIAL_WEBHOOK_SECRET_<PROVIDER>` (at least 32 characters).
+- Timestamps more than five minutes off are rejected.
+- The connection must be active, consented, and on a sandbox provider.
+- Duplicate event IDs return the original event; a conflicting duplicate is rejected.
+- The payload itself is not stored, only its hash. A `WebhookEvent` and an outbox event are written.
+
+Nothing in the source processes webhook payloads into account changes. `recordWebhookProcessing` only marks an event processed or failed.
+
+## Machine credentials and the agent endpoint
+
+Operators with `canManageMachineCredentials` issue, rotate, and revoke scoped API keys in `/dashboard/platform/tasks`. Secrets are hashed with `FINANCIAL_MACHINE_CREDENTIAL_PEPPER` and shown once. Scopes are `operations:read`, `proposals:write`, `imports:write`, and `delivery:write`. A key never gains more authority than its owner's current role.
+
+`/api/financial/agent` takes a bearer token:
+
+- `GET` (`operations:read`) returns recent proposals, approval requests, imports, and journals.
+- `POST` with `action` `propose` (`proposals:write`), `provider_import` (`imports:write`), or `claim_outbox` and `ack_outbox` (`delivery:write`).
+
+Agents can propose actions. Execution handles three proposal operations: `order.place`, `transfer.process`, and `provider.import`. A proposal must be approved with `decideAgentProposal`, and its linked approval request must be approved and unexpired, before `executeApprovedAgentProposal` runs it. Simulated fills, transfer settlement, and recommendation processing refuse machine sessions directly.
+
+## Outbox
+
+Lifecycle mutations write `OutboxEvent` rows. A worker leases them with `claimOutboxEvents` and acknowledges with `recordOutboxDelivery`. There is no built-in worker and no outbound destination; you supply the consumer.
+
+## AI chat and MCP
+
+- `/api/completion` streams dashboard AI chat through OpenRouter. It uses the server's `OPENROUTER_*` settings for a signed-in user with dashboard access, or a key and model the user supplies in the request.
+- `/api/mcp-transport/[transport]` is a JSON-RPC MCP server. It forwards the caller's cookie to `/api/graphql` and offers generic tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. Access is whatever the forwarded session allows. Generic writes fail on the financial lists that block them; the MCP tools do not wrap the named lifecycle mutations.
+
+<Callout type="warn">
+Do not give an AI tool consequential authority on the assumption that it is limited to paper data. Grant the smallest role that fits, and keep approvals and settlement with a human.
+</Callout>
+
+## Email
+
+Password-reset email uses SMTP from `SMTP_*`. There are no other transactional emails in the source.
+
+## Adding a provider
+
+Before adding a live or new provider:
+
+- add an adapter to the registry with a typed request and response;
+- keep credentials in a secret store and resolve them only after consent and authority checks;
+- authenticate inbound callbacks, reject replays, and make retries idempotent;
+- map pending, accepted, rejected, partial, and reversed states without inventing success;
+- add reconciliation and operator exception handling;
+- keep the paper-only guards until you have independent legal and regulatory sign-off for live execution or money movement.

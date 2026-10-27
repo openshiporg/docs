@@ -6,3 +6,46 @@ description: Give an LLM the Pharmacy storefront skill to adapt the built-in exp
 To create a custom Pharmacy storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Pharmacy's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Pharmacy codebase before proposing work.
+
+Skill file: [`/skills/openfront-pharmacy-custom-storefront/SKILL.md`](/skills/openfront-pharmacy-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/(main)/`. Each route file re-exports a screen from `features/storefront/screens`. Data loaders are in `features/storefront/lib/data`.
+
+| Route | Customer journey |
+|---|---|
+| `/` | Location picker, the location's hours and counter services, and the OTC catalog for that location |
+| `/products` | Catalog with `?category=` filter, search, and load more (`publicPharmacyCatalog`, `publicPharmacyCategories`) |
+| `/products/[handle]` | Product detail with related products from the same category |
+| `/cart` | Cart for the selected location |
+| `/checkout` | Contact, pickup or delivery, payment choice, and privacy consent; a Stripe card step when `NEXT_PUBLIC_STRIPE_KEY` is set |
+| `/order-status` | Look up an order by order number and email, or open it with `orderId` plus the guest `token` |
+| `/prescriptions` | Refills (links to the account), transfer or new-prescription request (sign-in required), and location details |
+| `/account` (login slot) | Sign in, register, and password reset at `/account/reset` |
+| `/account` (dashboard slot) | Prescriptions with refill requests, patient registration request, request history, and orders |
+| `/account/orders/details/[id]` | A signed-in customer's own order (`pharmacyCustomerOrderDetails`) |
+| `/account/profile` | Name, email, and password |
+| `/privacy` | The organization's privacy notice |
+
+## Sessions and cookies
+
+The storefront sets three `httpOnly` cookies: the Keystone session, the cart (ID and guest token), and the selected location. Once the cart has items, the location picker is locked. The tenant comes from the request `host` header.
+
+## Named operations the storefront uses
+
+- Store and catalog: `StorefrontTenant`, `StorefrontCatalog`, `StorefrontCategories`, `StorefrontPrivacy`.
+- Cart: `StorefrontCart`, `StorefrontCreateCart`, `StorefrontAddItem`, `StorefrontUpdateItem`.
+- Checkout: `StorefrontPaymentProviders`, `StorefrontPayment`, `StorefrontSubmitOrder`.
+- Orders: `StorefrontGuestOrder`, `StorefrontOrderLookup`, `StorefrontCustomerOrder`, `StorefrontCustomerOrderDetails`.
+- Account: `StorefrontCustomer`, `StorefrontSignIn`, `StorefrontSignUp`, `StorefrontSignOut`, `StorefrontSendReset`, `StorefrontRedeemReset`, `StorefrontUpdateProfile`, `StorefrontUpdateSignIn`, `StorefrontCustomerAccount`, `StorefrontPatientPortal`.
+- Prescriptions: `StorefrontRequestRefill`, `StorefrontPrescriptionRequest`, `StorefrontMyRequests`.
+
+## Journey boundaries
+
+- Only published products with `prescriptionRequirement` set to `none` and online availability on can enter the cart. Prescription items do not appear in the public catalog.
+- If a location has online ordering off, the storefront shows a "call to order" notice.
+- Pay at pickup is hidden for delivery orders.
+- Card checkout only commits the order after the provider reports the payment as captured or succeeded.
+- Refill requests are only offered for dispensed or closed fills with refills left, and only once the patient profile is linked to the account by staff.
+- Customers cannot cancel orders, request transfers out, or see clinical review records.

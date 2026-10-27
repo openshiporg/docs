@@ -1,0 +1,43 @@
+---
+title: External dashboards
+description: Give an LLM the Medspa dashboard skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Medspa dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Medspa's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Medspa codebase before proposing work.
+
+## Current platform pages
+
+Route files under `app/dashboard/(admin)/platform/**` are thin wrappers around screens in `features/platform/<slice>/screens`. Paths below are relative to `/dashboard`.
+
+| Page | Slice | What operators do there |
+|---|---|---|
+| `/platform/appointments` | appointments | Day sheet, arrivals, and appointment status transitions |
+| `/platform/appointments/new` | appointments | Front-desk booking with a client picker |
+| `/platform/appointments/[id]` | appointments | Appointment detail, reservations, and status |
+| `/platform/appointments/[id]/treatment` | treatment | Consultation, contraindications, clinical order, consent, session, administration, notes, and follow-up |
+| `/platform/appointments/plans`, `/plans/[consultationId]` | appointments | Consultation queue and treatment plans |
+| `/platform/checkout`, `/checkout/[id]` | checkout | Treatment tickets, retail add-ons, benefits, tip, and cash settlement |
+| `/platform/payments`, `/payments/[id]` | payments | Settled payments, refunds, and tips |
+| `/platform/commissions` | commissions | Provider commissions and payouts |
+| `/platform/clients`, `/clients/[id]` | clients | Client directory and record |
+| `/platform/engagement` | engagement | Waitlist, message templates, and message log |
+| `/platform/follow-ups` | follow-ups | Aftercare tasks and client responses |
+| `/platform/reviews` | reviews | Approve or hide client reviews |
+| `/platform/catalog`, `/catalog/[id]` | catalog | Treatments, categories, variants, prices, online booking, and required rooms |
+| `/platform/benefits` | benefits | Membership plans, client memberships, packages, and gift cards |
+| `/platform/inventory`, `/inventory/purchase-orders/[id]` | inventory | Products, vendors, purchase orders, receiving, lots, and movements |
+| `/platform/administration` | administration | Practice hub with a needs-attention list |
+| `/platform/staff`, `/staff/[id]` | staff | Providers, roles, invitations, credentials, and treatment authority |
+| `/platform/locations` | locations | Addresses, timezones, and opening hours |
+| `/platform/schedules` | schedules | Weekly hours, one-off hours, and time off |
+| `/platform/resources` | resources | Rooms, devices, and device readiness |
+| `/platform/storefront` | storefront-settings | Practice name, logo, publishing, and checkout tax rate |
+| `/platform/forms` | forms | Intake forms, form templates, consent versions, and intake review |
+| `/platform/safety`, `/safety/incidents/[id]`, `/safety/recalls/[id]` | safety | Incidents, recalls, and device readiness log |
+| `/platform/privacy`, `/privacy/requests/[id]` | privacy | Patient rights requests, legal holds, retention, and break-glass access |
+| `/platform/reports` | reports | Revenue by day, treatments, providers, and liabilities |
+| `/platform/integrations` | integrations | Payment methods, email status, event log, and webhooks |
+
+The dashboard also has `/waitlist` (the engagement workspace), an AI chat sidebar, and the generic Keystone list screens at `/[listKey]`, `/[listKey]/[id]`, and `/[listKey]/create`. Navigation is defined in `features/platform/lib/navigation.ts`. Each page checks the capability its workflow needs; because most lists are write-locked, a custom dashboard must call the same named mutations these screens call.

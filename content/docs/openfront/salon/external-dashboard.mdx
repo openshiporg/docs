@@ -6,3 +6,73 @@ description: Give an LLM the Salon dashboard skill to adapt the built-in experie
 To create a custom Salon dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Salon's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Salon codebase before proposing work.
+
+## Current platform routes
+
+Route files live in `app/dashboard/(admin)/platform/**` and stay thin. Each one wraps a screen from `features/platform` with `withPlatformPermission`. A user with `canManageSalon` passes every check. Otherwise the role needs at least one listed flag, or the page redirects to `/dashboard/no-access`.
+
+| Route | Slice | Role flags (any one) | What it does |
+| --- | --- | --- | --- |
+| `/dashboard/platform/appointments` | appointments | `canManageAppointments` | Day board and booking list by stylist |
+| `/dashboard/platform/appointments/new` | appointments | `canManageAppointments` | Book at the desk |
+| `/dashboard/platform/appointments/[id]` | appointments | `canManageAppointments`, `canManagePayments` | Detail: status changes, reschedule, steps (segments), deposit, care |
+| `/dashboard/platform/checkout` | checkout | `canManagePayments` | Checkout queue |
+| `/dashboard/platform/checkout/[id]` | checkout | `canManagePayments` | Ticket: services, retail, discount, tip, package or membership credit |
+| `/dashboard/platform/sales` | sales | `canManagePayments`, `canIssueRefunds`, `canViewReports` | Sales list with status tabs and search |
+| `/dashboard/platform/sales/[id]` | sales | `canManagePayments`, `canIssueRefunds`, `canViewReports` | Refund, void, partial refund, commission and tip corrections |
+| `/dashboard/platform/store-settings` | store-settings | `canManageSalon` | Storefront name, description, theme, logo, primary location |
+| `/dashboard/platform/clients` | clients | `canManageClients` | Client directory |
+| `/dashboard/platform/clients/[id]` | clients | `canManageClients` | Profile, visits, care profile, notes, color formulas |
+| `/dashboard/platform/engagement` | workspaces | `canManageAppointments`, `canManageClients` | Waitlist demand and message log (read-only) |
+| `/dashboard/platform/consultations` | consultations | `canManageCareRecords` | Review signed consultations; create and publish form versions |
+| `/dashboard/platform/loyalty` | loyalty | `canManageClients` | Points program and tiers, balances, referrals |
+| `/dashboard/platform/reviews` | reviews | `canManageClients` | Publish, hide, or delete client reviews |
+| `/dashboard/platform/waitlist` | waitlist | `canManageAppointments`, `canManageClients` | Add walk-ins and seat them |
+| `/dashboard/platform/catalog` | workspaces | `canManageCatalog` | Categories, services, products |
+| `/dashboard/platform/catalog/[id]` | catalog | `canManageCatalog` | Service detail: booking rules, price by level, upcoming, reviews |
+| `/dashboard/platform/benefits` | benefits | `canManageCatalog`, `canManageClients` | Membership and package plans; sell, enrol, pause, cancel |
+| `/dashboard/platform/gift-cards` | gift-cards | `canManagePayments` | Sell at the desk, redeem, return value, balance history |
+| `/dashboard/platform/inventory` | workspaces | `canManageInventory` | Retail stock and adjustments |
+| `/dashboard/platform/schedules` | schedules | `canManageSchedules`, `canManageOwnSchedule` | Weekly hours and time off |
+| `/dashboard/platform/resources` | resources | `canManageResources`, `canManageAppointments` | Chairs, rooms, equipment; availability |
+| `/dashboard/platform/administration` | workspaces | `canManageSalon` | Staff and locations |
+| `/dashboard/platform/staff` | — | — | Redirects to `/dashboard/platform/administration` |
+| `/dashboard/platform/staff/[id]` | staff | `canManageSchedules`, `canManageAppointments` | Stylist profile: hours, upcoming, earnings, reviews, services |
+| `/dashboard/platform/commissions` | commissions | `canManageCommissions` | Unpaid commissions and card tips; payouts |
+| `/dashboard/platform/reports` | workspaces | `canViewReports` | Revenue, refunds, appointments, payment method and stylist tables (`?range=`) |
+| `/dashboard/platform/integrations` | workspaces | `canManageIntegrations` | Payment providers, webhook events, domain-event backlog (read-only) |
+
+Sidebar entries come from `features/platform/lib/navigation.ts`. Other dashboard routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`.
+
+## Named operations by slice
+
+The built-in pages call GraphQL through server actions with these operation names.
+
+| Slice | Queries | Mutations (root field) |
+| --- | --- | --- |
+| appointments | `AppointmentOperations`, `AppointmentDetail`, `AppointmentCare`, `AppointmentCommissions`, `AppointmentInventory`, `AppointmentPaymentBoundary`, `DayBoardShifts`, `StaffBookingData`, `VerifyOperatorReschedule` | `StaffBookAppointment` (`bookAppointment`), `TransitionAppointment` and `CancelAppointment` (`transitionAppointment`), `RescheduleOperatorAppointment` (`scheduleAppointmentSegments`), `TransitionSegment` (`transitionAppointmentSegment`), `RecordDeposit` (`processAppointmentDeposit`), `ConvertWaitlistEntry` (`transitionWaitlistEntry`) |
+| checkout | `CheckoutQueue`, `CheckoutWorkflowAppointment`, `CheckoutClientBenefits`, `CheckoutLocalStock`, `SelectedRetailProducts` | `ControlledCheckout` (`completeAppointmentCheckout`) |
+| sales | `Sales`, `Sale`, `SaleCompensation` | `ReverseSale` (`reverseSalonTransaction`), `AdjustCompensation` (`adjustSaleCompensation`) |
+| clients | `ClientProfile`, `ClientCare`, `ClientDirectoryVisits` | `UpdateClientCareProfile`, `AddClientNote` (`createClientNote`), `AddColorFormula` (`createColorFormula`) |
+| consultations | `Consultations` | `PublishVersion` (`publishConsultationTemplateVersion`), `ReviewConsultation`, `CreateFormTemplate`, `SetFormTemplateActive` |
+| benefits | `Benefits` | `SellBenefit` (`sellClientBenefit`), `SetBenefitStatus` (`setClientBenefitStatus`), `CreatePlan`, `UpdatePlan` (generated CRUD) |
+| gift-cards | `GiftCards` | `SellGiftCard` (`purchaseGiftCard`), `ConfirmGiftCard` (`confirmGiftCardPurchase`), `ChangeGiftCardBalance` (`applyGiftCardBalance`) |
+| loyalty | `Loyalty` | `AdjustPoints` (`adjustClientPoints`), `CompleteReferral`, `CreateProgram`, `UpdateProgram`, `CreateReferral` (generated CRUD) |
+| reviews | `ReviewQueue` | `ModerateReview` (`updateReview`), `DeleteReview` (`deleteReview`) |
+| waitlist | `WaitlistQueue` | `JoinWaitlist`, `TransitionWaitlistEntry` |
+| schedules | `ScheduleOperations`, `TimeOffCopies`, `TimeOffStylist` | `UpsertWeeklySchedule` and `UpsertTimeOff` (`upsertStylistSchedule`), `SetScheduleAvailability` and `WithdrawTimeOff` (`setStylistScheduleAvailability`) |
+| resources | `ResourceOperations` | `SetSalonResourceAvailability` |
+| commissions | `CommissionOperations`, `UnpaidStylistCommissions` | `PayoutCommissions`, `PayoutGratuities` |
+| staff | `StaffProfile`, `StaffEarnings` | — |
+| catalog | `ServiceCore`, `ServiceDetail` | `SavePricingTier` (`saveSalonRecord`) |
+| store-settings | `PlatformStoreSettings` | `UpsertSalonStoreSettings` |
+| workspaces | `SalonOperationsWorkspace`, `SalonManagementWorkspace`, `ServiceTakings`, `InventoryIntentActor`, `OriginalInventoryReceipt` | `SaveSalonRecord`, `AdjustSalonInventory` and `AdjustSavedInventory` (`adjustSalonInventory`), `TransitionWaitlist`, `UploadSalonImage` (`createSalonImage`) |
+| onboarding | `ActiveUserForOnboarding`, `SalonSetupState` | `RunSalonOnboarding`, `UpdateOnboardingStatus` (`updateUser`) |
+| lib | `PlatformActor`, `SalonTimezone`, `ShopTodayLocations` | — |
+
+## Notes for a separate dashboard
+
+- Use the custom mutations for bookings, checkout, refunds, payouts, benefits, gift cards, stock, and schedules. The generated create, update, and delete for those lists are blocked.
+- Re-check permission on the server. The page guards in `withPlatformPermission` only control navigation.
+- Consultation answers need `canManageCareRecords`. The manager flag does not grant it.
+- There is no tenant scope to pass. Every staff user with a flag sees all locations.

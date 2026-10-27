@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Vape",
+  "description": "Age-gated vape retail with merchant authority, product evidence, jurisdiction rule sets, a fail-closed checkout gate, and compliance reporting",
+  "icon": "Wind",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

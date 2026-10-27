@@ -1,0 +1,48 @@
+---
+title: Openfront Financial
+description: A self-hosted paper brokerage with a client portal, an operator console, a double-entry ledger, approvals, and compliance review.
+icon: Landmark
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Financial is a self-hosted portfolio and brokerage-operations application. Investors browse markets, keep watchlists, place orders, fund accounts, and read activity and statements. Operators work orders, transfers, reconciliation, the ledger, income records, approvals, compliance reviews, and provider connections.
+
+It runs in paper mode. Orders placed through the app are recorded and filled by a local simulation. Transfers move recorded balances, not money. The one provider adapter in the source, Alpaca, accepts paper-trading credentials only and is used to read accounts, positions, and activity.
+
+<Callout type="warn">
+Openfront Financial is not a broker-dealer, custodian, bank, or investment adviser, and it does not give you any license or registration. The storefront shows this disclosure from source: "Paper trading only. Orders are not sent to an exchange and no real money moves. Quotes may be delayed. Not investment advice." Keep it visible.
+</Callout>
+
+## Who it is for
+
+- **Investors** using the client portal: markets, asset detail, trading, portfolio, orders, funding, watchlists, activity, statements, and account settings.
+- **Firm operators**: operations staff who fill or cancel orders and settle transfers, reviewers who decide approvals and compliance records, and integration managers who connect providers and issue machine credentials.
+- **Developers** who want a Keystone and Next.js base for a brokerage-style product with named, audited workflows.
+
+## Product surfaces
+
+- **Client portal** at `/`. Public pages show the home page, `/markets`, and `/markets/[symbol]`. Signed-in pages cover `/portfolio`, `/trade`, `/orders`, `/orders/[id]`, `/funding`, `/watchlist`, `/activity`, `/statements`, and `/account`.
+- **Operator console** at `/dashboard/platform/*`: orders, portfolio, transfers, reporting, store settings, accounts and balances, instruments, reconciliation, approvals, operator tasks, ledger, income and tax, advisory, and compliance and audit.
+- **Generic admin pages** at `/dashboard/<list-key>` from the shared Keystone shell, plus users and roles.
+- **HTTP endpoints**: GraphQL at `/api/graphql`, a signed provider webhook at `/api/webhooks/financial`, a machine-credential endpoint at `/api/financial/agent`, a statement CSV export at `/api/platform/statements`, a public trade feed at `/api/public/trades`, and the dashboard AI chat and MCP routes.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/financial/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/financial/architecture-workflows" description="Models, operator workflows, and the named GraphQL operations." />
+  <Card title="External dashboards" href="/docs/openfront/financial/external-dashboard" description="Current operator pages and the custom-dashboard skill." />
+  <Card title="External storefronts" href="/docs/openfront/financial/external-storefront" description="Current client-portal routes and the custom-storefront skill." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/financial/integrations-boundaries" description="Alpaca paper adapter, webhooks, machine credentials, AI, and MCP." />
+  <Card title="Current limitations" href="/docs/openfront/financial/limitations" description="What the source does not do yet." />
+</Cards>
+
+## Ownership and tenancy
+
+There is no organization or firm model. Records belong to a `User`. Almost every financial list filters reads to the signed-in user, either directly (`user`) or through a relationship such as `account.connection.user` or `bankAccount.user`.
+
+That applies to operators too. Platform pages read through the operator's own session, so an operator sees their own connections, accounts, orders, and transfers. Only `ComplianceCase`, `KycCheck`, and `RiskProfile` widen to every user for a role with `canViewFinancialOperations`.
+
+Generic create, update, and delete are turned off on nearly every financial list. State changes go through named mutations that check the actor, the owner, and the role, take an idempotency key, and write a `FinancialAuditLog` row and ledger records. Role flags are `canViewFinancialOperations`, `canOperateFinancial`, `canApproveFinancial`, `canManageIntegrations`, `canManageMachineCredentials`, and `canManageOnboarding`, alongside the shared shell flags. Approval and compliance checks stop a reviewer from deciding their own request or record.
+
+The application uses Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreSQL.

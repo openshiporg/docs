@@ -1,114 +1,127 @@
 ---
 title: Openfront Airline
-description: Airline retailing, bookings, passenger service, and disruption operations.
+description: Airline retailing, bookings, ticketing, airport passenger service, baggage, and disruption recovery for one carrier.
 icon: Plane
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-airline) · [Catalog](https://openship.org/products/openfront-airline)
+[Source](https://github.com/openshiporg/openfront-airline) · [Live demo](https://airline.openship.org) · [Catalog](https://openship.org/products/openfront-airline)
 
-Openfront Airline is an open-source airline retailing and passenger-service backend. It models direct and agent distribution, offers, bookings, fulfillment documents, payments, airport passenger service, baggage, and disruption recovery under carrier-owned data and permissions.
+Openfront Airline is an open-source, self-hostable airline retailing and passenger-service app. Travelers search flights, hold a fare, book, pay, pick seats, and check in on the public storefront. Carrier staff build the network, price and sell seats, settle payments, issue tickets, run departures and baggage, and handle disruptions in the dashboard.
+
+It is built on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. To install it, see [Getting started](/docs/openfront/airline/getting-started).
 
 <Callout type="warn">
-This is not flight operations or safety-critical aviation software. It does not calculate flight plans, dispatch releases, fuel, weight and balance, airworthiness, crew legality, ATC decisions, or operational control.
+This is not flight operations or safety software. It does not do flight planning, dispatch, fuel, weight and balance, crew legality, airworthiness, or ATC. "Flight operations" here means gates, estimated and actual times, and departed/arrived status for passenger service.
 </Callout>
 
-## Install and configure
+## Tenancy and access
 
-Use Node.js 20.9 or later and PostgreSQL. From the repository root:
+`Carrier` is the tenant. Almost every record has a direct carrier relationship, and users see only their own carrier's data. `Airport` is shared reference data used by all carriers.
 
-```bash
-npm ci
-```
+Access follows three patterns, defined in `features/keystone/access.ts`:
 
-Create `.env` for the intended local database and session:
+- **Carrier scoped.** Normal Keystone create, read, update for the user's carrier, gated by a read and a manage permission.
+- **Command only.** GraphQL can read the record, but every write goes through a custom command. Commands are idempotent, audited, and run in a serializable transaction.
+- **Station scoped.** Command only, plus an active `StationAssignment` for the flight's origin airport with the matching flag: `canCheckIn`, `canAcceptBags`, or `canBoard`.
 
-```bash
-DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_airline
-SESSION_SECRET=replace-with-at-least-32-random-characters
-INITIAL_CARRIER_NAME=Openfront Airline
-INITIAL_CARRIER_LEGAL_NAME=Openfront Airline
-INITIAL_CARRIER_CODE=OF
-INITIAL_CURRENCY_CODE=USD
-INITIAL_TIMEZONE=UTC
-```
-
-A production deployment also needs `APP_BASE_URL` set to one trusted origin such as `https://airline.example`. It must not contain a path, credentials, query, or fragment. Internal GraphQL and MCP requests ignore request `Host` and forwarded-host headers.
-
-Review and apply checked-in migrations, then start development:
-
-```bash
-npm run migrate
-npm run dev
-```
-
-`npm run dev` also deploys migrations, so use it only with the database you intend to update. The app is served at `/`, the generated operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`. Do not use schema push or destructive reset commands.
-
-Run source checks with:
-
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-```
-
-`npm run build` generates Keystone schemas and builds Next.js without applying migrations.
-
-## Architecture
-
-`Carrier` is the tenant root. Carrier-owned records carry a direct carrier relationship, and permissions are split by network, inventory, offers, bookings, passengers, ticketing, payments, airport service, disruptions, integrations, users, roles, and audit. `Airport` is shared reference data.
-
-Current source registers 48 Keystone and Prisma models. Accepted offers, booking lines, booking segments, tickets, and financial records snapshot immutable commercial and service facts. Money uses integer minor units and explicit currency. Lifecycle and idempotency helpers control booking and passenger-service transitions.
-
-The custom GraphQL boundary now exposes the bounded `airlineFlightOptions` projection plus eight commands: `createOfferFromShopping`, `createBookingFromOffer`, `captureBookingPayment`, `issueBookingTickets`, `checkInBookingPassenger`, `acceptCheckedBag`, `transitionBookingStatus`, and `transitionPassengerService`. Raw model CRUD remains available only where carrier access and field policy permit it; task workspaces call these carrier-scoped commands rather than assembling commercial state in the browser.
+A `Role` holds about 30 permission flags. They cover network, inventory, offers, bookings, passengers, secure passenger data, ticketing, payments, airport service, disruptions, integrations, audit, onboarding, users, roles, and agents. A user can only grant permissions they hold themselves. `canManageCarriers` is the cross-carrier flag.
 
 ## Data model
 
-- **Network and schedule:** airports, carriers, routes, recurring schedules, dated flight instances, cabins, seat maps, and seats.
-- **Inventory and retailing:** inventory buckets and holds, fare brands and rules, ancillary products, offers, and immutable offer items.
-- **Orders and passengers:** passengers, protected travel-document references, bookings and PNR locators, booking passengers, journeys, segments, and immutable booking lines.
-- **Fulfillment:** tickets and coupons, electronic miscellaneous documents and coupons, seat assignments, and service requests.
-- **Airport service:** check-in records, boarding passes, bags and bag events.
-- **Disruption:** disruptions, reaccommodation records, exchanges, and affected booking/service relationships.
-- **Finance and integrations:** payment sessions, payments, refunds, exchanges, payment providers, integration providers, provider connections, webhooks, approved agents, idempotency keys, and audit events.
+The model registry in `features/keystone/models/index.ts` registers 59 lists.
 
-Airline nouns remain explicit. Offers and bookings are not renamed ecommerce products and orders, and passenger-service documents are not generic fulfillment JSON.
+| Area | Lists |
+|---|---|
+| Identity and access | `User`, `Role`, `Carrier`, `ApprovedAgent`, `StationAssignment`, `MachineCredential`, `OnboardingStep` |
+| Network and schedule | `Airport`, `Route`, `FlightSchedule`, `FlightInstance`, `SeatMap`, `Seat` |
+| Product and pricing | `Cabin`, `FareBrand`, `FareRule`, `AncillaryProduct`, `InventoryBucket`, `InventoryHold` |
+| Retailing and orders | `Offer`, `OfferItem`, `Passenger`, `Booking`, `BookingPassenger`, `Journey`, `BookingSegment`, `BookingLineItem`, `ServiceRequest` |
+| Ticketing | `Ticket`, `TicketCoupon`, `ServiceObligation`, `TicketCouponLineage`, `ElectronicMiscDocument`, `ElectronicMiscCoupon`, `Exchange` |
+| Payments | `PaymentProvider`, `PaymentSession`, `Payment`, `ManualPaymentEvidence`, `Refund`, `SettlementLedgerEntry` |
+| Airport service | `TravelDocument`, `DocumentVerification`, `SeatAssignment`, `CheckIn`, `BoardingPass`, `Bag`, `BagEvent` |
+| Irregular operations | `Disruption`, `Reaccommodation` |
+| Integrations and system | `IntegrationProvider`, `ProviderConnection`, `WebhookEndpoint`, `WebhookEvent`, `OutboxEvent`, `AuditEvent`, `IdempotencyKey`, `RateLimitBucket`, `WorkerHeartbeat` |
+
+Money is stored as integer minor units with an explicit currency. Offers, booking lines, segments, and tickets keep snapshots of the commercial facts at the time they were created. A `Booking` has separate `status`, `paymentStatus`, and `ticketingStatus` fields.
+
+Main lifecycles:
+
+- **Dated flight:** scheduled, open for sale, closed for sale, delayed, departed, arrived, or cancelled.
+- **Offer:** held for 15 minutes, then accepted, expired, or withdrawn.
+- **Booking:** pending, confirmed, ticketed, in progress, completed, or cancelled.
+- **Segment and coupon:** confirmed, checked in, boarded, flown. Segments can also be offloaded, disrupted, reaccommodated, cancelled, or refunded.
+- **Bag:** accepted, loaded, in transit, arrived, delivered, closed. Also delayed or mishandled.
+- **Disruption:** detected, published, recovering, resolved, or cancelled.
 
 ## Workflows
 
-The commercial path is schedule and inventory -> priced offer with expiring hold -> booking/PNR with immutable lines -> payment and ticket/EMD fulfillment -> check-in, seat, boarding pass, and baggage service -> disruption and reaccommodation when required.
+**Launch.** The first user signs up at `/dashboard/init`, which creates a carrier and a full-permission role. Then [onboarding](/docs/openfront/airline/getting-started#onboarding) sets up the carrier, a route, a dated flight, station access, and the payment boundary.
 
-`createOfferFromShopping` creates an expiring hold from server-read inventory. `createBookingFromOffer` accepts that offer and consumes inventory inside the bounded transaction. The simulated demo path then captures payment, issues tickets/coupons, checks in one booking passenger, and accepts a bag. `transitionBookingStatus` and `transitionPassengerService` enforce allowed state changes, carrier scope, request-bound idempotency, actor evidence, and terminal-state protection.
+**Build the network.** Register airports, create routes, author and publish flight schedules, then provision dated flights. Provisioning (`provisionDatedFlight`) creates the `FlightInstance`, its `InventoryBucket`, and a generated `SeatMap` with seats.
 
-Current first-user initialization can create an administrator and carrier from `INITIAL_*` values without fabricating network or commercial data. Separately, `npm run seed:demo` creates a fictional carrier/operator, OFR-DMI flight, fare, inventory bucket, seats, passenger, and simulated payment provider only when `ALLOW_DEMO_SEED=1` and `DATABASE_URL` points to loopback PostgreSQL. The home page and authenticated Operations, Shop & hold, Booking desk, and Departure control workspaces exercise that synthetic path; generic model administration remains available. There is no public traveler booking storefront, live provider connection, or hosted demo URL advertised by these docs.
+**Price and sell.** Set up cabins, fare brands (with included baggage), fare rules, and ancillaries. Set bucket authorization and open the flight for sale. An offer holds seats for 15 minutes. Accepting it creates a booking with a record locator inside the same transaction that consumes inventory. Parties are 1 to 9 travelers.
+
+**Settle and ticket.** Two paths exist:
+
+- **Manual settlement (maker-checker).** An operator records money received (`recordReceivedPayment`). A different user approves or rejects it. An approved record is consumed by `captureBookingPayment` ("Mark paid"). An outside ledger can also post evidence through the settlement-import API using a machine credential.
+- **Stripe Checkout.** If the carrier has an active Stripe payment provider, travelers see "Pay now" on Manage booking. The return from Stripe is checked against the Stripe API, the payment is recorded, and tickets are issued.
+
+`issueBookingTickets` issues one ticket per passenger with one coupon per segment.
+
+**Day of operation.** Operators set gates and estimated or actual times on the flight operations board. At the departure station, staff register and verify travel documents, check passengers in, accept bags, board, and offload. Bag scans after acceptance are recorded with `recordBagEvent`.
+
+**Disruption.** `publishFlightDisruption` records a delay, cancellation, or schedule change with a public summary that appears on flight status. `reaccommodateBooking` moves a booking to a replacement flight and bucket.
+
+**Refunds and cancellation.** `cancelBooking` (operator) or `cancelCustomerBooking` (traveler) cancels and releases seats. `processBookingRefund` records a refund against a captured payment, with approved refund evidence.
+
+**Background worker.** `npm run worker` runs `scripts/runtime-worker.ts`. It expires inventory holds, expires unpaid storefront bookings after their 24-hour payment window, prunes rate-limit buckets, delivers outbox events to webhook endpoints, and writes a heartbeat that `/api/health` checks.
+
+## Named GraphQL operations
+
+Custom operations live in `features/keystone/mutations/index.ts`.
+
+| Group | Queries | Mutations |
+|---|---|---|
+| Storefront (public) | `publicCarrierIdentity`, `publicAirlineFlightOptions`, `publicFlightStatuses`, `customerBooking` | `createCustomerOffer`, `createCustomerBooking`, `startCustomerCheckout`, `completeCustomerCheckout`, `assignCustomerSeat`, `checkInCustomerBooking`, `cancelCustomerBooking`, `rotateCustomerBookingAccessToken`, `recoverCustomerBookingAccess` |
+| Setup | `machineCredentialSummaries` | `completeCarrierOnboarding`, `dismissCarrierOnboarding`, `updateCarrierStorefrontSettings`, `issueMachineCredential`, `revokeMachineCredential` |
+| Network and inventory | `airlineFlightOptions` | `registerAirport`, `provisionDatedFlight`, `setDatedFlightSalesStatus`, `setInventoryAuthorization`, `updateFlightOperations` |
+| Offers and bookings | `operatorBookingReceipt` | `createOfferFromShopping`, `createBookingFromOffer`, `cancelBooking`, `reissueBookingAccessCode` |
+| Payments and ticketing | | `recordReceivedPayment`, `submitManualPaymentEvidence`, `approveManualPaymentEvidence`, `rejectManualPaymentEvidence`, `captureBookingPayment`, `issueBookingTickets`, `processBookingRefund` |
+| Airport service | `departureManifest` | `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger`, `boardBookingPassenger`, `offloadBookingPassenger`, `acceptCheckedBag`, `recordBagEvent` |
+| Recovery and system | | `publishFlightDisruption`, `reaccommodateBooking`, `requeueDeadLetteredOutboxEvent` |
+
+`redirectToInit` is also exposed for the first-run redirect. Lists without a command (routes, schedules, cabins, fares, ancillaries, station assignments, payment providers) are written with normal Keystone create and update mutations, subject to carrier access.
+
+`submitManualPaymentEvidence` and `requeueDeadLetteredOutboxEvent` exist in the schema but no dashboard page calls them today.
 
 ## Integrations
 
-The model defines boundaries for GDS, NDC, DCS, payment, identity, baggage, provider connections, webhooks, and appointed agents. Current source does not include live provider adapters or signed inbound webhook routes. A provider record or endpoint row does not establish a working airline connection.
+- **Payments.** Two adapters are installed in `features/integrations/payment`: `manual` (evidence only, needs independent approval) and `stripe` (Checkout sessions over the Stripe REST API). The Stripe secret key is entered on the Payment providers page and stored in write-only credentials. No environment variable holds it.
+- **Stripe webhooks.** `POST /api/payments/webhooks/[providerKey]` verifies a signature, stores the event, and the worker applies `checkout.session.completed` events. The secret comes from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>` set in the provider's `webhookSecretEnv` configuration. The dashboard's Stripe form does not set this, so it must be configured separately.
+- **Settlement import.** `POST /api/integrations/settlements/[connectionKey]` accepts settlement evidence from an outside ledger. It needs a machine credential with audience `settlement-import` and scope `settlements:write`.
+- **Inbound integration webhooks.** `POST /api/integrations/webhooks/[connectionKey]` verifies signatures but then refuses events, because no handler is installed.
+- **Outbound webhooks.** The worker posts outbox events to active `WebhookEndpoint` records that subscribe to the topic. Hosts must be listed in `OUTBOUND_WEBHOOK_HOSTS`.
+- **Email.** SMTP sends password resets and booking access recovery. Without `SMTP_HOST` and `SMTP_FROM`, access recovery is turned off on the storefront.
+- **AI assistant and MCP.** The dashboard chat uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`). `/api/mcp-transport` offers generic tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) that run as the signed-in user. In production it returns 404 unless `AI_ASSISTANT_ENABLED=true`.
 
-Each adapter needs exact carrier scope, typed request and result contracts, credential isolation, provider idempotency, signed ingress and replay protection, bounded payload evidence, retries, reconciliation, observability, and an operator exception path. Inventory and booking adapters must also preserve the local hold and snapshot contracts instead of allowing provider responses to rewrite accepted commercial history.
+There are no GDS, NDC, DCS, identity-verification, or baggage-system adapters. Provider and connection records alone do not create a working connection.
 
-## Security
+## Limitations
 
-Carrier filters and field access restrict cross-carrier reads and writes. Permission grants cannot exceed the acting user's grant authority. Controlled operations recheck carrier ownership and bind idempotency to tenant, operation, target, and request content.
+- **Service requests (SSR), EMDs, and exchanges** have models but no command creates them. There is no ancillary checkout.
+- **Approved agents** can be recorded on the generic list page. There is no agency sign-in or agency sales flow.
+- **Travel documents** are stored as tokenized references with masked metadata and lookup hashes. There is no document-scanning or government-check integration.
+- **Traveler accounts** do not exist. Trips are found by record locator and access code. "Your trips" on Manage booking lists bookings saved in that browser.
+- **Direct sales only, one carrier per storefront.** The storefront sells for `STOREFRONT_CARRIER_CODE`, or the first carrier if that is unset. Itineraries are nonstop.
+- **Production runtime check vs Stripe.** The worker's production check (`validateProductionRuntime`) refuses to start if any active payment provider is not `manual`. An active Stripe provider therefore conflicts with the production worker in current code.
+- **`npm start` runs `next start` only.** It does not validate production configuration. The worker does.
 
-Travel documents use an encrypted or tokenized payload contract, masked metadata, and one-way lookup hashes. Payment records store provider references and masked instruments rather than PAN or CVV. Sensitive fields and audit metadata are bounded and hidden from ordinary output. Completion/MCP cookie forwarding is request-local, exact-origin and exact-path, rejects redirects, and does not patch process-global fetch.
+Before handling real passengers or payments, test cross-carrier access, hold expiry, concurrent booking, refunds, provider failures, backups, and monitoring against your own deployment. Meeting payment, privacy, consumer, accessibility, and aviation-service rules is your responsibility.
 
-Before real passenger data, complete the vault/encryption adapter, key rotation, retention and redaction jobs, signed provider ingress, cross-carrier runtime tests, rate and body limits, monitoring, backup restoration, incident response, and applicable identity, payment, privacy, consumer, accessibility, and aviation-service requirements.
+## Where to go next
 
-## Deployment
-
-Current source contains eight checked-in migration directories, including the airline domain migration. `npm run build` generates Keystone artifacts and builds Next.js without applying migrations; `npm run migrate` deploys the checked history, while `npm run dev` applies it before starting development. Review and back up the target, migrate as a separate controlled deployment step, configure stable secrets and one trusted `APP_BASE_URL`, then run unit/schema checks, `npm run test:integration`, authenticated task-workspace checks, and rollback/restoration exercises against the exact release.
-
-The source contains a serializable inventory transaction helper and concurrent offer/booking tests, but that does not prove capacity behavior under a deployment's real load, timeout, retry, and provider conditions. It also does not supply real encryption/key custody, GDS/NDC/DCS/payment/identity/baggage adapters, signed ingress, reconciliation, production observability, or a public traveler product. Do not accept real passenger or payment data until those boundaries and applicable operational requirements have been independently implemented and tested.
-
-## Extension paths
-
-- Add domain lists under `features/keystone/models` and register them explicitly in `features/keystone/models/index.ts`; preserve direct carrier ownership and immutable accepted snapshots.
-- Add commercial or passenger-service state changes under `features/keystone/mutations` using carrier checks, lifecycle adjacency, idempotency, transaction boundaries, and audit evidence. Do not make protected states freely writable.
-- Put GDS, NDC, DCS, payment, identity, baggage, and notification adapters behind typed provider modules. Keep secrets out of GraphQL, verify inbound signatures, claim event IDs, and reconcile external and local state.
-- Build traveler and agent storefront routes separately from authenticated reservation, airport, and disruption workspaces. Call narrow operations rather than reproducing offer acceptance or transition policy in the browser.
-- Extend initial carrier setup without turning environment defaults into operational network, fare, or inventory truth. Seed only synthetic evaluation data and keep production reference data operator-owned.
-- Add tests for cross-carrier access, hold expiry, concurrent inventory consumption, immutable snapshots, terminal transitions, idempotent replay, credential denial, duplicate callbacks, provider partial failure, and disruption servicing before enabling a new path.
+- [Getting started](/docs/openfront/airline/getting-started): install, configure, migrate, first user, onboarding, deploy.
+- [External dashboards](/docs/openfront/airline/external-dashboard): every `/dashboard/platform` page.
+- [External storefronts](/docs/openfront/airline/external-storefront): public routes and the operations they call.

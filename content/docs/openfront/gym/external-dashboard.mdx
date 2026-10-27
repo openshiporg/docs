@@ -6,3 +6,38 @@ description: Give an LLM the Gym dashboard skill to adapt the built-in experienc
 To create a custom Gym dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Gym's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Gym codebase before proposing work.
+
+Skill file: [`/skills/openfront-gym-custom-dashboard/SKILL.md`](/skills/openfront-gym-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`. Each page checks permissions on the server. The sidebar also filters by role: instructors without management rights see only Scheduling (and Check-in when allowed).
+
+| Page | What operators do there | Main operations |
+|---|---|---|
+| `/dashboard/platform/members` | Search members, see activity, invite members, change account status | `inviteMember`, `setMemberAccountStatus` |
+| `/dashboard/platform/membership-plans` | Membership tiers: prices, class credits, freezes, access hours, Stripe price IDs (shared list view for `MembershipTier`) | generated CRUD |
+| `/dashboard/platform/instructors` | Coach profiles, specialties, qualifications, active status; create a coach profile from an existing user | `eligibleCoachAccounts`, `createCoachProfile` |
+| `/dashboard/platform/class-catalog` | Class types: difficulty, duration, equipment (shared list view for `ClassType`) | generated CRUD |
+| `/dashboard/platform/rosters`, `/[id]` | Session list by state; per-session roster with confirmed, waitlist, and other bookings; promote from waitlist; record attendance | `rosterSessions`, `rosterDetail`, `promoteFromWaitlist`, `markClassAttendance` |
+| `/dashboard/platform/scheduling` | Weekly schedules, dated sessions, capacity, instructor assignment, cancel a session, generate upcoming sessions | `schedulingWorkspace`, `saveGymClassSchedule`, `saveGymClassInstance`, `cancelClassInstance`, `generateUpcomingClassInstances` |
+| `/dashboard/platform/check-in` | Validate membership and record staffed entry and exit | `frontDeskWorkspace`, `recordMemberCheckIn`, `checkOutMember` |
+| `/dashboard/platform/training` | Trainer availability, appointments, training packages and refunds, coaching assignments, trial leads | `trainingWorkspace`, `bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment`, `recordTrainingPackage`, `refundTrainingPackage`, `saveTrainerAvailability`, `assignCoaching`, `transitionCoaching`, `saveTrainingLead` |
+| `/dashboard/platform/retail` | Retail items per location, sales, returns, stock entries, drawer close, counter card payments | `retailWorkspace`, `retailSaleItems`, `saveRetailItem`, `quoteRetailSale`, `sellRetail`, `returnRetail`, `closeRetail`, `reconcileCounterPayment` |
+| `/dashboard/platform/imports` | Preview and apply member contact imports (up to 100 rows) | `importMemberContacts` |
+| `/dashboard/platform/billing` | Billing stats, payment recovery queue, failed payments, plan changes, refunds | `getBillingStats`, `billingWorkspace`, `changeMembershipTier`, `markPaymentRecoveryContacted`, `refundGymPayment` |
+| `/dashboard/platform/operations` | Tabs for member notices, cases, policy and waivers, facility resources, partner credentials, exports, payment events, entitlements | `operationsWorkspace`, `participationWorkspace`, `runOperationsCommand`, `exportOperatingData`, `updateGymResourceAllocation`, `replayPaymentEvent`, `reconcileGymEntitlements` |
+| `/dashboard/platform/reports` | Revenue, attendance, utilization, membership health | `reportsDashboard` |
+| `/dashboard/platform/locations` | Location name, contact details, active state (shared list view for `Location`) | generated CRUD |
+| `/dashboard/platform/store-settings` | Public identity, locale, timezone, hours, facility copy, storefront hero; publish participation terms | `gymSettingsEditor`, `upsertGymSettings`, `publishGymParticipationTerms` |
+| `/dashboard/platform/account`, `/account/confirm-email` | Change your own sign-in email and password | `changeMemberPassword`, `requestEmailChange`, `confirmEmailChange` |
+
+Forms on Billing, Retail, and Training go through `beginStaffIntent` and `settleStaffIntent`, so a retry after a lost response sends the same request.
+
+Other dashboard routes:
+
+- `/dashboard/gym/billing` renders the same billing page. `/admin/billing` redirects to `/dashboard/platform/billing`.
+- `/dashboard/init`, `/dashboard/signin`, `/dashboard/reset`, `/dashboard/no-access`, and `/dashboard/signup` (signup requests are refused for Gym).
+- The onboarding dialog opens from the sidebar; it has no page route.
+
+Lists without a dedicated page are edited on the generic `/dashboard/<list-key>` pages. The sidebar links Messages to `/dashboard/contact-messages`. The onboarding checklist links resources to `/dashboard/gym-resources` and exercises to `/dashboard/exercises`.

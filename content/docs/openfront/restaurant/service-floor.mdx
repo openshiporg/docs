@@ -6,74 +6,69 @@ description: Live table-service workflow for running the dining room.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-If the POS is for opening checks, the service-floor screen is for running service.
+The POS opens checks. The service floor at `/dashboard/platform/service-floor` runs them. It shows table states and active checks, and handles items, courses, splits, voids, and closing in one place. It refreshes every 10 seconds.
 
-This is one of the most restaurant-specific parts of the product. It shows table state, active checks, course timing, split logic, and table movement in one place, which is exactly where a generic admin app usually falls apart.
+## What the service floor covers
 
-## What the service-floor screen covers
+- table states: `available`, `occupied`, `reserved`, `cleaning`
+- open a table and see its active check
+- add items to a table with course, seat number, modifiers, and notes (`addServiceFloorItem`); this opens a new check if the table has none
+- edit an item's quantity, course, seat, or notes (`updateServiceFloorItem`)
+- send pending courses to the kitchen, mark served, or close the check (`updateServiceFloorCheckStatus`)
+- fire a pending course or hold it back (`fireCourse`, `recallCourse`)
+- split by selected items (`splitCheckByItem`)
+- create equal checks for a number of guests (`splitCheckByGuest`) or split by assigned seat (`splitCheckBySeat`), and undo equal splits (`recombineEqualChecks`)
+- merge another check into this one (`mergeChecks`)
+- combine tables onto one check (`combineTables`)
+- void an item or the whole check with manager approval
+- go to the payment screen
 
-- live table states for available, occupied, reserved, and cleaning
-- one-sheet access to the active order on a table
-- quick add-item flow for an open check
-- split check by guest count
-- split check by selected items
-- combine multiple tables onto one order
-- transfer a check from one table to another
-- fire a pending course into the kitchen
-- recall a course that should wait
-- jump into payment when the table is ready to close
+Moving a check to another table is done on the floor map at `/dashboard/platform/pos/tables` (`transferTable`).
 
-## How the workflow usually plays out
+## How the workflow plays out
 
 <Steps>
 <Step>
 ### Open the table
-Tap a table to see whether it already has an active check. If it does not, staff can start service from there.
+Tap a table to see its active check. Adding an item to an empty table opens a new dine-in check and marks the table `occupied`.
 </Step>
 <Step>
 ### Add items during service
-The service-floor sheet can add more menu items to the open order without sending the staff member back to the original POS flow.
+New items go into a pending course. Items cannot be added to a course that has already been fired.
 </Step>
 <Step>
 ### Control course timing
-Pending courses can be fired when the table is ready. If timing changes, a course can be recalled back to pending.
+Fire a pending course when the table is ready. Hold a fired course to move it back to pending. "Send to kitchen" fires every pending course that is not on hold.
 </Step>
 <Step>
-### Handle check changes cleanly
-When a party moves, you can transfer the order. When a group expands, you can combine tables. When payment gets messy, you can split by guest or by item.
+### Handle check changes
+Combine tables, merge checks, or split by item, guest count, or seat. Equal splits create independent checks that each owe a share of the original.
 </Step>
 <Step>
 ### Close the table
-When service is done, hand off to the payment screen and complete the order. Table status can then move into cleaning before it returns to available.
+Take payment on the payment screen. "Close check" only works when the check is `served` and nothing is left to pay. Closing moves the order to `completed`, then the app moves its tables to `cleaning` unless another active check or seated party still uses them.
 </Step>
 </Steps>
 
-## Table states in the current build
+## Rules the server enforces
 
-- `available`
-- `occupied`
-- `reserved`
-- `cleaning`
+- A check cannot move to `served` until every active item has a ready or served kitchen ticket, and no course is pending or on hold.
+- A check cannot be `completed` until all kitchen tickets are served, paid amounts cover the total, and no tender is in an uncertain state.
+- A table cannot be set to anything other than `occupied` while it has an active check or a seated reservation or waitlist party.
+- Cancelling a check here is refused. Use the void workflow with a reason and manager approval.
 
-Those states are used across the service-floor view, waitlist flow, and order hooks.
+## Voids, comps, and approvals
 
-## Why this screen matters
+Voids and refunds need a `ManagerApproval`. A staff member requests approval with a reason (`requestManagerApproval`). A different user with staff management permission approves it (`approveManagerApproval`). The requester cannot approve their own request. The approved request is then used once by `voidOrderItem`, `voidOrder`, or `refundPayment`. The pending approval queue is shown on the service floor and payment screens.
 
-Restaurant software gets hard once the dining room changes in real time. The service-floor page already handles several of the awkward parts that matter in actual service:
+`compOrderItem` exists in the API with the same approval flow, but the service floor has no comp button.
 
-- parties moving tables
-- multiple tables merging into one check
-- separate guests paying separately
-- kitchen timing that does not match order entry timing
+## Current limitations
 
-That is a big part of what makes Openfront Restaurant feel like its own product instead of a themed dashboard.
+- Reservations are handled on their own page, not on the service floor.
+- There is no visual floor-plan editor here. Table positions are dragged on the floor map, and tables are created on Tables & Sections.
+- Updates come from polling every 10 seconds, not live push.
 
 <Callout type="info">
-The service-floor screen also has its own API summary route at `/api/platform/service-floor`, which is useful if you want to build supporting displays or staff tools around the same data.
+The screen reads its data with the `GetServiceFloor` GraphQL query. There is no separate REST route for it.
 </Callout>
-
-## What still needs more polish
-
-- Reservation handling is lighter here than waitlist and table-service handling.
-- Some teams will still want a more visual floor-plan editor for layout changes.
-- Real-time updates are good enough for active use, but there is still room to tighten the live-sync story further.

@@ -6,3 +6,38 @@ description: Give an LLM the Coffee Shop dashboard skill to adapt the built-in e
 To create a custom Coffee Shop dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Coffee Shop's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Coffee Shop codebase before proposing work.
+
+Skill file: [`/skills/openfront-coffee-shop-custom-dashboard/SKILL.md`](/skills/openfront-coffee-shop-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `features/platform/<slice>`. Navigation is defined in `features/platform/lib/navigation.ts`.
+
+| Page | Slice | What operators do there | Main operations |
+|---|---|---|---|
+| `/dashboard/platform/orders` | `orders` | Order queue with status and fulfillment filters and search. Accept, move through bar states, cancel, record payment at pickup, refund, link rewards | `CoffeeOrderQueue` (`getCoffeeOrderQueue`), `AcceptCafePickupOrder`, `UpdateCafeOrderStatus`, `RecordCafePayment`, `RefundCafePayment`, `ApplyCafeLoyalty` |
+| `/dashboard/platform/menu` | `menu` | Categories, items, prices, availability, featured and popular flags, modifiers, modifier stock, and modifier inventory mapping | `CoffeeMenuManager`, `CoffeeMenuInventoryOptions`, `CreateCoffeeMenuCategory`, `CreateCoffeeMenuItem`, `UpdateCoffeeMenuItem`, `CreateCoffeeMenuModifier`, `UpdateCoffeeMenuModifier`, `UpdateCoffeeModifierStock` |
+| `/dashboard/platform/pos` | `pos` | Ring up counter sales for cash or an attested card terminal approval; open the drawer, record pay-ins, pay-outs, and drops, and close it with a count | `CoffeePosRegister`, `QuotePosOrder`, `CreateCafePickupOrder`, `OpenRegisterShift`, `RecordRegisterCashMovement`, `CloseRegisterShift` |
+| `/dashboard/platform/reports` | `reports` | Analytics for 7, 30, or 90 days or a custom range: sales ledger, top items, items by station, low stock, top rewards accounts | `CoffeeReports` (`getCoffeeReports`) |
+| `/dashboard/platform/register`, `/[id]` | `register` | Register shift history and a payments view (`?view=payments`); shift detail with cash movements, POS receipts, and payments. Read-only | `CoffeeRegisterShifts`, `CoffeeRegisterPayments`, `CoffeeRegisterCurrent`, `CoffeeRegisterShiftDetail` |
+| `/dashboard/platform/inventory`, `/[id]` | `inventory` | All, Low, and Out tabs; create and edit items; per-item movement ledger, lots, waste, and purchase orders, with PO cancel | `CoffeeInventoryList`, `CoffeeInventoryDetail`, `CreateCoffeeInventoryItem`, `UpdateCoffeeInventoryItem`, `CancelCoffeePurchaseOrder` |
+| `/dashboard/platform/suppliers`, `/[id]` | `suppliers` | Status tabs; create and edit; pause, activate, archive; delete only when unused; supplier POs and lots | `CoffeeSupplierList`, `CoffeeSupplierDetail`, `CreateCoffeeSupplier`, `UpdateCoffeeSupplier`, `DeleteCoffeeSupplier` |
+| `/dashboard/platform/recipes`, `/[id]` | `recipes` | Draft, Active, and Archived tabs; recipe builder with ingredients, cost per yield unit, and servings from stock; one active recipe per menu item | `PlatformRecipeList`, `PlatformRecipeDetail`, `CreatePlatformRecipe`, `UpdatePlatformRecipe`, `SetPlatformRecipeStatus`, `CreatePlatformIngredient`, `UpdatePlatformIngredient`, `DeletePlatformIngredient` |
+| `/dashboard/platform/coffee-operations` | `coffee-operations` | Order stock, receive, prep batches, waste, stock counts, and staff shifts (schedule, clock in, clock out, missed); recent records | `CoffeeOperationsPage` (`getCoffeeOperations`), `CreatePurchaseOrder`, `ReceivePurchaseOrder`, `CompletePrepBatch`, `RecordWaste`, `RecordStockCount`, `ScheduleStaffShift`, `UpdateStaffShift` |
+| `/dashboard/platform/loyalty`, `/[id]` | `loyalty` | Rewards accounts; adjust points and drink credits, set tier, pause, reactivate, or close; full event ledger | `CoffeeLoyaltyAccounts`, `CoffeeLoyaltyAccountDetail`, `AdjustCoffeeLoyaltyAccount` |
+| `/dashboard/platform/catering`, `/[id]` | `catering` | Create staff inquiries; edit event facts and quote; send quote, confirm, complete, cancel | `PlatformCateringList`, `PlatformCateringDetail`, `PlatformCreateCatering`, `PlatformUpdateCatering`, `PlatformCateringStatus` |
+| `/dashboard/platform/subscriptions`, `/[id]` | `subscriptions` | Create a subscription against a rewards account; activate, pause, resume, cancel | `PlatformSubscriptionList`, `PlatformSubscriptionDetail`, `PlatformSubscriptionAccounts`, `PlatformCreateSubscription`, `PlatformSubscriptionStatus` |
+| `/dashboard/platform/kds` | `kds` | Bar display: bump order items through queued, preparing, ready, and handed off, with recovery for retried commands | `CoffeeKdsBoard`, `CoffeeKdsRecoveryScope`, `UpdateCafeOrderItemStatus` |
+| `/dashboard/platform/store-settings` | `store-settings` | Identity, logo, contact and location, hours, pickup and tax settings; online card payment switch | `CoffeePlatformStoreSettings`, `UpdateCoffeePlatformStoreSettings`, `CreateCoffeePlatformStoreSettings`, `CoffeeOnlinePaymentSetting`, `SetCoffeeOnlinePayment` |
+
+Onboarding lives in `features/platform/onboarding` and runs `RunCoffeeOnboarding` from a dialog in the dashboard shell.
+
+Lists without a dedicated page are edited on the generic `/dashboard/<list-key>` pages. These include `MenuItemImage`, `User`, `Role`, and `PaymentProvider`. The outbox lists are hidden and system-only.
+
+## Notes for a custom dashboard
+
+- Order state, payments, refunds, stock levels, menu prices, and modifier stock change only through the named commands above. Generated updates for those fields are blocked.
+- Most commands need an `idempotencyKey`. Generate one per user intent and reuse it on retry.
+- KDS and menu commands check `expectedStatus` or `expectedUpdatedAt`. Pass the value you last read so stale screens fail instead of overwriting.
+- Card payments at the POS are cashier attestations of a terminal approval. Nothing verifies them with a card network.
+- The PayPal adapter is not wired into any dashboard flow.

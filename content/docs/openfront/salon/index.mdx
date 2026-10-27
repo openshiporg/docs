@@ -1,64 +1,121 @@
 ---
 title: Openfront Salon
-description: Services, stylists, booking, schedules, resources, checkout, memberships, and commissions.
+description: Services, stylists, booking, schedules, resources, checkout, refunds, memberships, gift cards, loyalty, and commissions.
 icon: Sparkles
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-salon) · [Catalog](https://openship.org/products/openfront-salon)
+[Source](https://github.com/openshiporg/openfront-salon) · [Live demo](https://salon.openship.org) · [Catalog](https://openship.org/products/openfront-salon)
 
-Openfront Salon is a salon/spa storefront and operator workspace for service discovery, stylist profiles, booking and intake, client accounts, appointments, schedules/resources, checkout and retail products, packages/memberships, gift cards, loyalty, waitlist, inventory, and commissions.
+Openfront Salon is a self-hostable salon app. Clients browse services and stylists, book appointments, and manage their visits in an account. Salon staff use the dashboard to run the day: bookings, check-in, consultations, checkout, refunds, schedules, resources, retail stock, memberships, packages, gift cards, loyalty, reviews, commissions, and reports.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/salon/getting-started).
 
 <Callout type="warn">
-Current source has product-specific GraphQL commands, but it does not have a strong organization/location membership tenant model. Dashboard capability grants broad access in several list filters. Verify operator scope, client privacy, booking/resource concurrency, money, and provider state before using real records.
+The app runs one salon business. It has no organization or tenant model. Role flags apply to every location. Test permissions, money, and booking races on your own database before you use real client data.
 </Callout>
 
-## Customer and operator surfaces
+## Surfaces
 
-Customer routes cover home, services and detail, team/stylist detail, booking, appointments/account, gallery, reviews, contact, and gift cards. Operator routes under `/dashboard/platform` cover appointments, checkout, clients, catalog, benefits, inventory, schedules, resources, commissions, administration, engagement/waitlist, reports, and integrations.
+- **Storefront** at `/`: home, services, team, booking, account, memberships, gift cards, gallery, reviews, and contact. See [External storefronts](/docs/openfront/salon/external-storefront).
+- **Dashboard** at `/dashboard`: salon pages under `/dashboard/platform/*` plus the generic Keystone list screens at `/dashboard/[listKey]`. See [External dashboards](/docs/openfront/salon/external-dashboard).
+- **GraphQL** at `/api/graphql`.
+- **Payment webhooks** at `/api/payments/webhooks/[provider]`.
+- **Dashboard assistant** at `/api/completion`, backed by an MCP endpoint at `/api/mcp-transport/[transport]`.
 
-The main workflow is service/variant/stylist discovery -> availability -> appointment/intake -> resource allocation -> service and retail/package usage -> checkout/payment -> commission, loyalty, inventory, and customer history. Accepted service and price facts belong in appointment and transaction line snapshots rather than mutable catalog relations.
+## Models
 
-## Schema and scope
+The schema has 58 lists in `features/keystone/models`. Most business lists block generated create, update, and delete. They change only through custom mutations that check the role, run in a serializable transaction, and take an idempotency key. Money is stored as integer cents. Times are instants; the salon's local time comes from `Location.timezone`.
 
-The graph includes Location, service categories/services/variants/packages, stylists/schedules, resources, clients/notes/formulas, appointments and lines, intake forms/submissions, memberships/packages/usage, products/sales/inventory movements, salon transactions/lines, providers/sessions/payments/webhook events, gift cards, loyalty/referrals, commissions/payouts, messages, reviews, media, waitlist, and widget settings.
+| Area | Lists |
+| --- | --- |
+| Identity | `User`, `Role` |
+| Catalog | `ServiceCategory`, `Service`, `ServiceVariant`, `ServiceSegment`, `SalonImage`, `Product`, `InventoryMovement`, `ProductSale` (legacy) |
+| People and capacity | `Location`, `StoreSettings`, `Stylist`, `StylistSchedule`, `SalonResource` |
+| Clients and care | `Client`, `ClientNote`, `ColorFormula`, `FormTemplate`, `ConsultationTemplateVersion`, `ConsultationSubmission`, `ConsultationReview`, `Review`, `IntakeForm` and `FormSubmission` (legacy) |
+| Booking | `Appointment`, `AppointmentLineItem`, `AppointmentScheduleRevision`, `AppointmentSegment`, `SegmentTransition`, `WaitlistEntry` |
+| Money | `SalonTransaction`, `SalonTransactionLineItem`, `Payment`, `PaymentProvider`, `PaymentSession`, `PaymentWebhookEvent`, `TransactionReversal`, `TransactionReversalLine`, `Commission`, `CommissionAdjustment`, `GratuityLedgerEntry`, `DepositAdjustment` |
+| Benefits and loyalty | `Membership`, `ClientMembership`, `ServicePackage`, `ClientPackage`, `ClientPackageUsage`, `ClientPackageAdjustment`, `GiftCard`, `GiftCardTransaction`, `LoyaltyProgram`, `ClientPoints`, `Referral` |
+| Messages and system | `MessageTemplate`, `MessageLog`, `DomainEvent`, `WidgetConfiguration` |
 
-Location is a relationship root, but current source has no Organization or LocationMembership authorization layer. `canOperateSalon` is largely dashboard access and several read filters expose broad operator data. Location IDs and submitted relationships still need explicit same-location validation in every command; generated visibility alone is not a complete tenant boundary.
+Revisions, transitions, consultation reviews, ledger entries, reversals, and adjustments are append-only. A correction is a new row. The source repo keeps a fuller map in `docs/schema-map.md`.
 
-Protect client notes, intake answers, color formulas, messages, payment details, provider credentials, and history with field-level policy. Third-party clients should use narrow projections and commands rather than generated list CRUD.
+## Tenancy and roles
 
-## Controlled GraphQL boundary
+There is one salon per deployment. `Location` is a site of that salon, not a tenant. `StoreSettings` is a single row for storefront identity. There is no organization list and no per-location staff membership.
 
-The current source does register a salon-specific extension in `features/keystone/mutations/index.ts`. It includes:
+Access comes from boolean flags on `Role`: `canAccessDashboard`, `canManageSalon`, `canManageAppointments`, `canManageClients`, `canManageCareRecords`, `canManageCatalog`, `canManageSchedules`, `canManageOwnSchedule`, `canManageResources`, `canManageInventory`, `canManagePayments`, `canIssueRefunds`, `canManageCommissions`, `canViewReports`, `canManageIntegrations`, `canManageOnboarding`, and the people/role flags.
 
-- availability, stylist, and `salonOperationsWorkspace` projections;
-- appointment booking, deposit/payment, and lifecycle transitions;
-- `completeAppointmentCheckout` and payment processing;
-- gift-card purchase/application and package redemption;
-- waitlist entry/transitions and stylist schedule operations;
-- commission calculation and payout transitions;
-- inventory adjustment and resource availability;
-- onboarding.
+- `canManageSalon` acts as a manager override for most flags.
+- `canManageCareRecords` and `canManageOnboarding` must be set on their own. The manager flag does not grant them.
+- Signed-in clients read their own clients, appointments, payments, benefits, points, and gift cards through owner filters.
+- Anyone can read active locations. Managers also see inactive ones.
+- With more than one active location, booking needs an explicit `locationId`.
 
-These operations are the preferred lifecycle boundary. Remaining work is not absence of a GraphQL extension; it is consistent location ownership, idempotency, transaction/concurrency behavior, immutable settlement/refund evidence, and closure of equivalent generated/server-action paths.
+The first user created at `/dashboard/init` gets an Admin role with every flag.
 
-Prove simultaneous stylist/resource bookings, appointment terminal-state denial, package/membership balance consumption, gift-card replay, inventory underflow, checkout amount/currency, commission arithmetic, and refund/reversal behavior against the target database.
+## Custom GraphQL operations
 
-## Onboarding and local evaluation
+Registered in `features/keystone/mutations/index.ts`.
 
-`runSalonOnboarding` and its platform action create synthetic Morrow & Mane identity, locations, services, stylists, schedules, resources, clients, intake/forms, memberships/packages, products, messages, appointments, gallery, and manual/Stripe provider records. Run it twice on an isolated database, inspect location relationships and status, then test customer ownership, booking, package use, checkout, inventory, commission, and operator denial. The seed is not a hosted demo or provider account.
+**Queries:** `checkAvailability`, `calculateCommission`, `storefrontStylists`, `storefrontStylist`, `salonOperationsWorkspace`, `salonManagementWorkspace`, `salonLocationStock`, `clientPortal`, `publicStorefrontSettings`, `storefrontBenefits`, `giftCardBalance`, `redirectToInit`.
+
+**Mutations:**
+
+- Accounts: `registerSalonCustomer`.
+- Booking: `bookAppointment`, `transitionAppointment`, `scheduleAppointmentSegments`, `transitionAppointmentSegment`, `processAppointmentDeposit`.
+- Waitlist: `joinWaitlist`, `joinWaitlistAsClient`, `transitionWaitlistEntry`.
+- Schedules and resources: `upsertStylistSchedule`, `setStylistScheduleAvailability`, `setSalonResourceAvailability`.
+- Checkout and payments: `completeAppointmentCheckout`, `processPayment`, `confirmPayment`, `refundPayment`, `distributeTip`.
+- Refunds and corrections: `reverseSalonTransaction`, `adjustSaleCompensation`.
+- Payouts: `payoutCommissions`, `payoutGratuities`.
+- Benefits: `sellClientBenefit`, `setClientBenefitStatus`, `redeemClientPackage`.
+- Gift cards: `purchaseGiftCard`, `confirmGiftCardPurchase`, `applyGiftCardBalance`.
+- Loyalty: `adjustClientPoints`, `completeReferral`.
+- Care and consultations: `updateClientCareProfile`, `submitAppointmentReview`, `publishConsultationTemplateVersion`, `submitConsultation`, `reviewConsultation`.
+- Stock: `adjustSalonInventory`.
+- Setup: `upsertSalonStoreSettings`, `saveSalonRecord` (locations, resources, staff, categories, services, products), `runSalonOnboarding`.
+
+Some dashboard pages still use generated CRUD for simpler lists: membership and package plans, loyalty programs, referrals, review moderation, client notes, color formulas, form templates, and image uploads.
+
+## Main workflow
+
+1. Set up the salon: storefront identity, locations and hours, resources, staff and roles.
+2. Build the menu: categories, services (price, duration, deposit, consultation and patch-test flags, specialists, resources).
+3. Set weekly hours and time off.
+4. Take a booking online or at the desk. The booking stores a service snapshot, segments, and a schedule revision.
+5. Publish consultation forms. Clients sign. Staff review before service.
+6. Check in, work each step, then complete or mark no-show.
+7. Check out: services, retail, discount, tip, package or membership credit. This writes the sale, payment, stock movements, commissions, tip allocations, and loyalty points.
+8. Refund, void, or partly refund a sale. Correct commission and tips.
+9. Pay out commissions and card tips.
+
+## Onboarding
+
+New dashboard users see onboarding cards in the sidebar. The dialog offers three templates: **Complete Salon Setup**, **Essential Booking Setup**, and **Custom Setup** (edit the seed JSON and paste it back). All three call `runSalonOnboarding` with a seed built from `features/platform/onboarding/lib/seed.json`.
+
+The seed creates a sample salon, "Morrow & Mane": store settings, a location, resources, categories, services, stylists and schedules, two clients, a consultation form, membership plans, a package, a product, a message template, two appointments, gallery images, and two payment providers (manual, installed and default; Stripe, not installed).
+
+The mutation needs `canManageOnboarding`. It runs in one transaction and reports how many records it created and reused, so a second run reuses existing rows. The data is sample data. Remove or replace it before real use.
 
 ## Payments and integrations
 
-The code-owned payment registry allowlists manual and Stripe adapters. Stripe ingress is `/api/payments/webhooks/[provider]`; verify raw-body signatures, event replay, server-owned amount/currency, session ownership, capture/refund mapping, and reconciliation. Manual settlement must remain operator-only and cannot unlock a public paid state without accountable evidence.
+- **Payment adapters:** `manual` and `stripe`, in `features/integrations/payment`. Desk checkout, recorded deposits, and gift-card sales use the installed manual provider. A manual payment is a record of tender taken outside the app, not a card capture.
+- **Stripe:** reads `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. The webhook route takes a provider code like `pp_stripe`, checks the signature, logs each event once, rejects amount or currency mismatches, and handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded`, and `refund.updated`. Online deposit and online gift-card collection are not available in the current flows.
+- **Email:** booking confirmations, gift-card emails, and password resets are sent with SMTP only when `SMTP_HOST` and `SMTP_FROM` are set. Without SMTP, nothing is sent and the dashboard says reset email is unavailable.
+- **File storage:** uploads use S3-compatible storage (`S3_*` variables). Bundled storefront images under `/images` do not need it.
+- **Dashboard assistant:** `/api/completion` uses OpenRouter. It needs a signed-in user with `canAccessDashboard`, plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or a key the user enters locally. Its MCP endpoint exposes generic list tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) that run as the caller's session.
 
-Message logs, templates, widget settings, reviews, and gallery records do not establish SMS/email delivery, marketing automation, booking-widget isolation, review syndication, or media processing. Each external effect needs a typed adapter, secret isolation, signed ingress, durable attempts, consent/retention policy, and operator-visible failure state.
+## Limitations
 
-## Deployment and limitations
-
-Railway builds the application and deploys migrations when starting. The package's lint script uses the removed `next lint` command under Next.js 16, so it is not a valid release gate until migrated to the ESLint CLI. Placeholder values in `.env.example` are not deployable credentials.
-
-Before real clients or payments, run reviewed migrations, current schema/type/tests/build, cross-client and cross-location negatives, booking races, webhook replay, refund/reversal, gift-card/package balances, inventory, commission, token/session, responsive browser, backup restoration, monitoring, and incident checks.
-
-Current source does not establish strong multi-location tenancy, payment settlement, external messaging, payroll, tax, identity, professional-licensing, health/safety, privacy, accessibility, or operational certification. A rendered booking or recorded payment row is not evidence that the full external workflow completed.
+- One business per deployment. No organization, tenant, or per-location staff scoping.
+- No message dispatcher. `MessageTemplate` and `MessageLog` are not used to send anything. SMS is not implemented.
+- `DomainEvent` rows are written on tracked changes but stay pending. Nothing consumes them.
+- `WidgetConfiguration` has no widget runtime.
+- `ServiceVariant` and `ServiceSegment` have no salon page and are not read by storefront booking or checkout. Edit them in the generic list screens if needed.
+- `IntakeForm`, `FormSubmission`, and `ProductSale` are legacy lists, replaced by consultation versions and `SalonTransaction`.
+- Clients cannot buy gift cards, pay deposits, or pay for visits online. The storefront gift-card page says "In-salon purchase only".
+- Membership billing is not automated. `nextBillingDate` is stored, but no job charges it.
+- Tax is a single `TAX_RATE` (default `0.08`). There is no tax provider.
+- Tests in `tests/` cover helpers and security rules without a database. They are not an end-to-end check.

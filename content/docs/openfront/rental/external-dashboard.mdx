@@ -1,8 +1,47 @@
 ---
 title: External dashboards
-description: Give an LLM the Rental dashboard skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Rental dashboard skill to adapt the built-in host experience or create a separate client.
 ---
 
-To create a custom Rental dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Rental's product-specific operator experience.
+To create a custom Rental dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Rental's product-specific host experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Rental codebase before proposing work.
+
+Skill file: [`/skills/openfront-rental-custom-dashboard/SKILL.md`](/skills/openfront-rental-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file only re-exports a screen from `features/platform`. The sidebar entries and the permission each one needs are in `features/platform/lib/navigation.ts`.
+
+| Page | What hosts do there | Screen | Permission |
+|---|---|---|---|
+| `/dashboard/platform/today` | Arrivals, departures, in-house guests, and work waiting | `operations/screens/TodayPage` | `canReadReservations` |
+| `/dashboard/platform/properties`, `/create`, `/[id]` | Homes, addresses, units, bedrooms, beds; create a property | `workspaces/screens/HostWorkspaces`, `PropertyCreatePage`, `HostWorkspaceDetails` | `canReadProperties` |
+| `/dashboard/platform/listings`, `/create`, `/[id]`, `/[id]/edit` | Public listing pages, media, amenities, house rules, readiness | `workspaces/screens/HostWorkspaces`, `ListingCreatePage`, `ListingEditPage`, `HostWorkspaceDetails` | `canReadListings` |
+| `/dashboard/platform/calendar` | Reservation, owner, preparation, and channel blocks; create and release blocks | `calendar/screens/HostCalendarPage` | `canReadCalendar` |
+| `/dashboard/platform/tasks` | Housekeeping, inspections, maintenance; run task rules | `tasks/screens/OperationsTasksPage` | `canReadProperties` |
+| `/dashboard/platform/reservations`, `/[id]` | Stay list and detail; confirm, check in, complete, cancel, amend, reassign, record payments, deposits, claims, refunds | `reservations/screens/ReservationWorkspacePage`, `ReservationDetailPage` | `canReadReservations` |
+| `/dashboard/platform/agreements`, `/[id]` | Versioned terms and signature evidence; void or reissue | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadReservations` |
+| `/dashboard/platform/guests`, `/[id]` | Guest profiles, parties, and stay history | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadGuests` |
+| `/dashboard/platform/inbox`, `/[id]` | Guest conversations; reply, change status, revoke or reissue links | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadMessages` |
+| `/dashboard/platform/pricing`, `/create`, `/[id]`, `/[id]/edit` | Rate plans, seasons, fees, taxes, and policies | `workspaces/screens/HostWorkspaces`, `RatePlanPages`, `HostWorkspaceDetails` | `canReadPricing` |
+| `/dashboard/platform/payments`, `/[id]` | Payment records and refunds | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadPayments` |
+| `/dashboard/platform/payouts`, `/[id]`, `/statements/[id]` | Owner assignments, statements, and payout records | `owners/screens/OwnerFinancePage`, `OwnerStatementDetailPage`, `workspaces/screens/HostWorkspaceDetails` | `canReadPayouts` |
+| `/dashboard/platform/reports` | Occupancy, revenue, owner net, task health, channel evidence; host archive export | `reports/screens/HostReportsPage` | `canReadReports` |
+| `/dashboard/platform/channels` | Channel connections, listing mappings, iCalendar import | `channels/screens/ChannelWorkspacePage` | `canReadChannels` |
+| `/dashboard/platform/reviews`, `/[id]` | Guest reviews; publish, hold, remove | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadReviews` |
+| `/dashboard/platform/store-settings` | Public identity, contact, localization, logo, and accent color | `store-settings/screens/StoreSettingsPage` | `canManageSettings` |
+
+Other dashboard routes come from `features/dashboard`: `/dashboard` (home), `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, `/dashboard/[listKey]/[id]` (generic Keystone lists), `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`, and `/dashboard/no-access`.
+
+## How the pages talk to the server
+
+Screens call named GraphQL documents from their slice's `actions` folder. Reads are workspace queries such as `TodayOverview`, `ReservationWorkspace`, `ReservationDetail`, `HostCalendar`, `PricingWorkspace`, `PaymentWorkspace`, `OwnerWorkspace`, `ChannelWorkspace`, `HostOperationsReport`, and `ListingReadinessIndex`. Most writes go through `mutation HostStayCommand`, which calls `hostStayCommand(command, input)`. Other writes use dedicated mutations such as `CreatePlatformProperty`, `CreatePlatformListing`, `CreatePlatformRatePlan`, `CreateCalendarBlock`, `ReleaseCalendarBlock`, `ImportCalendar`, `GenerateOwnerStatement`, `TransitionOwnerStatement`, `CreatePropertyTask`, `TransitionPropertyTask`, `RunPropertyTaskRules`, and `UpdateMarketplaceSettings`. See the [overview](/docs/openfront/rental#named-graphql-operations) for the server operations.
+
+Sidebar items are listed for every user. Each page and command checks the user's own permissions and host membership.
+
+## Limitations
+
+- Payment pages show manual records and Stripe test-mode attempts only. They do not move real money.
+- Payout and owner statement pages record transfers. They do not send them.
+- The channels page manages local mappings and pasted iCalendar text. It does not connect to an OTA.

@@ -1,8 +1,61 @@
 ---
 title: External storefronts
-description: Give an LLM the Rental storefront skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Rental storefront skill to adapt the built-in guest experience or create a separate client.
 ---
 
 To create a custom Rental storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Rental's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Rental codebase before proposing work.
+
+Skill file: [`/skills/openfront-rental-custom-storefront/SKILL.md`](/skills/openfront-rental-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Route files live directly under `app/` (the home page is `app/(home)/page.tsx`). Each one re-exports a screen from `features/storefront/screens`. Data loaders and server actions are in `features/storefront/lib/data`.
+
+| Route | What guests do there | Screen |
+|---|---|---|
+| `/` | Landing page with store identity and featured stays | `landing/StorefrontLandingPage` |
+| `/search` | Search stays by destination, dates, guests, pets, property type, amenities, rooms, price, and instant book | `search/StaySearchPage` |
+| `/stays/[slug]` | Listing detail, gallery, availability calendar, reviews, and the booking panel that asks for a quote | `stays/StayDetailPage` |
+| `/collections`, `/collections/[slug]` | Browse stay collections | `collections/CollectionsPage` |
+| `/compare` | Compare up to three homes side by side | `compare/ComparePage` |
+| `/checkout/[quoteToken]` | Review the quote, enter guest details, accept terms, and reserve | `checkout/StayCheckoutPage` |
+| `/trips` | Open a trip from a saved link, or recover one by confirmation code and email | `trips/TripEntryPage` |
+| `/trips/[token]` | Private trip page: stay details, ledger, card payment (test mode), messages, change or cancellation request, review, and claim to account | `trips/TripPage` |
+| `/agreements/[token]` | Read and sign the stay agreement | `agreements/StayAgreementPage` |
+| `/messages/[token]` | Private guest conversation thread; reply to the host | `messages/GuestThreadPage` |
+| `/account` | Guest account: profile, password, trips, open a trip by confirmation code, sign out | `account/AccountPage` |
+| `/account/sign-in`, `/account/register`, `/account/reset` | Guest sign-in, registration, and password reset | `account/AccountAuthPages` |
+| `/help` | Help content and an inquiry form | `help/HelpPage` |
+| `/policies` | Store policy links from store settings | `help/PoliciesPage` |
+
+Trip, agreement, and message pages are opened by 48-character hex tokens in the URL. No guest account is needed to book. A booking redirects to `/trips/[token]?booked=1`, with the agreement token added when one was issued.
+
+Compare choices are kept in the URL and mirrored in the browser's session storage. The server never reads them.
+
+## How the pages talk to the server
+
+The storefront calls named GraphQL documents through server actions and loaders in `features/storefront/lib/data`:
+
+| File | Operations |
+|---|---|
+| `marketplace.ts` | `PublicMarketplaceSettings` |
+| `stays.ts` | `SearchStays`, `PublicListing`, `PublicStayAvailability`, `PublicStayQuote`, `PublicTrip`, `PublicStayAgreement` |
+| `stay-availability.ts` | `CheckStayDates` (a one-result `searchStays` call) |
+| `stay-actions.ts` | `QuoteStay`, `CreateStayReservation`, `RequestStayCancellation`, `SignStayAgreement` |
+| `checkout-receipt.ts` | `RecoverStayCheckout` |
+| `payment-actions.ts` | `StartGuestStayPayment`, `CompleteGuestStayPayment` |
+| `guest.ts` | `MyGuestAccount`, `PublicGuestThread`, `GuestPasswordResetAvailable` |
+| `guest-actions.ts` | `SubmitGuestInquiry`, `ReplyToGuestThread`, `SendTripMessage`, `SubmitStayReview`, `RecoverStayTrip`, `ClaimStayTrip`, `OpenAccountTrip` |
+| `account-actions.ts` | `SignInGuest`, `RegisterGuestAccount`, `EndGuestSession`, `SendGuestPasswordReset`, `RedeemGuestPasswordReset`, `UpdateMyGuestProfile`, `ChangeGuestPassword` |
+
+Guest sign-in uses the same Keystone session cookie (`keystonejs-session`) as the dashboard. See the [overview](/docs/openfront/rental#named-graphql-operations) for the server operations behind these documents.
+
+`features/storefront/middleware.ts` is a no-op hook for the shared proxy. The storefront has no region, cart cookie, or redirect handling of its own.
+
+## Limitations
+
+- Card payment on the trip page uses Stripe test mode only, and only for test bookings.
+- The password reset pages work only when SMTP host, sender, and store link are configured.
+- There is no country or locale prefix in routes. Currency, locale, and timezone come from store settings.

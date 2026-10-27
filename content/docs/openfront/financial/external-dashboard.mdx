@@ -1,0 +1,33 @@
+---
+title: External dashboards
+description: Give an LLM the Financial dashboard skill to adapt the built-in operator console or create a separate client.
+---
+
+To create a custom Financial dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Financial's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Financial codebase before proposing work.
+
+Skill file: [`/skills/openfront-financial-custom-dashboard/SKILL.md`](/skills/openfront-financial-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`. Pages read through the operator's own session, so most of them show the operator's own book (see [ownership](/docs/openfront/financial#ownership-and-tenancy)).
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/orders`, `/[id]` | Order queue with status counts and recent fills and trades; order detail with terms, fills, trades, and ledger lines; simulate a fill (`simulateOrderFill`) or cancel (`cancelFinancialOrder`) |
+| `/dashboard/platform/portfolio` | Holdings and account balances, with stale-account flags |
+| `/dashboard/platform/transfers`, `/[id]` | Transfer queue and detail with bank, brokerage account, timeline, and ledger lines; complete, fail, or reverse (`processFinancialTransfer`) |
+| `/dashboard/platform/reporting` | Portfolio snapshots and ledger activity; export one month as CSV through `/api/platform/statements` |
+| `/dashboard/platform/store-settings` | Firm name, tagline, logo, colour, currency, paper-trading flag (`upsertPlatformSettings`) |
+| `/dashboard/platform/accounts`, `/[id]` | Connections, brokerage balances, funding sources, broker adapters, and market-data sync runs; account detail with balances, positions, orders, transfers, statements, and ledger lines; provider observation review |
+| `/dashboard/platform/instruments`, `/[id]` | Asset catalog with type tabs and search; create and edit assets, turn trading on or off; detail with quote, fundamentals, price history, holdings, dividends, and alerts |
+| `/dashboard/platform/transactions` | Reconciliation of imported provider transactions: mark matched or needs review with a reason (`reconcileProviderTransaction`) |
+| `/dashboard/platform/approvals` | Approval policies (create, edit, activate, deactivate through `upsertApprovalPolicy`) and request history with decisions |
+| `/dashboard/platform/tasks` | Tabs for pending approvals, agent proposals, delivery retries, connections (provision, grant or revoke consent, rotate credential, sync), and API keys (issue, rotate, revoke machine credentials) |
+| `/dashboard/platform/ledger`, `/[id]` | Chart of accounts with balances; journals by type and status; journal detail with postings and reversals |
+| `/dashboard/platform/income` | Dividends, open and closed tax lots, account statements |
+| `/dashboard/platform/advisory` | Approve or reject trade recommendations; edit advisor rules and public profile; pause, resume, or remove followed traders |
+| `/dashboard/platform/compliance` | KYC checks, risk profiles, cases, alerts, and audit history; transitions with reasons (`transitionComplianceRecord`) and the review history |
+
+Onboarding runs from a dialog in the dashboard shell (`features/platform/onboarding`). Lists without a dedicated page, such as `User`, `Role`, `Watchlist`, and `PriceHistory`, use the generic `/dashboard/<list-key>` pages. Those pages can only write to lists whose access rules allow generic writes.

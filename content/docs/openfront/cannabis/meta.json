@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Cannabis",
+  "description": "Dispensary menu, eligibility checks, package custody, recalls, POS, cash, and reconciliation workflows",
+  "icon": "Leaf",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

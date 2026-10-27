@@ -1,137 +1,168 @@
 ---
 title: Openfront Law Firm
-description: Firm-owned intake, conflicts, matters, documents, billing, trust, portal, and governance.
+description: Firm-owned intake, conflicts, matters, documents, billing, trust, client portal, public site, and governance.
 icon: Scale
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-law-firm) · [Catalog](https://openship.org/products/openfront-law-firm)
+[Source](https://github.com/openshiporg/openfront-law-firm) · [Live demo](https://law-firm.openship.org) · [Catalog](https://openship.org/products/openfront-law-firm)
 
-Openfront Law Firm is an open-source legal-practice operations application. It gives a firm one data model for intake, conflicts, matters, calendars, communications, documents, billing, payments, trust records, client sharing, integrations, retention evidence, and controlled agent work.
+Openfront Law Firm is an open-source app for running a law practice. Staff handle intake, conflict checks, matters, dockets, deadlines, documents, messages, time, billing, retainers, and trust records in one dashboard. Visitors can read about the firm, browse practice areas and attorneys, open an account, and request a consultation. Clients can see items the firm shares with them in a portal.
+
+To install it, see [Getting started](/docs/openfront/law-firm/getting-started).
 
 <Callout type="warn">
-The software supplies configurable controls and evidence. It does not guarantee legal-ethics, privilege, trust-accounting, privacy, retention, signature, security, or jurisdiction-specific compliance. Each deployment still needs qualified firm policy, legal, security, and provider review.
+The software gives you records, controls, and audit evidence. It does not guarantee compliance with legal-ethics, privilege, trust-accounting, privacy, retention, signature, or court rules. Each firm still needs its own legal, security, and provider review.
 </Callout>
 
-## Install and configure
+## Stack
 
-The application uses Node.js, Next.js, Keystone, Prisma, and PostgreSQL. Install dependencies from the repository root:
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API, Prisma with PostgreSQL, Tailwind CSS 4, and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies.
 
-```bash
-npm install
-```
+## Source layout
 
-Configure a local PostgreSQL database and independent secrets:
+| Path | Contents |
+|---|---|
+| `features/keystone/models` | 79 Keystone lists, registered in `models/index.ts` |
+| `features/keystone/mutations` | Custom queries and mutations, registered in `mutations/index.ts` |
+| `features/keystone/access.ts`, `tenancy.ts`, `lib/` | Permissions, firm scoping, lifecycles, matter access, mail, webhooks |
+| `features/platform` | Staff pages under `/dashboard/platform` |
+| `features/legal-ai` | Legal AI screens (mounted through `features/platform/legal-ai`) |
+| `features/dashboard` | Shared dashboard shell, sign-in, generic list pages |
+| `features/storefront` | Public firm site, customer account, and client portal screens |
+| `app/` | Thin route files |
+| `docs/schema-map.md` | The repository's own map of lists, workflows, and page coverage |
 
-```bash
-DATABASE_URL=postgresql://user:password@127.0.0.1:5432/runtime_law_firm?schema=public
-SESSION_SECRET=<long-random-value>
-MACHINE_CREDENTIAL_PEPPER=<independent-long-random-value>
-INTEGRATION_CREDENTIAL_KEY=<base64url-encoded-32-byte-key>
-OPENFRONT_PUBLIC_ORIGIN=https://law-firm.local
-OPENFRONT_INTERNAL_ORIGIN=https://law-firm.local
-```
+`schema.graphql` and `schema.prisma` are generated from the models.
 
-The machine-credential pepper and integration-encryption key must remain stable, separate, and outside source control. Production requires explicit public and internal HTTPS origins; authenticated internal requests do not derive their destination from forwarded host headers.
+## Tenancy and access
 
-Compile the schema and application without touching the database:
+`Firm` is the tenant. Every firm-owned list carries a `firm` relationship. Shared hooks set the active firm on create and reject links to records from another firm. Lists with a lifecycle check each status change against a fixed transition table.
 
-```bash
-npm run schema:build
-npm run typecheck
-npm test
-npm run lint
-npm run build:app
-```
+Staff access comes from an active `FirmMembership` and that firm's `Role`. A role has 39 `can*` flags, for example `canManageIntake`, `canRunConflictChecks`, `canResolveConflicts`, `canManageMatters`, `canManageEthicalWalls`, `canManageBilling`, `canManageTrust`, `canManagePortal`, `canManageRetention`, `canManageIntegrations`, `canManageAgents`, and `canViewAudit`.
 
-Do not use `prisma db push` or a destructive reset. Schema changes are represented by reviewed migrations.
+Matter-scoped lists add three more checks:
 
-## Architecture
+- team membership on the matter, with `canEdit`, `canBill`, and `canAccessRestricted`;
+- ethical walls, which can block a user from a matter;
+- `authorizedUsers` and `blockedUsers` on `Matter`, which are maintained by the team and wall mutations and cannot be written directly.
 
-`Firm` is the tenant root. Offices, memberships, and firm-specific roles establish ordinary operator access. Matters can add narrower team assignments and ethical walls. Keystone list definitions under `features/keystone/models` are authoritative; `schema.graphql` and `schema.prisma` are generated evidence.
-
-Every non-global domain record carries a firm relationship even when ownership could be inferred through a parent. Matter access uses controlled `authorizedUsers` and `blockedUsers` relations derived from team and ethical-wall evidence. Raw clients cannot edit those authorization indexes.
-
-Money uses integer minor units and explicit currency codes. Issued invoice lines, document versions, conflict dispositions, matter events, trust transactions and entries, signature events, webhook attempts, retention actions, audit events, and agent-action events preserve history through append-only records or compensating operations.
+A firm administrator does not silently pass an ethical wall.
 
 ## Data model
 
-- **Firm operations:** firms, offices, users, roles, memberships, contacts, addresses, and contact methods.
-- **Intake and conflicts:** intakes, participants, submissions, consultations, conflict checks, terms, matches, and human dispositions.
-- **Matters and work:** practice areas, matters, parties, teams, ethical walls, courts, dockets, entries, deadlines, and tasks.
-- **Communications and documents:** threads, participants, messages, deliveries, documents, immutable versions, signature requests, signers, and events.
-- **Billing and trust:** rate cards and rules, time, expenses, retainers, invoices and lines, payments, allocations, refunds, trust accounts, client/matter subledgers, transactions, entries, snapshots, and reconciliations.
-- **Portal and integrations:** portal accounts and exact matter/resource grants, provider connections, external record links, webhook subscriptions, deliveries, and attempts.
-- **Governance and agents:** retention policies, holds and actions, audit events, API keys, OAuth clients and tokens, agent principals, credentials, grants, actions, and action events.
+| Area | Lists |
+|---|---|
+| Firm and people | Firm, Office, User, FirmMembership, Role |
+| Machine access | ApiKey, OAuthClient, OAuthConsent, OAuthToken, AgentPrincipal, AgentCredential, AgentGrant, AgentAction, AgentActionEvent |
+| Contacts | Contact, Address, ContactMethod |
+| Intake | Intake, IntakeParticipant, IntakeSubmission, Consultation |
+| Conflicts | ConflictCheck, ConflictSearchTerm, ConflictMatch, ConflictDisposition |
+| Matters | PracticeArea, Matter, MatterParty, MatterTeamMember, EthicalWall, EthicalWallMember, MatterStatusEvent |
+| Calendar | Court, Docket, DocketEntry, Deadline, LegalTask |
+| Communications | CommunicationThread, CommunicationParticipant, CommunicationMessage, CommunicationDelivery |
+| Documents | Document, DocumentVersion, SignatureRequest, DocumentSigner, SignatureEvent |
+| Billing | RateCard, RateRule, TimeEntry, Expense, RetainerAgreement, Invoice, InvoiceLine |
+| Payments | Payment, PaymentAllocation, Refund |
+| Trust | TrustAccount, TrustLedgerAccount, TrustTransaction, TrustLedgerEntry, TrustBalanceSnapshot, TrustReconciliation |
+| Client portal | PortalAccount, PortalMatterAccess, PortalShare, PortalSession, PortalDiscoveryPolicy, PortalGrantIntent |
+| Public site | PublicSitePolicy, AttorneyProfile |
+| Integrations | IntegrationConnection, ExternalRecordLink, WebhookSubscription, WebhookDelivery, WebhookDeliveryAttempt |
+| Governance | RetentionPolicy, RetentionHold, RetentionAction, AuditEvent |
 
-Core relationships are explicit rather than hidden in JSON. Provider payloads and metadata are bounded supplements, not the only representation of a matter, balance, payment, document, or authorization decision.
+Money is stored as integer minor units with a currency code. Document versions, trust entries, matter status events, signature events, audit events, and agent action events are append-only. Trust postings are corrected with reversing transactions, not edits.
+
+Key lifecycles:
+
+- **Intake:** new → screening → conflict_review → consultation → decision → converted, declined, or withdrawn.
+- **Conflict check:** requested → running → review_required → cleared or conflict_found.
+- **Matter:** proposed → pending_conflict → open, on_hold, closing, closed; or declined.
+- **Consultation:** requested → scheduled → completed, cancelled, or no_show.
+- **Invoice:** draft → approved → issued → partially_paid → paid; also overdue and void.
+- **Refund:** requested → approved → processing → succeeded or failed.
 
 ## Workflows
 
-Sensitive state changes use named GraphQL operations instead of raw status writes.
+1. **Onboarding.** `completeFirmOnboarding` creates the firm, first office, administrator role, four standard roles, your membership, and a default practice area. See [Getting started](/docs/openfront/law-firm/getting-started#onboard-the-firm).
+2. **Publish the site.** Publish a `PublicSitePolicy` (privacy notice, first-contact notice, about text, accounts and booking switches), mark practice areas public with a slug, fee, and length, and publish attorney profiles.
+3. **Online booking.** A visitor creates an account (`registerConsultationAccount`) and books a slot (`bookClientConsultation`). This creates a contact, an intake with a submission, a consultation in `requested`, and a conflict check when an opposing party is named. Slots are 9:00 to 17:00 on weekdays. Staff confirm or change it with `scheduleConsultation` and `transitionConsultation`. The customer can cancel with `cancelOwnConsultation`.
+4. **Intake to matter.** `startClientIntake`, `addIntakeParticipant`, conflict search terms and matches, `recordConflictDisposition`, `finalizeConflictCheck`, then `convertIntakeToMatter`, which creates the matter, parties, and team.
+5. **Matter administration.** `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `changeMatterConfidentiality`, `transitionMatter`.
+6. **Courts and deadlines.** Courts and dockets, `recordDocketEntry`, `verifyDocketEntry`, deadlines (`reviseDraftDeadline`, `transitionDeadline`), and tasks (`transitionLegalTask`).
+7. **Documents.** `ingestDocumentVersion` uploads to the S3 bucket, `setDocumentCurrentVersion`, then `prepareSignatureRequest` and `addDocumentSigner`.
+8. **Messages.** Threads, `addCommunicationParticipant`, a draft message, `prepareCommunicationDeliveries` (email only), then `queueCommunicationMessage`. The outbox worker sends email through SMTP.
+9. **Time to cash.** Rate cards and rules, time entries and expenses (`transitionTimeEntry`, `transitionExpense`), `assembleDraftInvoice`, `transitionInvoice`, `recordManualPayment`, `allocatePayment`, `reversePaymentAllocation`, `requestRefund`, `reviewRefund`. Retainers use `prepareRetainerAgreement` and `transitionRetainerAgreement`.
+10. **Trust.** Trust accounts and client or matter ledgers, `postTrustTransaction` (balanced, idempotent, serializable), and three-way reconciliation with `prepareTrustReconciliation`, `reviseTrustReconciliation`, `transitionTrustReconciliation`.
+11. **Client portal.** `recordPortalDiscoveryPolicy`, `invitePortalAccount`, `acceptPortalInvitation`, `executePortalGrant`, `sharePortalResource` (document, invoice, or thread), `revokePortalGrant`.
+12. **People.** `inviteFirmMember`, `changeFirmMemberAccess`, `updateFirmRoleAuthority`.
+13. **Governance.** `transitionRetentionPolicy`, `assignDocumentRetentionPolicy`, `placeRetentionHold`, `releaseRetentionHold`, `disposeRetainedDocument`.
+14. **Data.** `previewContactImport` and `applyContactImport` for contacts from CSV; `preparePracticeExport` for contacts, matters, invoices, time entries, or audit events (up to 500 rows).
 
-- First-firm onboarding atomically creates the firm, office, administrator role, membership, practice area, and active-firm assignment. Authenticated users without a firm are routed to `/dashboard/onboarding`.
-- Conflict operations run a check, record a reviewer disposition, and finalize the result before a matter can proceed.
-- Matter-team and ethical-wall operations update policy evidence and materialized access together, including overlapping-wall reconciliation.
-- Invoice and payment operations control approval, issue, capture, allocation, exact allocation reversal, independently reviewed refunds, and provider outcomes.
-- Trust posting requires one firm, account, currency, balanced positive minor-unit entries, serializable execution, idempotency, and exact reversal rather than history edits.
-- Portal operations invite a contact, grant exact matter capabilities, share exact resources, and revoke access without broad list reads.
-- Provider operations rotate encrypted credentials and record communication, signature, connection, and webhook state transitions.
-- Agent operations require an active principal, credential, exact-firm and optional exact-matter grant, bounded capability, idempotent request, and immutable result evidence. Consequential actions can require digest-bound human approval.
+Status, money, access indexes, credentials, and evidence fields are not writable through generic list updates on these lists. Changes go through the named mutations, which use a serializable transaction, an advisory lock, an idempotency key where money or access moves, and an audit event.
 
-Purpose-built operator routes now cover intake, contacts, matters/work, communications, documents, time and expenses, billing, accounting, portal administration, integrations, governance, data operations, and reports. Generated list administration and onboarding remain available. Public intake and a client-facing portal UI are not supplied by current source.
+## Named GraphQL operations
 
-## Bounded GraphQL operations
+Custom queries in `features/keystone/mutations/index.ts`:
 
-Firm and practice workspace queries return scoped operational projections. Named operations handle onboarding, intake/conflict and matter access, document and communication evidence, invoice/payment/refund and trust posting, portal invitations and exact-resource sharing, provider/webhook state, retention holds, API/OAuth credentials, and controlled agent requests/execution. Raw status, money, access indexes, credentials, and immutable evidence stay outside ordinary GraphQL writes.
+- Public and customer: `consultationCatalog`, `consultationCatalogPage`, `consultationService`, `consultationAvailability`, `customerConsultations`, `customerConsultationPage`, `customerConsultation`, `portalSharedResource`.
+- Staff: `practiceOverview`, `practiceWorkspace(category)`, `previewContactImport`, `portalPolicyWorkspace`.
+- Viewer checks: `redirectToInit`, `viewerCanAccessDashboard`, `viewerCanRunConflictChecks`, `viewerCanResolveConflicts`, `viewerNeedsFirmOnboarding`, `viewerCanSeedSyntheticDemo`.
 
-## Synthetic local workflow
+Custom mutations, grouped:
 
-The repository includes a deterministic local-only seed. It creates an administrator, firm, office, practice area, synthetic contact, matter, conflict check, invoice, and payment. The guard accepts only the loopback database named `runtime_law_firm`:
+| Group | Mutations |
+|---|---|
+| Onboarding and people | `completeFirmOnboarding`, `seedSyntheticDemoScenario`, `inviteFirmMember`, `changeFirmMemberAccess`, `updateFirmRoleAuthority` |
+| Customer | `registerConsultationAccount`, `bookClientConsultation`, `cancelOwnConsultation` |
+| Intake and conflicts | `startClientIntake`, `addIntakeParticipant`, `changeIntakeParticipant`, `transitionIntake`, `scheduleConsultation`, `transitionConsultation`, `requestConflictCheck`, `addConflictSearchTerm`, `addConflictMatch`, `transitionConflictCheck`, `recordConflictDisposition`, `finalizeConflictCheck`, `convertIntakeToMatter` |
+| Matters and calendar | `transitionMatter`, `changeMatterConfidentiality`, `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `recordDocketEntry`, `reviseDocketEntry`, `verifyDocketEntry`, `reviseDraftDeadline`, `transitionDeadline`, `transitionLegalTask` |
+| Documents and signatures | `ingestDocumentVersion`, `setDocumentCurrentVersion`, `transitionDocument`, `prepareSignatureRequest`, `addDocumentSigner`, `transitionDocumentSigner`, `transitionSignatureRequest` |
+| Communications | `addCommunicationParticipant`, `removeCommunicationParticipant`, `prepareCommunicationDeliveries`, `queueCommunicationMessage`, `transitionCommunicationDelivery` |
+| Billing | `transitionTimeEntry`, `transitionExpense`, `assembleDraftInvoice`, `transitionInvoice`, `transitionPayment`, `recordManualPayment`, `allocatePayment`, `reversePaymentAllocation`, `requestRefund`, `reviewRefund`, `recordRefundProviderOutcome`, `prepareRetainerAgreement`, `transitionRetainerAgreement` |
+| Trust | `setTrustAccountBankIdentity`, `transitionTrustAccount`, `transitionTrustLedgerAccount`, `postTrustTransaction`, `prepareTrustReconciliation`, `reviseTrustReconciliation`, `transitionTrustReconciliation` |
+| Portal | `recordPortalDiscoveryPolicy`, `executePortalGrant`, `invitePortalAccount`, `acceptPortalInvitation`, `grantPortalMatterAccess`, `sharePortalResource`, `revokePortalGrant` |
+| Retention | `transitionRetentionPolicy`, `assignDocumentRetentionPolicy`, `placeRetentionHold`, `releaseRetentionHold`, `disposeRetainedDocument` |
+| Integrations and data | `rotateIntegrationCredential`, `transitionIntegrationConnection`, `enqueueWebhookDelivery`, `rotateWebhookSigningSecret`, `applyContactImport`, `preparePracticeExport` |
+| Machine access and agents | `issueApiKey`, `revokeApiKey`, `issueOAuthClient`, `revokeOAuthClient`, `issueAgentCredential`, `revokeAgentCredential`, `transitionAgentPrincipal`, `updateAgentGrantAuthority`, `requestAgentAction`, `reviewAgentAction`, `executeAgentAction` |
 
-```bash
-export MIGRATION_CONFIRM_DATABASE=runtime_law_firm
-export ALLOW_LOCAL_DEMO_SEED=runtime_law_firm
-npm run seed:runtime
-```
+The dashboard calls these through named documents in `features/platform` (for example `CompleteFirmOnboarding`, `ConvertIntake`, `PostTrustTransaction`, `PracticeWorkspace`).
 
-Rerunning the seed reuses its fixture IDs. `npm run verify:complete-runtime` creates additional synthetic records and exercises restricted-matter access, conflicts, billing, refunds, portal grants, provider records, retention, API keys, OAuth, and controlled agents. It must be explicitly enabled with `ALLOW_RUNTIME_PROOF=runtime_law_firm` and must not target real firm data.
+## GraphQL boundary
+
+`/api/graphql` (in `pages/api/graphql.ts`) accepts POST only. It requires JSON, or multipart from the same origin for uploads. Bodies are capped at 1 MB and uploads at 10 MB and 5 files. Lists return at most 100 items per query. Query depth and fragment expansion are limited. Introspection and the playground are off, and internal error details are removed. Bearer tokens (API keys, OAuth access tokens, agent credentials) are accepted and checked against their scopes and the current owner's permissions.
 
 ## Integrations
 
-The application implements records and controlled transitions for provider connections, encrypted credential envelopes, external record links, communication deliveries, signatures, and webhooks. It also implements API-key authentication, OAuth authorization code with S256 PKCE, refresh rotation, and grant-scoped agent credentials.
+| Area | What the code does |
+|---|---|
+| Document storage | Uploads go to the configured S3-compatible bucket. Downloads use signed links that expire after 5 minutes. |
+| Email | Password reset, portal sign-in, and portal invitation emails use SMTP. Message deliveries are sent by the outbox worker (`features/keystone/webhooks/run.ts`) through the same SMTP settings, with up to 5 attempts. Only email deliveries can be prepared; portal and SMS delivery are not configured. |
+| Webhooks | Subscriptions, signed deliveries (`x-openfront-signature` header), and attempts. The worker only contacts hosts listed in `WEBHOOK_ALLOWED_HOSTS`. |
+| Provider connections | `IntegrationConnection` records for email, calendar, document storage, signature, payment, court, accounting, or other. Credentials are stored encrypted with `INTEGRATION_CREDENTIAL_KEY`. A connection record does not mean an adapter exists. |
+| API keys and OAuth | `issueApiKey` shows the secret once. OAuth uses `/api/oauth/authorize` and `/api/oauth/token` with authorization code plus S256 PKCE and refresh token rotation. |
+| Agents | Agent principals, credentials, and grants scoped to one firm and optionally one matter. `requestAgentAction` → `reviewAgentAction` → `executeAgentAction` for a fixed set of action types (for example `task.draft`, `matter.transition`, `invoice.issue`, `trust.post`, `communication.send`). Agents are managed in the generic Models pages, not a platform page. |
+| AI chat | The dashboard AI sidebar can use a shared OpenRouter key (`OPENROUTER_*`) or a key the user enters. |
+| MCP | `/api/mcp-transport/http` returns 501 `LEGAL_MCP_DISABLED`. Generic MCP tools for legal data are turned off. |
 
-Those boundaries do not send real email or SMS, store real documents, collect real payments, calculate court deadlines, submit court filings, or obtain signatures by themselves. Each provider needs a separate adapter, inbound verification, retry and reconciliation policy, sandbox certification, least-privilege credentials, and deployment monitoring.
+## Limitations
 
-## Security
+- **No payment provider.** Payments are recorded by hand. `recordRefundProviderOutcome` and payment provider outcomes throw "unavailable until authenticated provider ingress is configured". There is no card checkout, and consultation fees are shown but not collected.
+- **No signature provider.** You can prepare a signature request and add signers. Sent and signed states need provider events, which the code refuses for now.
+- **No inbound provider events.** Communication delivery outcomes, signature outcomes, and webhook attempt recording through GraphQL all throw until authenticated ingress exists.
+- **Email only.** Portal and SMS message delivery are not configured.
+- **No court rules.** Deadlines are entered and verified by people. Nothing calculates court deadlines or files with a court.
+- **Legal AI is read-only.** The AI pages show matter evidence, a document inventory, and review sets. No model is connected for drafting, review tables, or research. The provider page says providers are not connected.
+- **MCP is disabled.**
+- **Anonymous intake is off.** `PUBLIC_INTAKE_ENABLED` is `false` in `features/storefront/content.ts`. Visitors must sign up to request a consultation.
+- **One public firm.** The public site and booking only work when exactly one firm is active.
+- **Fixed booking hours.** Consultation slots are 9:00 to 17:00, Monday to Friday, in code.
+- **Outbox needs a scheduler.** Email deliveries and webhooks only go out when you run the worker script.
+- **Sample data is limited.** The onboarding sample option works only on an owned offline test database.
+- **Not certified.** Nothing in the repository certifies trust accounting, privacy, security, or ethics compliance.
 
-Access fails closed when the user, firm, membership, role, active firm, machine scope, matter assignment, or ethical-wall decision does not authorize the request. Restricted matters require explicit team access; a firm administrator does not silently bypass an ethical wall. Credential material is omitted from GraphQL reads.
+## More
 
-The HTTP GraphQL boundary accepts POST requests, requires JSON for ordinary calls, restricts multipart requests to the configured public origin, bounds bodies and uploads, caps list results, limits query depth and self-reference, disables HTTP introspection, and redacts internal error extensions. Portal sessions receive exact resource shares rather than general list access.
-
-These application controls do not replace managed key storage, centralized rate limits, logging and alerting, incident response, penetration testing, backup restoration, provider review, or firm-specific legal and security decisions.
-
-## Deployment
-
-The repository includes four current migrations and a guarded script for its maintained **local synthetic** database. For an existing local runtime, the guard requires the exact loopback target, matching migration history and checksums, no interrupted migration, a recent PostgreSQL custom-format backup, its SHA-256 reference, and an advisory deployment lock:
-
-```bash
-export MIGRATION_CONFIRM_DATABASE=runtime_law_firm
-export MIGRATION_BACKUP_PATH='/absolute/path/to/pre-deploy.dump'
-export MIGRATION_BACKUP_REFERENCE='sha256:<verified-dump-digest>'
-npm run migrate:maintained
-```
-
-That command is deliberately limited to the named loopback synthetic runtime and is not a general deployment procedure. For any release, run the current schema build/runtime verification, test suite, lint, typecheck, application build, migration-history/checksum checks, authenticated firm/matter/portal workflows, GraphQL boundary negatives, and browser checks against the exact source snapshot and target configuration.
-
-A deployment for real firm data needs its own reviewed migration and restore procedure, managed secrets and encryption keys, implemented and tested provider adapters, monitoring, centralized rate limits, incident response, staged rollout and rollback, retention policy, and jurisdiction-specific legal review. Current source does not itself send communications, store document bodies in an object service, collect payments, submit filings, obtain signatures, or guarantee trust-accounting or deadline-rule compliance.
-
-## Extension paths
-
-- Add or change domain records in `features/keystone/models`, register every list explicitly in `features/keystone/models/index.ts`, generate the schemas, and add a reviewed migration.
-- Put sensitive lifecycle changes in a narrow operation under `features/keystone/mutations`; do not reopen raw writes to protected status, money, access, credential, or evidence fields.
-- Add provider adapters behind `IntegrationConnection` and the provider workflow boundary. Keep credentials in encrypted envelopes, verify callbacks, claim provider event IDs, and record attempts and reconciliation evidence.
-- Build operator pages under `app/dashboard` and separate public intake or portal routes from the generated administrator lists. Public and portal surfaces should call narrow operations, not raw legal-domain CRUD.
-- Add machine capabilities by mapping explicit API, OAuth, or agent scopes to existing domain permissions and exact tenant/matter checks. High-risk agent actions need immutable requests and human approval where policy requires it.
-- Extend tests with cross-firm, restricted-matter, ethical-wall, credential, lifecycle, idempotency, concurrency, and failed-provider cases before enabling a new path.
+- [Getting started](/docs/openfront/law-firm/getting-started)
+- [External dashboards](/docs/openfront/law-firm/external-dashboard)
+- [External storefronts](/docs/openfront/law-firm/external-storefront)

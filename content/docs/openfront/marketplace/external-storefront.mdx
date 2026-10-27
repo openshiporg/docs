@@ -3,6 +3,31 @@ title: External storefronts
 description: Give an LLM the Marketplace storefront skill to adapt the built-in experience or create a separate client.
 ---
 
-To create a custom Marketplace storefront, copy the skill and give it to your LLM. The skill will explain Marketplace's non-Keystone architecture before asking what should change, then inspect its conversational UI, MCP tools, adapter registry, cart/session capabilities, and merchant checkout handoff.
+To create a custom Marketplace storefront, copy the skill and give it to your LLM. The skill will explain that Marketplace is a chat client over an MCP server, not a Keystone storefront. It then inspects the chat UI, MCP tools, platform adapters, store identity rules, browser storage, and checkout handoff.
 
-After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Marketplace codebase before proposing work.
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, MCP tools, adapter GraphQL calls, browser storage, and provider boundaries in the supplied Marketplace codebase before proposing work.
+
+## Current buyer-facing routes
+
+| Route | Source | Purpose |
+|---|---|---|
+| `/` | `app/page.tsx`, `features/marketplace/**` | Chat screen with thread tabs, store editor, cart dropdown, AI settings, and MCP UI cards. |
+| `/ethos` | `app/ethos/page.tsx` | Static page about the open marketplace idea. |
+| `POST /api/completion` | `app/api/completion/route.ts` | Built-in AI chat. Streams the reply. |
+| `POST /api/mcp-transport/http` | `app/api/mcp-transport/[transport]/route.ts` | MCP JSON-RPC: `initialize`, `tools/list`, `tools/call`. Card buttons call this directly. |
+| `GET /api/mcp-transport/http` | same | Status and admitted store list. |
+| `POST /api/ai-models` | `app/api/ai-models/route.ts` | Lists models for a custom OpenAI-compatible endpoint. |
+| `GET /api/marketplace/catalog` | `app/api/marketplace/catalog/route.ts` | Bundled mock catalog (`liveCommerce: false`). Not used by the chat. |
+
+There are no product, cart, checkout, or account pages. All shopping happens in MCP UI cards with these resource URIs: `ui://marketplace/discover-products`, `ui://marketplace/product/...`, `ui://marketplace/cart/...`, `ui://marketplace/login`, `ui://marketplace/email-conflict`, and `ui://marketplace/payment-error`.
+
+## Request headers a client sends
+
+A separate client that calls `/api/mcp-transport/http` should send the same headers the built-in client builds in `lib/mcp-client-headers.ts`:
+
+- `x-cart-ids`: JSON map of store ID to cart ID.
+- `x-cart-proofs`: JSON map of store ID to cart proof.
+- `x-marketplace-config`: JSON array of selected admitted stores (optional; up to 20).
+- `Authorization: Bearer <token>`: only the session token for the store named in the call.
+
+Tool results may carry a `_meta.marketplace.clientAction` of type `saveCartId` or `saveSessionToken`. The client must store these per store ID.

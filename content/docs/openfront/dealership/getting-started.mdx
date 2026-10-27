@@ -1,0 +1,135 @@
+---
+title: Getting started with Dealership
+description: Clone the source, configure PostgreSQL, sessions, and storage, apply migrations, create the first user, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [dealership.openship.org](https://dealership.openship.org). It uses demo data. Use it to look around before you install.
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`).
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- An S3-compatible bucket for production. Development falls back to placeholder storage settings.
+- Optional: SMTP for password reset and email verification, Stripe for card checkout, and an OpenRouter key for the dashboard assistant.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-dealership.git
+cd openfront-dealership
+npm install
+```
+
+## Configure `.env`
+
+Copy the template and replace every placeholder:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Required | Read by |
+|---|---|---|
+| `DATABASE_URL` | Always | Keystone and Prisma. The app will not start without it. |
+| `SESSION_SECRET` | Always | Session sealing and email verification tokens. Must be at least 32 characters. |
+| `S3_BUCKET_NAME` | Production | Image storage. Required when `NODE_ENV=production`. |
+| `S3_REGION` | Production | Image storage. |
+| `S3_ACCESS_KEY_ID` | Production | Image storage. |
+| `S3_SECRET_ACCESS_KEY` | Production | Image storage. |
+| `S3_ENDPOINT` | Production | S3-compatible endpoint. Also used by `next.config.ts` to allow image hosts. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Optional | Password reset and customer email verification. Password reset email is offered only when `SMTP_HOST` is set. |
+| `SMTP_STORE_LINK` | Optional | Base URL used in email links. |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Optional | Stripe adapter (checkout, refunds, webhook verification). |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional | Dashboard AI assistant at `/api/completion`. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Optional | Set to `true` to open the dashboard sign-up page. Off by default. |
+| `TRUSTED_PROXY_IPS` | Optional | Proxy IPs allowed to supply `X-Forwarded-For` for API key IP limits. |
+| `NEXT_PUBLIC_BACKEND_URL` | Optional | GraphQL origin for the storefront if it differs from the current site. |
+| `HIDE_OPENFRONT_BRANDING` | Optional | Set to `true` to hide Openfront branding in the storefront. |
+
+A minimal local file:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_dealership
+SESSION_SECRET=replace-with-output-of-openssl-rand-hex-32
+```
+
+Generate the secret with `openssl rand -hex 32`. `.env` files are ignored by git. Never commit real keys.
+
+`.env.example` also lists `NEXT_PUBLIC_STRIPE_KEY`. Current source does not read it.
+
+## Apply migrations
+
+The repository has 47 checked-in Prisma migrations. Apply them with:
+
+```bash
+npm run migrate
+```
+
+<Callout type="warn">
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database in `DATABASE_URL`. Do not point it at a shared or production database. `npm run migrate:gen` creates new migrations and is for development databases only.
+</Callout>
+
+One migration inserts a default dealer group (`sams-motor-company`) and rooftop (`SAM-MAIN`, slug `main`) with no members. Onboarding adopts this rooftop instead of creating a second one.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+| Path | What it is |
+|---|---|
+| `/` | Storefront |
+| `/dashboard` | Operator dashboard |
+| `/dashboard/platform/overview` | Dealership overview desk |
+| `/api/graphql` | GraphQL API |
+
+## Create the first user
+
+On an empty database, open `/dashboard/init`. It creates the first user with an `Admin` role that has every permission, including onboarding. Later staff are added from `/dashboard/platform/users`. Roles and memberships are managed on `/dashboard/platform/organization`.
+
+Storefront shoppers register at `/account`. They get a user with no role and cannot reach the dashboard.
+
+## Run onboarding
+
+Users with `canManageOnboarding` see a setup card in the dashboard. It opens a dialog with three templates:
+
+| Template | What it adds |
+|---|---|
+| Complete Setup | Dealership profile, 8 makes, 13 models, 13 vehicles, 8 service packages, 8 parts, 5 F&I products, 5 lead routing rules, 11 accounting mappings, 2 payment providers, 8 staff roles |
+| Basic Setup | Profile, 3 makes, 4 models and their vehicles, 3 service packages, 3 parts, 2 F&I products, 2 routing rules, all accounting mappings, the Manual payment provider, 3 roles |
+| Custom Setup | Your own JSON in the same shape |
+
+Each record is saved through `ensureDealershipOnboardingRecord`. The `Dealership` step adopts the unclaimed default rooftop, fills the profile, and gives you a dealer-group membership with access to all rooftops. Vehicles go through the normal intake command, so they come out listed. Parts get an opening-stock receipt.
+
+If a run fails part-way, your status stays `in_progress` and a retry reuses saved records. A store that is already set up refuses a new run.
+
+Onboarding creates no leads, customers, deals, applications, appointments, repair orders, or payments. Seeded names, addresses, and prices are sample data. Replace them before going live.
+
+## Deploy
+
+`npm run build` runs `keystone build --no-ui && next build`. It does not migrate. `railway.toml` builds the same way and starts with `npm run migrate && next start`.
+
+1. Provision PostgreSQL and an S3-compatible bucket.
+2. Set `DATABASE_URL`, `SESSION_SECRET`, and the five `S3_*` variables, plus SMTP and Stripe if you use them.
+3. Back up any existing database.
+4. Build, apply migrations, then start:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+5. If you use Stripe, point its webhook at `/api/payment-webhooks/pp_stripe_stripe` (or the code of your provider record).
+6. Create the first user at `/dashboard/init` and run onboarding.
+
+The README's Vercel button imports the repository and asks for the database, session, and S3 values. It does not provision a database or storage, and it does not run migrations.
+
+See the [overview](/docs/openfront/dealership) for workflows, operations, and limitations.

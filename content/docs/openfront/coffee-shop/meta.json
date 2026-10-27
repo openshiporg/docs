@@ -1,11 +1,12 @@
 {
   "title": "Coffee Shop",
-  "description": "Menu, pickup ordering, POS, inventory, recipes, loyalty, and reporting",
+  "description": "Menu, pickup ordering, POS, KDS, register, inventory, recipes, rewards, catering, and reporting",
   "icon": "Coffee",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

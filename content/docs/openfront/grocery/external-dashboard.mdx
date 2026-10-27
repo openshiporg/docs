@@ -1,8 +1,45 @@
 ---
 title: External dashboards
-description: Give an LLM the Grocery dashboard skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Grocery dashboard skill to adapt the built-in operator experience or create a separate client.
 ---
 
 To create a custom Grocery dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Grocery's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Grocery codebase before proposing work.
+
+Skill file: [`/skills/openfront-grocery-custom-dashboard/SKILL.md`](/skills/openfront-grocery-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file only re-exports a screen from `features/platform/<slice>`. Navigation is defined in `features/platform/lib/navigation.ts`. The sidebar lists every page; each page checks its capability on the server.
+
+| Page | Capability | What operators do there | Main operations |
+|---|---|---|---|
+| `/dashboard/platform/orders` | `canManageOrders` | Order queue. Start picking, mark packed or ready for pickup, cancel with a reason, refund, recover interrupted checkouts | `groceryPlatformOrders`, `advanceOrderFulfillment`, `cancelGroceryOrder`, `refundPayment`, `reconcileCheckoutAttempts` |
+| `/dashboard/platform/fulfillment` | `canManageOrders` | Pick and pack board. Record actual weights or quantities, record or propose substitutions, finalize the sale | `groceryPlatformFulfillment`, `resolveOrderLineFulfillment`, `recordOrderItemSubstitution`, `proposeOrderLineSubstitution`, `finalizeGroceryOrderActuals` |
+| `/dashboard/platform/delivery` | `canManageDelivery` | Delivery windows and capacity, build routes from orders, move route status, resolve stops with proof and condition, reschedule returned deliveries | `groceryPlatformDelivery`, `configureDeliverySlot`, `createDeliveryRouteFromOrders`, `updateDeliveryRouteWorkflow`, `resolveDeliveryStop`, `groceryDeliveryRescheduleSlots`, `rescheduleReturnedGroceryDelivery` |
+| `/dashboard/platform/pickup` | `canManageDelivery` | Pickup slot capacity, parking spots, curbside arrivals, handoff | `groceryPlatformPickup`, `configurePickupSlot`, `configureParkingSpot`, `completeOrderHandoff` |
+| `/dashboard/platform/payments` | `canManagePayments` | Payments and refunds. Refund by line, void an authorization, recover payment creation, replay stored webhooks | `groceryPlatformPayments`, `getGroceryOrderRefundLines`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `recoverGroceryPaymentCreation`, `groceryPaymentWebhookRecovery`, `replayPaymentWebhookEvent` |
+| `/dashboard/platform/products`, `/create`, `/[id]` | `canManageProducts` | Product list, create a draft product, edit price, unit, department, supplier, tax rate, shelf life, low-stock level, status | Generated `products`, `product`, `createProduct`, `updateProduct` |
+| `/dashboard/platform/inventory` | `canManageInventory` | Lots and expiry. Adjust a lot, count and recount, convert cases, hold, quarantine, recall, release | `groceryPlatformInventory`, `adjustInventoryLot`, `manageInventoryCount`, `convertInventoryCases`, `manageInventorySafety` |
+| `/dashboard/platform/suppliers` | `canManageSuppliers` | Supplier roster, payment terms, minimum order | `groceryPlatformSuppliers`, `updateSupplierMinimumOrder` |
+| `/dashboard/platform/purchasing` | `canManageInventory` | Create purchase orders, send, confirm, or cancel, receive into lots, capture supplier invoices, claims, and settlement | `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `createPurchaseOrderDraft`, `transitionPurchaseOrder`, `receivePurchaseOrder`, `manageSupplierSettlement` |
+| `/dashboard/platform/merchandising` | `canManageProducts` | Departments, coupons, product information versions, CSV catalog import | `groceryPlatformMerchandising`, `createDepartment`, `updateDepartment`, `updateCoupon`, `updateProductInformation`, `importGroceryCatalog` |
+| `/dashboard/platform/customers`, `/[id]` | `canManageUsers` | Customer directory and detail with recent orders; provision a customer account | `groceryPlatformCustomers`, `groceryPlatformCustomer`, `provisionGroceryCustomer` |
+| `/dashboard/platform/subscriptions` | `canManageOrders` | Recurring baskets and preparation history; run due baskets; configure the loyalty program | `groceryRecurringOverview`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty` |
+| `/dashboard/platform/staff` | `canManageUsers` | Staff directory, invitations, capability changes, review customer erasure requests | `groceryStaffDirectory`, `inviteGroceryStaff`, `revokeGroceryStaffInvitation`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure` |
+| `/dashboard/platform/settings` | `canManageOnboarding` | Store profile, address, contact, hours, delivery policy and postal prefixes, tax rate, logo, brand hue | `groceryPlatformSettings`, `updateGroceryStoreProfile`, `updateGroceryDeliveryPolicy`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue` |
+| `/dashboard/platform/reports` | `canManagePayments` | Close a trading period, import a settlement statement CSV, review matches, export a close | `groceryFinancialCloses`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch`, `groceryFinancialCloseExport` |
+| `/dashboard/platform/messages` | `canManageOrders` | Customer inbox for Help-page messages, with status and internal notes | Generated `contactMessages`, `updateContactMessage` |
+| `/dashboard/platform/communications` | `canManageOnboarding` | Queued customer emails and outbox event health; send now, replay, or reconcile | `groceryOutboxStatus`, `deliverGroceryOutboxNow`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery` |
+
+Onboarding is not a route. It is a dialog and cards in the dashboard layout (`features/platform/onboarding`) that call `runGroceryOnboarding`.
+
+Lists without a dedicated page, such as `Role`, `Recipe`, `LoyaltyTransaction`, or `PaymentProvider`, use the generic Keystone pages at `/dashboard/<list-key>`, `/dashboard/<list-key>/create`, and `/dashboard/<list-key>/<id>`. Auth pages are `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, and `/dashboard/no-access`.
+
+## Notes for a custom dashboard
+
+- Projections and commands recheck the user's current Store and capability from the database. Do not rely on the session snapshot alone.
+- Lifecycle changes go through the named commands. Generated updates to order status, lot quantities, and role fields are blocked or restricted.
+- Most commands take an `idempotencyKey`. Reuse it on retry.
+- Server actions in each slice (`actions.ts`, `features/platform/lib/taskActions.ts`) show the exact GraphQL documents the built-in pages send.

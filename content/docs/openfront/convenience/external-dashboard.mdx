@@ -6,3 +6,44 @@ description: Give an LLM the Convenience dashboard skill to adapt the built-in e
 To create a custom Convenience dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Convenience's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Convenience codebase before proposing work.
+
+Skill file: [`/skills/openfront-convenience-custom-dashboard/SKILL.md`](/skills/openfront-convenience-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+All routes are under `/dashboard/platform`. Route files in `app/dashboard/(admin)/platform/**` are thin; each page lives in the matching `features/platform/<slice>` folder. Pages read through `conveniencePlatformProjection` or list queries and write through the named mutations. The sidebar groups them as listed in `features/platform/lib/navigation.ts`.
+
+| Page | Route | What operators do there |
+|---|---|---|
+| Overview | `/platform` | Today's net sales, transactions, refunds, open drawers, people on shift, and a "needs you" list |
+| POS & Cash | `/platform/pos` | Checkout (scan, basket and tender), till and shift, corrections, refunds and voids, receipts, offline queue |
+| Receipt print | `/platform/pos/receipt/[saleId]` | Printable receipt for one sale |
+| Store Settings | `/platform/store-settings` | Public name, logo, colors, location, hours, draft or published; add or retire registers and stock locations |
+| Sales | `/platform/sales`, `/platform/sales/[id]` | Receipts by status; lines, tenders, refunds, returns, ID checks, promotions; links to refund or void |
+| Tills | `/platform/tills`, `/platform/tills/[id]` | Till sessions by status; cash movements, sales, expected and counted cash, over/short |
+| Staff | `/platform/staff`, `/platform/staff/[id]` | Add staff with a temporary password; role, stores, status, shifts, tills |
+| Fuel | `/platform/fuel` | Price board, site setup, topology, prices, tank readings, deliveries, payment authorization, dispense records, wet-stock reconciliation |
+| Reconciliation | `/platform/reconciliation` | Generate and approve store days; prepare, move, and verify bank deposits |
+| Exceptions | `/platform/exceptions` | Evaluate controls; acknowledge, resolve, or dismiss operational alerts |
+| Recovery | `/platform/recovery` | Offline devices and replay batches, dead-letter outbox replay, store-scoped machine keys |
+| Products | `/platform/products`, `/platform/products/[id]` | Catalog list; variants, barcodes, photos, prices, stock by location, vendor items, recent movements; edit, add variant, retire |
+| Stock | `/platform/stock` | Stock by location; low stock, negative, and expiring lots |
+| Inventory | `/platform/inventory` | Counts, count lines and approval, adjustments, transfers between stores |
+| Purchasing | `/platform/purchasing` | Vendors, vendor items, draft and transition orders, receive deliveries |
+| Vendors | `/platform/vendors`, `/platform/vendors/[id]` | Supplier list; items and orders for one vendor |
+| Purchase Orders | `/platform/purchase-orders`, `/platform/purchase-orders/[id]` | Orders by status and due date; lines, received quantities, receivings; submit, approve, cancel, receive |
+| Pricing | `/platform/pricing` | Prices, catalog items, tax rates, promotions |
+| Promotions | `/platform/promotions` | Promotions by status, window, and use; links to the Pricing form |
+| Foodservice | `/platform/foodservice` | Recipes, prep batches, waste, expired output |
+| Restricted Sales | `/platform/restricted-sales` | Age policies, ID check records, incidents |
+| Lottery | `/platform/lottery` | Games, packs, sold ranges, returns, daily settlement |
+| Money Services | `/platform/money-services` | Providers, confirmed transactions, voids, settlement |
+| Payments | `/platform/payments` | Payment providers (`manual_external` or `hmac_json_v1`), settlement reconciliation |
+| Customers | `/platform/customers`, `/platform/customers/[id]` | Loyalty members; balance, points activity, purchases, adjust points |
+| Loyalty | `/platform/loyalty` | Program, members, ledger, enroll, adjust, expire due points |
+| Reports | `/platform/reports` | Period summary from `convenienceReportingSummary`, by store |
+| Exports | `/platform/exports` | Accounting destinations, generated batches, CSV download, mark delivered or failed |
+
+Other dashboard routes come from `features/dashboard`: `/dashboard` (home), `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]` for generic Keystone lists, plus `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, and `/dashboard/no-access`. Onboarding is a dialog in the dashboard layout, not a route.
+
+Lists with no page of their own, such as `AuditEvent`, `IdempotencyKey`, `OperationalHeartbeat`, and `Role` permissions, are only visible in the generic list views.

@@ -5,27 +5,43 @@ description: Deploy Openfront Ecommerce with explicit migration, secret, provide
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront Ecommerce needs a Node.js runtime and persistent PostgreSQL. S3-compatible storage, email, payment, shipping, AI and marketplace secrets depend on the features you enable.
+Openfront Ecommerce needs a Node.js 20+ runtime, persistent PostgreSQL and S3-compatible storage. Email, payment, shipping and AI settings depend on the features you enable. See [Getting started](/docs/openfront/ecommerce/getting-started) for the full variable list.
+
+## Scripts
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`. No migration step. |
+| `npm run migrate`, `npm run release:migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run dev` | Builds the schema, migrates, and starts the dev server. Do not use it against production. |
 
 <Callout type="warn">
-The repository's `npm run build` currently generates the Keystone schema, deploys Prisma migrations, and runs the Next.js build. Do not let multiple build workers race to migrate production. Split migration ownership into one reviewed release job where your host permits it.
+Run `npm run migrate` once per release, from one process. Do not let several instances migrate on start at the same time.
 </Callout>
 
-## Required planning
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because Railway's build step cannot reach an internal database. If you scale to several instances, move the migration into a single release step. The README also has a Vercel import button. There is no Dockerfile in the repository.
 
-1. Pin and review the exact source revision.
-2. Generate the Keystone/Prisma schema and run static checks.
-3. Back up production and test every pending migration on a realistic disposable clone.
-4. Supply `DATABASE_URL` and a random `SESSION_SECRET` through the host's secret manager.
-5. Supply only the provider/storage/email variables used by the deployment.
-6. Apply migrations once, deploy, then run anonymous, authenticated and wrong-owner checks.
-7. Verify checkout totals, inventory, provider signatures/replay, fulfillment, refund and failure recovery.
-8. Keep an application rollback and database forward-recovery plan.
+## Required production settings
 
-## Hosting buttons
+- `DATABASE_URL` and a random `SESSION_SECRET` of at least 32 characters.
+- All five `S3_*` variables. `features/keystone/index.ts` throws when one is missing and `NODE_ENV=production`.
+- `NEXT_PUBLIC_BACKEND_URL` when the public origin differs from what the request headers report.
+- `TRUSTED_PROXY_IPS` if API-key IP restrictions must see the real client IP behind a proxy.
+- Share the same database, `SESSION_SECRET`, `CREDENTIAL_PEPPER` and storage across every instance. Cart proofs and hashed tokens depend on the secret.
 
-The source repository and catalog may provide Railway, Vercel or other convenience templates. They can create infrastructure, but they cannot verify your migration history, database sizing, object storage, background work, provider webhooks, security headers, backups or compliance needs.
+## Background work
 
-Openfront can run on a Node-capable host with PostgreSQL if those requirements are met. “Deploy succeeded” is not the same as “commerce workflow is safe.”
+There is no background worker. Outgoing webhooks are delivered when the triggering change happens. Failed deliveries are retried only when an operator calls the `retryWebhookDeliveries` mutation.
 
-Before putting customer or payment data into the instance, verify authorization, credentials, webhooks, concurrency, migrations, backups, restoration, and rollback against the exact release.
+## Release checklist
+
+1. Pin and review the source revision.
+2. Back up production. Test pending migrations on a copy.
+3. Build, migrate once, then start.
+4. Check `/dashboard` sign-in, the storefront country redirect, and `/api/graphql`.
+5. Run a checkout with each enabled payment provider in its sandbox, including the webhook at `/api/payment-webhooks/<providerId>`.
+6. Check fulfillment, label, return and refund paths you plan to use.
+7. Keep an application rollback and a database recovery plan.
+
+A successful deploy only shows that the app started. It does not show that checkout, webhooks or refunds work in your environment.

@@ -1,0 +1,119 @@
+---
+title: Financial architecture and workflows
+description: Source layout, the 53 Keystone lists, the main operator workflows, and the named GraphQL operations behind them.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Source layout
+
+| Path | What lives there |
+|---|---|
+| `features/keystone/models/**` | 53 Keystone lists and their access rules |
+| `features/keystone/mutations/index.ts` | The GraphQL extension: custom queries and mutations |
+| `features/keystone/lib/**` | Lifecycle modules: `financialLifecycle`, `ledgerLifecycle`, `complianceLifecycle`, `agentOrchestrationLifecycle`, `institutionConnectionLifecycle`, `institutionSyncLifecycle`, `providerImportLifecycle`, `providerObservationLifecycle`, `machineCredentialLifecycle`, `brokerSyncLifecycle` |
+| `features/brokerages/**` | Brokerage adapter interface, registry, and the Alpaca paper adapter |
+| `features/platform/<slice>` | Operator console slices (screens, server actions, GraphQL documents) |
+| `features/storefront/**` | Client portal screens, components, and data loaders |
+| `features/dashboard/**` | Shared Keystone dashboard shell, auth pages, AI chat |
+| `app/**` | Thin route files and HTTP endpoints |
+| `docs/schema-map.md` | The repository's own map of lists, workflows, and page coverage |
+
+## Data model
+
+Creators: **C** customer through the portal, **O** operator through the console, **S** system (lifecycle mutation, sync, or seed), **A** machine credential.
+
+| Area | Lists | Notes |
+|---|---|---|
+| Market data | `Asset`, `PriceHistory`, `BrokerAdapter`, `MarketDataSyncRun` | `Asset` and `PriceHistory` allow generic writes for `canManageIntegrations`. Public queries read assets with elevated access. |
+| Connections and imports | `InstitutionProvider`, `BrokerageConnection`, `ConnectionConsentEvent`, `ProviderImportRun`, `FinancialTransaction`, `WebhookEvent` | Connections hold an opaque `credentialReference` that is not exposed through GraphQL. Consent events are append-only. |
+| Accounts and positions | `BrokerageAccount`, `Position`, `PortfolioSnapshot`, `BankAccount` | Accounts and positions have virtual live-value fields. Banks are verified by simulated micro-deposits. |
+| Trading | `Order`, `OrderFill`, `Trade` | Orders are placed by C, O, or through an approved agent proposal. Delete is blocked. |
+| Funding | `Transfer`, `DepositWithdrawal` | `DepositWithdrawal` is a legacy list with no write path; it is hidden. |
+| Ledger | `LedgerEntry`, `LedgerAccount`, `LedgerJournal`, `LedgerPosting` | `LedgerEntry` is the client-facing activity line. Journals are balanced double-entry records; reversals link to the original journal. |
+| Income and statements | `Dividend`, `TaxLot`, `AccountStatement` | Created by onboarding only. `TaxLot` has no write path yet and is hidden. |
+| Approvals and agents | `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `AgentProposal`, `ExecutionEvidence`, `OutboxEvent`, `MachineCredential`, `MachineCredentialEvent` | Decisions, evidence, and credential events are append-only. |
+| Compliance and audit | `KycCheck`, `RiskProfile`, `ComplianceCase`, `ComplianceReview`, `PortfolioAlert`, `FinancialAuditLog` | Every compliance transition appends a `ComplianceReview`. |
+| Advisory and social | `TradeRecommendation`, `AIAdvisorConfig`, `PublicProfileSettings`, `FollowedTrader`, `FollowedTrade`, `Watchlist` | Owners can update advisor rules, public profile, watchlists, and followed traders. |
+| Shell | `User`, `Role`, `PlatformSettings` | `PlatformSettings` holds store identity, logo, currency, and the paper-trading flag. |
+
+<Callout>
+Nearly every financial list sets generic create, update, and delete to `false`. A custom client cannot write these records through generated CRUD. It must call the named mutations below.
+</Callout>
+
+## Workflows
+
+### Instruments and quotes
+
+An operator with `canManageIntegrations` creates or edits an `Asset` and turns trading on or off at `/dashboard/platform/instruments`. `recordBrokerSyncRun` records a `MarketDataSyncRun` against a `BrokerAdapter`. `PriceHistory` feeds charts. The portal reads quotes through `publicMarketQuotes` and `publicMarketQuote`. No code in the source refreshes `Asset` prices from a provider.
+
+### Connect, consent, import, reconcile
+
+1. `provisionInstitutionConnection` creates a `BrokerageConnection` for a sandbox provider, with scopes, a consent policy version, and an optional credential reference. Only providers with status `sandbox` and no execution support are accepted.
+2. `recordConnectionConsent` grants or revokes consent. `rotateInstitutionCredential` replaces the reference.
+3. `syncInstitutionConnection` (needs `canManageIntegrations`) works only for the `alpaca-paper` provider. It resolves paper credentials from the environment, reads accounts, positions, and 90 days of activity, and calls `importProviderSnapshot`.
+4. `importProviderSnapshot`, `admitProviderObservation`, and `reviewProviderObservation` write a `ProviderImportRun` and the imported accounts, positions, and `FinancialTransaction` rows. Observations can be admitted for review instead of applied directly.
+5. `reconcileProviderTransaction` marks a transaction `matched` or `needs_review` with a reason and returns an immutable receipt.
+
+### Order, approval, fill, ledger
+
+1. `placeFinancialOrder` checks account ownership, KYC and risk-profile status, margin permission, excluded symbols, and the advisor's maximum position size.
+2. If an active `ApprovalPolicy` for orders covers the amount, the order is refused until `requestOrderApproval` creates an `ApprovalRequest` and someone else approves it with `decideApprovalRequest`.
+3. Market orders are filled by a local simulation by default. `simulateOrderFill` fills open orders from the console. A fill writes `OrderFill`, `Trade`, updates `Position`, and posts `LedgerEntry` rows and a balanced `LedgerJournal`.
+4. `cancelFinancialOrder` cancels an open order.
+
+### Funding
+
+1. A customer links a bank with `linkOwnedBankAccount`. Two random micro-deposit amounts are generated and stored as a hash; the customer confirms them with `verifyOwnedBankAccount`. No bank is contacted.
+2. `requestFinancialTransfer` creates a pending deposit or withdrawal between an owned, active bank and brokerage account.
+3. An operator with `canOperateFinancial` settles it with `processFinancialTransfer` (`complete`, `fail`, or `reverse`). When an active transfer policy covers the amount, completion needs an approved, unexpired `ApprovalRequest` decided by someone other than the requester and the settling operator. Reversal of such a transfer is refused outright, because the source has no reversal-specific approval yet. Settlement posts ledger entries and journals and changes the recorded cash balance.
+
+### Books, income, and statements
+
+Every lifecycle mutation posts balanced journals through `ledgerLifecycle`. `/dashboard/platform/ledger` shows the chart of accounts and journals. `/api/platform/statements?month=YYYY-MM` exports ledger entries and snapshots as CSV for one month, capped at 1000 rows. Dividends, tax lots, and statements are read-only and come from onboarding.
+
+### Approvals, agents, and delivery
+
+- `upsertApprovalPolicy` (needs `canApproveFinancial`) sets thresholds for `order`, `transfer`, or `agent_action`.
+- `proposeAgentAction` records an `AgentProposal`. `decideAgentProposal` approves or rejects it. `executeApprovedAgentProposal` runs it and writes `ExecutionEvidence`. `recoverAgentProposal` recovers a stuck proposal.
+- Domain events go to `OutboxEvent`. `claimOutboxEvents` leases events to a worker and `recordOutboxDelivery` acknowledges them. `recoverDeliveryEvent` re-queues failed outbox or webhook events.
+- `issueMachineCredential`, `rotateMachineCredential`, and `revokeMachineCredential` (need `canManageMachineCredentials`) manage scoped API keys. The token is returned once.
+
+### Compliance
+
+`transitionComplianceRecord` moves records through fixed transitions with a reason:
+
+| Record | Transitions |
+|---|---|
+| `KycCheck` | `pending` to `manual_review`, `passed`, or `failed`; `manual_review` to `passed` or `failed` |
+| `RiskProfile` | `draft` to `submitted`; `submitted` to `approved` or `rejected` (approval can set options and margin); `approved` or `rejected` to `superseded` |
+| `ComplianceCase` | `open` to `investigating` (with assignee); `investigating` to `closed` |
+
+A failed or expired KYC check, or a rejected or superseded risk profile, blocks new orders.
+
+### Advisory
+
+`processTradeRecommendation` approves a `TradeRecommendation` (which places an order) or rejects it. Operators edit `AIAdvisorConfig` and `PublicProfileSettings` and pause, resume, or remove `FollowedTrader` records. No code in the source generates recommendations or fetches trades from followed instances.
+
+## Named GraphQL operations
+
+Custom queries:
+
+`publicFinancialIdentity`, `publicMarketAssets`, `publicMarketAsset`, `publicMarketQuotes`, `publicMarketQuote`, `ownedBrokerageConnections`, `ownedBrokerageAccounts`, `ownedBankAccounts`, `ownedPortfolio`, `ownedOrders`, `ownedTransfers`, `ownedLedgerEntries`, `ownedStatements`, `ownedProviderImports`, `ownedFinancialTransactions`, `ownedAgentProposals`, `ownedApprovalRequests`, `ownedLedgerJournals`, `providerObservation`, `providerObservationCommand`, `previewProviderObservationCommand`, `redirectToInit`.
+
+Custom mutations:
+
+| Area | Mutations |
+|---|---|
+| Account and settings | `updateActiveUser`, `updateActiveUserPassword`, `upsertPlatformSettings`, `runFinancialOnboarding` |
+| Banks and watchlists | `linkOwnedBankAccount`, `verifyOwnedBankAccount`, `deactivateOwnedBankAccount`, `setActiveUserPrimaryBankAccount`, `changeOwnedWatchlistSymbol` |
+| Orders | `placeFinancialOrder`, `simulateOrderFill`, `cancelFinancialOrder`, `processTradeRecommendation` |
+| Transfers | `requestFinancialTransfer`, `processFinancialTransfer` |
+| Connections and imports | `provisionInstitutionConnection`, `recordConnectionConsent`, `rotateInstitutionCredential`, `syncInstitutionConnection`, `importProviderSnapshot`, `admitProviderObservation`, `reviewProviderObservation`, `reconcileProviderTransaction`, `recordBrokerSyncRun` |
+| Approvals and agents | `upsertApprovalPolicy`, `requestOrderApproval`, `requestTransferApproval`, `decideApprovalRequest`, `proposeAgentAction`, `decideAgentProposal`, `executeApprovedAgentProposal`, `recoverAgentProposal` |
+| Delivery | `claimOutboxEvents`, `recordOutboxDelivery`, `ingestSignedFinancialWebhook`, `recordWebhookProcessing`, `recoverDeliveryEvent` |
+| Machine credentials | `issueMachineCredential`, `rotateMachineCredential`, `revokeMachineCredential` |
+| Compliance | `transitionComplianceRecord` |
+
+Client documents in the source use stable operation names. The portal uses names like `StorefrontPlaceOrder`, `StorefrontRequestTransfer`, `StorefrontPortfolio`, and `StorefrontStatements`. The console uses names like `PlatformSimulateOrderFill`, `PlatformProcessTransfer`, `PlatformReconcileTransaction`, `PlatformTransitionCompliance`, `PlatformUpsertApprovalPolicy`, `OperatorDecideApproval`, `OperatorSyncConnection`, and `OperatorIssueMachineCredential`.

@@ -1,0 +1,159 @@
+---
+title: Getting started with Airline
+description: Install Openfront Airline, configure PostgreSQL and storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You can try the app first on the live demo at [airline.openship.org](https://airline.openship.org). The storefront is at `/` and the operator dashboard at `/dashboard`.
+
+## Requirements
+
+- Node.js 20.9 or later (`package.json` engines). The README recommends Node.js 22.
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage for production. Development falls back to local defaults.
+- An SMTP server if you want password resets and booking access recovery emails.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-airline.git
+cd openfront-airline
+npm install
+```
+
+## Configure `.env`
+
+Copy the example file and fill in real values:
+
+```bash
+cp .env.example .env
+```
+
+The minimum for local development:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_airline
+SESSION_SECRET=replace-with-at-least-32-random-characters
+```
+
+`SESSION_SECRET` must be at least 32 characters. Generate one with `openssl rand -hex 32`. Never commit `.env`.
+
+Object storage. All five are required in production. Outside production they default to a local MinIO-style setup:
+
+```bash
+S3_BUCKET_NAME=
+S3_REGION=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=https://objects.example
+```
+
+Other variables the code reads:
+
+| Variable | Purpose |
+|---|---|
+| `APP_BASE_URL` | Trusted public origin used for internal GraphQL calls. No path, credentials, query, or fragment. |
+| `PUBLIC_APP_URL` | Public origin. In production it must match `APP_BASE_URL` and `SMTP_STORE_LINK`. |
+| `STOREFRONT_CARRIER_CODE` | Two- or three-character carrier code the storefront sells for. If unset, the first carrier is used. |
+| `TRAVEL_DOCUMENT_TOKENIZATION_KEY` | HMAC key (32+ characters) for travel-document tokens. Falls back to a key derived from `SESSION_SECRET` outside production. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Outgoing mail. Booking access recovery is off unless `SMTP_HOST` and `SMTP_FROM` are set. |
+| `SMTP_STORE_LINK` | Public storefront URL used in emails and Stripe return links. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open `/dashboard/signup`. Off by default. |
+| `TRUSTED_PROXY_IPS` | Comma-separated proxy addresses trusted for client IPs in rate limiting. |
+| `OUTBOUND_WEBHOOK_HOSTS` | Comma-separated hosts allowed for outbound webhook endpoints. |
+| `ALERT_WEBHOOK_URL` | Where the worker posts alerts when dead-lettered outbox events appear. |
+| `REQUIRED_WORKER_ID`, `OUTBOX_WORKER_ID` | Worker identity. `/api/health` reports whether this worker's heartbeat is fresh. |
+| `BACKUP_RETENTION_DAYS`, `BACKUP_POLICY_VERIFICATION_ID` | Required by the production runtime check. Retention must be at least 30. |
+| `ALLOW_INCOMPLETE_LAUNCH_SETUP` | In production, `true` keeps public sales commands closed while you finish setup. |
+| `AI_ASSISTANT_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional dashboard AI chat and MCP endpoint. MCP returns 404 in production unless enabled. |
+| `INITIAL_CARRIER_NAME`, `INITIAL_CARRIER_LEGAL_NAME`, `INITIAL_CARRIER_CODE`, `INITIAL_CURRENCY_CODE`, `INITIAL_TIMEZONE` | Optional values for the carrier created with the first user. Defaults: Avante Air, `AV`, USD, America/New_York. |
+| `AIRLINE_WEBHOOK_SECRET_<NAME>` | Webhook signing secrets, referenced by name from provider or connection configuration. |
+
+## Apply migrations
+
+The repository has checked-in Prisma migrations under `migrations/`. Review them, then apply:
+
+```bash
+npm run migrate
+```
+
+<Callout type="warn">
+`npm run dev` builds the Keystone schema, runs `npm run migrate`, and then starts Next.js. It changes whatever database `DATABASE_URL` points to. Do not run it against a shared or production database by accident.
+</Callout>
+
+Start development:
+
+```bash
+npm run dev
+```
+
+The storefront is at `/`, the dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
+
+To create a new migration after a model change, use `npm run migrate:gen` against a disposable database. It runs a migration-safety check before applying.
+
+## Create the first user
+
+On an empty database, open `/dashboard/init`. Enter a name, email, and a password of at least 10 characters. This creates the user, a carrier (from the `INITIAL_*` values or the Avante Air defaults), and an "Initial Carrier Administrator" role with every permission. Direct sales start turned off. Once any user exists, `/dashboard/init` is closed.
+
+Two script alternatives exist:
+
+- `npm run bootstrap:production` creates the first admin and carrier from `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` (16+ characters), `BOOTSTRAP_CARRIER_NAME`, `BOOTSTRAP_CARRIER_CODE`, and optional `BOOTSTRAP_CURRENCY_CODE` and `BOOTSTRAP_TIMEZONE`. It requires `BOOTSTRAP_CONFIRM=create-first-airline-admin` and empty user, carrier, and role tables.
+- `npm run seed:runtime` seeds a local Avante Air carrier, a JFK-BOS flight, inventory, seats, a passenger, and the settlement boundary. It refuses to run in production and only targets loopback databases named `runtime_airline*`. It needs `ALLOW_RUNTIME_SEED=1` and `RUNTIME_ADMIN_PASSWORD` (16+ characters) when it creates the admin.
+
+## Onboarding
+
+After sign-in, the dashboard shows an onboarding dialog with two templates:
+
+- **Full demo network.** Avante Air from New York JFK with four nonstop city pairs (Boston, Chicago, Miami, Los Angeles), both directions, daily for 14 days. It also sets storefront branding and contact details and turns on direct sales. Each step calls the same commands an operator would use (`updateCarrierStorefrontSettings`, `completeCarrierOnboarding`, `provisionDatedFlight`), so a rerun only fills gaps.
+- **Custom launch.** Enter your carrier identity and first sellable flight: carrier name and code, currency (USD, EUR, GBP, CAD, or AUD), timezone, origin and destination, flight number, date, times, capacity, and fare.
+
+The same form is at `/dashboard/onboarding`. `completeCarrierOnboarding` creates or reuses airports from a built-in catalog of 45 airports, a route, a schedule, an Economy cabin, a Standard fare brand with one checked bag, a dated flight with inventory and seats, a station assignment for you at the origin, a manual payment provider, and a local settlement-import connection.
+
+It then records six steps: carrier identity, route and catalog, dated service, station authorization, settlement evidence, and launch review. Launch review completes only when:
+
+- the carrier is active with direct sales on,
+- the dated flight and bucket are sellable,
+- your station assignment allows check-in, bags, and boarding,
+- at least two users have `canManagePayments`, and
+- an active settlement-import machine credential with `settlements:write` exists (issued from the onboarding form).
+
+To actually sell, the storefront also needs a homepage title, description, and brand colour from Storefront settings.
+
+## Run checks
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+```
+
+`npm run test:integration` runs database tests. Point it only at a disposable database.
+
+## Deploy
+
+Build, migrate as a separate release step, then start:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`npm run build` does not apply migrations. Back up existing data before migrating.
+
+Run the worker as its own process:
+
+```bash
+npm run worker
+```
+
+The repository includes `railway.toml` (web: migrate then `next start`) and `railway.worker.toml` (worker). The README has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. You still need `S3_ENDPOINT` and the rest of the production configuration.
+
+In production the worker runs a runtime check before starting. It requires the full list of production variables above, HTTPS for the public URLs, and a storefront carrier that has finished onboarding with two payment operators, an evidence-only manual provider, and a settlement-import credential and connection. Set `ALLOW_INCOMPLETE_LAUNCH_SETUP=true` to relax the carrier checks while you set up. Public sales stay closed while it is on.
+
+<Callout type="warn">
+In current code the production runtime check refuses any active payment provider that is not `manual`. If you activate a Stripe provider, the production worker will not start. Test this on your own deployment before relying on online card payment.
+</Callout>

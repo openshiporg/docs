@@ -6,3 +6,55 @@ description: Give an LLM the Gym storefront skill to adapt the built-in experien
 To create a custom Gym storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Gym's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Gym codebase before proposing work.
+
+Skill file: [`/skills/openfront-gym-custom-storefront/SKILL.md`](/skills/openfront-gym-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/(browse)/` (plus `app/(storefront)/classes/[id]` and `app/(storefront)/instructors/[id]`), `app/member/`, and `app/kiosk/`. Logic lives in `features/storefront` (`screens`, `modules`, `lib/data`, `lib/actions`), with the check-in code in `features/member` and the kiosk in `features/kiosk`.
+
+| Route | Visitor or member journey |
+|---|---|
+| `/` | Home: hero, stats, and promo text from store settings |
+| `/classes`, `/classes/[id]` | Class types with search and filters; class type detail with upcoming sessions |
+| `/schedule` | Dated sessions with coach, class, and search filters; live seat availability; book or join the waitlist |
+| `/memberships` | Plan comparison from `publicGymMembershipTiers` |
+| `/join`, `/join/success`, `/join/cancelled` | Pick a plan and cycle, sign in or sign up, accept participation terms, then Stripe checkout; success calls `completeMembershipCheckout` |
+| `/memberships/signup` | Redirects to `/join` with the same tier and cycle |
+| `/instructors`, `/instructors/[id]` | Coach list and profile (qualification names only) |
+| `/facilities` | Facility copy and highlights from store settings |
+| `/policies` | Bookings and waitlists, class credits and billing, participation and privacy, arriving, personal training |
+| `/waiver` | The participation terms published in Store Settings |
+| `/contact` | Contact form (`submitContactForm`) |
+| `/forgot-password`, `/reset-password` | Password reset by email |
+| `/account` (login slot) | Sign in; sign up when `PUBLIC_MEMBER_SIGNUPS_ALLOWED=true` |
+| `/account` (dashboard slot) | Overview with credits and next bookings |
+| `/account/bookings` | Upcoming and past bookings; cancel a booking |
+| `/account/membership` | Plan details; cancel renewal, freeze, resume; open the Stripe billing portal |
+| `/account/profile` | Profile, emergency contact, health notes, password, email change |
+| `/account/participation` | Accept the current participation terms |
+| `/account/training` | Training packages, appointments (book, reschedule, cancel), coaching assignments |
+| `/account/instructor` | For users whose role has `isInstructor`: own sessions and qualifications |
+| `/account/confirm-email` | Confirm an email change |
+| `/portal` | Redirects to `/account` |
+| `/member/check-in-code` | QR code for check-in, refreshed every 30 seconds; needs `QR_CODE_SECRET` |
+| `/member/profile` | Member details page |
+| `/kiosk`, `/kiosk/check-in` | Staff-unlocked kiosk: member search, member check-in, guest check-in |
+
+## Named operations used by the storefront
+
+Queries: `StorefrontGymSettings`, `StorefrontClassTypes`, `StorefrontClassType`, `StorefrontClassTypePage`, `StorefrontSchedules`, `StorefrontSchedule`, `StorefrontInstances`, `StorefrontInstance`, `StorefrontSelectedOccurrence`, `StorefrontAvailability`, `StorefrontInstructors`, `StorefrontInstructor`, `StorefrontInstructorPage`, `StorefrontInstructorSchedules`, `StorefrontMembershipTiers`, `StorefrontMembershipTier`, `StorefrontMembershipTierPage`, `StorefrontGetUser`, `StorefrontAuthenticatedUser`, `StorefrontBookings`, `StorefrontUpcomingBookingPage`, `StorefrontBookingHistoryCount`, `StorefrontParticipation`, `StorefrontSignInOrganization`, `StorefrontResetOrganization`, `BookingMember`, `MemberProfile`, `MemberCheckInCode`, `InstructorAccount`.
+
+Mutations: `StorefrontLogin`, `StorefrontAutoSignIn`, `StorefrontRegisterMember`, `StorefrontPasswordReset`, `StorefrontRedeemReset`, `StorefrontSignInAfterReset`, `StorefrontUpdateProfile`, `UpdateMemberProfile`, `StorefrontChangePassword`, `StorefrontRequestEmailChange`, `StorefrontConfirmEmailChange`, `StorefrontAcceptParticipation`, `BookClass`, `CancelClassBooking`, `CancelMembership`, `FreezeMembership`, `ResumeMembership`, `OpenBillingPortal`, `SubmitContactForm`. Checkout uses `initiateMembershipCheckout` and `completeMembershipCheckout` from `features/integrations/payment/membership-checkout.ts`. The `/account/training` page reuses the staff training actions in `features/platform/training/actions/training.ts` (`trainingWorkspace`, `bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment`), sent through `beginStaffIntent` so a retry is never applied twice.
+
+Kiosk API routes (`/api/kiosk/session`, `/api/kiosk/search-member`, `/api/kiosk/check-in`, `/api/kiosk/guest-check-in`) call `authorizeKioskSession`, `KioskSearch`, `KioskCheckIn`, and `KioskGuestCheckIn`.
+
+## Journey boundaries
+
+- The storefront serves one organization. Set `STOREFRONT_ORGANIZATION_ID` when the database has more than one.
+- Public queries return only catalog data. Member, booking, and payment data need a signed-in session and are checked against the member's own records.
+- Booking needs an active membership with remaining class credits. The server decides confirmed versus waitlist.
+- Online joining needs Stripe configured and a plan with Stripe price IDs. Otherwise the join page cannot take payment and members join at the front desk.
+- Member signup is off unless `PUBLIC_MEMBER_SIGNUPS_ALLOWED=true` and both organization IDs match.
+- Training packages cannot be bought on the storefront. Members book appointments only against a package staff sold them.
+- The kiosk needs `KIOSK_API_TOKEN` and `KIOSK_ORGANIZATION_ID`. Treat it as a staffed device; it does not control doors.

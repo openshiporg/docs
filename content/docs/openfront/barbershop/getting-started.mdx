@@ -1,0 +1,141 @@
+---
+title: Getting started with Barbershop
+description: Clone the source, configure PostgreSQL, sessions, storage and optional services, run migrations, create the first user, and run onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+To look around before installing, open the live demo at [barbershop.openship.org](https://barbershop.openship.org).
+
+## Requirements
+
+- Node.js 20 or later (`package.json` sets `"node": ">=20.0.0"`; the README suggests Node.js 22).
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- An S3-compatible bucket for service, barber, and product images.
+- Optional: an SMTP account for password reset, booking, and reminder emails.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-barbershop.git
+cd openfront-barbershop
+npm install
+```
+
+## Configure `.env`
+
+The repository has no `.env.example`. Create `.env` in the repository root. Never commit it.
+
+```bash
+# Required
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_barbershop
+SESSION_SECRET=replace-with-at-least-32-random-characters
+
+# Image storage (S3-compatible)
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-endpoint
+```
+
+`features/keystone/utils/runtimeConfig.ts` checks the two required values at startup:
+
+- `DATABASE_URL` must be a `postgres:` or `postgresql:` URL.
+- `SESSION_SECRET` must be at least 32 characters. Generate one with `openssl rand -hex 32`.
+
+If the `S3_*` variables are missing, Keystone falls back to placeholder defaults, and image uploads will not work. Set all five.
+
+Other variables the code reads:
+
+| Variable | Used for |
+|---|---|
+| `APP_ORIGIN` or `NEXT_PUBLIC_APP_URL` | The app's public origin, used for Stripe return URLs, `robots.txt`, and the sitemap. In production one of these (or `RAILWAY_PUBLIC_DOMAIN`) must be set, and it must be HTTPS. Locally it defaults to `http://127.0.0.1:` plus `PORT` (default 3000). |
+| `RAILWAY_PUBLIC_DOMAIN` | Fallback origin on Railway. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Outgoing email. Without host, user, and password, no email is sent and dashboard password reset is unavailable. |
+| `SMTP_STORE_LINK` | Absolute base URL used in password reset links. |
+| `STRIPE_SECRET_KEY` | Enables Stripe Checkout for online booking deposits. Server only. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open the dashboard sign-up page at `/dashboard/signup`. Off by default. |
+| `ENABLE_AI_TOOLS` | Set to `true` to enable `/api/completion` and the MCP endpoint. Off by default. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard AI assistant. |
+| `NEXT_PUBLIC_VIEW_ORDER` | Optional JSON array of dashboard field views, used only when the generated Keystone view-order file is not available. |
+
+## Run migrations and start
+
+The repository has 37 Prisma migrations in `migrations/`.
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate` (`prisma migrate deploy`), then `next dev`.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever database `DATABASE_URL` points at. Use a local or disposable database while you evaluate the app.
+</Callout>
+
+Then open:
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+
+## Create the first user
+
+On an empty database, every request redirects to `/dashboard/init`. That form creates the first user with an `Admin` role that has every permission flag. Sign in with it.
+
+After that, staff accounts come from:
+
+- the dashboard sign-up page, only when `PUBLIC_SIGNUPS_ALLOWED=true`;
+- the storefront account page (`/account`), which creates a customer login with no role and no shop access;
+- the generic `/dashboard/users` list, for users with people management rights.
+
+To give someone access to a shop, an owner or manager adds their existing account by email on `/dashboard/platform/team`. Managers can grant only `front_desk`, `barber`, or `viewer`.
+
+## Onboarding
+
+When the signed-in user has `canManageOnboarding`, the dashboard shows an onboarding dialog. It asks for the shop name, address, phone, and timezone, and offers two modes:
+
+- **Full setup:** the shop, a booking policy, a no-show policy, the manual payment provider (`pp_manual`), 3 service categories, 6 services, 3 barbers with chairs and weekly hours, 2 packages, 2 membership plans, 3 retail products, and 1 supplier.
+- **Minimal setup:** the shop, the manual payment provider, a booking policy, 2 categories, up to 3 services, 1 barber with hours, 1 product, and 1 supplier. No no-show policy, packages, or memberships.
+
+The data comes from `features/platform/onboarding/lib/seed.json` (a sample shop named Stack & Fade). It runs through the `runBarbershopOnboarding` mutation.
+
+How it behaves:
+
+- If the user already owns one active shop, onboarding fills that shop. If they own several, they must select one first.
+- Otherwise it creates a new shop, makes the user its `owner`, and sets it as their active shop. The new shop is made public only if no other active shop is public.
+- Records are found or created, so running it again reuses existing rows.
+- It writes configuration only. It never creates customers, appointments, queue entries, stock receipts, balances, payments, commissions, or payouts.
+- Practitioner credentials are seeded only on a disposable local test database. On any other database, licensed services need real credentials entered on the barber page.
+- The user's `onboardingStatus` moves to `in_progress`, then `completed`. On failure it goes back to the previous status.
+
+After onboarding, review the services, prices, hours, and policies on the platform pages before taking bookings.
+
+## Checks
+
+The repository has a `lint` script (`eslint .`) and test files in `tests/`, but `package.json` has no `test` or `typecheck` script.
+
+## Deploy
+
+The app needs a Node.js server, PostgreSQL, and S3-compatible storage.
+
+```bash
+npm run build     # keystone build --no-ui && next build; does not migrate
+npm run migrate   # prisma migrate deploy
+npm start         # next start
+```
+
+- **Railway:** `railway.toml` builds with `prisma generate && keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run at start.
+- **Vercel:** the README has a Deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to set the `S3_*` variables, `APP_ORIGIN`, and any optional services, and run migrations as a release step.
+
+Before deploying with real data:
+
+1. Back up the database and test a restore.
+2. Set `APP_ORIGIN` to the HTTPS origin.
+3. Set a new `SESSION_SECRET` and keep it the same across all app instances.
+4. Configure SMTP if you want resets, booking emails, and reminders.
+5. Only one shop should be public for the storefront.
+6. Replace or remove the onboarding sample data that does not match your shop.

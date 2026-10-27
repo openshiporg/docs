@@ -1,59 +1,65 @@
 ---
 title: Waitlist and reservations
-description: Host-stand workflows for walk-ins, quoted waits, and table matching.
+description: Host-stand workflows for walk-ins, quoted waits, reservations, and table matching.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The waitlist flow is already one of the cleaner operational pieces in the product. Hosts can add parties, track quoted wait time, mark guests as notified, and seat them into tables that actually fit.
+Hosts can add walk-in parties, track quoted waits, record that a guest was contacted, and seat them at a table that fits. Reservations have their own page with a status lifecycle and table checks.
 
-## What the waitlist screen does
+## Waitlist
 
-- add a party with name, phone number, party size, quoted wait, and notes
-- keep the list focused on parties that are still waiting or already notified
-- move a party from waiting to notified
-- seat a party into a matching available table
+The waitlist page is at `/dashboard/platform/waitlist`. It is not in the sidebar, so open it by URL.
+
+- add a party with name, phone number, party size, quoted wait, and notes (`createWaitlistGuest`)
+- filter by status: waiting, notified, seated, cancelled, no show
+- mark a party notified after contacting them by hand
+- seat a party at an available table with enough seats
 - cancel a party or mark them as a no-show
+
+Waitlist changes go through `updateWaitlistStatus` with an action: `notify`, `seat`, `complete`, `cancel`, or `no_show`. Both waitlist mutations check `canManageKitchen`, not a table or host permission.
 
 ## Seating workflow
 
 <Steps>
 <Step>
 ### Add the party
-Create a waitlist entry with guest name, phone number, party size, quoted wait time, and optional notes.
+Create an entry with name, phone, party size, quoted wait, and optional notes. It starts as `waiting`.
 </Step>
 <Step>
-### Keep the status honest
-When the host reaches out, mark the guest as notified. If they disappear, cancel them or mark them as a no-show.
+### Contact the guest
+Call or text the guest yourself. Then mark them notified. The server refuses unless you confirm that contact happened, and it logs a manual contact event.
 </Step>
 <Step>
-### Match the right table
-When it is time to seat the party, the screen loads available tables with enough capacity for that group.
+### Match a table
+The seat dialog lists `available` tables with at least as many seats as the party, smallest first.
 </Step>
 <Step>
 ### Seat the party
-Seating the guest updates the waitlist entry and flips the table to occupied at the same time.
+Seating sets the entry to `seated`, links the table, and marks the table `occupied`. Completing a seated entry releases the table if nothing else is using it.
 </Step>
 </Steps>
 
-## What about reservations?
+## Reservations
 
-Reservations already exist in the data model and in the dashboard route. A reservation stores:
+The reservations page is at `/dashboard/platform/reservations` and is in the sidebar. A reservation stores:
 
-- guest name and contact details
-- reservation date and party size
-- duration
-- status
+- guest name, phone, and email
+- date and time, party size, and duration (default 90 minutes)
+- status: `pending`, `confirmed`, `seated`, `completed`, `cancelled`, `no_show`
 - special requests
 - assigned table
 
-That said, reservations are not as fully built out as the waitlist flow yet. Today they are better described as a solid model and admin surface than a finished host-stand product.
+`upsertReservation` creates or edits a reservation. Name and phone are required. New reservations default to `confirmed`. Only `pending` and `confirmed` reservations can be edited. If a table is assigned, the server checks it is large enough and has no overlapping reservation.
+
+`updateReservationStatus` moves a reservation with an action: `pending`, `confirm`, `seat`, `complete`, `cancel`, or `no_show`. Seating needs an assigned table that is free and large enough, and marks it `occupied`. Reservation mutations check `canManageTables`.
 
 <Callout type="info">
-The current waitlist handles real host work better than the reservations flow. If your launch depends heavily on formal reservation management, plan to spend more time there before calling it done.
+Guests cannot book or join the waitlist from the storefront. Hosts enter everything in the dashboard.
 </Callout>
 
-## What is not wired yet
+## What is not wired
 
-The waitlist stores phone numbers and a notified state, but it does not send SMS messages by itself yet. If you want text messaging, you will need to add that integration on top of the existing workflow.
+- No SMS or email is sent to waitlist or reservation guests. Phone numbers are stored for manual contact.
+- There is no automatic quote calculation, no deposit, and no online booking widget.

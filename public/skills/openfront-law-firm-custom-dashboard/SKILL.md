@@ -15,11 +15,25 @@ Before asking implementation questions, briefly tell the user where the current 
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Law Firm-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Server contract: `features/keystone/models/**` (79 lists registered in `models/index.ts`), `features/keystone/access.ts` (39 `can*` role permissions), `features/keystone/tenancy.ts`, `features/keystone/lib/matter-access.ts`, `features/keystone/mutations/**` (custom queries and mutations registered in `mutations/index.ts`), and `schema.graphql`.
+- The repository's own coverage map: `docs/schema-map.md`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is intake, conflicts, matters, ethical walls, documents, deadlines, billing, trust records, portal sharing, and governance. This list is orientation, not proof that every flow is safe or complete.
+Current platform slices and routes (`/dashboard/platform/...`, sidebar from `features/platform/lib/navigation.ts`):
+
+- Today: `today` (query `practiceOverview`).
+- Practice: `intake`, `matters` and `matters/[matterId]`, `contacts` and `contacts/[contactId]`.
+- Work: `work`, `dockets` and `dockets/[docketId]`, `documents`, `communications`, `time-expenses` (each desk also has `[kind]/[recordId]` drill-ins via `features/platform/desks`).
+- Finance: `billing`, `retainers` and `retainers/[retainerId]`, `accounting` (trust), `portal`.
+- Intelligence: `ai`, `ai/matters/[matterId]`, `ai/reviews`, `ai/reviews/[reviewId]`, `ai/knowledge`, `ai/workflows`, `ai/evaluation`, `ai/providers` (`features/platform/legal-ai`; read-only evidence, no model connected).
+- Control: `governance`, `reports`, `firm`, `team`, `data`, `integrations`.
+- Storefront settings: `public-site`, `branding`.
+- Also: `/dashboard/init`, `/dashboard/onboarding` (`features/platform/onboarding`, mutation `completeFirmOnboarding`), and generic list pages under `/dashboard/[listKey]` (agents and OAuth tokens are managed only there).
+
+Many workspace lists load through the `practiceWorkspace(category)` query. Lifecycle, money, access, and credential changes go through named mutations such as `convertIntakeToMatter`, `finalizeConflictCheck`, `setMatterTeamAccess`, `transitionEthicalWall`, `assembleDraftInvoice`, `transitionInvoice`, `recordManualPayment`, `allocatePayment`, `requestRefund`, `reviewRefund`, `postTrustTransaction`, `prepareTrustReconciliation`, `executePortalGrant`, `sharePortalResource`, `ingestDocumentVersion`, `prepareSignatureRequest`, `prepareCommunicationDeliveries`, `placeRetentionHold`, `issueApiKey`, `inviteFirmMember`, and `updateFirmRoleAuthority`. Generic CRUD of `status` is denied on those lists.
+
+Known boundaries in current source: payment, refund, signature, and communication provider outcomes throw until authenticated provider ingress exists; only email delivery is supported; `/api/mcp-transport/http` returns 501 `LEGAL_MCP_DISABLED`; legal AI has no model connected. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

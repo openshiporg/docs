@@ -6,3 +6,44 @@ description: Give an LLM the Dealership storefront skill to adapt the built-in e
 To create a custom Dealership storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Dealership's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Dealership codebase before proposing work.
+
+Skill file: [`/skills/openfront-dealership-custom-storefront/SKILL.md`](/skills/openfront-dealership-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/`. Screens are in `features/storefront/screens`. Server actions are in `features/storefront/actions`. GraphQL documents are in `features/storefront/lib/data`.
+
+| Route | Customer journey | Operations |
+|---|---|---|
+| `/` | Home: dealership profile and featured inventory | `StorefrontProfile`, `GetVehicles`, `GetVehiclesCount`, `GetMakes` |
+| `/inventory` | Browse listed vehicles with make, model, and condition filters | `GetVehicles`, `GetVehiclesCount`, `GetInventoryOptions` |
+| `/inventory/[id]` | Vehicle detail; ask a question, request a quote, or book a test drive | `GetVehicle`, `GetVehicleRecord`, `SubmitInquiry`, `SubmitTestDrive` |
+| `/compare` | Compare up to 4 saved vehicles (IDs kept in browser storage) | `GetVehicle` |
+| `/test-drive` | Book a test drive, optionally for a chosen vehicle | `SubmitTestDrive` |
+| `/trade-in` | Trade-in request; shows the server's preliminary estimate range | `SubmitTradeIn` |
+| `/financing` | Payment calculator and finance application with consent and privacy acknowledgment | `SubmitFinancing` |
+| `/service` | Service menu and booking, optionally tied to a service package | `GetServicePackages`, `SubmitServiceBooking` |
+| `/contact` | General inquiry | `SubmitInquiry` |
+| `/photo-credits` | Attribution for listed vehicle photos | `GetVehicles` |
+| `/account` (signed out) | Sign in or create an account | `CustomerSignin`, `RegisterCustomer` |
+| `/account/reset` | Password reset | Shared Keystone password reset flow (needs SMTP) |
+| `/account` (signed in) | Request history | `CustomerHistory`, `CustomerEmailLink` |
+| `/account/requests/[ref]` | Request detail; cancel or reschedule an upcoming test drive or service booking | `CustomerRequestDetail`, `CancelCustomerBooking`, `RescheduleCustomerBooking` |
+| `/account/vehicles` | Purchases (deals and delivery) and payments | `CustomerPurchases`, `CustomerPayments` |
+| `/account/service`, `/account/service/[id]` | Service history and repair order detail | `CustomerServiceHistory`, `CustomerServiceOrder` |
+| `/account/profile` | Name, email, phone, password | `UpdateCustomer` |
+| `/account/verify` | Confirm the account email to link earlier requests | `RequestCustomerEmailVerification`, `ConfirmCustomerEmail` |
+| `/[...slug]` | Always not found | none |
+
+`app/sitemap.ts` lists the main pages and every listed vehicle. `app/robots.ts` sets crawler rules.
+
+## Journey boundaries
+
+- The storefront serves one rooftop: the oldest active rooftop in an active dealer group. Submissions with a different `rooftopSlug` are rejected.
+- Public reads (`publicInventoryVehicles` and related) return only listed vehicles. Dealer cost and staff fields are never selected.
+- Every submission needs an `idempotencyKey` and has a `website` honeypot field. A retry with the same key returns the first result (`reused`).
+- Service bookings allow 4 per rooftop per hour. A vehicle can hold only one open test drive in a 60-minute window.
+- Signed-in submissions are tied to the account. Guest submissions become visible in the account only after email verification links the matching CRM Customer, and only for leads with that exact email.
+- The trade-in estimate is `automated-preliminary` and no provider request is sent. Financing uses the `operator-recorded` mode; no lender or bureau is contacted.
+- There is no online purchase, reservation, or deposit. Payment checkout is created by staff only.
+- `/account/profile` uses the generic `updateUser` mutation and does not ask for the current password.

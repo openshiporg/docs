@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Sportsbook",
+  "description": "Sports catalog, trading, wagers, results, grading, settlement, ledger, responsible gaming, and dual-control operator workflows",
+  "icon": "Trophy",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

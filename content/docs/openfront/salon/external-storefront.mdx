@@ -6,3 +6,61 @@ description: Give an LLM the Salon storefront skill to adapt the built-in experi
 To create a custom Salon storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Salon's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Salon codebase before proposing work.
+
+## Current storefront routes
+
+Route files live in `app/(storefront)/(main)/**`. Screens are in `features/storefront/screens`. The shared layout is `MainLayout`.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `HomePage` | Featured services and stylists |
+| `/services` | `ServicesPage` | Service menu by category |
+| `/services/[id]` | `ServiceDetailPage` | Service detail, stylists who offer it, reviews |
+| `/team` | `TeamPage` | Stylist list |
+| `/team/[id]` | `StylistDetailPage` | Stylist profile and reviews |
+| `/stylists` | — | Redirects to `/team` |
+| `/book` | `BookingPageServer` / `BookingPage` | Pick service, stylist, location, and time; accept the booking policy; book. Takes `?service=` and `?stylist=`. Offers the waitlist on a day with no open times (signed-in clients) |
+| `/booking/[id]` | `BookingConfirmationPage` | Booking confirmation |
+| `/account` | `AccountPage` | Client portal: upcoming and past visits, cancel, reschedule, consultation forms, receipts, reviews, memberships, packages, points, gift cards |
+| `/account/signin` | `AccountSignInPage` | Client sign-in |
+| `/account/signup` | `AccountSignUpPage` | Client sign-up |
+| `/appointments` | — | Redirects to `/account` |
+| `/memberships` | `MembershipsPage` | Active membership plans and packages |
+| `/gift-cards` | `GiftCardsPage` | Balance check by code. Purchase is in-salon only |
+| `/gallery` | `GalleryPage` | Public salon images |
+| `/reviews` | `ReviewsPage` | Approved reviews |
+| `/contact` | `ContactPage` | Location, hours, contact details |
+
+The `app/(storefront)/(booking)` route group exists but is empty. `features/storefront/middleware.ts` passes every request through.
+
+## Named operations
+
+| Area | File | Operations (root field) |
+| --- | --- | --- |
+| Brand | `lib/data/brand.ts` | `PublicStorefrontSettings` (`publicStorefrontSettings`) |
+| Services | `lib/data/services.ts` | `GetAllServices`, `GetFeaturedServices`, `GetServiceById`, `GetServicesByCategory`, `GetStorefrontCategoryOrder` |
+| Stylists | `lib/data/stylists.ts` | `GetAllStorefrontStylists`, `GetFeaturedStorefrontStylists`, `GetStorefrontStylist`, `GetStorefrontStylistsForService` (`storefrontStylists`, `storefrontStylist`) |
+| Booking | `lib/data/booking-context.ts`, `availability.ts`, `appointments.ts` | `BookingContext`, `CheckAvailability` (`checkAvailability`), `BookAppointment` (`bookAppointment`), `GetAppointment` |
+| Waitlist | `lib/data/waitlist.ts` | `JoinWaitlistAsClient` (`joinWaitlistAsClient`) |
+| Benefits | `lib/data/benefits.ts` | `StorefrontBenefits` (`storefrontBenefits`), `GiftCardBalance` (`giftCardBalance`) |
+| Content | `lib/data/gallery.ts`, `reviews.ts` | `GetStorefrontGalleryImages`, `GetApprovedReviews`, `GetServiceReviews`, `GetStylistReviews` |
+| Account | `account/actions.ts` | `PortalSignIn` (`authenticateUserWithPassword`), `RegisterSalonCustomer` (`registerSalonCustomer`), `VerifyPortalIdentity`, `ClientPortal` (`clientPortal`), `PortalCancel` (`transitionAppointment`), `PortalReschedule` (`scheduleAppointmentSegments`), `PortalReview` (`submitAppointmentReview`), `PortalConsultation` (`submitConsultation`) |
+
+`lib/data/appointments.ts` also defines `GetClientAppointments`, `GetClientAppointmentsByEmail`, and `GetStylistAppointments`. No current screen calls them.
+
+## Sessions and rules
+
+- Sign-in uses Keystone's `keystonejs-session` cookie. Sign-out calls `endSession` and deletes the cookie.
+- `registerSalonCustomer` creates a new user and an empty client profile. It never links an existing guest booking or user by email. It fails until the first dashboard user exists. Passwords must be 12 to 128 characters.
+- Guests can book with name, email, and phone. Clients must accept the current booking policy version (`CLIENT_BOOKING_POLICY_VERSION`).
+- Online cancel and reschedule are allowed only before the notice window (`CLIENT_CANCELLATION_NOTICE_MINUTES`, `CLIENT_RESCHEDULE_NOTICE_MINUTES`, default 24 hours).
+- `clientPortal` returns data only for the signed-in user. Benefits, points, and gift cards use owner filters.
+- With more than one active location, pass `locationId` to booking and availability.
+- The GraphQL endpoint is `NEXT_PUBLIC_BACKEND_URL` + `/api/graphql`, or the current origin.
+
+## Not in the storefront
+
+- No online payment. Deposits, visits, and gift cards are paid in the salon.
+- No membership sign-up or package purchase online. `/memberships` lists plans only.
+- No loyalty redemption online. The account shows points and tier.
+- No embeddable booking widget. `WidgetConfiguration` is not served.

@@ -7,25 +7,36 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Openfront Restaurant includes a customer-facing menu and ordering application. Current routes cover the menu, cart checkout, order confirmation, sign-in, profile, addresses, and customer order history.
+Openfront Restaurant includes a customer-facing menu and ordering app. Current routes cover the menu, item pages, checkout, order confirmation, sign-in, profile, addresses, and order history.
 
 ## Current routes
 
-- `/` for the menu and cart entry;
-- `/menu/[id]` for an item page;
-- `/checkout` for contact, delivery, payment, and review steps;
-- `/order/confirmed/[id]` for confirmation;
-- `/account`, `/account/profile`, `/account/addresses`, and account order routes.
+- `/` for the menu, popular items, house picks, and cart entry
+- `/menu/[id]` for an item page with modifier selection
+- `/checkout` for contact, pickup or delivery, tip, payment, and review
+- `/order/confirmed/[id]` for confirmation
+- `/account`, `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/orders/details/[id]`
 
-The storefront implementation lives under `app/(storefront)` and `features/storefront`. Keystone models and custom GraphQL operations remain the backend contract.
+The storefront lives under `app/(storefront)` and `features/storefront`. Keystone models and custom GraphQL operations are the backend contract. See [External storefronts](/docs/openfront/restaurant/external-storefront) for the full route and operation list.
 
 ## What drives the storefront
 
-- `StoreSettings` supplies branding, locale, currency, hours, delivery rules, tax, and pickup settings.
-- `MenuCategory`, `MenuItem`, and `MenuItemModifier` supply menu content and customization.
+- `StoreSettings` supplies the name, logo, hero copy, hours, locale, currency, tax rate, delivery rules, pickup discount, and rating display. If no settings exist, the home page shows a "not available yet" message.
+- `MenuCategory`, `MenuItem`, and `MenuItemModifier` supply menu content and customization. Sold-out items show as unavailable.
 - `Cart` and `CartItem` hold checkout state.
-- `PaymentCollection` and `PaymentSession` hold the selected provider session.
-- `RestaurantOrder`, `OrderItem`, and `Payment` are created when checkout completes.
+- `PaymentCollection` and `PaymentSession` hold the selected provider session and a server-priced checkout quote.
+- `RestaurantOrder`, `OrderItem`, `Payment`, and (for successful payments) `Receipt` are created when checkout completes.
+
+## Ordering rules enforced by the server
+
+Each time an item is added, the server checks:
+
+- the item is available;
+- the restaurant is open, allowing for the ordering cutoff minutes set in store settings;
+- the item and its category are inside their meal-period service windows, if set;
+- modifier selections meet the group's required, minimum, and maximum rules.
+
+Store settings can also set a maximum number of active online orders. When the limit is reached, new checkouts are refused with a message to retry later.
 
 ## Current checkout sequence
 
@@ -33,33 +44,31 @@ The storefront implementation lives under `app/(storefront)` and `features/store
 <Step>
 ### Create or resume a cart
 
-The server stores a cart ID in the `_restaurant_cart_id` cookie. Cart reads and writes call custom operations that check the authenticated user or the matching cart cookie before using privileged Keystone access.
+`createActiveCart` returns the cart and a signed `accessProof`. The server stores the cart ID in `_restaurant_cart_id` and the proof in `_restaurant_cart_proof` (HTTP-only, 7 days). Cart operations check either the signed-in owner or a valid proof.
 </Step>
 <Step>
-### Add menu items and checkout details
+### Add items and contact details
 
-The cart stores item quantities, modifiers, special instructions, contact data, pickup or delivery mode, and delivery fields. Guest contact submission currently creates a user record when no signed-in user exists and connects it to the cart.
+The cart stores items, modifiers, special instructions, contact data, pickup or delivery, delivery address, and tip percent. If the guest is not signed in, submitting contact details creates a customer account with a random password, signs the guest in, and links the cart. If the email already has an account, checkout asks the guest to sign in.
 </Step>
 <Step>
 ### Validate delivery and calculate totals
 
-Checkout normalizes the address and checks the configured delivery mode, country, postal code, and minimum. `completeActiveCart` recalculates tax, tip, pickup discount, delivery fee, and total from current cart and StoreSettings data.
+Delivery must be enabled, and the address country and postal code must match the store's allowlist. The subtotal must meet the delivery minimum. Totals (tax, tip, pickup discount, delivery fee) are calculated on the server from current cart and `StoreSettings` data.
 </Step>
 <Step>
 ### Select and confirm payment
 
-The storefront initiates a `PaymentSession`. Stripe confirms card payment in the browser; PayPal uses its order approval flow; the manual provider records pending payment. Order completion checks or captures non-manual payment through the configured adapter before creating the order.
+`initiatePaymentSession` creates a session for the chosen provider and freezes a priced quote. Stripe confirms the card in the browser. PayPal uses its approval flow. The manual provider records a pending payment. A guest can cancel a pending session with `cancelCheckoutPaymentSession`.
 </Step>
 <Step>
 ### Create the order
 
-`completeActiveCart` creates the `RestaurantOrder`, its `OrderItem` rows, a `Payment`, the cart-to-order link, and kitchen tickets for kitchen-active statuses. The confirmation page then reads the resulting order.
+`completeActiveCart` checks the provider status and captures if needed. Then, in one serializable transaction, it creates the `RestaurantOrder`, its `OrderItem` rows, the `Payment`, a sale `Receipt` when paid, an audit event, and a queued confirmation email. It then creates kitchen tickets. Card and PayPal orders start as `sent_to_kitchen`. Manual-payment orders start as `open`.
 </Step>
 </Steps>
 
 ## Checkout mutation
-
-After a payment session has been selected and, where required, approved by the provider, the storefront completes the cart with this custom operation:
 
 ```graphql
 mutation CompleteRestaurantCart($cartId: ID!, $paymentSessionId: ID) {
@@ -72,27 +81,29 @@ mutation CompleteRestaurantCart($cartId: ID!, $paymentSessionId: ID) {
 }
 ```
 
-Use the generated `schema.graphql` from the same source revision. Do not replace this workflow with unrestricted generated CRUD from an untrusted client.
+Calling it again for a cart that already has an order returns that order. If a provider webhook confirms payment first, the webhook handler completes the same checkout on the server.
+
+Use the generated `schema.graphql` from the same revision. Do not replace this workflow with generated list CRUD from an untrusted client.
 
 ## Order access
 
-`getCustomerOrder(orderId, secretKey)` returns an order to its authenticated customer. It also accepts the exact `secretKey` for an order that has one. Treat that value as a credential: keep it out of analytics, logs, referrers, screenshots, and shared caches, and test that wrong-user and wrong-secret requests return no order details.
+`getCustomerOrder(orderId, secretKey)` returns an order to its signed-in customer. A `secretKey` is only generated for orders placed without a customer account. Treat it as a credential: keep it out of analytics, logs, referrers, and shared caches.
 
-## Current payment paths
+## Recovery
 
-The storefront renders Stripe, PayPal, and manual payment controls when their provider sessions are selected. Availability still depends on installed provider records, environment configuration, credentials, adapter responses, and the exact checkout path being tested.
+If payment succeeded but no order was placed, staff can see the attempt in the POS "Checkout recovery" panel (`unplacedCheckoutAttempts`). They can then recover it into an order (`recoverCheckoutPayment`) or cancel the session.
 
 ## Current limitations
 
 <Callout type="warn">
-Current completion performs several privileged writes and provider calls without one encompassing database transaction or a caller-supplied idempotency key. Test retries, duplicate submission, partial order/item/payment writes, provider reconciliation, and kitchen-ticket recovery before accepting live orders.
+Provider capture happens before the order transaction. If the order write fails after capture, the attempt shows up in checkout recovery and needs staff action. Test duplicate submits, retries, and provider failures before taking live orders.
 </Callout>
 
-- The application exposes no `/api/categories`, `/api/menu-items`, or `/api/orders/*` REST routes in current source. External clients should use reviewed GraphQL operations or add a separately authenticated API contract.
-- The customer storefront does not include a reservations flow.
-- A cart cookie contains the cart ID rather than a separate scoped cart token; cookie security and cross-owner negative tests remain important.
-- Provider support in the UI does not establish end-to-end readiness for refunds, webhooks, retries, or reconciliation.
-- Generated list CRUD remains distinct from the safer custom cart and order workflows and should not be exposed merely to simplify another client.
+- There are no `/api/categories`, `/api/menu-items`, or `/api/orders/*` REST routes. External clients use GraphQL.
+- The storefront has no reservations, waitlist, or gift-card purchase flow.
+- Discount codes cannot be entered at checkout.
+- Order confirmation emails are queued, not sent automatically. Staff send them from the notification queue.
+- Provider buttons in the UI do not prove that refunds, webhooks, or reconciliation work for that provider.
 
 ## Where to go next
 

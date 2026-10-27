@@ -1,116 +1,159 @@
 ---
 title: Openfront Construction
-description: Construction project controls, field operations, safety, contracts, and billing.
+description: Construction project controls, field operations, safety, contracts, billing, a public contractor website, and a client and trade partner portal.
 icon: HardHat
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-construction) · [Catalog](https://openship.org/products/openfront-construction)
+[Source](https://github.com/openshiporg/openfront-construction) · [Live demo](https://construction.openship.org) · [Catalog](https://openship.org/products/openfront-construction)
 
-Openfront Construction is an open-source operations backend for general and specialty contractors. It connects project tenancy, preconstruction, cost control, contracts, field execution, safety, progress billing, and controlled agent actions in one relational graph.
+Openfront Construction is a self-hostable application for general and specialty contractors. It has three surfaces:
+
+- an operator dashboard for company setup, pursuits, quote requests, and per-project tools (preconstruction, financials, contracts, procurement, RFIs and submittals, field, schedule, quality and safety, documents, billing, reports, team, audit);
+- a public contractor website with services, past projects, inquiry forms, and customer quote requests;
+- a project portal where invited clients, designers, subcontractors, and vendors work on their own items.
+
+Start with [Getting started](/docs/openfront/construction/getting-started).
 
 <Callout type="warn">
-Current source provides the domain graph, project portfolio and project workspaces, controlled GraphQL operations, checked migrations, and a synthetic project seed. It does not provide a subcontractor or client portal, interactive company onboarding, file pipeline, accounting connector, payment adapter, or notification worker.
+Current source has no accounting or ERP connector, no payment processor, no e-signature provider, no malware scanning for uploaded files, and no long-running notification worker. Customer quote requests end at "accepted"; there is no online payment. See [Limitations](#limitations).
 </Callout>
 
-## Install and configure
+## Stack
 
-Use Node.js 20 or later and PostgreSQL. From the repository root:
+Next.js 16 (App Router, React 19), Keystone 6 with GraphQL, Prisma, PostgreSQL. Password accounts with database-backed sessions. API keys for agents and integrations use `Authorization: Bearer ofc_live_…`.
 
-```bash
-npm install
-```
+Code layout:
 
-Create `.env` for the database you intend to use:
+| Path | Contents |
+|---|---|
+| `features/keystone/models` | 87 lists, grouped by bounded context (`core`, `crm`, `public`, `service-requests`, `preconstruction`, `financials`, `contracts`, `execution`, `resources`, `safety`, `procurement`, `billing`, `governance`, `agents`) |
+| `features/keystone/mutations`, `features/keystone/queries` | Named GraphQL operations |
+| `features/keystone/domain` | Tenancy, lifecycle policies, scopes, onboarding seed, invariants |
+| `features/platform` | Operator dashboard pages |
+| `features/storefront` | Public website and customer account |
+| `features/portal` | Client and trade partner portal, invitation acceptance |
+| `features/integrations/storage` | S3-compatible signed upload and download |
+| `features/keystone/outbox` | Outbox webhook drain |
+| `features/keystone/mcp` | MCP tools used by the dashboard AI chat |
 
-```bash
-DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_construction
-SESSION_SECRET=replace-with-at-least-32-random-characters
-PUBLIC_SIGNUPS_ALLOWED=false
-```
+`docs/schema-map.md` in the repository lists every model with its purpose, creator, and states.
 
-The development and build scripts deploy checked-in migrations. Review the target and migration SQL before running either command:
+## Tenancy and access
 
-```bash
-npm run migrate
-npm run dev
-```
-
-The application is served at `/`, the generated operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`. Do not use `prisma db push` or a destructive reset. Generate migrations only against an approved disposable development database.
-
-Schema, authorization, and source checks that do not deploy migrations include:
-
-```bash
-npx keystone build --no-ui
-npm run typecheck
-npm test
-npm run lint
-npm run lint:schema
-```
-
-## Architecture
-
-`Company` is the tenant root and `Project` is the daily operating and security boundary. Company memberships establish tenant access; project memberships narrow operational access. Project-owned records also carry a derived company key so filters and relationship checks do not depend on long mutable relationship chains.
-
-Core links are relational; the generated Prisma schema does not hide domain relationships in JSON. Money uses signed 64-bit integer minor units, percentages and rates use basis points, and estimate versions, document and drawing revisions, contract lines, and progress-claim lines preserve issued facts.
-
-Thirteen high-risk aggregate lifecycles use named GraphQL mutations. Raw status updates are denied for those records. Agent identities, scope grants, action requests, reviews, outcomes, and idempotency keys keep machine work explicit and attributable.
+- **Company** is the tenant. Every business record belongs to one company. Most also belong to a **Project**.
+- Project-owned records store a derived company key. Hooks derive it from the connected project and reject relationships that cross companies or projects.
+- Permissions live on **Role** (40+ `canRead*` and `canManage*` checkboxes). A user gets them through **CompanyMembership** (company-wide, optionally all projects) and **ProjectMembership** (one project, access level viewer, contributor, or manager).
+- A ProjectMembership also has a portal type: internal, owner/client, designer, subcontractor, or vendor. External members can be linked to a **TradePartner** as their portal organization. They use `/portal`, not the dashboard.
+- Website customers have a `User` but no membership. They see only their own `ServiceRequest` records under `/account`.
+- **ApiCredential** stores hashed API keys with scopes. **AgentIdentity** and **ScopeGrant** bind an automated actor to exact company and project scopes such as `financials:write` or `agents:execute`.
 
 ## Data model
 
-- **Identity and tenancy:** companies, users, roles, company and project memberships, partners, locations, projects, cost codes, and budget codes.
-- **Preconstruction:** bid packages, invitations, submissions and lines, estimates, immutable versions, and estimate lines.
-- **Cost control:** budgets, budget lines and changes, direct costs, cost codes, and budget codes.
-- **Contracts and change:** prime contracts, commitments, schedule-of-values lines, change events, quotes, change orders, and order lines.
-- **Execution:** RFIs and responses, submittals and reviews, specifications, drawings and revisions, documents and versions, daily logs, schedules, dependencies, and punch items.
-- **Field and safety:** labor, equipment, material and resource logs, incidents, observations, inspection templates and items, inspections, and corrective actions.
-- **Billing:** progress claims and lines, payments and allocations, retainage releases, and lien-waiver evidence.
-- **Agents and evidence:** agent identities, scope grants, action requests and outcomes, idempotency keys, and audit records.
+All 87 lists, by area:
 
-Every tenant aggregate has a direct ownership path. Relationship validation rejects company or project mismatches before persistence, and sensitive fields restrict incident details, credentials, waiver evidence, and audit digests.
+- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey, OutboxMessage.
+- **Company master data:** Project, TradePartner, ProjectLocation, CostCode, BudgetCode, Equipment, Material.
+- **Pursuits and website:** ConstructionLead, ConstructionOpportunity, PublicSiteProfile, PublicService, PublicProject, IntakeSubmission, ServiceRequest, ServiceRequestEvent.
+- **Preconstruction:** BidPackage, BidInvitation, BidSubmission, BidLineItem, Estimate, EstimateVersion, EstimateLineItem.
+- **Financials:** Budget, BudgetLineItem, BudgetChange, BudgetChangeLineItem, DirectCost.
+- **Contracts and change:** PrimeContract, Commitment, ContractLineItem, ChangeEvent, ChangeEventLineItem, ChangeQuote, ChangeOrder, ChangeOrderLineItem.
+- **Execution and documents:** RFI, RFIResponse, SpecificationSection, Submittal, SubmittalReview, Drawing, DrawingRevision, Document, DocumentVersion, DocumentDistribution, DocumentAcknowledgement, DailyLog, DailyLogEntry, Schedule, ScheduleTask, ScheduleDependency, PunchItem, LaborEntry, ResourceLog.
+- **Quality and safety:** SafetyIncident, SafetyObservation, InspectionTemplate, Inspection, InspectionItem, CorrectiveAction.
+- **Procurement:** ProcurementRequest, ProcurementRequestLine, MaterialReceipt, MaterialReceiptLine.
+- **Billing:** ProgressClaim, ProgressClaimLineItem, Payment, PaymentAllocation, PaymentReversal, RetainageRelease, LienWaiver.
+- **Governance:** ApprovalPolicy, ApprovalRequest, ApprovalDecision.
+
+Rules that apply across the model:
+
+- Money is a BigInt in minor units with a currency code. Budget, contract, claim, and payment totals are recalculated by hooks and workflows, not typed in.
+- Estimate versions, drawing revisions, and document versions are kept as separate records, so issued revisions are not overwritten.
+- Lifecycle `status` fields are read-only on generic update. Status changes go through named transition mutations that follow `lifecyclePolicies` in `features/keystone/domain/lifecycle.ts`.
+- Commands are idempotent (`IdempotencyKey`), recorded as `AgentAction` audit rows, and emit `OutboxMessage` events.
 
 ## Workflows
 
-A representative commercial path is bid and estimate -> budget and prime contract or commitment -> field execution -> change exposure and approval -> progress claim -> payment allocation, retainage, and waiver.
+1. **Set up the company.** Onboarding creates the company, roles, memberships, first project, cost and budget codes, budget, approval policies, and public profile. Then build the trade partner directory, cost code library, and equipment and material catalog.
+2. **Win work.** Website inquiries create an `IntakeSubmission` linked to a lead and opportunity. Opportunities move from qualifying through go/no-go, estimating, submitted, and negotiating to won, lost, or declined. Signed-in customers can request a quote for a published service; staff price it; the customer accepts or cancels.
+3. **Start a project.** `createConstructionProject` creates the project, the creator's membership, a "GEN" cost and budget code, the budget and its line, and the approval policies. Add budget codes and locations in the Cost structure tool. Invite the team.
+4. **Buy out.** Bid package, invitations (visible in the portal), submissions and lines, bid leveling, then award. Award creates a commitment. Add the prime contract with lines.
+5. **Control cost.** Budget lines, budget changes with approval, direct costs (post and reverse), labor time, and resource logs. Job cost and forecast appear in Reports.
+6. **Manage change.** RFI, change event, change quotes, change order with approval, which posts to the contract and budget.
+7. **Build.** RFIs and responses, submittals and review steps, drawings and documents with versions, distributions and acknowledgements, daily logs and entries, field photos, schedules, tasks, and dependencies.
+8. **Buy materials.** Procurement request with lines, order, material receipt, resource log.
+9. **Quality and safety.** Observation to corrective action. Incident (with restricted private details) to investigation to corrective action. Inspection template to inspection to items to punch item or corrective action.
+10. **Get paid and pay out.** Progress claim (owner claims from the prime contract; subcontractor claims from a commitment, also via the portal), approval, payment, allocation, retainage release, lien waiver. Reverse a settled payment when needed.
+11. **Close and audit.** CSV report export. Audit trail of actions, outbox messages, and idempotency keys. API key issue and revoke.
 
-Named lifecycle operations cover projects, bid packages, estimates, budget changes, prime contracts, commitments, change events, change orders, RFIs, submittals, progress claims, safety incidents, and inspections. Each operation checks the user permission or machine scope, company and project, allowed transition, reason, idempotency key, and audit attribution.
+Approvals: budget changes, prime contracts, change orders, progress claims, and retainage releases can require an `ApprovalRequest` under the project's `ApprovalPolicy`. The requester must assign a different eligible person; self-approval is rejected.
 
-Agent work follows request -> review -> outcome. A request binds one registered operation, target type and ID, destination status, company, optional project, active agent identity, and an unexpired matching scope grant. Execution revalidates those facts so an approval cannot survive identity or grant revocation.
+Agent work follows request, review, outcome. `requestAgentAction` binds an operation, target, destination status, company, optional project, active agent identity, and matching scope grant. Execution goes through the normal domain transition, which rechecks the grant.
 
-The platform includes a project portfolio and project workspaces for preconstruction, execution, financials, contracts, field work, documents, quality/safety, billing, team, audit, and reports. Those screens call project-scoped projections and command operations; generic list administration remains available for permitted records.
+## Named GraphQL operations
 
-There is no interactive construction onboarding flow. `npm run seed:demo` uses `DEMO_ADMIN_PASSWORD` and optional `DEMO_ADMIN_EMAIL` to create or reuse a synthetic company, operator membership, project, trade partners, budget/cost records, and sample work through privileged context. The script requires a ten-character password but does not restrict `DATABASE_URL` to a disposable or loopback host, so inspect the selected database before running it. Seeded project data is not a hosted demo or customer-safe default.
+All operations below are defined in `features/keystone/mutations/index.ts`.
 
-## Bounded GraphQL operations
+**Queries**
 
-Current project queries return a portfolio and one company/project-scoped workspace rather than exposing every construction list to the UI. Named mutations create projects and team assignments; start bid packages and daily logs; record direct costs, change events, RFIs, submittals, documents, punch items, safety observations, and agent requests/reviews/outcomes; and transition protected project, bid, estimate, budget, contract, change, execution, safety, billing, lien-waiver, and payment lifecycles. Each operation rechecks tenant/project scope, permission, expected state, reason, idempotency, and evidence as applicable.
+| Area | Operations |
+|---|---|
+| Portfolio and onboarding | `constructionPortfolio`, `constructionOnboardingReadiness`, `redirectToInit` |
+| Project workspace | `constructionProjectWorkspace`, `constructionProjectOptions`, `constructionProjectOptionSearch`, `constructionRecordDetail`, `constructionBidComparison`, `constructionApprovalSnapshot` |
+| Registers | `constructionProcurementRequestRegister`, `constructionMaterialReceiptRegister`, `constructionProcurementCommitmentRegister`, `constructionProcurementBidInvitationRegister`, `constructionProcurementLienWaiverRegister`, `constructionResourceLogRegister`, `constructionResourceActivityReceipt`, `constructionInspectionRegister`, `constructionSafetyIncidentRegister`, `constructionSafetyObservationRegister`, `constructionSubmittalRegister`, `constructionRfiRegister` |
+| Files and restricted data | `documentVersionDownload`, `drawingRevisionDownload`, `safetyIncidentPrivateDetail` |
+| Portal | `constructionPortalInbox`, `constructionPortalApprovalSnapshot` |
+| Public website | `publicConstructionSite`, `publicConstructionService`, `publicConstructionProject`, `publicIntakeReceipt` |
+| Store settings and quote requests | `constructionStoreSettings`, `constructionCustomerRequests`, `constructionCustomerRequestCount`, `constructionCustomerRequest`, `constructionOperatorRequests` |
+
+**Mutations**
+
+| Area | Operations |
+|---|---|
+| Lifecycle transitions | `transitionProjectStatus`, `transitionBidPackageStatus`, `transitionEstimateStatus`, `transitionBudgetChangeStatus`, `transitionPrimeContractStatus`, `transitionCommitmentStatus`, `transitionChangeEventStatus`, `transitionChangeOrderStatus`, `transitionRfiStatus`, `transitionSubmittalStatus`, `transitionProgressClaimStatus`, `transitionSafetyIncidentStatus`, `transitionInspectionStatus`, `transitionScheduleStatus`, `transitionScheduleTaskStatus`, `transitionDailyLogStatus`, `transitionPunchItemStatus`, `transitionSafetyObservationStatus`, `transitionCorrectiveActionStatus`, `transitionPaymentStatus`, `transitionRetainageReleaseStatus`, `transitionLienWaiverStatus`, `transitionProcurementRequestStatus` |
+| Setup and team | `onboardConstructionWorkspace`, `createConstructionProject`, `addProjectMember`, `inviteProjectMember`, `revokeProjectInvitation`, `reissueProjectInvitation`, `acceptProjectInvitation`, `registerTradePartner`, `updateConstructionStoreSettings` |
+| Preconstruction | `startBidPackage`, `inviteBidder`, `recordBidSubmission`, `awardBidSubmission`, `createEstimateWithLine`, `reviseEstimate` |
+| Financials and contracts | `addBudgetLine`, `createBudgetChangeWithLine`, `recordDirectCost`, `reversePostedDirectCost`, `createPrimeContractWithLine`, `createCommitmentWithLine`, `openChangeEvent`, `addChangeEventLine`, `recordChangeQuote`, `createChangeOrderWithLine` |
+| Execution and documents | `raiseRfi`, `routeRfi`, `respondToRfi`, `registerSubmittal`, `routeSubmittalReview`, `recordSubmittalReview`, `registerSpecificationSection`, `registerDocument`, `registerDrawing`, `requestDocumentVersionUpload`, `completeDocumentVersionUpload`, `requestDrawingRevisionUpload`, `completeDrawingRevisionUpload`, `distributeDocumentVersion`, `acknowledgeDocumentDistribution` |
+| Field and schedule | `startDailyLog`, `addDailyLogEntry`, `registerFieldPhoto`, `recordLaborTime`, `createResourceCatalogItem`, `recordResourceActivity`, `reconcileResourceActivityIntent`, `closeResourceActivityIntent`, `registerSchedule`, `registerScheduleTask`, `linkScheduleDependency`, `updateScheduleTaskProgress`, `recordPunchItem` |
+| Quality and safety | `recordSafetyObservation`, `recordSafetyIncident`, `recordSafetyIncidentPrivateDetails`, `registerInspectionTemplate`, `createInspectionWithItem`, `recordInspectionItemResult`, `registerCorrectiveAction`, `recordCorrectiveActionEvidence` |
+| Procurement and billing | `createProcurementRequestWithLine`, `placeProcurementOrder`, `recordMaterialReceipt`, `prepareProgressClaim`, `recordProgressPayment`, `allocateSettledPayment`, `reverseSettledPayment`, `requestRetainageRelease`, `recordLienWaiverEvidence` |
+| Approvals | `configureConstructionApprovalPolicy`, `requestConstructionApproval`, `decideConstructionApproval` |
+| Portal | `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver` |
+| Public website and customers | `submitPublicIntake`, `registerConstructionCustomer`, `commandConstructionRequest` (operations `request`, `quote`, `accept`, `cancel`) |
+| API keys and agents | `issueApiCredential`, `revokeApiCredential`, `requestAgentAction`, `reviewAgentAction`, `recordAgentActionObservation`, `recordAgentActionOutcome` (deprecated; records an observation only) |
+
+Each command checks the session or API key, permission, company and project, expected state, reason where required, and idempotency key.
 
 ## Integrations
 
-Document object storage and scanning, signatures, accounting and ERP sync, payments, notifications, and background delivery remain external adapter work. Existing document, payment, and audit records define domain ownership and evidence; they do not establish a provider connection.
+| Integration | What the code does |
+|---|---|
+| S3-compatible storage | `features/integrations/storage/s3.ts` signs SigV4 `PUT`, `GET`, and `HEAD` URLs (60 to 900 seconds) for document versions and drawing revisions. Completion verifies the SHA-256 checksum and object metadata. Fails closed when `S3_*` values are missing |
+| SMTP | Password reset email only. Dashboard users get a `/dashboard/reset` link; customers and portal users get `/account/reset` |
+| Outbox webhook | `npm run outbox:work` drains `OutboxMessage` rows to `OUTBOX_WEBHOOK_URL` with an HMAC-SHA256 signature in `x-openfront-signature-sha256` and the event type in `x-openfront-event`. Failed messages retry up to `OUTBOX_MAX_ATTEMPTS`, then move to `dead_letter` |
+| OpenRouter AI chat | `/api/completion` uses the signed-in user's session cookie and the MCP tools at `/api/mcp-transport/[transport]` |
+| MCP tools | `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `modelSpecificSearch`. Reads are bounded to 100 rows per page and 500 rows total fanout |
 
-An accounting adapter should map explicit company/project, cost-code, contract, change, claim, payment, and allocation records; use idempotent external links; preserve integer money and currency; and reconcile rather than overwrite local history. File and signature adapters should preserve version checksums, actor and provider evidence, callbacks, and retention policy. Payment and notification adapters need signed ingress, replay protection, retry state, and an outbox or worker.
+Project invitations return a one-time `/accept-invitation?token=…` link to the operator. The app does not email it; share it yourself.
 
-## Security
+## Limitations
 
-List access applies company and project filters, and relationship hooks reject cross-tenant links. Sensitive lifecycle mutations recheck ownership before privileged database access. Machine grants are least-privilege, exact-company and optional exact-project, bounded by operation scope and expiry, and revalidated at execution.
-
-Completion/MCP transport uses a request-local fetch wrapper, forwards cookies only to the exact same-app endpoint, rejects redirects and caller cookie overrides, and leaves process-global fetch unchanged. GraphQL enforces a depth limit and restricts unsafe GET behavior. These controls do not replace ingress rate and body limits, managed secrets, centralized logs, incident response, backup restoration, provider security, or cross-company penetration testing.
-
-Before real contracts, safety, lien-waiver, or payment data, verify role and membership grants, company/project negatives, lifecycle denial, concurrent financial allocations, agent revocation, file and provider callbacks, retention, backups, and the legal, labor, safety, payment, and privacy requirements for the deployment.
-
-## Deployment
-
-Current source contains nine checked-in migration directories: seven inherited starter migrations followed by the construction schema and platform-operation migrations. Both `npm run dev` and `npm run build` currently execute `npm run migrate`; building with an uncontrolled `DATABASE_URL` can therefore change that database. Use isolated build credentials or split migration from application build before adopting immutable-image or independently promoted deployments.
-
-For a deliberate release, back up and verify the target, review every migration, deploy it once, build against an approved environment, run schema/security tests and authenticated company/project negatives, exercise each protected lifecycle and agent-revocation path, then test rollback and restoration. Current source does not supply file storage/scanning, accounting, signatures, payment processing, notification delivery, production observability, or a complete external portal. Add and test those services before using the application as an operational system.
+- No accounting, ERP, or payroll connector. `Payment` and `DirectCost` records are entered in the app.
+- No payment processor. `/account/requests/[id]/payment` redirects back to the request; accepted quotes are settled with the contractor outside the app.
+- No e-signature provider. Commitment "out for signature" is a status only.
+- No malware scanning or quarantine for uploaded files.
+- No email for invitations, quotes, or approvals. Only password reset email exists.
+- The outbox worker drains once per run. You must schedule it.
+- Website inquiries (`IntakeSubmission`) have no customer link, so they do not appear in a signed-in customer's account.
+- One public website per deployment, selected by `PUBLIC_SITE_KEY`.
+- `tests/schema` is empty and `tests/integration` is missing, so `test:schema`, `proof:authorization`, and `proof:workflows` do not exercise anything in current source.
+- Construction legal, labor, safety, lien, and payment rules vary by jurisdiction. The app records evidence; it does not decide compliance.
 
 ## Extension paths
 
-- Add lists in the appropriate bounded-context file under `features/keystone/models` and register them explicitly. Keep direct company/project relationships and use relational fields rather than hiding core links in JSON.
-- Add aggregate transitions to `features/keystone/domain/lifecycle.ts` and `features/keystone/mutations/lifecycle.ts`; preserve raw status denial, adjacency tests, idempotency, and immutable audit evidence.
-- Add agent capabilities in `features/keystone/domain/scopes.ts` and the controlled agent mutation path. Bind them to exact target types and tenant/project scope and revalidate grants at execution.
-- Add file, accounting, signature, payment, and notification adapters behind narrow domain operations. Store provider references and redacted evidence, not credentials or unbounded payloads, and test duplicate callbacks and reconciliation.
-- Build project, field, safety, and billing surfaces under `app` or `features/dashboard`; call domain operations rather than reimplementing transition and permission rules in the browser.
-- Extend `tests/schema` and `tests/security` with tenant negatives, relationship mismatches, lifecycle rejection, money/allocation invariants, concurrency, agent revocation, and provider failure cases before enabling new work.
+- Add lists in the matching file under `features/keystone/models` and register them in `models/index.ts`. Use direct company and project relationships.
+- Add lifecycle transitions in `features/keystone/domain/lifecycle.ts` and `features/keystone/mutations/lifecycle.ts`. Keep the status field read-only.
+- Add agent scopes in `features/keystone/domain/scopes.ts`.
+- Add provider adapters behind narrow mutations. Store provider references and checksums, not credentials.
+- Build screens in `features/platform`, `features/storefront`, or `features/portal`, keep `app` route files thin, and call the named operations instead of reimplementing permission or lifecycle rules.

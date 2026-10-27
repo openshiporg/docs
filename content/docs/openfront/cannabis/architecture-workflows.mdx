@@ -1,0 +1,93 @@
+---
+title: Cannabis architecture and workflows
+description: Keystone schema by domain, operator workflows and status transitions, GraphQL commands and queries, and access control.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Application surfaces
+
+| Surface | Routes |
+|---|---|
+| Public storefront | `/` (menu), `/menu/[id]` (product), `/visit` (address, hours, ages, payment types) |
+| Operator platform | `/dashboard/platform` and its sub-pages (see [External dashboards](/docs/openfront/cannabis/external-dashboard)) |
+| Generic admin | `/dashboard/[listKey]`, `/dashboard/[listKey]/[id]` list and item screens from the shared shell |
+| Auth | `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`, `/dashboard/no-access` |
+| API | `/api/graphql` (Keystone), `/api/completion` (dashboard AI chat), `/api/mcp-transport/[transport]` (disabled) |
+
+## Data model
+
+Models live in `features/keystone/models/` (`Authority.ts`, `Inventory.ts`, `Commerce.ts`, `Operations.ts`, `User.ts`, `Role.ts`). The repository also keeps a list-by-list summary in `docs/schema-map.md`.
+
+| Domain | Lists | Key relationships |
+|---|---|---|
+| Authority | `Organization`, `Premises`, `StorefrontSettings`, `CannabisLicense`, `StaffCredential`, `User`, `Role` | Premises belongs to an organization; users, credentials, licenses, and storefront settings link to both |
+| Customers and rules | `Customer`, `EligibilityEvidence`, `JurisdictionRulePack` | Evidence belongs to a customer; carts and sales snapshot the rule pack in force |
+| Inventory | `Product`, `InventoryPackage`, `PackageHold`, `RegulatedManifest`, `InventoryEvent`, `RecallCase` | Packages belong to a product and carry holds and an append-only event ledger; events can reference a manifest |
+| Commerce | `Register`, `RegisterShift`, `CashEvent`, `TenderConfiguration`, `Cart`, `CartLine`, `Sale`, `SaleLine`, `Tender`, `Refund` | Cart lines reserve quantity on a package; a sale links shift, customer, cart, lines, tenders, and refunds |
+| Operations | `AuditEvent`, `IdempotencyKey`, `OutboxEvent`, `StateEventInbox`, `IntegrationInstallation`, `ReconciliationRun`, `ComplianceIncident` | Written by controlled commands; audit and idempotency rows are produced by every command |
+
+Package quantities are stored as integer microunits (received, on hand, reserved). Money is stored in cents.
+
+## Runtime capabilities
+
+`features/keystone/domain/runtimeCapabilities.ts` holds a code-level list of enabled capabilities. A command that requires a capability not on the list throws instead of running. This is not a configuration flag; changing it means editing source.
+
+| Enabled | Not enabled (command exists, refuses to run) |
+|---|---|
+| `storefront.public-live-menu`, `inventory.action-bound-approval`, `identity.verified-eligibility`, `commerce.pos-cart`, `commerce.reservation-ledger`, `commerce.sale-finalization`, `provider.traceability-acceptance`, `provider.payment-capture`, `finance.action-bound-approval`, `finance.verified-refunds` | `privacy.approved-intake` (online customer intake), `commerce.customer-cart` (pickup carts), `inventory.event-specific-custody` (generic inventory events), `provider.installation-verification` (integration activation), `provider.authenticated-inbox` (inbound state events), `provider.computed-reconciliation` (reconciliation runs and approval) |
+
+## Operator workflows
+
+**Set up and keep authority current.** Onboarding installs the authority pack. Afterwards `renewCannabisAuthority` renews licenses and credentials, `amendCannabisRulePack` creates a new rule-pack version and supersedes the old one (keeping tender configurations in step), and `amendCannabisPremisesDetails` edits address and phone.
+
+**Staff.** `provisionStaffAuthority` adds a person with one role and a staff credential; `setStaffTemporaryPassword` sets a temporary password; `revokeStaffCredential` suspends or terminates a credential.
+
+**Catalog.** `configureCannabisProduct` and `amendCannabisProduct` manage products (`draft`, `active`, `inactive`) with categories tied to the rule pack.
+
+**Receive and custody.**
+
+1. `receiveCannabisPackage` records a `RegulatedManifest` and creates an `InventoryPackage` in `receiving_hold` with a `receive` event.
+2. `recordPackageLabResult` records the test result and certificate reference.
+3. `releaseCannabisPackage` moves a ready package to `saleable`.
+4. `placePackageHold` adds a hold (quarantine, test, recall, discrepancy, authority, expiry). `releasePackageHold` releases it and requires a second approver.
+
+A package appears on the public menu only when it is `saleable`, lab-passed, unexpired, unheld, and has free quantity.
+
+**Recalls.** `openRecallCase` opens a `RecallCase` and holds every matching package. `advanceRecallCase` moves through `suspected`, `hold`, `scope_confirmed`, `active`, `monitoring`, `disposition`, and `regulator_closed`. Closing releases or destroys the held packages and requires a second approver.
+
+**Sell in store.**
+
+1. `openRegisterShift` opens a shift on a `Register` with a float `CashEvent`.
+2. `checkInCannabisCustomer` records the counter ID check and eligibility evidence.
+3. `createPosCannabisCart` creates a cart; `addCannabisCartLine` reserves package quantity on a package; `cannabisCartAllocationQuote` prices a line with the rule pack's discount and tax rules.
+4. `transitionCannabisCartPreparation` moves the cart between `reserved`, `picking`, and `staged` for order preparation.
+5. `finalizeCannabisSale` creates the `Sale`, lines, and tenders and queues the state report in the outbox. Non-cash tenders must carry the card terminal's approval reference. `cancelCannabisCart` releases reservations.
+6. `refundCannabisSale` records a refund from the receipt with a second approver.
+
+**Cash.** `closeRegisterShift` takes a blind count with a second approver. A zero variance closes the shift; any other variance moves it to `variance_review`, and `approveCashVariance` closes it when run by a finance user other than the shift operator. Shift statuses: `scheduled`, `open`, `count_pending`, `counted`, `variance_review`, `closed`, `deposited`.
+
+**Incidents.** `recordComplianceIncident` opens an incident with type, severity, and notification deadline; `transitionComplianceIncident` moves it through `open`, `contained`, `investigating`, `reported`, `resolved`, `closed`.
+
+**Reporting.** `retryStateOutboxEvent` requeues a `rejected`, `retryable`, or `dead_letter` outbox event.
+
+## GraphQL queries and mutations
+
+Custom operations are registered in `features/keystone/mutations/index.ts` through `extendGraphqlSchema`. All take and return `JSON`.
+
+- **Public queries:** `publicCannabisMenu`, `publicCannabisStorefrontSettings`.
+- **Operator queries:** `cannabisOperationsWorkspace(section, options)` (one resolver for every platform page, validated client-side by `features/platform/workspaces/lib/contract.ts`), `cannabisStorefrontSettingsWorkspace`, `cannabisCartPreparation`, `cannabisCartAllocationQuote`, `cannabisCommandReceipt`, `cannabisSaleReceipt`, and `redirectToInit`.
+- **Mutations:** the commands named in the workflows above, plus `runCannabisOnboarding`, `dismissCannabisOnboarding`, `configureRegister`, `amendRegister`, `configureCannabisStorefrontSettings`, `postCannabisInventoryEvent`, `submitCannabisCustomerIntake`, `recordEligibilityDecision`, `createCustomerPickupCart`, `activateIntegrationInstallation`, `recordStateInboxEvent`, `recordReconciliationRun`, and `approveReconciliationRun`.
+
+## Access control and roles
+
+`Role` carries eleven permissions: `canAccessDashboard`, `canManagePeople`, `canManageRoles`, `canManageOnboarding`, `canManageAuthority`, `canManageCompliance`, `canManageInventory`, `canManageSales`, `canManageFinance`, `canManageIntegrations`, and `canViewReports`.
+
+`features/keystone/access.ts` re-reads the current user, role, organization, premises, and staff credential on each check, and filters records to the actor's organization and premises. Controlled commands additionally check that the staff credential is active, unexpired, and lists the activity (`authority`, `eligibility`, `inventory`, `sale`, `cash`, `state_reporting`, `incident`).
+
+Second-person approval (`features/keystone/mutations/approval.ts`) has the approver enter their own email and password on the actor's screen for that one command. No session is created and the password is not stored with the request.
+
+<Callout type="warn">
+Role, credential, and license checks record what the software was told. They do not verify that a person or premises actually holds a valid license.
+</Callout>

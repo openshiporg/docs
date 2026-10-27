@@ -6,82 +6,77 @@ description: How restaurant orders are modeled, filtered, and moved through serv
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The order model is the backbone of Openfront Restaurant. Almost every surface touches it: storefront checkout, POS, service floor, KDS, payments, reporting, and inventory depletion.
+`RestaurantOrder` is the center of Openfront Restaurant. Storefront checkout, POS, service floor, KDS, payments, reporting, and inventory all read or write it.
 
-## Core order statuses
-
-The `RestaurantOrder` model currently uses these statuses:
+## Order statuses
 
 - `open`
 - `sent_to_kitchen`
 - `in_progress`
 - `ready`
+- `dispatched` (delivery only)
 - `served`
 - `completed`
 - `cancelled`
 
-That status flow is not just cosmetic. It drives kitchen visibility, table state, reporting, and stock updates.
+Allowed moves are checked on the server:
 
-## What an order can contain
+| From | To |
+|---|---|
+| `open` | `sent_to_kitchen` |
+| `sent_to_kitchen` | `in_progress` |
+| `in_progress` | `ready` |
+| `ready` | `served`, or `dispatched` for delivery |
+| `dispatched` | `served` or back to `ready` (delivery only) |
+| `served` | `completed` |
 
-A restaurant order can already store:
+Moving a delivery order to `dispatched` or `served` needs a courier handoff or delivery reference. Moving to `served` or `completed` needs the kitchen work done. Moving to `completed` needs full payment with no uncertain tenders. Cancelling goes through `voidOrder` with manager approval.
 
-- order type and source
-- table links for dine-in service
-- guest count
-- special instructions
-- urgency and hold state
-- customer name, email, phone, and delivery fields
-- courses
-- order items
-- payments
-- discounts and gift cards relationships
-- a per-order currency code
+Order types are `dine_in`, `takeout`, and `delivery`. Order sources are `pos`, `online`, `kiosk`, and `phone`. The app itself only creates `pos` and `online` orders.
+
+## What an order holds
+
+- order number, type, source, and status
+- tables for dine-in, guest count, server, and creator
+- special instructions, urgency, and hold state with a reason
+- customer link, name, email, phone, and delivery address fields
+- subtotal, tax, tip, discount, total, and currency code
+- `secretKey` for guest orders
+- table seated and freed times and course completion percentage
+- courses, order items, payments, discounts, and gift cards
+
+Each `OrderItem` keeps snapshots of the item name, thumbnail, menu item ID, kitchen station, modifiers, and price. Later menu edits do not change past orders. Items also carry course and seat numbers, kitchen status, and void details.
 
 ## How orders move through service
 
 <Steps>
 <Step>
 ### The order is created
-An order can come from the storefront, POS, or another internal workflow. At creation time, it gets an order number, line items, totals, and context like tables or customer info.
+Orders come from storefront checkout (`completeActiveCart`), the POS (`createPOSOrder`), or the service floor (`addServiceFloorItem`).
 </Step>
 <Step>
 ### Kitchen work begins
-Once payment is confirmed or the order is otherwise pushed forward, kitchen tickets are created per station. At that point the order moves into the kitchen pipeline.
+Orders in `sent_to_kitchen`, `in_progress`, or `ready` get kitchen tickets per station.
 </Step>
 <Step>
-### Front of house and kitchen update it together
-KDS ticket status and item fulfillment push the order from `sent_to_kitchen` to `in_progress`, then `ready`, then `served`.
+### The kitchen and floor update it
+KDS ticket updates and `transitionRestaurantOrder` move the order through `in_progress`, `ready`, and `served`. When an order moves to `served` or `dispatched`, any `ready` tickets are marked served.
 </Step>
 <Step>
 ### Payment closes the order
-When the check is settled, the order becomes `completed`. If it is cancelled instead, the status changes accordingly.
+When the check is paid and served, it moves to `completed`.
 </Step>
 <Step>
-### Inventory and reporting catch up
-On completion, recipe-linked ingredients can be depleted automatically and the finished sale shows up in reporting.
+### Follow-up work runs
+On `completed` or `cancelled`, the app syncs kitchen tickets, depletes recipe ingredients, and releases tables. Each step is logged. A failed step is logged as needing recovery and shows on the Ingredients page under operations recovery (`restaurantOperationsRecovery`, `retryRestaurantOperations`).
 </Step>
 </Steps>
 
-## Order list views
+## Order screens
 
-The order list already supports a few operational presets:
-
-- **Kitchen**: open, sent to kitchen, in progress, and ready
-- **Expedite**: ready and served
-- **Cashier**: served and completed
-
-You can also filter directly by status or source.
-
-## Detail and fulfillment pages
-
-Openfront Restaurant includes dedicated order pages for:
-
-- reviewing an order in detail
-- handling service management and fulfillment
-- jumping into payment for a live check
-
-Those screens are where staff can move from a simple list to the actual work of handling the table.
+- `/dashboard/platform/orders` lists orders. Views: **Kitchen** (open, sent to kitchen, in progress, ready), **Expedite** (ready, dispatched, served), and **Cashier** (served, completed). It also has status tabs and a source filter (all, online, in-store).
+- `/dashboard/platform/orders/[id]` shows order detail, including split-check allocation when the order is part of an equal split.
+- `/dashboard/platform/orders/[id]/fulfill` is the "Service Management" page. It steps the order to its next status with `TransitionRestaurantOrder`.
 
 ## Example query
 
@@ -103,16 +98,10 @@ query KitchenOrders {
 }
 ```
 
-## Important hooks in the model
+## Audit trail
 
-A few useful behaviors already happen automatically:
-
-- dine-in orders can mark linked tables as occupied on create
-- completed or cancelled dine-in orders can move tables into cleaning
-- completed orders can trigger ingredient depletion when recipes exist
-
-That means order status is already doing real platform work behind the scenes.
+Status changes, POS creation, checkout completion, voids, and many other actions write `AuditEvent` rows with the actor, before and after values, and a reason. Voids, comps, splits, and corrections also write `OrderAdjustment` rows.
 
 <Callout type="info">
-If you are debugging restaurant behavior, start with the order record. In practice, it is the shared source of truth between guest ordering, staff service, kitchen execution, and reporting.
+When debugging, start with the order record and its audit events. They tie together guest ordering, staff service, kitchen work, and payment.
 </Callout>

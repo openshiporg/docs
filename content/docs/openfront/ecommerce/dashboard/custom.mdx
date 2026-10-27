@@ -6,3 +6,39 @@ description: Give an LLM the dashboard skill to adapt Openfront's built-in opera
 To create a custom dashboard, copy the skill and give it to your LLM. It will first ask which Openfront product and codebase you are using, whether you want to adapt the built-in dashboard or build a separate client, what you want to preserve, and what you want to change.
 
 The skill tells the LLM to inspect that product's built-in dashboard, feature slices, GraphQL schema, operations, access rules, and authentication boundary before proposing work. Tell it what feels wrong in the existing dashboard, which operator workflows you need, who will use them, and any visual or interaction direction you already have.
+
+Skill file: [`/skills/openfront-custom-dashboard/SKILL.md`](/skills/openfront-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Source: [github.com/openshiporg/openfront](https://github.com/openshiporg/openfront). Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`. `features/dashboard` supplies the generic Keystone admin shell.
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/orders`, `/[id]`, `/[id]/fulfill`, `/create` | Order list and detail; rates, labels and fulfillments; returns, refunds and claims; admin order creation from a cart |
+| `/dashboard/platform/analytics` | Sales, customer, product and cart reports |
+| `/dashboard/platform/markets`, `/regions-management` | Region list (same screen) |
+| `/dashboard/platform/regions` | Regions, Countries and Currencies tabs |
+| `/dashboard/platform/countries`, `/currencies` | Country and currency lists |
+| `/dashboard/platform/store` | Store name, logo, color and homepage text |
+| `/dashboard/platform/products`, `/create`, `/[id]` | Products, variants, options, prices, images |
+| `/dashboard/platform/product-categories`, `/product-collections` | Catalog organization |
+| `/dashboard/platform/inventory` | Inventory list (currently queries a list that is not in the schema) |
+| `/dashboard/platform/users` | Customers and staff |
+| `/dashboard/platform/business-account-requests` | Review business account requests |
+| `/dashboard/platform/invoices` | Business accounts and their invoices |
+| `/dashboard/platform/discounts`, `/price-lists`, `/gift-cards` | Promotions and pricing |
+| `/dashboard/platform/shipping-options` | Shipping options per region |
+| `/dashboard/platform/shipping-providers`, `/shipping` | Shipping provider records (same screen) |
+| `/dashboard/platform/payment-providers` | Payment provider records |
+| `/dashboard/platform/claims` | Claim list and status |
+| `/dashboard/platform/apps` | OAuth apps |
+| `/dashboard/platform/api-keys` | API keys |
+| `/dashboard/platform/order-management-system` | OAuth install consent for an external order system |
+| `/dashboard/platform/system` | Settings, stores and payment-provider tabs |
+
+Other lists, such as `Role`, `Team`, `TaxRate`, `WebhookEndpoint` and `Return`, are edited on the generic `/dashboard/<list-key>` pages.
+
+## Operations a separate dashboard should call
+
+Use these named mutations instead of writing status fields directly: `createOrderFulfillment`, `cancelOrderFulfillment`, `transitionOrderStatus` (only `canceled` or `archived`), `getRatesForOrder`, `createProviderShippingLabel`, `cancelShippingLabel`, `trackShipment`, `validateShippingAddress`, `processReturnRefund`, `adjustInventory`, `createInvoiceFromLineItems`, `retryWebhookDeliveries`, plus the queries `getAnalytics` and `getFinanceClose`. See [GraphQL API](/docs/openfront/ecommerce/api-reference).

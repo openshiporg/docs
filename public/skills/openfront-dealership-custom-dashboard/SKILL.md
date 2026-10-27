@@ -14,12 +14,29 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-dealership>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Dealership-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Navigation lives in `features/platform/lib/navigation.ts`.
+- Server contract: `features/keystone/models/**` (71 registered lists in `models/index.ts`), `features/keystone/access.ts`, `features/keystone/tenantRecords.ts` (rooftop scoping), `features/keystone/lifecycle/**` (state machines, audit/outbox), `features/keystone/mutations/**` (custom operations declared in `mutations/index.ts`), and `schema.graphql`.
+- Provider adapters: `features/integrations/payment` (stripe, manual), `features/integrations/financing` (operator-recorded only), `features/integrations/inventory-channel`.
+- Onboarding: `features/platform/onboarding` (dialog, not a route) calling `ensureDealershipOnboardingRecord` with `lib/seed.json`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is vehicles, CRM/leads, deals, finance intake, test drives, trade-ins, service, delivery, and reporting. This list is orientation, not proof that every flow is safe or complete.
+Current platform slices and routes under `/dashboard/platform`:
+
+- `overview`, `analytics` (read-only, `operationalReport`).
+- `vehicles`: `/vehicles`, `/vehicles/[id]`, `/vehicles/acquisitions`, `/vehicles/feed` (intake, acquisitions, stock, recon, merchandising, photos, feed runs).
+- `deals`: `/deals`, `/deals/create`, `/deals/[id]` (worksheet, present, accept, lender offer, trade-in, transitions).
+- `crm`: `/crm`, `/crm/[id]`, `/crm/tasks`. `customers`: `/customers`, `/customers/[id]`. `test-drives`. `trade-ins`: `/trade-ins`, `/trade-ins/[id]`.
+- `finance`: `/finance`, `/finance/applications/[id]`, `/finance/products`, `/finance/cancellations`. `delivery`.
+- `payments`: `/payments`, `/payments/[id]`. `accounting`: `/accounting`, `/accounting/[id]`.
+- `service`: `/service`, `/service/appointments/[id]`, `/service/orders/[id]`. `parts`: `/parts`, `/parts/[id]`, `/parts/purchase-orders`, `/parts/purchase-orders/[id]`.
+- `users`, `organization` (dealer group, rooftops, memberships, roles, retention), `catalog` (makes/models, service packages, lead routing), `reports` (saved reports, runs, audit search, outbox), `api-keys`, `store-settings`.
+
+Key models: DealerGroup and Rooftop (tenancy), memberships, Vehicle and the Inventory* lists, Customer and Lead, TestDrive, TradeIn, Deal and DealApproval, FinancingApplication and the Lender*/Finance* lists, DeliveryCase and WeOweItem, ServiceAppointment, ServiceOrder, RepairOrderLineItem, ServiceLaborOperation, Parts*, Payment*, Accounting*, SavedReport, ReportRun, RetentionPolicy, DomainAuditEvent, DomainOutboxEvent.
+
+Most operational lists are command-only: Keystone create/update is denied and writes go through named mutations such as `intakeInventoryVehicle`, `openLead`, `createDealPencil`, `saveDealWorksheet`, `transitionDeal`, `manageFinanceFundingCase`, `manageDeliveryCase`, `completeDealDelivery`, `openServiceOrder`, `transitionServiceOrder`, `recordPartsMovement`, `managePartsPurchaseOrder`, `createPaymentCheckout`, `manageAccountingBatch`, and `changeDealerMembership`. Each takes an idempotency key and writes an audit and outbox event. Reads for desks come from `inventoryWorkspace`, `crmWorkspace`, `dealDeskWorkspace`, `dealWorkspace`, `financeWorkspace`, `deliveryWorkspace`, `fixedOpsWorkspace`, `accountingWorkspace`, `auditSearch`, and `domainTimeline`.
+
+The current product focus is vehicles, CRM/leads, customers, deals, finance and F&I records, test drives, trade-ins, delivery, service, parts, payments, accounting batches, and reporting. Lender decisions, compliance checks, contracts, and accounting postings are operator-recorded evidence; no external lender, bureau, DMS, or GL is called. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +84,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around vehicles, CRM/leads, deals, finance intake, test drives, trade-ins, service, delivery, and reporting. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around vehicles, CRM/leads, customers, deals, finance and F&I records, test drives, trade-ins, delivery, service, parts, payments, accounting, and reporting. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

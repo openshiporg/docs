@@ -1,0 +1,41 @@
+---
+title: Openfront Medspa
+description: Self-hosted medical-aesthetics booking, treatment authority, consent, checkout, inventory, memberships, and practice operations.
+icon: Sparkles
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Medspa is a self-hosted booking and practice-operations application for medical-aesthetics practices. Clients browse treatments and providers, request appointments, complete intake, and manage visits on a public storefront. Practice staff run the day sheet, consultations, treatment plans, clinical orders, consent, treatment sessions, checkout, inventory, memberships, packages, gift cards, commissions, safety cases, and privacy requests from the operator dashboard.
+
+The source lives at [github.com/openshiporg/openfront-medspa](https://github.com/openshiporg/openfront-medspa). A hosted demo runs at [medspa.openship.org](https://medspa.openship.org).
+
+<Callout type="warn">
+Openfront Medspa does not license a practice, credential providers, grant prescribing or treatment authority, or provide regulatory approval. It is not documented as HIPAA compliant or certified for any medical-records, payment, or device standard. Recorded credentials, authorizations, consents, and readiness checks are application records; the practice remains responsible for verifying them and for every clinical decision.
+</Callout>
+
+## What the codebase contains
+
+- **Architecture:** Next.js 16 App Router with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL. The Keystone schema has 98 lists in `features/keystone/models/**` and about 90 named workflow mutations in `features/keystone/mutations/**`.
+- **Write model:** almost every list is write-locked (`create`, `update`, and `delete` return `false`). Business writes go through named mutations that check the actor, practice scope, record revision, and idempotency key. Only a small set of configuration lists (services, categories, variants, vendors, message templates, payment providers, catalog images, widget configuration) allow direct CRUD to roles with the matching capability.
+- **Operator surfaces:** 22 platform workspaces under `/dashboard/platform/*` (appointments, treatment delivery, checkout, clients, staff, schedules, rooms and devices, inventory, benefits, forms and consent, safety, privacy, payments, commissions, reports, integrations, and more), plus the generic Keystone list screens at `/dashboard/[listKey]`.
+- **Storefront:** public routes for services, providers, team, booking, booking confirmation, client account, intake, appointments, reviews, gallery, contact, and gift cards, implemented in `features/storefront`.
+- **Onboarding:** a dashboard onboarding dialog runs the `runMedSpaOnboarding` mutation with a sample, minimal, or custom setup from `features/platform/onboarding/lib/seed.json`.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/medspa/getting-started" description="Requirements, environment, migrations, first operator, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/medspa/architecture-workflows" description="Data model, booking-to-checkout lifecycle, clinical gates, GraphQL operations, and roles." />
+  <Card title="External dashboard" href="/docs/openfront/medspa/external-dashboard" description="Platform pages and the skill for building a custom operator dashboard." />
+  <Card title="External storefront" href="/docs/openfront/medspa/external-storefront" description="Customer routes, journeys, and the skill for building a custom storefront." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/medspa/integrations-boundaries" description="Payment adapters, webhooks, SMTP, S3 storage, AI, and MCP status." />
+  <Card title="Current limitations" href="/docs/openfront/medspa/limitations" description="What the current source does not do." />
+</Cards>
+
+## Ownership and tenancy
+
+`Practice` is the tenant. Every list carries a `practice` relationship, and `features/keystone/models/tenantAccess.ts` scopes reads to the signed-in user's practice, fills the practice on create from the authenticated actor, and rejects writes that connect or move a record to another practice, including through inverse relationships. `Location` is the clinic site; staff `PracticeMembership` records and provider schedules are scoped to locations.
+
+Access is capability-based. Each user has one `Role` with 14 flags, and `features/keystone/access.ts` re-reads the user and role from the database on each check, so a disabled user or a changed role loses access immediately. Practice ownership or dashboard access is not a claim of clinical licensure: clinical execution additionally requires a verified `ProviderCredential` and an active `ProviderAuthorization` for the treatment and location.
+
+The public storefront serves one practice: the one pinned by `MEDSPA_PRACTICE_SLUG`, or otherwise the single active practice with a published `StorefrontSetting`. If several practices are published and none is pinned, the storefront resolves no practice.

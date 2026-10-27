@@ -6,6 +6,7 @@
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

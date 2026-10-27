@@ -1,0 +1,53 @@
+---
+title: Sportsbook current limitations
+description: What the current Openfront Sportsbook source does not do, including the closed customer API outside sandbox mode, sandbox-only providers, and lists with no writer.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+This page describes source boundaries. It is not legal advice or a complete checklist for operating a sportsbook in any jurisdiction.
+</Callout>
+
+## No regulatory status is supplied
+
+The repository does not license an operator, certify adapters, approve a jurisdiction policy, or authorize real-money wagering. Onboarding records the legal entity and operator jurisdiction as pending with placeholder references, the jurisdiction policy as a draft, and the `LICENSING` and `CERTIFICATION` stages as `BLOCKED`. Licence references, certification status, and authority citations are operator-entered records.
+
+## The customer API is closed outside sandbox mode
+
+- Every customer route under `/api/sandbox/sportsbook/*` calls `assertSandboxRuntime`. It returns `SANDBOX_DISABLED` unless `SPORTSBOOK_SANDBOX=true`.
+- In production, sandbox mode also requires `SPORTSBOOK_DEPLOYMENT_MODE=sandbox`, an `https://*.local` `SANDBOX_PUBLIC_ORIGIN`, and a database URL whose name contains `ephemeral`, `sandbox`, `validation`, or `test`.
+- So a normal production deployment has no working sign-up, bet slip, wallet, or bet history. The storefront renders published sports and events but shows "Betting closed".
+- There is no non-sandbox customer API in the source.
+
+## Providers are sandbox only
+
+- The only adapter implementation is `SandboxAdapter`. Payments refuse any adapter other than `sandbox-payments`. Verification, location, AML, prices, and results also use sandbox adapters.
+- Sandbox adapter results live in process memory, so a lookup after a restart reports `PENDING`.
+- There is no real odds feed, results feed, identity or geolocation provider, payment processor, tax engine, or reporting channel.
+
+## Missing or partial workflows
+
+- **Lists with no writer:** `Team`, `AccessReview`, `AffiliateAttribution`, `DataCorrectionCase`, `LegalHold`, `ResettlementCase`, and `WagerStatusEvent` exist in the schema, but no mutation or worker writes them. Corrections use new `Settlement` versions instead of `ResettlementCase`.
+- **Regions:** competitions show a region, but `createCatalogCompetition` takes no region, so new competitions cannot be assigned one from the dashboard.
+- **Market grading:** `gradeMarket` always refuses; grading is per selection with `gradeMarketSelection`.
+- **Read-only pages:** account closures and notifications have list pages but no operator actions.
+- **Object storage:** no list uses file or image storage, so the shared `S3_*` variables are not read.
+- **MCP:** only generic schema tools exist; there are no sportsbook-specific agent tools.
+- **Starter tables:** `RetainedStarterTodo`, `RetainedStarterTodoImage`, and `RetainedStarterTodoImageLink` remain in the Prisma schema from the starter template. They are not Keystone lists, are not exposed through GraphQL or the dashboard, and are unused.
+
+## Operator access
+
+- Every custom operator action requires a verified two-factor session. Operators without MFA can sign in but cannot act.
+- The first admin is created without `canApproveSensitiveActions`. Dual-control actions need a second operator, created through `bootstrapIndependentApprover`.
+- Approval requests expire after 24 hours. The code marks this lifetime as an owner decision.
+- The operator sign-up page is closed unless `PUBLIC_SIGNUPS_ALLOWED=true`.
+
+## Tenancy and scale
+
+The schema and GraphQL requests are tenant-scoped, and the migrations add row-level security policies. `/api/ready` only reports row-level security as approved when the database role does not bypass it. The storefront resolves a single operator brand per host, so one storefront host serves one tenant. Settlement, delivery, recovery, and anchoring depend on the separate worker process; if it is not running, those queues do not drain.
+
+## Deployment responsibilities
+
+Before any real deployment, the operator must supply licences, counsel review, certified provider adapters, real customer API exposure, backups, monitoring, secret management, audit anchoring, a non-bypass database role, and incident procedures. Passing builds and rendering pages show only that the exercised code runs.

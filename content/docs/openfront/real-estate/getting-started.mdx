@@ -1,0 +1,147 @@
+---
+title: Getting started with Real Estate
+description: Clone the source, configure PostgreSQL and sessions, apply migrations, create the first owner, run brokerage onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You can try the hosted demo at [real-estate.openship.org](https://real-estate.openship.org) before you install anything.
+
+## Requirements
+
+- Node.js 20 or later. `package.json` sets `engines.node` to `>=20.0.0`, and the README recommends Node.js 22.
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+
+The stack is Next.js 16 (App Router), React 19, Keystone 6 with GraphQL, and Prisma 6.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-real-estate.git
+cd openfront-real-estate
+npm install
+```
+
+The repository ships a `package-lock.json`, so `npm ci` also works.
+
+## Environment
+
+There is no `.env.example` in the repository. Create `.env` in the project root:
+
+```bash
+DATABASE_URL=postgresql://USER:PASS@localhost:5432/openfront_real_estate
+SESSION_SECRET=replace-with-at-least-32-random-characters
+
+# S3-compatible storage
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-endpoint
+
+# Optional
+PUBLIC_SIGNUPS_ALLOWED=false
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM=no-reply@example.com
+SMTP_STORE_LINK=https://your-domain.example
+OPENROUTER_API_KEY=your-openrouter-key
+OPENROUTER_MODEL=your-model-id
+OPENROUTER_MAX_TOKENS=4000
+```
+
+Generate the session secret with `openssl rand -hex 32`. Never commit `.env`.
+
+| Variable | Read by | What it does |
+|---|---|---|
+| `DATABASE_URL` | `features/keystone/index.ts` | Required. Keystone refuses to start without it. |
+| `SESSION_SECRET` | `features/keystone/index.ts` | Required. Must be at least 32 characters. Sessions are stateless cookies that last 30 days. |
+| `S3_ENDPOINT` | `next.config.ts` | Its host is added to the allowed remote image hosts for `next/image`. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Not read by current code | Kept for parity with other Openfront products. No list has an image or file field and no Keystone storage is configured, so uploads do not exist today. |
+| `PUBLIC_SIGNUPS_ALLOWED` | `features/dashboard/lib/authFlow.ts` | Opens `/dashboard/signup` only when set to `true`. Storefront customer sign-up at `/account` does not use this switch. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | `features/keystone/lib/mail.ts` | Password reset email. Without `SMTP_HOST` the reset screens tell the user that email is not set up. `SMTP_STORE_LINK` is the base URL used in reset links. |
+| `MAIL_USER` | `features/keystone/lib/mail.ts` | Only checked to log an Ethereal preview URL outside production. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | `app/api/completion/route.ts` | Shared dashboard AI chat. Disabled unless the key and model are set. `OPENROUTER_MAX_TOKENS` defaults to 4000. |
+| `NEXT_PUBLIC_VIEW_ORDER` | `features/dashboard/views` | Fallback only. Used when the generated Keystone view order is not available. |
+
+## Migrations
+
+The repository has 29 checked-in Prisma migrations. Review them before you point the app at a database that holds data you care about.
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate` (`prisma migrate deploy`), then `next dev`. It changes the database in `DATABASE_URL`.
+
+To apply migrations on their own:
+
+```bash
+npm run migrate
+```
+
+`npm run migrate:gen` creates new development migrations. Use it only against a disposable database.
+
+<Callout type="warn">
+`npm run build` does not run migrations. Run `npm run migrate` (or `npm run release:migrate`) as a separate release step.
+</Callout>
+
+Once running, the storefront is at `/`, the dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
+
+## First user
+
+While the database has no users, every page redirects to `/dashboard/init`. That form asks for a name, email, and password. In one transaction it creates:
+
+- the user;
+- a brokerage named "My Brokerage" (slug `my-brokerage`), active and marked primary;
+- an `Admin` role with every permission flag on;
+- an active `owner` membership for that user, and sets it as the user's active brokerage.
+
+You can rename the brokerage later in onboarding or Store Settings.
+
+## Onboarding
+
+After sign-in, the dashboard shows a setup dialog. It runs the `runRealEstateOnboarding` mutation with one of two templates:
+
+| Template | What it creates |
+|---|---|
+| Basic setup (`minimal`) | One agent, one active listing, one routing rule, one lead, one showing, and one deal. |
+| Complete setup (`full`) | Three roles, three agents with memberships, four listings, four routing rules, four leads, three showings, and three deals. It also adds one example each of media, open house, showing feedback, offer, document, disclosure, milestone, inspection, mortgage application, title order, escrow, commission, team, task, comp, valuation, neighborhood, saved home, saved search, alert, syndication, and source feed. |
+
+Rules the code enforces:
+
+- The caller needs the `canManageOnboarding` role flag and an active `owner` or `admin` membership in the active brokerage.
+- Data is written only into the active brokerage. The seed renames that brokerage to its sample name and fills its storefront settings.
+- Seeded agents get random passwords. They sign in only after a password reset.
+- Both templates record practitioner licenses and listing engagement and `public_site` publication authority for the seeded listings, so those listings appear on the storefront.
+- Records are matched by key, so a second run reports items as skipped instead of duplicating them.
+- Empty primary brokerages with no members, settings, or listings are demoted, so the storefront serves the brokerage you just set up.
+
+`dismissRealEstateOnboarding` hides the dialog without creating data. Seed records are sample data. Remove them before real use.
+
+## Checks
+
+```bash
+npm run lint
+node --test tests/*.test.cjs
+```
+
+`npm run lint` runs `eslint .`. There is no `npm test` script. The three files in `tests/` use Node's built-in test runner and do not need a database.
+
+## Deploy
+
+1. Provision PostgreSQL. Back it up before each migration.
+2. Set `DATABASE_URL`, `SESSION_SECRET`, the `S3_*` values, and any optional SMTP or OpenRouter values in your host's secret store.
+3. Build with `npm run build`.
+4. Run `npm run migrate` as a release step.
+5. Start with `npm start`.
+
+The repository includes `railway.toml`. It builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build step cannot reach an internal database. The README has a Vercel import button that asks for `DATABASE_URL` and `SESSION_SECRET`; you still need to run migrations yourself.
+
+There is no background worker in the source. Run every app process against the same database and session secret.
+
+See [Openfront Real Estate](/docs/openfront/real-estate) for the data model, workflows, and limitations.

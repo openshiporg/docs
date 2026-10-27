@@ -6,70 +6,71 @@ description: Staff-facing order entry for dine-in and takeout.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-The POS screen is built for speed. It is the place where a server, cashier, or counter staff member can open a new order without bouncing between three different tools.
+The POS screen at `/dashboard/platform/pos` is for opening orders quickly. A server, cashier, or counter staff member can start a dine-in or takeout order and send it straight to the kitchen.
 
-In the current build, the POS is strongest at the front half of service: opening orders, assigning tables, grouping courses, and sending the order into the restaurant workflow.
-
-## What the POS already does well
+## What the POS does
 
 - switch between dine-in and takeout
-- select one or more active tables for a dine-in order
-- browse menu items by category
-- respect item availability and show sold-out items as unavailable
-- build a cart with quantities
-- assign each line item to course 1, 2, or 3
-- mark the whole order as urgent
+- select one or more tables for a dine-in order (required for dine-in)
+- set the guest count
+- browse menu items by category; sold-out items cannot be added
+- pick modifiers for items that have them, with required and min/max rules checked
+- set quantities and assign each line to course 1, 2, or 3
+- mark the order as urgent
 - add order-level special instructions
-- create `RestaurantOrder`, `OrderCourse`, and `OrderItem` records in one flow
+- save a draft cart on the device so it survives a reload
 
 ## Typical POS flow
 
 <Steps>
 <Step>
 ### Choose the order type
-Start with dine-in or takeout. If it is dine-in, pick the table or tables that should own the check.
+Start with dine-in or takeout. For dine-in, pick the table or tables.
 </Step>
 <Step>
 ### Build the cart
-Tap through categories, add items, and adjust quantities. Unavailable items are visible, but they cannot be added by mistake.
+Tap items to add them. Items with modifiers open a picker first. Adjust quantities and courses on each line.
 </Step>
 <Step>
-### Set the service timing
-Each line item can be assigned to course 1, 2, or 3. That gives the order structure before it ever reaches the service floor or kitchen workflow.
-</Step>
-<Step>
-### Add urgency or special instructions
-If the order needs extra attention, mark it urgent. You can also add notes for allergies, timing, or kitchen context.
+### Add urgency or instructions
+Mark the order urgent if needed, and add notes for the kitchen.
 </Step>
 <Step>
 ### Send the order
-Submitting the cart creates the restaurant order, creates course records, creates order items, and links tables when the order is dine-in.
+Submitting calls `createPOSOrder`. In one transaction it checks the tables are free and large enough, creates the `RestaurantOrder` with status `sent_to_kitchen`, creates one `OrderCourse` per course number (fired immediately), creates `OrderItem` rows with price and modifier snapshots, and marks the tables `occupied`. It then creates kitchen tickets.
 </Step>
 </Steps>
 
-## What happens after submission
+## Duplicate-safe sends
 
-When the POS creates a dine-in order, the order hooks can immediately mark the linked tables as occupied. From there, the order can move into the kitchen pipeline and later into the payment workflow.
+Each send carries an idempotency key. If the response is lost, retrying with the same cart reuses the same key and returns the same order instead of creating a second one. If you change the cart while an earlier send is still unresolved, the POS refuses and asks you to reload and retry the original order. When the device is offline, the POS saves the draft and does not send.
 
-The POS is intentionally lean. It does not try to handle every mid-service edge case itself.
+## Taking payment
 
-## What lives outside the initial POS screen
+The payment screen is at `/dashboard/platform/pos/[orderId]/payment`. It is opened from the service floor, the floor map, or a split-check notice. It has four tabs:
 
-These workflows happen elsewhere in the platform after the order is open:
+- **Cash**: records a cash payment with `processPayment`.
+- **Card**: creates a Stripe payment through `processPayment` and confirms it with the Stripe card element. `reconcilePayment` checks the status again if the result is unclear.
+- **Gift card**: looks up the code (`lookupGiftCard`) and charges up to the remaining balance (`redeemGiftCard`).
+- **Split**: plans several tenders, including equal splits. Gift cards must be applied first from the Gift card tab.
 
-- split check by guest or by item
-- combine tables or transfer a check to a new table
-- fire or recall courses during service
-- close the check with cash, card, split payment, or gift card
+The screen also shows how the check is allocated across split checks, refund actions that need manager approval, and the manager approval queue.
 
-Those tools live mainly in the service-floor and payment pages.
+## Floor map
+
+`/dashboard/platform/pos/tables` shows tables on a floor map. Staff can drag tables to new positions in edit mode, change table status, transfer an order to another table, and combine tables onto one order. The service floor links to it as "Floor map".
+
+## Recovery panels
+
+The POS has a collapsed "Checkout recovery" section. It shows online checkouts that were paid but not placed, refunds and refund webhooks that need reconciling, and the queued notification list.
 
 <Callout type="info">
-A good way to think about it: the POS opens the order fast. The service-floor UI runs the dining room once that order is live.
+The POS opens orders. The service floor runs them once they are live: adding items, firing courses, splitting checks, and closing.
 </Callout>
 
 ## Current limitations
 
-- The current POS creation flow is lighter on modifier selection than the storefront customization flow.
-- There is no offline sync mode yet.
-- Seat-by-seat ordering is not the center of this screen. More complex service actions happen after the order is open.
+- Courses are limited to 1, 2, and 3 in the POS. All courses are fired at send time. Use the service floor to hold or recall a course.
+- Seat numbers are not set in the POS. They are set on the service floor.
+- The POS does not send orders offline. It only keeps a draft on the device.
+- There is no printer, cash drawer, or card reader integration.

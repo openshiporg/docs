@@ -1,0 +1,32 @@
+---
+title: External storefronts
+description: Give an LLM the Analytics storefront skill to adapt the built-in public dashboard site or create a separate client.
+---
+
+To create a custom Analytics storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the public app routes implement Analytics' current public experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Analytics codebase before proposing work.
+
+Skill file: [`/skills/openfront-analytics-custom-storefront/SKILL.md`](/skills/openfront-analytics-custom-storefront/SKILL.md)
+
+## There is no shop
+
+Openfront Analytics has no customer-facing store. There are no products, carts, checkout, orders, or customer accounts. The "storefront" is a public site that shows read-only analytics dashboards. `features/storefront/middleware.ts` passes every public route straight through.
+
+## Current public routes
+
+Routes live under `app/(storefront)/(main)/`; logic lives in `features/storefront` (`screens`, `components`, `lib/data`, `modules/layout`).
+
+| Route | What a viewer sees |
+|---|---|
+| `/` | Store name, tagline, and description from `StoreSettings`, then every public, non-archived site with its 30-day visitors and a sparkline (`publicSites`). Shows "No public dashboards yet." when there are none. |
+| `/sites/[slug]` | The public dashboard of a site with `isPublic` on. Same overview, panels, period picker, and filters as the operator overview, read through `publicDashboard`. Not found if the site is private or archived. |
+| `/share/[slug]` | The dashboard behind a shared link. If the link has a password, a password form is shown first (`unlockSharedLink`); the unlock token is stored in an httpOnly cookie for that path. Not found if the link is off, expired, or its site is archived. Marked `noindex`. |
+
+The public pages reuse the operator `SiteDashboard` component from `features/platform/sites/components/dashboard` with a public data loader (`features/storefront/lib/data/dashboards.ts`).
+
+## Boundaries
+
+- Public viewers get aggregate reports only. Visit lists and single-visit timelines are not available through `publicDashboard`.
+- A shared link slug is a capability. Anyone with the URL can view the dashboard unless the link has a password.
+- There is no viewer sign-in, comment, export, or embed feature in current source.

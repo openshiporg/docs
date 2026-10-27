@@ -1,0 +1,147 @@
+---
+title: Getting started with Hospital
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [hospital.openship.org](https://hospital.openship.org). It uses fictional data. Do not enter real patient information.
+
+## Requirements
+
+- Node.js 20 or later (`package.json` `engines` is `>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
+- npm. The repository ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate. Use a disposable database with synthetic data for evaluation.
+- S3-compatible object storage. Production startup fails without it.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-hospital.git
+cd openfront-hospital
+npm install
+cp .env.example .env
+```
+
+## Environment
+
+Edit `.env`. Generate every secret with `openssl rand -hex 32` (or longer where noted). Never commit `.env`.
+
+### Required
+
+| Variable | Use |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `SESSION_SECRET` | Session signing. At least 32 characters in production |
+| `S3_BUCKET_NAME` | Bucket for facility, department, and clinician images |
+| `S3_REGION` | Bucket region |
+| `S3_ACCESS_KEY_ID` | Storage access key |
+| `S3_SECRET_ACCESS_KEY` | Storage secret key |
+| `S3_ENDPOINT` | S3-compatible endpoint URL. Also used to allow image hosts in `next.config.ts` |
+
+When `NODE_ENV=production`, the app refuses to start if any of these are missing.
+
+### Security secrets
+
+These fall back to `SESSION_SECRET` when unset. Set separate values in production.
+
+| Variable | Use |
+|---|---|
+| `BOOTSTRAP_ADMIN_SECRET` | Gates the `bootstrapHospital` mutation. Must be at least 48 characters, or the mutation is unavailable (no fallback) |
+| `PASSWORD_RESET_PEPPER` | Hashes password reset tokens |
+| `AUTH_RATE_LIMIT_PEPPER` | Hashes rate-limit identities for sign-in and public booking |
+| `INTAKE_DELIVERY_SIGNING_KEY` | Signs one-time intake access codes |
+
+### Integrations and exports
+
+| Variable | Use |
+|---|---|
+| `INTEGRATION_SECRET_ENCRYPTION_KEY` | 32 bytes as 64 hex characters. Encrypts integration signing secrets |
+| `EXPORT_ENCRYPTION_KEY` | A different 32-byte hex key. Encrypts export files |
+| `INTEGRATION_HOST_ALLOWLIST` | Comma-separated exact hostnames that outbound integrations may call |
+| `ALLOW_LOCAL_INTEGRATION_ENDPOINTS` | `1` allows HTTP and private-address endpoints outside production, for local testing |
+| `OUTBOX_WORKER_SECRET` | Bearer secret for `/api/internal/outbox/dispatch`. At least 48 characters |
+| `OUTBOX_WORKER_URL` | Worker only. Must point at `/api/internal/outbox/dispatch`, HTTPS in production |
+| `OUTBOX_WORKER_INTERVAL_SECONDS` | Worker only. 15 to 300, default 60 |
+
+### Email, network, and optional features
+
+| Variable | Use |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Staff password reset email. Without `SMTP_HOST`, reset links cannot be sent |
+| `SMTP_STORE_LINK` | Public HTTPS origin used in emailed links |
+| `TRUST_PROXY`, `TRUST_PROXY_HOPS` | Set `TRUST_PROXY=1` behind a reverse proxy so rate limits use the forwarded client address. On Railway, `RAILWAY_ENVIRONMENT` is detected automatically |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens `/dashboard/signup`. Leave unset |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional shared key for the dashboard AI chat |
+
+The `validate:*-runtime` scripts read `OPENFRONT_GRAPHQL_URL`, `GRAPHQL_URL`, `OPENFRONT_RUNTIME_ADMIN_PATH`, `OPENFRONT_ALLOW_DISPOSABLE_DB`, and `OPENFRONT_ALLOW_MAINTAINED_DB`. They refuse to run unless the database name and flags mark it as disposable.
+
+## Migrations
+
+The repository has 35 checked-in Prisma migrations in `migrations/`.
+
+```bash
+npm run migrate
+```
+
+<Callout type="warn">
+`npm run dev` and `npm run build` both run `keystone build` and then `npm run migrate`. They change the database in `DATABASE_URL`. Do not point them at a shared or production database without a backup. `npm run migrate:gen` generates new migrations and should only run against a disposable database.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+- Public site: `/`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql`
+- Health check: `/api/health` (returns `ok` when the database answers)
+
+## Create the first user
+
+While the `User` table is empty, every request redirects to `/dashboard/init`. That page creates the first user with a "Global Clinical Administrator" role that has every permission, then the init page closes for good.
+
+There is also a `bootstrapHospital(secret, data)` GraphQL mutation for scripted setup. It needs `BOOTSTRAP_ADMIN_SECRET` (48+ characters) and a password of at least 16 characters, and it only works while no user exists.
+
+Public sign-up is off unless `PUBLIC_SIGNUPS_ALLOWED=true`. Add further staff from `/dashboard/platform/staff`, and give each role only the flags the job needs. `canAccessAllClinicalData` removes facility scoping, so grant it sparingly.
+
+## Onboarding
+
+After sign-in, a user with `canManageOnboarding` sees the onboarding card. Pick **Complete Practice Setup**, **Basic Booking Setup**, or **Custom Setup**. Applying it calls `applyHospitalOnboarding`, which also needs `canAccessAllClinicalData`.
+
+The full template creates the fictional "Northstar Family Care" practice: departments, two facilities, three providers, three visit types, schedule blocks for the coming days, two patients, two appointments, intake forms, and manual follow-up tasks. The result screen shows one-time intake links that expire in 7 days. You can re-run onboarding; it updates the same records instead of duplicating them.
+
+Remove or segregate the fictional records before collecting real data.
+
+## Checks
+
+```bash
+npm run validate:static
+```
+
+This runs the onboarding seed check, a GraphQL smoke check, the security unit tests, `tsc`, and ESLint. The `validate:*-runtime` scripts exercise a running server against a disposable database. Passing checks prove only the paths they cover.
+
+## Deploy
+
+1. Provision PostgreSQL and S3-compatible storage. Back up the database and test a restore.
+2. Set all required and security variables through a secret manager, with independent values.
+3. Build and start:
+
+   ```bash
+   npm run build
+   npm start
+   ```
+
+   The build applies migrations, so it needs database access. The included `railway.toml` builds without migrating and runs `npm run migrate && next start` at startup instead.
+4. For integrations, run a second service with `npm run worker:outbox`. `railway.worker.toml` defines that service. Give it `OUTBOX_WORKER_URL`, `OUTBOX_WORKER_SECRET`, and optionally `OUTBOX_WORKER_INTERVAL_SECONDS`.
+5. Behind a proxy that is not Railway, set `TRUST_PROXY=1` and the right `TRUST_PROXY_HOPS`.
+6. Point monitoring at `/api/health`.
+
+The README also has a Vercel deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. Add `S3_ENDPOINT` and the security secrets yourself.
+
+Read [Openfront Hospital](/docs/openfront/hospital) for the access model and limitations before handling real patient data.

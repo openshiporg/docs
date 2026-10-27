@@ -1,0 +1,58 @@
+---
+title: External dashboards
+description: Give an LLM the Collectibles dashboard skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Collectibles dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Collectibles' product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Collectibles codebase before proposing work.
+
+## Current operator pages
+
+Route files live in `app/dashboard/(admin)/platform/**` and import screens from `features/platform/<slice>`. Generic list and item screens for every Keystone list are at `/dashboard/[listKey]`, and several platform pages link to them for editing reference records such as pricing rules, market prices, buylists, and buylist entries.
+
+### Card shop (`features/platform/card-shop`)
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/cards` | Cards & Sets: every imported set with its card count, stock, and release status |
+| `/dashboard/platform/cards/[handle]` | One set's checklist: which cards and conditions are stocked, with links to each product |
+| `/dashboard/platform/graded` | Graded Slabs: serialized slabs with company, grade, label, and certificate |
+| `/dashboard/platform/sealed` | Sealed & Pre-orders: sealed stock, pre-order street dates, allocations, and units sold |
+| `/dashboard/platform/pricing` | Market & Repricing: refresh TCGplayer prices via TCGCSV, preview and apply pricing rules, see moves held for review |
+| `/dashboard/platform/buylist` | Buylist: active buylist terms and entries with cash and credit offers |
+
+### Buying, consignment, and items
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/trade-ins`, `/trade-ins/[id]` | Move trade-in submissions through their statuses, add items, quote, record inspections and accepted amounts |
+| `/dashboard/platform/consignments`, `/consignments/[id]` | Create intakes, add items, create and send agreements, move intake, item, and agreement statuses |
+| `/dashboard/platform/consignment` | Consignment Payouts desk: settlement queues (read-only) |
+| `/dashboard/platform/items`, `/items/[id]` | Serialized item list and record: lifecycle, evidence timeline, add identifier, condition, grade, provenance, custody, valuation, or media |
+| `/dashboard/platform/items/receive` | Receive an item into stock with `receiveCollectibleItem` |
+| `/dashboard/platform/catalog` | Catalog Desk: catalog items, specimens, and categories queues |
+| `/dashboard/platform/collectible-inventory` | Inventory & Custody: units, holds, and custody history (read-only, system-written) |
+| `/dashboard/platform/evidence` | Condition & Grading: observation review queues |
+| `/dashboard/platform/disputes`, `/disputes/[id]` | Open disputes on orders, assign, move status, attach evidence, resolve |
+| `/dashboard/platform/high-value-fulfillment`, `/[orderId]` | Requirements queue; set declared value, signature, and insurance; record shipment evidence |
+| `/dashboard/platform/collectible-commerce` | Listings & Offers desk |
+| `/dashboard/platform/auctions` | Auctions desk (read-only; bidding is disabled) |
+| `/dashboard/platform/collectors`, `/sellers`, `/sellers/[id]` | Collector profiles; approve, pause, suspend, reinstate, or close sellers and set identity state |
+
+### Shared commerce
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/orders`, `/orders/[id]`, `/orders/[id]/fulfill`, `/orders/create` | Order queue, detail, fulfillment, and draft orders |
+| `/dashboard/platform/products`, `/products/[id]`, `/products/create` | Products and variants, including card fields and pre-order settings |
+| `/dashboard/platform/product-categories`, `/product-collections` | Categories and collections |
+| `/dashboard/platform/inventory` | Variant stock levels |
+| `/dashboard/platform/claims` | Returns and claims |
+| `/dashboard/platform/analytics` | Sales analytics |
+| `/dashboard/platform/markets`, `/regions`, `/regions-management`, `/countries`, `/currencies` | Regions, countries, and currencies |
+| `/dashboard/platform/store` | Store settings |
+| `/dashboard/platform/users`, `/business-account-requests`, `/invoices` | Users, business account requests, and business-account invoices |
+| `/dashboard/platform/discounts`, `/price-lists`, `/gift-cards` | Marketing and pricing tools |
+| `/dashboard/platform/shipping`, `/shipping-options`, `/shipping-providers`, `/payment-providers` | Shipping and payment setup |
+| `/dashboard/platform/apps`, `/api-keys`, `/order-management-system`, `/system` | Apps, API keys, order-management connection, and system settings |

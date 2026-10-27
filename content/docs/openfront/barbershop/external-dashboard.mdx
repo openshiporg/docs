@@ -6,3 +6,45 @@ description: Give an LLM the Barbershop dashboard skill to adapt the built-in ex
 To create a custom Barbershop dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Barbershop's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Barbershop codebase before proposing work.
+
+Skill file: [`/skills/openfront-barbershop-custom-dashboard/SKILL.md`](/skills/openfront-barbershop-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server actions are in `features/platform/<slice>`. Every platform page is scoped to the active shop. If the user has no shop, the platform layout shows a shop access panel instead.
+
+| Page | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/booking` | `booking` | Booking board for one day: appointments by time, schedule by barber, chairs, status filter. Create staff appointments, confirm, check in, seat, cancel, reschedule, mark no-show |
+| `/dashboard/platform/queue` | `queue` | Walk-in line: add a walk-in, assign service and barber, mark texted (no SMS is sent), seat into an appointment, mark served or left; recently served |
+| `/dashboard/platform/barbershop` | `barbershop` | Shop operations: a "Needs attention" list (low or expiring stock, unpaid or unapproved commissions, open card payments, missing no-show policy, chairs in maintenance or unassigned, unsigned waivers) and the waitlist |
+| `/dashboard/platform/services` | `services` | Service menu, packages and memberships, retail products, booking policy link |
+| `/dashboard/platform/services/categories` | `services` | Create, edit, order, and show or hide menu categories |
+| `/dashboard/platform/services/new`, `/services/[id]` | `records` | Create and edit a service: price in dollars, duration, deposit, barbers, licensed flag, status |
+| `/dashboard/platform/services/packages/new`, `/services/packages/[id]` | `records` | Create and edit a package and its included services |
+| `/dashboard/platform/services/plans/new`, `/services/plans/[id]` | `records` | Create and edit a membership plan |
+| `/dashboard/platform/services/new-product`, `/services/products/[id]` | `records` | Create and edit a retail product |
+| `/dashboard/platform/staff` | `staff` | Weekly roster, barbers, projected commission, shop closures, shifts and time off |
+| `/dashboard/platform/staff/new` | `staff` | Add a barber |
+| `/dashboard/platform/staff/[id]` | `staff` | Barber profile, services, chair, commission rate, weekly hours editor, shifts and time off, practitioner credentials (add, suspend, expire, revoke), sign-in account link, recent visits |
+| `/dashboard/platform/staff/chairs` | `staff` | Create and edit chairs; set in service, maintenance, or reserved |
+| `/dashboard/platform/customers` | `customers` | Customer directory and profile: visit history, receipts, notes, consent and waivers, sell and manage memberships and packages, status |
+| `/dashboard/platform/customers/new` | `records` | Add a customer |
+| `/dashboard/platform/pos` | `pos` | Open tickets and checkout (cash, card recorded by staff, package visit), tips, discount, tax; retail sales and returns; receipts and cash refunds |
+| `/dashboard/platform/inventory` | `inventory` | Retail stock on hand, needs-reordering tab, search, margin |
+| `/dashboard/platform/inventory/[id]` | `inventory` | One product: receive a delivery, record waste or a count correction, lots, stock ledger |
+| `/dashboard/platform/inventory/suppliers` | `inventory` | Create and edit suppliers; use, pause, or archive |
+| `/dashboard/platform/payroll` | `payroll` | Commissions by status and barber, bulk approve or void, pay per barber, payouts, tips by barber |
+| `/dashboard/platform/payments` | `payments` | Payment providers (set up manual, turn on or off, set up Stripe when `STRIPE_SECRET_KEY` is set), takings by tender over 30 days, recent receipts, open card payments, processor checks |
+| `/dashboard/platform/policies` | `policies` | Booking policy in force, publish a new version, version history, retire; no-show policies (create, edit, use, pause, archive) |
+| `/dashboard/platform/team` | `team` | Add an existing account by email, set the shop role, suspend, restore, or remove access |
+| `/dashboard/platform/reports` | `reports` | Revenue, appointments, walk-ins, and barber and service performance for a date range |
+| `/dashboard/platform/store-settings` | `store-settings` | Shop name, tagline, address, phone, timezone, hours, brand color, logo, publish the storefront, sample-shop flag; active shop selector |
+
+Onboarding is not a route. It is a dialog in the dashboard shell (`features/platform/onboarding`). See [Getting started](/docs/openfront/barbershop/getting-started#onboarding).
+
+Lists without a platform page are edited on the generic `/dashboard/<list-key>` pages from `app/dashboard/(admin)/[listKey]`. Examples are waiver forms, waitlist entries (the "All requests" link), roles, and users. System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `LifecycleOutboxEvent` are read-only.
+
+## Data the pages use
+
+The heavier pages read one projection query each: `platformBooking`, `platformQueue`, `platformCustomers`, `platformPos`, `platformReports`, `platformServices`, `platformStaff`, `platformOperations`, and `platformTeam`. Payments, payroll, inventory, and policies use generated list queries filtered by the active shop. Changes go through the named commands listed on the [overview](/docs/openfront/barbershop#named-graphql-operations).

@@ -1,8 +1,45 @@
 ---
 title: External storefronts
-description: Give an LLM the Law Firm storefront skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Law Firm storefront skill to adapt the built-in public site, customer account, and client portal or create a separate client.
 ---
 
-To create a custom Law Firm storefront, copy the skill and give it to your LLM. The skill will first explain that current Law Firm source has no canonical `features/storefront` layer, then inspect the actual public or portal routes and identify any backend contracts needed before treating them as a storefront.
+To create a custom Law Firm storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the public app routes implement the firm's public site, the customer consultation account, and the client portal.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Law Firm codebase before proposing work.
+
+Skill file: [`/skills/openfront-law-firm-custom-storefront/SKILL.md`](/skills/openfront-law-firm-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Route files are at the top of `app/` (there is no route group). Screens live in `features/storefront/screens`; portal screens live in `features/storefront/portal/screens`.
+
+| Route | What visitors and clients do |
+|---|---|
+| `/` | Home page with the firm's published identity and practice areas |
+| `/practice-areas` | List of public practice areas with length and fee (`consultationCatalogPage`) |
+| `/practice-areas/[slug]` | One practice area and a link to book (`consultationService`) |
+| `/attorneys`, `/attorneys/[slug]` | Published attorney profiles |
+| `/about`, `/contact` | Firm about statement and contact details |
+| `/privacy`, `/disclaimer`, `/accessibility` | Policy pages; privacy shows the published privacy notice |
+| `/consultation` | Request a consultation: pick a slot (`consultationAvailability`), answer jurisdiction, opposing parties, key deadline, and summary, accept the first-contact notice, then `bookClientConsultation`. Requires a signed-in account. |
+| `/consultation/received` | Static status page that does not confirm receipt |
+| `/consultation/payment/[id]` | Legacy route; redirects to `/account/appointments/[id]` |
+| `/account/signup`, `/account/signin` | Create an account (`registerConsultationAccount`) and sign in |
+| `/account/reset` | Password reset (`sendUserPasswordResetLink`, `redeemUserPasswordResetToken`); needs SMTP |
+| `/account` | Your consultations (`customerConsultationPage`) |
+| `/account/appointments/[id]` | One consultation (`customerConsultation`) and a Cancel form (`cancelOwnConsultation`) |
+| `/portal/accept` | Accept a portal invitation token; sets the portal session cookie |
+| `/portal/signin` | Request and redeem an emailed portal sign-in link |
+| `/portal` | List of items the firm shared with this client |
+| `/portal/share/[shareId]` | One shared document, invoice, or message thread |
+
+## How it is gated
+
+- The public site reads only the firm's published settings. If no firm is set up, it shows a neutral, unconfigured site.
+- Customer accounts open only when the firm's `PublicSitePolicy` has accounts enabled and a privacy notice. Booking opens only when booking is enabled and a first-contact notice is published.
+- Exactly one active firm must exist. A firm marked as demo is not served unless it runs on an owned offline fixture.
+- Anonymous intake without an account is off (`PUBLIC_INTAKE_ENABLED = false`).
+- Booking slots are 9:00 to 17:00 on weekdays. Fees are shown but not collected; there is no payment step.
+- Portal clients see only resources shared with them through `PortalShare`, under an active `PortalMatterAccess` grant. Drafts and internal notes in a thread are not shown.
+
+Storefront customers are `User` records without a firm membership. Portal clients are separate `PortalAccount` records with their own session cookie.

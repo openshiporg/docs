@@ -6,3 +6,53 @@ description: Give an LLM the Restaurant dashboard skill to adapt the built-in ex
 To create a custom Restaurant dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Restaurant's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Restaurant codebase before proposing work.
+
+## Current platform routes
+
+Each route file in `app/dashboard/(admin)/platform` re-exports a screen from `features/platform/<slice>`. The sidebar entries come from `features/platform/lib/navigation.ts`. Routes marked "not in sidebar" exist but are reached by URL or from another screen.
+
+| Route | Screen | Slice |
+|---|---|---|
+| `/dashboard/platform/orders` | Order list with Kitchen, Expedite, and Cashier views | `orders` |
+| `/dashboard/platform/orders/[id]` | Order detail | `orders` |
+| `/dashboard/platform/orders/[id]/fulfill` | Service management: step the order through statuses | `orders` |
+| `/dashboard/platform/kds` | Kitchen display | `kds` |
+| `/dashboard/platform/pos` | Point of sale | `pos` |
+| `/dashboard/platform/pos/tables` | Floor map with table transfer and combine (not in sidebar) | `pos` |
+| `/dashboard/platform/pos/[orderId]/payment` | Check payment: cash, card, gift card, split tenders | `pos` |
+| `/dashboard/platform/service-floor` | Table service | `service-floor` |
+| `/dashboard/platform/reports` | Reports hub | `reports` |
+| `/dashboard/platform/reports/sales` | Sales report | `reports` |
+| `/dashboard/platform/reports/menu-performance` | Menu performance | `reports` |
+| `/dashboard/platform/reports/labor` | Labor report | `reports` |
+| `/dashboard/platform/reservations` | Reservations | `reservations` |
+| `/dashboard/platform/waitlist` | Waitlist (not in sidebar) | `waitlist` |
+| `/dashboard/platform/store-settings` | Store settings | `store-settings` |
+| `/dashboard/platform/receipts` | Receipt ledger with CSV export | `payments` |
+| `/dashboard/platform/reconciliation` | Cash & Close: business days, cash movements, settlements | `reconciliation` |
+| `/dashboard/platform/menu` | Menu Architect: categories, items, modifiers | `menu` |
+| `/dashboard/platform/menu-categories` | Category list (not in sidebar) | `menu` |
+| `/dashboard/platform/menu-items` | Menu item list (not in sidebar) | `menu` |
+| `/dashboard/platform/menu-modifiers` | Modifier list (not in sidebar) | `menu` |
+| `/dashboard/platform/ingredients` | Ingredients, stock counts, transfers, operations recovery | `inventory` |
+| `/dashboard/platform/inventory/purchase-orders` | Purchase orders, receiving, invoices, credits, lots | `inventory` |
+| `/dashboard/platform/inventory/recipes` | Recipes and food cost (not in sidebar) | `inventory` |
+| `/dashboard/platform/inventory/waste` | Waste log | `inventory` |
+| `/dashboard/platform/operations` | Operations dashboard | `operations` (renders `reports` screen) |
+| `/dashboard/platform/tables` | Tables & Sections | `tables` |
+| `/dashboard/platform/time-clock` | Time clock and corrections | `staff` |
+| `/dashboard/platform/users` | Staff list | `staff` |
+| `/dashboard/platform/staff/schedule` | Weekly shift roster (not in sidebar) | `staff` |
+| `/dashboard/platform/staff/tips` | Tip pools (not in sidebar) | `staff` |
+| `/dashboard/platform/discounts` | Discounts | `discounts` |
+| `/dashboard/platform/gift-cards` | Gift cards, issuing, notification queue | `gift-cards` |
+| `/dashboard/platform/privacy` | Customer data requests and email campaigns | `customers` |
+| `/dashboard/platform/payment-providers` | Payment providers | `payment-providers` |
+| `/dashboard/platform/api-keys` | API keys | `api-keys` |
+
+Other dashboard routes:
+
+- `/dashboard` is the home screen. `/dashboard/[listKey]`, `/dashboard/[listKey]/[id]`, and `/dashboard/[listKey]/create` are the generic Keystone list screens.
+- `/dashboard/reports/sales` and `/dashboard/reports/menu-performance` render the same report screens as their platform routes.
+- `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`, and `/dashboard/no-access` handle auth.
+- Onboarding is a dialog in the sidebar, not a route.

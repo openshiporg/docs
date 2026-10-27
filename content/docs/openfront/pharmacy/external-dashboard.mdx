@@ -6,3 +6,37 @@ description: Give an LLM the Pharmacy dashboard skill to adapt the built-in expe
 To create a custom Pharmacy dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Pharmacy's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Pharmacy codebase before proposing work.
+
+Skill file: [`/skills/openfront-pharmacy-custom-dashboard/SKILL.md`](/skills/openfront-pharmacy-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `features/platform/<slice>`, with `screens`, `components`, and `actions` folders.
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/overview` | Queue cards for prescriptions, refills, online requests, inventory, recalls, orders, and payments |
+| `/dashboard/platform/prescriptions` | Prescription worklist (`pharmacyPrescriptionWorklist`) |
+| `/dashboard/platform/prescriptions/intake` | New prescription (`intakePharmacyPrescription`) |
+| `/dashboard/platform/prescriptions/[id]` | Prescription task: clinical safety review, pharmacist review, authorize, fill reserve and release, dispense with label, refills, transfer approval, transfer out |
+| `/dashboard/platform/refills` | Refill request queue across prescriptions |
+| `/dashboard/platform/requests` | Online registration, transfer, and new-prescription requests; resolve, or create a patient from a request |
+| `/dashboard/platform/patients`, `/create`, `/[id]` | Patient directory, create with identity evidence, detail with contact, allergies, medications, consents, and account link |
+| `/dashboard/platform/prescribers`, `/[id]` | Prescriber directory; detail with prescriptions, credential state, edit, and eRx validation |
+| `/dashboard/platform/products`, `/[id]` | Catalog list; detail with stock, publish or archive, online and POS switches, edit drawer |
+| `/dashboard/platform/drug-references`, `/[id]` | NDC drug references; record a drug reference review |
+| `/dashboard/platform/suppliers`, `/[id]` | Wholesalers and the lots received from them; status changes |
+| `/dashboard/platform/inventory`, `/[id]` | Lot queue; lot detail with movements, recalls, excursions (read-only), and quantity adjustment |
+| `/dashboard/platform/inventory/receive` | Receive a room-temperature lot (cold-chain receiving is disabled) |
+| `/dashboard/platform/recalls`, `/open`, `/[id]` | Recall queue, open a recall on selected lots, quarantine, patient exposure outreach, lot disposition, close |
+| `/dashboard/platform/orders`, `/[id]` | Order queue; order detail with lines, payment, fulfillment transitions, and refunds |
+| `/dashboard/platform/pos` | Counter OTC cash sale and receipt |
+| `/dashboard/platform/payments` | Payment ledger, sessions that need reconciliation, payment providers (install, uninstall, edit), and cash policy |
+| `/dashboard/platform/staff` | Organization memberships: add, change role, suspend or revoke |
+| `/dashboard/platform/credentials` | Dispensing setup checklist; staff, prescriber, and drug reference reviews; cash policy; fill policy |
+| `/dashboard/platform/locations`, `/[id]` | Locations: create, contact and address, status, online ordering, pickup, and delivery switches |
+| `/dashboard/platform/store-settings` | Store name, tagline, logo, support contact, privacy notice, and location hours |
+| `/dashboard/platform/integrations` | eRx, wholesaler, insurance, and tax provider status; configure eRx and insurance providers |
+| `/dashboard/platform/audit` | Audit timeline, outbox timeline, and replay of failed outbox events |
+
+`User` and `Role` have no platform page. They use the generic `/dashboard/users` and `/dashboard/roles` screens, which the sidebar links to. The other lists without their own page appear on a parent page. For example, `DispensingLabel` and `PrescriptionFill` appear on the prescription task, `InventoryMovement` on the lot task, and `HumanApproval` and `OutboxEvent` on the audit log. `MachineCredential` and temperature-excursion recording have no page and no working command.

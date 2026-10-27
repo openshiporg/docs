@@ -1,71 +1,76 @@
 ---
 title: Reporting
-description: Sales, menu, labor, and operational reporting in the current restaurant build.
+description: Operations, sales, menu, labor, receipts, and cash close in the current restaurant build.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-Openfront Restaurant already has four reporting surfaces that matter day to day. They are not pretending to be a giant BI warehouse. They are there to help an operator answer the obvious questions after a shift.
+Openfront Restaurant has a reports hub, an operations dashboard, and money screens for receipts and the daily cash close. They answer the questions an operator asks after a shift. They are not a data warehouse.
 
-## The reporting surfaces
+## Reporting screens
 
 <Cards>
-  <Card title="Operational dashboard" href="/docs/openfront/restaurant/orders" description="Live counts for active orders, kitchen load, table occupancy, and quick operational jump-offs." />
-  <Card title="Sales report" href="/docs/openfront/restaurant/reports" description="Revenue, order volume, average check, guest count, dayparts, order type, and payment breakdowns." />
-  <Card title="Menu performance" href="/docs/openfront/restaurant/menu/inventory" description="Completed order-item data rolled up into item and category performance." />
-  <Card title="Labor report" href="/docs/openfront/restaurant/staff" description="Time-entry based labor cost, labor percentage, tips, and role-level breakdowns." />
+  <Card title="Operations" href="/docs/openfront/restaurant/orders" description="Live counts for open checks, kitchen load, tables, and quick links. Route: /dashboard/platform/operations." />
+  <Card title="Sales report" href="/docs/openfront/restaurant/reports" description="Revenue, orders, average check, guests, dayparts, order type, and payment mix." />
+  <Card title="Menu performance" href="/docs/openfront/restaurant/menu" description="Item and category performance from completed order items." />
+  <Card title="Labor report" href="/docs/openfront/restaurant/staff" description="Approved hours, labor cost, labor percentage, tips, and role breakdowns." />
 </Cards>
 
-## What each report is using
+The hub at `/dashboard/platform/reports` links to Sales Overview, Menu Performance, and Labor & Staffing. It also lists Revenue Analytics, Customer Insights, Inventory Cost Tracking, and Comparative Period Reports as "Soon". Those four do not exist.
 
-### Operational dashboard
-The operational dashboard pulls together live counts like:
+## Operations dashboard
 
-- open orders
-- in-progress orders
-- ready orders
-- occupied tables
-- today's revenue and order count
+`/dashboard/platform/operations` (also in the sidebar as "Operations") uses `GetOperationalMetrics`. It shows:
 
-It is best treated as the quick pulse of the restaurant, not as a historical analysis tool.
+- open, in-progress, and ready orders
+- occupied and total tables
+- today's net food collections and order count
+- recorded order voids and cancelled orders
+- quick links to POS, KDS, orders, and the sales report
 
-### Sales report
-The sales report is the strongest of the current views. It already rolls up:
+## Sales report
 
-- total revenue
-- completed orders
-- average check
-- total guests
-- total tax, tips, and discounts
-- daypart trends
-- order-type mix
-- payment-method mix
+`/dashboard/platform/reports/sales` uses `GetSalesOverview` and `GetPaymentBreakdown`. It covers:
 
-### Menu performance
-Menu performance is driven by completed `OrderItem` records. It helps you spot:
+- net collected on completed checks, total orders, average check, and total guests
+- tax, tips, and discounts
+- comparison with the previous period
+- daypart trends (breakfast, lunch, dinner, late night)
+- order type mix (dine-in, takeout, delivery)
+- payment method mix
 
-- which items actually move
-- which categories are carrying revenue
-- which menu items are dragging
-- where recipe costing would make the view even sharper
+## Menu performance
 
-### Labor report
-Labor reporting combines `TimeEntry` data with completed-order sales. It is useful for:
+`/dashboard/platform/reports/menu-performance` uses `GetMenuItemPerformance` and `GetCategoryPerformance` on completed order items. It sorts items into Star, Plow Horse, Puzzle, and Dog groups and shows category revenue. `GetServerPerformance` is also defined in the report actions.
 
-- payroll cost review
-- labor percentage
-- sales per labor hour
-- role-by-role cost breakdown
+## Labor report
+
+`/dashboard/platform/reports/labor` uses `GetLaborData`. It combines `restaurantAttendance`, calculated or distributed tip pools, and completed orders. See [Staff and labor](/docs/openfront/restaurant/staff).
+
+## Receipts
+
+`/dashboard/platform/receipts` lists `Receipt` records: sale, refund, and correction. Receipts are written by the server when a payment succeeds or a refund is made, and are not edited. You can filter by check ID, view a receipt, print it from the browser, and export the list as CSV. Amounts are in minor units of the recorded currency.
+
+## Cash and business-day close
+
+`/dashboard/platform/reconciliation` ("Cash & Close" in the sidebar) manages the business day. All actions need payment permissions:
+
+- `openRestaurantBusinessDay` with an opening cash float and optional cutoff minutes. Only one day can be open.
+- `recordRestaurantCashMovement` for cash in or out with a reason.
+- `closeRestaurantBusinessDay` with counted cash and a reason. Closed totals cannot change.
+- `recordRestaurantSettlement` to attach processor statement evidence (reference, method, gross, fees, net).
+- `restaurantBusinessDays` and `restaurantBusinessDay` read the history.
+
+Business days are stored as `AuditEvent` rows, not their own list. Payments processed after a close are carried into the next day.
 
 ## Where reporting is still early
 
-A few pieces are present but still rough:
-
-- some operational metrics are still more dashboard hints than finished analytics products
-- recipe-linked profitability gets much better once your inventory and recipe data are filled out
-- export and long-range forecasting are not the point of the current build yet
+- The four "Soon" reports on the hub are not built.
+- Report pages export nothing except receipts, time entries, and tip ledgers (CSV).
+- There is no forecasting, scheduled report, or accounting export.
+- Recipe-based food cost only appears on the recipes page, not in reports.
 
 <Callout type="info">
-The reporting story is already useful for operating a restaurant. It just is not trying to be everything at once.
+Sales figures come from completed orders. Open checks do not show up in sales until they are closed.
 </Callout>

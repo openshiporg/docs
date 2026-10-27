@@ -1,0 +1,48 @@
+---
+title: Cannabis integrations and boundaries
+description: Traceability, payment, storage, email, AI chat, and MCP boundaries in the current source.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The source contains no external provider adapter. Integration records describe a provider choice and queue state; they are not proof that a request reached or was accepted by a state system, payment processor, or other provider.
+
+## State traceability
+
+- Onboarding creates one `IntegrationInstallation` with `providerType: "traceability"`, the provider code you supply, and status `unconfigured`. Its credential reference field is not readable through GraphQL.
+- `activateIntegrationInstallation` exists but is disabled (`provider.installation-verification`) until an adapter verifies provider capabilities directly.
+- Sales and other state-reported commands write an `OutboxEvent` with status `queued`. No worker in the repository sends outbox events to a provider. `retryStateOutboxEvent` only requeues `rejected`, `retryable`, or `dead_letter` events.
+- `recordStateInboxEvent` would store inbound regulator events in `StateEventInbox` but is disabled (`provider.authenticated-inbox`) until signatures are verified by a trusted adapter.
+- `recordReconciliationRun` and `approveReconciliationRun` are disabled (`provider.computed-reconciliation`).
+
+<Callout type="warn">
+A queued outbox event means the sale was recorded locally. It does not mean the state traceability system received it.
+</Callout>
+
+## Payments
+
+There is no payment provider integration. `TenderConfiguration` records which tender types are accepted (`cash`, `debit`, `ach`, `wallet`, `other`), limited by the rule pack's allowed tender types. Cash is counted through the register shift. For non-cash tenders, `finalizeCannabisSale` requires the approval reference from a separate card terminal; the software does not capture or settle funds.
+
+## Storage
+
+Keystone file storage uses S3-compatible object storage configured by `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_ENDPOINT`. Path-style addressing is chosen from the endpoint. Product images on the public menu use the `publicImageUrl` text field.
+
+## Email
+
+`features/keystone/lib/mail.ts` sends password-reset email when `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASSWORD` are set. `SMTP_FROM` sets the sender and `SMTP_STORE_LINK` sets the base URL for links. Without `SMTP_HOST`, reset links cannot be delivered.
+
+## AI chat and MCP
+
+- `/api/completion` powers the dashboard AI chat through OpenRouter. It uses `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and optionally `OPENROUTER_MAX_TOKENS`, or keys the user supplies locally. Shared keys require a signed-in session with `canAccessDashboard`.
+- The chat route connects to `/api/mcp-transport/[transport]` for tools, but that route returns HTTP 503 for every request: the generic MCP data tool is disabled until a bounded, owner-approved integration exists. The chat therefore has no data tools.
+
+## Out of scope
+
+- State traceability submission, polling, or webhook handling.
+- Payment capture, settlement, or card-present processing.
+- ID scanning hardware or third-party identity verification.
+- Delivery, online ordering, and customer accounts.
+- Tax filing and accounting exports.
+
+To add a provider, write a code-owned adapter, keep credentials out of GraphQL, logs, audit metadata, and outbox payloads, authenticate inbound traffic, make retries idempotent, and only then add the matching capability to `runtimeCapabilities.ts`.

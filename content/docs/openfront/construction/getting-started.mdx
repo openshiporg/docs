@@ -1,0 +1,141 @@
+---
+title: Getting started with Construction
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js matching `package.json` `engines` (`>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
+- npm. The repository ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage if you want controlled document and drawing files. Without it, file upload and download fail closed.
+
+## Live demo
+
+A hosted demo runs at [construction.openship.org](https://construction.openship.org). It uses fictional sample data. It is not a real contractor.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-construction.git
+cd openfront-construction
+npm install
+cp .env.example .env
+```
+
+## Environment
+
+The app refuses to start without `DATABASE_URL` and `SESSION_SECRET`. `SESSION_SECRET` must be at least 32 characters. During `next build` both fall back to placeholders, so a build does not need a live database.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_construction
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+The S3 values have no fallback. Document and drawing upload and download call `assertObjectStorageConfigured()` and fail when any value is missing. `S3_ENDPOINT` must use HTTPS unless it is a loopback development endpoint. The bucket needs a CORS rule that allows `PUT` from `APP_URL` with the `content-type`, `x-amz-checksum-sha256`, and `x-amz-meta-sha256` headers.
+
+Other settings the code reads:
+
+| Variable | Used for |
+|---|---|
+| `SHADOW_DATABASE_URL` | Prisma shadow database for `npm run migrate:gen` (declared in `schema.prisma`) |
+| `APP_URL` | Trusted origin for internal GraphQL forwarding from the AI assistant and MCP tools |
+| `PORTLESS_URL`, `PORT` | Alternatives to `APP_URL` for local internal forwarding |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens the dashboard sign-up page and public `User` creation. Default is closed |
+| `PUBLIC_SITE_KEY` | Which `PublicSiteProfile` the public website shows. Defaults to `default`. Must be a lowercase slug |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email. Without `SMTP_HOST` and `SMTP_FROM`, reset email is unavailable |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared dashboard AI chat (`/api/completion`) |
+| `OUTBOX_WEBHOOK_URL`, `OUTBOX_WEBHOOK_SECRET` | Required by the outbox worker (`npm run outbox:work`). The secret must be at least 32 characters |
+| `OUTBOX_BATCH_SIZE`, `OUTBOX_MAX_ATTEMPTS`, `OUTBOX_MAX_MESSAGES_PER_RUN` | Optional outbox worker limits (defaults 25, 8, 100; maximum 100) |
+
+`.env.example` also lists `CONSTRUCTION_ADMIN_EMAIL` and `CONSTRUCTION_ADMIN_PASSWORD`. No current code reads them, and there is no seed script. Keep `.env` out of source control.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy`, and starts Next.js. The repository has 20 migration directories.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database. Do not use `prisma db push`.
+</Callout>
+
+To change the schema, run `npm run migrate:gen` against a disposable database with `SHADOW_DATABASE_URL` set. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
+
+Once running:
+
+- Public website: `/`
+- Customer account: `/account`
+- Client and trade partner portal: `/portal`
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+- Health check: `/api/health` (runs `SELECT 1` with a 2 second timeout)
+
+## First operator
+
+On an empty database every request redirects to `/dashboard/init`. Create the first user there with name, email, and password. That user gets a `Platform Administrator` role with every permission.
+
+## Onboarding
+
+Open the onboarding dialog from the dashboard, or go to `/dashboard/platform/setup`. Choose one of two paths. Both call the same `onboardConstructionWorkspace` mutation.
+
+- **Custom setup.** You enter the company, brand, first project, currency (three-letter code), cost code, budget code, public contact email, service area, capability summary, first service, and privacy notice. You can name a client and a trade partner and choose to publish the first project on the website.
+- **Sample workspace.** Loads the fictional company "Northstar Builders" from `features/platform/onboarding/lib/seed.json`. The company is stored with `isDemo` set and its legal name says it is fictional. This path is only offered during first-company setup.
+
+Onboarding only runs for a live user session with `canManageOnboarding` and `canManageCompanies`, and only when that user has no company membership yet. It is idempotent per request.
+
+Both paths create:
+
+- the `Company` and four roles: Company Administrator, Project Manager, Field Lead, External Collaborator;
+- your `CompanyMembership` and `ProjectMembership`;
+- the first `Project`, a `CostCode`, a `BudgetCode`, an active `Budget` and one budget line;
+- five `ApprovalPolicy` records (budget change, prime contract, change order, progress claim, retainage release) with the administrator role as approver;
+- a `ProjectLocation`, a `Schedule` with tasks, and an `InspectionTemplate`;
+- a `PublicSiteProfile` and one `PublicService`, and optionally a `PublicProject`.
+
+The sample path also adds a specification section, drawing, equipment, material, bid package and invitation, estimate with a version and line, RFI, submittal, schedule tasks and a dependency, inspection, daily log, safety observation, change event, procurement request, lead and opportunity, three more public services, and three portfolio projects.
+
+Completion is recorded only after a readiness check passes. The setup page then shows a checklist: company profile, role templates, cost codes, project manager access, budget codes, active budget, approval policies, schedule, and site locations. "Independent approver" is listed but optional; invite a second approver from the project Team tool so approvals are not self-approved.
+
+## Checks
+
+```bash
+npm run typecheck
+npm run lint
+npm run lint:schema
+npm run test:security
+```
+
+`npm test` also runs `test:schema`, but `tests/schema` is currently empty. The `proof:authorization` and `proof:workflows` scripts point at `tests/integration`, which does not exist in current source.
+
+## Deployment
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`. Does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run outbox:work` | One drain of the outbox to the webhook, then exit |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with Railpack using `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README has a Vercel import button that asks for `DATABASE_URL` and `SESSION_SECRET`. Either way, you provision PostgreSQL, S3-compatible storage, SMTP, and the outbox webhook yourself. All app processes must share the same database and `SESSION_SECRET`.
+
+`npm run outbox:work` is not a long-running worker. It drains one batch and exits. Run it on a schedule (for example a cron job) if you want domain events delivered.

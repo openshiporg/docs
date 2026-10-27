@@ -1,0 +1,39 @@
+---
+title: External dashboards
+description: Give an LLM the Vape dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Vape dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Vape's product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Vape codebase before proposing work.
+
+Skill file: [`/skills/openfront-vape-custom-dashboard/SKILL.md`](/skills/openfront-vape-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`.
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/overview` | See whether sales are enabled and why not, orders to fulfil, products blocked from publishing, evidence expiring in 30 days, and today's decisions |
+| `/dashboard/platform/compliance` | Compliance Center: readiness blockers with links to fix them, safety controls (emergency stop, inventory export), provider-approval sheet, recent reports |
+| `/dashboard/platform/merchant-profiles`, `/[id]` | Create and edit draft profiles, submit, activate, suspend, revoke, start a new revision, stop or resume sales; add and change merchant licenses |
+| `/dashboard/platform/jurisdictions`, `/[id]` | Manage jurisdictions and authority sources; edit rule sets in a structured rules editor; approve, activate with a signed policy hash, emergency-disable, retire, version |
+| `/dashboard/platform/product-evidence` | Review classifications by status, find expiring or missing federal evidence and unclassified regulated variants, classify, and suspend, delist, or expire authorizations |
+| `/dashboard/platform/provider-approvals`, `/[id]` | Filter approvals by purpose and status; edit until active; submit, activate, suspend, revoke, expire |
+| `/dashboard/platform/compliance-ledger`, `/[id]` | Read-only tabs for decisions, events, age attempts and attestations, tax quotes, and carrier decisions; decision detail with event timeline |
+| `/dashboard/platform/compliance-reports`, `/[id]` | Generate an evidence inventory report, record a filing submission, export inventory |
+| `/dashboard/platform/products`, `/create`, `/[id]` | Manage products, variants, options, prices, and images; classify variants from the product page |
+| `/dashboard/platform/product-categories`, `/product-collections` | Organize the catalog |
+| `/dashboard/platform/inventory` | Stock list, adjust stock (delta or set count) and bulk paste through `adjustInventory` |
+| `/dashboard/platform/orders`, `/create`, `/[id]`, `/[id]/fulfill` | Order queue, admin order creation, order detail with returns, refunds, claims, and compliance section; rates, labels, label cancel, fulfillment |
+| `/dashboard/platform/claims` | Claim list and status |
+| `/dashboard/platform/users`, `/[id]` | Customers: profile, 21+ attestation, orders, addresses, carts, accounts, invoices |
+| `/dashboard/platform/business-account-requests`, `/invoices` | Review business account requests; business accounts and their status |
+| `/dashboard/platform/discounts`, `/gift-cards`, `/price-lists` | Promotions and pricing |
+| `/dashboard/platform/regions`, `/markets`, `/regions-management`, `/countries`, `/currencies` | Regions and markets (`/markets` and `/regions-management` render the region list) |
+| `/dashboard/platform/payment-providers`, `/shipping-providers`, `/shipping-options`, `/shipping` | Payment and shipping provider records and shipping options |
+| `/dashboard/platform/store`, `/system` | Store settings, business details, required policies; system tabs |
+| `/dashboard/platform/api-keys`, `/apps`, `/order-management-system`, `/analytics` | API keys, OAuth apps, OMS connection, analytics |
+
+Lists without a dedicated page (for example `Invoice`, `Role`, `Team`, `TaxRate`, `WebhookEndpoint`, `BatchJob`) are edited on the generic `/dashboard/<list-key>` pages.

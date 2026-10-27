@@ -6,3 +6,62 @@ description: Give an LLM the Real Estate storefront skill to adapt the built-in 
 To create a custom Real Estate storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Real Estate's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Real Estate codebase before proposing work.
+
+## Current storefront routes
+
+Routes live in `app/(storefront)` and re-export screens from `features/storefront/screens`. The storefront serves the primary brokerage, found through `publicBrokerageIdentity`.
+
+| Route | What it does |
+|---|---|
+| `/` | Home: search form, featured listings, and areas grouped by neighborhood or city |
+| `/listings` | Search results. Query parameters: `q`, `city`, `type`, `propertyType`, `beds`, `baths`, `minPrice`, `maxPrice`, `sort` (`newest`, `price_asc`, `price_desc`) |
+| `/listings/[slug]` | Listing detail: photos, facts, rental terms, open houses, agent, tour form, question form, save button |
+| `/account` | Sign-in and sign-up when signed out; "My showings" when signed in |
+| `/account/showings/[id]` | One showing, with cancel and "Add to calendar" |
+| `/account/questions` | The customer's own questions and their status |
+| `/account/saved` | Saved homes and saved searches |
+| `/account/profile` | Name, email, and password |
+| `/password-reset` | Request a reset link, or set a new password with a `token` |
+| `/calendar/showing/[id]` | `.ics` file for the signed-in customer's own requested or scheduled showing |
+| `/calendar/open-house/[slug]/[id]` | `.ics` file for a public open house |
+| `/brand-mark.svg` | The brokerage logo built from store settings |
+| `/sitemap.xml` | Lists the public pages and published listings |
+| `/robots.txt` | Allows `/`; disallows `/dashboard`, `/account`, `/password-reset`, `/calendar`, and `/api` |
+
+Only listings that are `active` or `coming_soon` and have effective listing authority for `public_site` appear. Media and photos are shown only when their path starts with `/images/real-estate/`.
+
+## Named operations
+
+The storefront calls these documents from `features/storefront/lib/data`:
+
+| Operation | Server field |
+|---|---|
+| `StorefrontBrokerageIdentity` | `publicBrokerageIdentity` |
+| `StorefrontListings`, `StorefrontListing` | `publicRealEstateListings`, `publicRealEstateListing` |
+| `SubmitListingInquiry` | `submitListingInquiry` |
+| `StorefrontShowingRequest` | `requestPropertyShowing` |
+| `CustomerShowings`, `CustomerShowing` | `customerShowingHistory` |
+| `CancelCustomerShowing` | `cancelCustomerShowing` |
+| `CustomerInquiries` | `customerInquiryHistory` |
+| `CustomerSavedProperties`, `CustomerSavedHomes` | `customerSavedProperties`, `customerSavedHomes` |
+| `SaveHome`, `RemoveSavedHome` | `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser` |
+| `CustomerSavedSearches`, `SaveSearch`, `DeleteSavedSearch` | generic `savedSearches` query, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser` |
+| `CustomerSignUp` | `registerRealEstateCustomer` |
+| `CustomerSession`, `CustomerSignIn`, `CustomerSignOut` | Keystone `authenticatedItem`, password auth, `endSession` |
+| `UpdateCustomerProfile`, `UpdateCustomerPassword` | generic `updateUser` |
+| `CustomerPasswordResetLink`, `CustomerPasswordReset` | Keystone password reset mutations |
+
+## Customer accounts
+
+- Sign-up needs a name, a valid email, and a password of at least 12 characters. The account is tied to the storefront's brokerage and gets no membership.
+- Guests can ask questions and request tours. Signed-in customers get the request linked to their account, so it shows up under their account pages.
+- A customer can cancel their own showing while it is `requested` or `scheduled`.
+- Saving homes and searches requires sign-in.
+- Password reset email needs `SMTP_HOST`. Without it, the reset page says email is not set up.
+
+## What is not in the storefront
+
+- No payments, deposits, or applications.
+- No deal or closing view for customers.
+- Saved search alerts are not emailed.
+- No map search.

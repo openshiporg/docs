@@ -11,21 +11,21 @@ Use this skill to adapt the built-in Pharmacy operator dashboard or create a sep
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- No public source URL is advertised for this product. Ask for the current checkout path and do not substitute a guessed repository.
-- Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Pharmacy-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Repository: https://github.com/openshiporg/openfront-pharmacy. Confirm the checkout path and revision the user wants changed.
+- Generic Keystone dashboard shell, list/item screens (`app/dashboard/(admin)/[listKey]`), authentication pages (`/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`), and admin client: `features/dashboard`.
+- Pharmacy-specific operator navigation (`features/platform/lib/navigation.ts`), screens, server actions, and onboarding mounted into that shell: `features/platform`. Slices: overview, prescriptions, refills, requests, patients, prescribers, products, drug-references, suppliers, inventory, recalls, orders, pos, payments, staff, credentials, locations, store-settings, integrations, audit, onboarding.
+- Thin route entry points under `app/dashboard/(admin)/platform/`: overview; prescriptions, `/intake`, `/[id]`; refills; requests; patients, `/create`, `/[id]`; prescribers, `/[id]`; products, `/[id]`; drug-references, `/[id]`; suppliers, `/[id]`; inventory, `/receive`, `/[id]`; recalls, `/open`, `/[id]`; orders, `/[id]`; pos; payments; staff; credentials; locations, `/[id]`; store-settings; integrations; audit. Users and roles use the generic `/dashboard/users` and `/dashboard/roles`.
+- Server contract: `features/keystone/models/**` (45 lists), `features/keystone/access.ts` (19 role flags), `features/keystone/mutations/index.ts` (custom queries and mutations), `features/keystone/workflows/**` (state machines and rules), `schema.graphql`, and `docs/schema-map.md`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is prescription intake/review, pharmacist decisions, dispensing, refills/transfers, patients, lots/expiry, recalls, cold chain, OTC orders, and fulfillment. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is prescription intake, clinical safety review, pharmacist review, dispensing authorization, fill reservation, dispensing with labels and cash tender, refills, transfers, online prescription requests, patients with allergies and medications, prescribers, drug reference reviews, products, suppliers, lot receipt and adjustment, recalls with exposure outreach and disposition, orders and fulfillment, POS cash sales, payments and reconciliation, staff memberships and credential reviews, locations, store settings, integrations, and the audit/outbox log. Key operator commands: `intakePharmacyPrescription`, `recordPrescriptionClinicalSafetyReview`, `recordPrescriptionReview`, `authorizePrescriptionDispensing`, `reservePharmacyPrescriptionFill`, `releasePharmacyPrescriptionFill`, `recordPrescriptionDispensing`, `resolvePrescriptionRefill`, `requestPrescriptionTransfer`, `approvePrescriptionTransfer`, `resolvePharmacyPrescriptionRequest`, `createPharmacyPatient`, `linkPharmacyPatientAccount`, `receivePharmacyInventoryLot`, `adjustPharmacyInventoryLot`, `openPharmacyRecall`, `quarantineRecallLots`, `recordRecallExposureAction`, `disposeRecallLot`, `closePharmacyRecall`, `transitionOrderFulfillment`, `submitPharmacyPosCashOrder`, `refundPharmacyPayment`, `refundPharmacyCashPayment`, `reconcilePharmacyPaymentSession`, `recordPharmacyCashPolicy`, `recordPharmacyFillPolicy`, `recordPharmacyStaffCredentialReview`, `recordPharmacyPrescriberCredentialReview`, `recordPharmacyDrugReferenceReview`, `configurePharmacyIntegrationProvider`, `validatePharmacyPrescriber`, `replayPharmacyOutboxEvent`, and `runPharmacyOnboarding`. Clinical, inventory, and money lists deny generic create/update/delete; their records change only through these attested commands. Cold-chain receiving and temperature-excursion recording are not available, controlled substances are blocked, and no outbox worker exists. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
 After the source orientation, ask one concise set of questions and skip anything already answered:
 
-1. Where is the exact Pharmacy source checkout, and which revision/deployment is the target?
+1. Is the target the public repository (https://github.com/openshiporg/openfront-pharmacy) or a fork/local checkout, and which revision/deployment is it?
 2. Do they want to adapt the built-in dashboard or create an independently deployed client?
 3. What do they dislike about the current experience, what must stay, and what should change?
 4. Which operator jobs, screens, actions, roles, approvals, and scope are required?
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around prescription intake/review, pharmacist decisions, dispensing, refills/transfers, patients, lots/expiry, recalls, cold chain, OTC orders, and fulfillment. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around prescription intake and review, pharmacist decisions, fills and dispensing, refills and transfers, patients, lots and expiry, recalls, OTC orders and POS, payments, and fulfillment. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

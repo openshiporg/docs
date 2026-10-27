@@ -5,20 +5,21 @@ description: Plan and build a custom Openfront Convenience storefront by explain
 
 # Openfront Convenience custom storefront
 
-Use this skill to determine and build the appropriate customer/client experience for Convenience. Current source has no canonical built-in storefront, so do not pretend there is one to adapt. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Convenience public catalog site or create a separately deployed client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-convenience>
-- Current source has no canonical `features/storefront` directory. Do not describe the root page or portal as a complete storefront without inspecting it.
-- Inspect `app/**` for the actual public, portal, token, inquiry, or client-facing routes that exist.
-- Inspect `features/platform/**` for operator-owned workflow state and `features/keystone/**` plus `schema.graphql` for any safe public projections or commands.
+- Built-in storefront: `features/storefront` — `screens/StorefrontPage.tsx` (home), `screens/ShopPages.tsx` (shop, product, basket, checkout, account, receipt, sign-in/up), `components/**`, loaders in `lib/data.ts` and `lib/public-storefront.ts`, server actions in `actions.ts`, and a pass-through `middleware.ts` called from the root `proxy.ts`.
+- Thin routes: `app/page.tsx` (`/`) and `app/(shop)/**`: `/shop`, `/shop/[productId]`, `/basket`, `/checkout`, `/account`, `/account/[mode]` (`signin`, `signup`), `/account/receipts/[saleId]`; plus `app/sitemap.ts` and `app/robots.ts`.
+- Backend: `features/keystone/mutations/storefrontOperations.ts` and `publicStorefrontProjection.ts`. Queries: `conveniencePublicStorefront`, `storefrontCatalog`, `storefrontHistory`, `storefrontRewards`, `storefrontBasket`. Mutation: `updateStorefrontBasket`. Auth uses generic `createUser`, `authenticateUserWithPassword`, `revokeCurrentUserSessions`, and `endSession`.
+- Models it reads: `Business` (`storefrontStatus`, brand fields, `storefrontStore`), `Store`, `Product`, `ProductVariant`, `ProductCategory`, `ProductImage`, `PriceBookEntry`, `StockLevel`, `FuelPrice`, `Sale`, `SaleLine`, `LoyaltyAccount`, `LoyaltyLedgerEntry`, `Cart`, `CartLine`.
 
-Explain that a new customer/client experience may require new bounded backend contracts before presentation work can start.
+Explain the current limits: the site is a catalog for one published business; restricted-sale products are never listed; `/basket` and `/checkout` redirect to `/shop`; the basket API exists but no page uses it and a storefront cart cannot become a sale; there is no online payment provider. Online ordering would need new bounded backend contracts before presentation work.
 
-The current product focus is customer-facing convenience retail; current source has no canonical features/storefront layer. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is a convenience-store public catalog with store details, aisles, product detail, customer accounts, rewards, and receipts. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -66,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around customer-facing convenience retail; current source has no canonical features/storefront layer. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around the public catalog, store details, aisles, product detail, customer rewards, and receipts. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

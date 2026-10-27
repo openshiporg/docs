@@ -3,6 +3,23 @@ title: External dashboards
 description: Give an LLM the Marketplace dashboard skill to adapt the built-in experience or create a separate client.
 ---
 
-To create a custom Marketplace dashboard, copy the skill and give it to your LLM. The skill will explain Marketplace's non-Keystone architecture before asking what should change, then inspect its conversational UI, MCP tools, adapter registry, cart/session capabilities, and merchant checkout handoff.
+To create a custom Marketplace dashboard, copy the skill and give it to your LLM. The skill will explain that Marketplace is not a Keystone product: it has no database and no admin dashboard. Operator behavior lives in `marketplace.config.json`, the environment, the MCP tools, and the platform adapters.
 
-After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Marketplace codebase before proposing work.
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, MCP tools, adapter GraphQL calls, browser storage, and provider boundaries in the supplied Marketplace codebase before proposing work.
+
+## Current operator surfaces
+
+Current source has no `/dashboard/platform` routes. The `app/dashboard` and `features/platform` folders in a local checkout are empty, and nothing in the app links to them. There is no sign-in, user model, or role system.
+
+These are the places an operator works with today:
+
+| Surface | Path | What it does |
+|---|---|---|
+| Store registry | `marketplace.config.json` | Server allowlist of stores (`baseUrl`, `platform`, optional `id`, `name`). Edited by hand and deployed. |
+| Environment | `.env` | Shared OpenRouter key, model, and token cap; switch to turn off bring-your-own-key; custom AI origin allowlist. |
+| MCP server status | `GET /api/mcp-transport/http` | Returns the number of admitted stores and each store's `id`, `platform`, and `baseUrl`. |
+| In-app store editor | `/` (settings) | Lets each buyer remove, re-add, and rename admitted stores in their own browser. It cannot add a store that is missing from `marketplace.config.json`. |
+| Setup dialog | `/` (first visit) | Sets marketplace name, theme, and AI mode in the browser. |
+| Server logs | host logs | Tool and source failures log tool name, store ID, operation name, and error name, never arguments. |
+
+A custom operator dashboard would need new server code: an authenticated route to edit the registry, store health checks, and audit records. None of that exists now.

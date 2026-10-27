@@ -15,11 +15,21 @@ Before asking implementation questions, briefly tell the user where the current 
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Gym-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (custom resolvers merged in `mutations/index.ts`), `features/keystone/queries/**` (public storefront queries), and `schema.graphql`.
+- Payment provider boundary: `features/integrations/payment` (Stripe is the only registered adapter).
+- Onboarding: `features/platform/onboarding` (dialog, templates, `lib/seed.json`) calling `runDeterministicOnboarding` in `features/keystone/mutations/deterministicOnboarding.ts`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is memberships, classes, instructors, rosters, scheduling, front-desk check-in, billing, locations, and reports. This list is orientation, not proof that every flow is safe or complete.
+Platform slices with code today: `members`, `membership-plans`, `instructors`, `class-catalog`, `rosters`, `scheduling`, `check-in`, `training`, `retail`, `imports`, `billing`, `operations`, `reports`, `locations`, `store-settings`, `account`, `onboarding`, plus helpers in `lib` (including `navigation.ts`, which filters the sidebar by role), `components`, `routing`, `kiosk`, and `discovery`. Several other folders under `features/platform` (for example `pos`, `orders`, `menu`, `tables`, `kds`, `gift-cards`, `discounts`) are empty leftovers; ignore them.
+
+Current operator routes (`app/dashboard/(admin)/platform/<route>/page.tsx`): `/dashboard/platform/members`, `membership-plans`, `instructors`, `class-catalog`, `rosters` and `rosters/[id]`, `scheduling`, `check-in`, `training`, `retail`, `imports`, `billing`, `operations`, `reports`, `locations`, `store-settings`, `account` and `account/confirm-email`. Also `/dashboard/gym/billing`, generic list pages at `/dashboard/[listKey]`, and `/dashboard/init`, `/signin`, `/reset`, `/no-access`, `/signup` (signup is refused for Gym).
+
+Models are registered in `features/keystone/models/index.ts`. `Organization` is the tenant root; operational records carry a required organization and access filters by it. Roles carry capability flags (`canManageCheckIns`, `canManageRetail`, `canManageAppointments`, `isInstructor`, and others) defined in `models/roleCapabilities.ts`.
+
+Main operator operations: `rosterSessions`, `rosterDetail`, `promoteFromWaitlist`, `markClassAttendance`, `schedulingWorkspace`, `saveGymClassSchedule`, `saveGymClassInstance`, `cancelClassInstance`, `generateUpcomingClassInstances`, `frontDeskWorkspace`, `recordMemberCheckIn`, `checkOutMember`, `trainingWorkspace` and the trainer/package/coaching mutations, `retailWorkspace`, `sellRetail`, `returnRetail`, `closeRetail`, `reconcileCounterPayment`, `billingWorkspace`, `getBillingStats`, `refundGymPayment`, `changeMembershipTier`, `operationsWorkspace`, `runOperationsCommand`, `exportOperatingData`, `replayPaymentEvent`, `reportsDashboard`, `gymSettingsEditor`, `upsertGymSettings`, `publishGymParticipationTerms`, `inviteMember`, `setMemberAccountStatus`, `importMemberContacts`, `eligibleCoachAccounts`, `createCoachProfile`. Billing, Retail, and Training forms wrap commands with `beginStaffIntent` and `settleStaffIntent` for safe retries.
+
+The current product focus is memberships, classes, instructors, rosters, scheduling, front-desk check-in, personal training, retail, billing, operations, locations, and reports. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +77,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around memberships, classes, instructors, rosters, scheduling, front-desk check-in, billing, locations, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around memberships, classes, instructors, rosters, scheduling, front-desk check-in, personal training, retail, billing, operations, locations, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

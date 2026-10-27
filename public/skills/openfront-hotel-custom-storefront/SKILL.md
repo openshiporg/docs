@@ -13,13 +13,17 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-hotel>
 - Built-in Hotel customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
+- Thin customer-facing route entry points: `app/(storefront)/**`. There is no country or region segment. Routes: `/`, `/rooms`, `/rooms/[slug]`, `/book`, `/stripe/return`, `/paypal/return`, `/booking/[id]`, `/bookings/lookup`, `/account`, `/account/reset`, `/amenities`, `/gallery`, `/location`, `/policies`, `/contact`, and a `[...missing]` not-found catch-all.
+- Screens are in `features/storefront/screens`, server actions in `features/storefront/actions` (`account.ts`, `guest-search.ts`), helpers in `features/storefront/lib`, and shared GraphQL documents in `lib/queries.ts`.
+- Guest operations: `publicHotelSettings`, `storefrontRoomTypes`, `storefrontRoomType`, `storefrontAvailability`, `storefrontStayCalendar`, `storefrontQuote`, `bookingPaymentProviders`, `activeBookingPaymentSession`, `guestBooking`, `guestBookings`, `guestFolio`, `guestCancellationQuote`, `guestAccountStatus`, `guestAccountBookings`, `hotelSecurityAuthorization`; mutations `verifyGuestBooking`, `createStorefrontBooking`, `initiateBookingPaymentSession`, `completeBookingPayment`, `cancelBooking`, `requestBookingModification`, `submitHotelContactMessage`, `registerGuestAccount`, `claimGuestAccountStays`, `updateGuestAccount`, `changeGuestAccountPassword`, `redeemHotelPasswordResetToken`. Resolvers are in `features/keystone/queries/**` and `features/keystone/mutations/**`, registered in `features/keystone/mutations/index.ts`.
+- Key boundaries: bookings need a signed quote from `storefrontQuote`; `createStorefrontBooking` makes a `pending` hold that expires after 30 minutes; guest access is an HMAC-signed `hotel-guest-access` cookie (30 days, at most 20 bookings) that a separate client must forward to `/api/graphql`; only Stripe and PayPal adapters exist; contact messages and guest emails are queued in the outbox and need SMTP or an HTTP dispatcher to send.
+- Models a storefront touches: `HotelSettings` (singleton), `RoomType`, `RoomImage`, `Room`, `RoomInventory`, `RatePlan`, `SeasonalRate`, `Booking`, `BookingPaymentSession`, `BookingPayment`, `PaymentProvider`, `Folio`, `Guest`, `BookingModificationRequest`, `User`. One property per database.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
 - Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is room/rate discovery, availability, booking, guest access, amenities, account, payment handoff, and stay state. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is room/rate discovery, availability, booking, guest access, amenities, account, payment handoff, folio view, cancellation, modification requests, contact, and stay state. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

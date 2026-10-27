@@ -1,30 +1,22 @@
 ---
 title: Gift Cards
-description: How gift cards are created, redeemed, and tracked across multiple transactions.
+description: The gift card records in the current source and what checkout does with them.
 ---
 
-Gift cards in Openfront are treated as a real balance, not just a one-time coupon code.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-That means a gift card can be created, issued to a customer, redeemed across more than one order, and tracked through its transaction history.
+Openfront has gift card records and an operator page, but the current checkout does not redeem them.
 
-## What the gift card flow covers
+## Model
 
-- custom gift card amounts
-- unique gift card codes
-- balance tracking
-- expiration dates when used
-- transaction records for redemption activity
+`GiftCard` has `code`, `value`, `balance` (integers in minor units), `isDisabled`, `endsAt`, `metadata`, and links to a region, an order, carts and `GiftCardTransaction` records. A transaction has `amount`, `isTaxable`, `taxRate`, and links to the card and an order. Creating gift cards requires `canManageGiftCards`. Products also have an `isGiftcard` flag.
 
-## Typical lifecycle
+## Operator page
 
-1. a gift card is created in the dashboard or sold as a product
-2. the recipient gets the code
-3. the code is applied during checkout
-4. Openfront checks whether the card is valid and how much balance remains
-5. the order total is reduced and the transaction is recorded
+`/dashboard/platform/gift-cards` lists cards with status tabs, shows code, value, balance, expiry and transactions, and can enable or disable a card. Create and edit cards through the list's create drawer or the generic `/dashboard/gift-cards` editor.
 
-## Why it matters
+<Callout type="warn">
+Gift card redemption is not supported in the current checkout. `updateActiveCart` rejects any change to `giftCards` with "Gift-card redemption is outside the bounded launch boundary". Nothing in the checkout writes a `GiftCardTransaction` or lowers a balance. Selling a product with `isGiftcard` set does not create a gift card.
+</Callout>
 
-Gift cards are easy to describe and surprisingly annoying to implement well. The useful part is not just the code itself. It is the accounting around partial use, remaining balance, and transaction history.
-
-That is the part Openfront already models.
+The cart still has a computed `giftCardTotal` field and the storefront has gift-card display code. They show nothing because no cart can have gift cards attached through the storefront.

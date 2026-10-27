@@ -1,40 +1,52 @@
 ---
 title: Promotions and gift cards
-description: The current state of discounts, promo data, and gift-card redemption.
+description: The current state of discounts, gift cards, and customer email campaigns.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront Restaurant already includes discount and gift-card models, plus admin screens for managing them. The important detail is that the two are not equally finished.
+Openfront Restaurant has discount and gift-card models with admin screens. Gift cards work end to end in the POS. Discounts do not.
 
-## Gift cards are further along
+## Gift cards
 
-Gift cards already have:
+Screen: `/dashboard/platform/gift-cards`.
 
-- a `GiftCard` model with value and balance
-- a `GiftCardTransaction` model for the ledger
-- admin management screens
-- lookup and redemption support inside the POS payment flow
-- support for partial payment against the remaining balance on a check
+- `GiftCard` holds the code, original value, balance, disabled flag, expiry date, and metadata.
+- `GiftCardTransaction` is the ledger: `issue`, `redeem`, `refund`, `adjustment`, each with the balance after.
+- Gift cards cannot be created or edited through generic CRUD. They change only through custom mutations.
+- `issueGiftCard` issues a card with a code (8 to 64 letters, digits, or hyphens) and an amount. It needs both gift-card and payment management permission.
+- `setGiftCardStatus` disables or re-enables a card with a reason.
+- On the POS payment screen, `lookupGiftCard` checks the balance and `redeemGiftCard` charges up to the remaining balance on the check. Disabled and expired cards are refused.
+- Refunding a gift-card payment returns value to the card.
 
-That makes gift cards more than just placeholder data.
+Guests cannot buy or check gift cards in the storefront.
 
-## Discounts are modeled, but not as wired through
+## Discounts
 
-Discounts already have:
+Screen: `/dashboard/platform/discounts`.
 
-- `Discount` and `DiscountRule` models
-- admin list and detail pages
-- reporting fields that can surface discount totals on orders
+- `Discount` holds a code, dynamic flag, disabled flag, stackable flag, start and end dates, usage limit and count, and a valid duration.
+- `DiscountRule` holds the type (`fixed`, `percentage`, `free_item`), value, and allocation (`total` or `item`).
+- The screen lists discounts with status tabs and a create drawer.
 
-What they do not have yet is the same level of end-to-end restaurant-flow wiring that gift cards have. If you need fully automatic coupon application in storefront or staff payment flows, plan to finish that last mile before launch.
+No order path applies a discount code. The storefront has no code field, and the POS has none either. The `discount` amount on orders today comes only from the pickup discount in store settings. If you need coupon codes, the apply logic still has to be built.
 
-## Practical read on the current state
+## Customer email campaigns
 
-- **Gift cards**: useful now
-- **Discount management**: structurally present
-- **Discount automation**: still needs more work
+The Customer Privacy page (`/dashboard/platform/privacy`) includes a manual campaign tool:
+
+- `previewRestaurantCampaign` lists customers who opted in to marketing, checking at most 500 accounts.
+- `createRestaurantCampaign` queues a subject and text for the selected customers. Consent is checked again.
+- `dispatchRestaurantCampaign` sends the queued emails over SMTP.
+
+Campaigns need both user and order management permission. Customers opt in or out from the privacy panel on their account pages.
+
+## Summary
+
+- **Gift cards**: usable in the POS.
+- **Discounts**: records and admin screens only.
+- **Campaigns**: manual email to opted-in customers, sent by an operator.
 
 <Callout type="info">
-If you are deciding what to trust first, trust gift cards before you trust automated restaurant discounts.
+SMTP acceptance is recorded, but it does not prove the email reached the inbox.
 </Callout>

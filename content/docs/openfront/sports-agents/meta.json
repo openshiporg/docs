@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Sports Agents",
+  "description": "Current source: a Next.js and Keystone starter with dashboard, auth, roles, AI chat, and MCP scaffolding; the sports-agents domain is not built yet",
+  "icon": "Trophy",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

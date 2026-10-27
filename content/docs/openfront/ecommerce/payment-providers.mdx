@@ -1,58 +1,62 @@
 ---
 title: Payment providers
-description: Local and external payment adapter dispatch, provider state, and current workflow boundaries.
+description: Local and external payment adapter dispatch, provider state, webhooks, and current workflow limits.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront stores payment-provider configuration in `PaymentProvider` records and dispatches standardized operations through `features/keystone/utils/paymentProviderAdapter.ts`.
+Openfront stores payment-provider configuration in `PaymentProvider` records and runs provider operations through `features/keystone/utils/paymentProviderAdapter.ts`.
 
-A provider can use either:
+Each provider has six operation fields: `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction` and `handleWebhookFunction`. Each field holds either:
 
-- a local module token such as `stripe`, `paypal`, or `manual`; or
-- an HTTP endpoint for an independently deployed adapter app.
-
-Each operation field is configured separately: creation, capture, refund, status, payment link, and webhook handling. Database-selected HTTP routes are part of the adapter design, allowing merchants to connect external payment apps without adding their implementation to the Openfront repository.
+- a local module name such as `stripe`, `paypal` or `manual`, which loads `features/integrations/payment/<name>.ts`; or
+- an `http...` URL for a separately deployed adapter app.
 
 ## Dispatch contract
 
-For HTTP fields, Openfront sends `POST` JSON containing the queried provider record and operation-specific arguments. For local fields, it dynamically imports `features/integrations/payment/<configured value>.ts` and calls the export matching the operation field.
+For a URL, Openfront sends `POST` JSON with the provider record plus the operation arguments, and parses the JSON reply. For a module name, it imports the file and calls the export with the same name as the field.
 
-The `features/integrations/payment/index.ts` object lists built-in modules, but the current Keystone dispatcher does not use that object as a static registry. The operation fields themselves control dispatch.
+| Operation | Arguments besides `provider` |
+|---|---|
+| create | `cart`, `amount`, `currency` |
+| capture | `paymentId`, `amount`, `currency`, `idempotencyKey` |
+| refund | `paymentId`, `amount`, `currency`, `idempotencyKey` |
+| status | `paymentId` |
+| payment link | `paymentId` |
+| webhook | `event`, `headers` |
 
-## Data boundary
+## Where each operation is used
 
-Payment providers, sessions, collections, payments, captures, and refunds attach provider-neutral state to carts, invoices, or orders. The adapter may require credentials and payment/customer context to call its upstream service, but Openfront should forward only what that operation needs and validate the adapter response before changing domain state.
+- `initiatePaymentSession` and `initiateInvoicePaymentSession` call create.
+- `completeActiveCart` and `completeInvoicePayment` call status, then capture if the status is `requires_capture`, `approved` or `authorized`. They accept `succeeded`, `completed` or `captured`, and then check that the returned amount and currency match the cart or invoice. Progress is stored in `IdempotencyKey` records, so a retry resumes instead of charging again.
+- `processReturnRefund` calls refund for a received return, refuses amounts above the captured payment, and uses an idempotency key you supply.
+- `/api/payment-webhooks/<providerId>` calls webhook. The route rejects bodies over 1 MB and passes the raw body to the adapter (as `headers.__rawBody`) for signature checks. Stripe uses `stripe.webhooks.constructEvent` with `STRIPE_WEBHOOK_SECRET`. PayPal calls PayPal's verify-signature API with `PAYPAL_WEBHOOK_ID`. Events are de-duplicated by provider event ID.
 
-Provider configuration is privileged: changing an operation URL changes which trusted app receives provider and payment data. Protect that configuration with operator authorization, endpoint policy, Openfront-to-adapter authentication, secret handling, redaction, timeouts, response schemas, idempotency, and reconciliation.
+## Which providers can be used
+
+A provider can start a session only when it is installed (`isInstalled`), linked to the cart's region, and counted as configured. In `features/keystone/utils/paymentProviderConfig.ts`:
+
+- codes starting `pp_stripe` need `NEXT_PUBLIC_STRIPE_KEY` (or `STRIPE_PUBLISHABLE_KEY`) and `STRIPE_SECRET_KEY`;
+- codes starting `pp_paypal` need `NEXT_PUBLIC_PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`;
+- `pp_system_default` and codes starting `pp_manual` are always configured;
+- any other code is treated as not configured.
+
+## Current limits
 
 <Callout type="warn">
-The current bridge does not provide those hardening controls automatically. It sends the selected provider object to any operation value beginning with `http`, with only a JSON content-type header. Review and harden this boundary for the deployment while preserving external adapter support.
+- A custom provider must use a code starting with `pp_stripe`, `pp_paypal` or `pp_manual`, or it is filtered out of checkout. There is no generic "custom" code.
+- Webhook amount checks and event-type matching only understand Stripe and PayPal events. A custom adapter must return events in one of those shapes.
+- The checkout reads the provider reference from session data keys `paymentIntentId`, `clientSecret` or `orderId`. A custom adapter must return one of them from create.
+- Manual tender (`pp_system_default`) is refused by `completeActiveCart`, by `completeInvoicePayment`, and by `processReturnRefund`. There is no operator screen that records a manual payment as received.
+- The HTTP bridge sends only a JSON content-type header. It has no timeout, request signature, destination allowlist or response schema. Anyone who can edit a provider's operation URLs decides where provider credentials and payment data go.
+- The dashboard "add provider" drawer offers only Stripe, PayPal and Manual presets. Set URL operation fields on the generic `/dashboard/payment-providers` editor.
 </Callout>
-
-## Current workflow boundaries
-
-Generic adapter dispatch is implemented for payment initiation and webhook handling, and helper functions exist for capture, refund, status, and payment links. The overall Ecommerce workflow is not fully generic:
-
-- provider creation UI currently exposes built-in presets rather than full route-app configuration;
-- checkout and invoice completion still contain hard-coded Stripe, PayPal, and manual code switches;
-- several adapter helpers are not consistently used by the lifecycle paths;
-- raw-body webhook requirements, replay handling, and external route authentication need target-specific verification.
-
-A provider row or successful initiation call therefore does not prove complete payment processing.
 
 ## Enabling a provider
 
-1. Choose local-module or external-route mode for each operation.
-2. Configure the provider record and regions through a privileged path.
-3. verify exact request and response shapes from the target revision.
-4. derive amounts, currencies, actor/cart/order identity, and allowed transitions on the server.
-5. add idempotency and unknown-outcome reconciliation.
-6. verify webhook origin/signature and replay handling.
-7. run initiation, browser handoff, completion, capture, refund, failure, timeout, and recovery tests.
-
-## Manual payment
-
-Manual is an offline/operator boundary. It must not let an anonymous customer grant paid state or entitlement without the intended authorized settlement step.
+1. Set the environment variables for Stripe or PayPal.
+2. Install the provider and link it to each region at `/dashboard/platform/payment-providers`.
+3. Point the provider's webhook at `https://your-host/api/payment-webhooks/<providerId>`.
+4. In the provider sandbox, run checkout, a declined payment, a duplicate webhook, a return refund, and a retry after a timeout.
 
 Start with [Add a payment adapter](/docs/openfront/ecommerce/how-to-guides/custom-payment-provider).

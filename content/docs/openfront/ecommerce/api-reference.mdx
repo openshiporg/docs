@@ -1,57 +1,56 @@
 ---
 title: GraphQL API
-description: Use the generated GraphQL schema from your exact Openfront Ecommerce source and deployment.
+description: Authentication, generated CRUD, and the named custom GraphQL operations in Openfront Ecommerce.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront's Keystone layer exposes GraphQL at `/api/graphql`. The schema is generated from `features/keystone/models` and the registered custom mutations in `features/keystone/mutations`.
+Openfront serves GraphQL at `/api/graphql` (`pages/api/graphql.ts`, using GraphQL Yoga over the Keystone context). The schema is generated from `features/keystone/models` plus the custom operations registered in `features/keystone/mutations/index.ts`. The checked-in `schema.graphql` in the [source repository](https://github.com/openshiporg/openfront) is the reference for a given revision.
 
 <Callout type="warn">
-There is no static hosted API reference that can stay accurate for every Openfront fork. Inspect `schema.graphql` from your source revision or use introspection on an authorized non-production environment. Do not send production credentials to a public demo playground.
+Do not send production credentials to a public demo. Run introspection or GraphiQL against your own non-production instance.
 </Callout>
 
-## Session and bearer authentication
+## Authentication
 
-Dashboard requests use the application session. Current source also contains API-key and OAuth bearer-token handling. API keys have hashed secret material, status/expiry fields, optional IP restrictions and scope data.
+- Dashboard and storefront requests use the `keystonejs-session` cookie.
+- `Authorization: Bearer of_...` uses an API key. The key must be active, not expired, and allowed for the client IP if `restrictedToIPs` is set.
+- `Authorization: Bearer <oauth access token>` uses an OAuth app token. The app must be active.
+- `Authorization: Bearer ctok_...` uses a business customer token.
+- `Authorization: Bearer mcp_at_...` uses an MCP OAuth token. Without `mcp:write`, mutations are refused.
+- Guest carts send the signed proof from `createActiveCart` in the `x-openfront-cart-proof` header.
 
-Before relying on bearer scopes, test that each resolver and custom operation enforces the expected scope and tenant/ownership boundary. A scope value stored on a key does not protect an operation unless the operation checks it.
+API-key and OAuth scopes add permissions on top of the owner's role. See [Marketplace & OAuth](/docs/openfront/ecommerce/marketplace-oauth).
 
-## Query published products
+## Generated CRUD
 
-The generated schema uses `title`, `handle`, `status`, `productVariants`, `productImages`, and `productCategories`:
+Every list has the usual Keystone queries and mutations, for example `products`, `product`, `productsCount`, `createProduct` and `updateProduct`. Each list's access rules apply. Non-staff callers only see published products and active categories.
 
 ```graphql
 query PublishedProducts {
-  products(where: { status: { equals: published } }) {
+  products(where: { status: { equals: published } }, take: 10) {
     id
     title
     handle
     thumbnail
-    status
     productVariants {
       id
       title
       sku
+      inventoryQuantity
     }
     productImages {
-      id
-      image {
-        url
-      }
+      image { url }
       imagePath
       altText
     }
     productCategories {
-      id
       title
       handle
     }
   }
 }
 ```
-
-Run queries against your own origin:
 
 ```bash
 curl https://your-openfront.example/api/graphql \
@@ -60,14 +59,43 @@ curl https://your-openfront.example/api/graphql \
   --data '{"query":"query { products(take: 1) { id title handle } }"}'
 ```
 
-Use a key with only the scope needed for the operation. Keep it out of shell history and logs.
+## Custom queries
 
-## Custom operations
+| Query | Purpose |
+|---|---|
+| `redirectToInit` | True while there are no users |
+| `activeCart(cartId)` | Cart for its owner or proof holder |
+| `activeCartRegion(countryCode)` | Region for a country |
+| `activeCartShippingOptions(cartId)` | Shipping options for a cart |
+| `activeCartPaymentProviders(regionId)` | Installed and configured providers for a region |
+| `getProductsSortedByPrice(countryCode, limit, offset, priceOrder, collectionId, categoryId)` | Product listing sorted by regional price |
+| `getCustomerOrders(limit, offset)`, `getCustomerOrder(orderId, secretKey)` | Customer order history and detail |
+| `getCustomerAccounts`, `getCustomerAccount(accountId)` | Business accounts of the signed-in user |
+| `getUnpaidLineItemsByRegion(accountId)` | Unpaid account lines grouped by region |
+| `activeInvoice(invoiceId)`, `getInvoicePaymentSessions(invoiceId)`, `getCustomerPaidInvoices` | Invoices |
+| `getAnalytics(timeframe)` | Dashboard analytics |
+| `getFinanceClose(start, end)` | Finance summary for a range up to 31 days (staff only) |
+| `getMyPrivacyData` | The signed-in user's own data |
 
-Checkout, carts, payments, fulfillment, OAuth, apps and other high-value workflows use custom GraphQL operations in addition to generated list CRUD. Read the registered source and generated schema for exact names and inputs. Prefer those domain operations when they enforce ownership, snapshots, idempotency and lifecycle checks.
+## Custom mutations
 
-Generated CRUD is not automatically a safe public storefront API. Verify anonymous, wrong-user, wrong-store, expired-key, missing-scope and replay cases before exposing any operation.
+| Area | Mutations |
+|---|---|
+| Customer | `updateActiveUser`, `updateActiveUserPassword`, `createActiveUserAddress`, `updateActiveUserAddress`, `deleteActiveUserAddress`, `updatePrivacyPreferences`, `requestPrivacyAction` |
+| Cart | `createActiveCart`, `updateActiveCart`, `updateActiveCartLineItem`, `addDiscountToActiveCart`, `removeDiscountFromActiveCart`, `addActiveCartShippingMethod` |
+| Payment | `createActiveCartPaymentSessions`, `initiatePaymentSession`, `setActiveCartPaymentSession`, `completeActiveCart`, `handlePaymentProviderWebhook` |
+| Invoices | `createInvoiceFromLineItems`, `createInvoicePaymentSessions`, `initiateInvoicePaymentSession`, `setInvoicePaymentSession`, `completeInvoicePayment`, `regenerateCustomerToken` |
+| Inventory | `adjustInventory`, `importInventory` (creates a batch job only) |
+| Shipping | `getRatesForOrder`, `validateShippingAddress`, `trackShipment`, `createProviderShippingLabel`, `cancelShippingLabel` |
+| Orders | `createOrderFulfillment`, `cancelOrderFulfillment`, `transitionOrderStatus`, `processReturnRefund` |
+| Webhooks | `registerWebhookEndpoint`, `retryWebhookDeliveries` |
+
+Notes:
+
+- `transitionOrderStatus` only accepts `canceled` or `archived`, with a reason. Other order statuses change through payment and fulfillment.
+- `createOrderFulfillment`, `createProviderShippingLabel` and `processReturnRefund` require an `idempotencyKey`.
+- `updateActiveCart` ignores changes to user, order and payment links, and rejects gift cards and metadata.
 
 ## Schema visualizer
 
-The [schema visualizer](/docs/openfront/ecommerce/schema-visualizer) can help with relationships. The generated `schema.graphql` remains the authoritative API artifact for a source revision.
+The [schema visualizer](/docs/openfront/ecommerce/schema-visualizer) shows model relationships. The generated `schema.graphql` remains the authoritative API reference for a revision.

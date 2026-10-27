@@ -1,0 +1,120 @@
+---
+title: Getting started with Rental
+description: Clone the source, configure PostgreSQL, sessions, and storage, run migrations, create the first user, and run onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+You can try the app first on the live demo at [rental.openship.org](https://rental.openship.org). The host dashboard is at [rental.openship.org/dashboard](https://rental.openship.org/dashboard).
+
+## Requirements
+
+- Node.js 20.9 or later (`engines` in `package.json`).
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- An S3-compatible bucket for listing images.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-rental.git
+cd openfront-rental
+npm install
+```
+
+## Environment
+
+The repository has no `.env.example`. Create `.env` in the repository root. Never commit it.
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_rental
+SESSION_SECRET=replace-with-a-random-value-of-at-least-32-characters
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ENDPOINT=https://your-s3-endpoint
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+
+NEXT_PUBLIC_APP_URL=https://your-app-origin
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+What the code does with these:
+
+- `SESSION_SECRET` must be at least 32 characters. In production it is required. Outside production a built-in fallback is used if it is missing.
+- The five `S3_*` values configure listing media storage. Without them the app still starts, but uploads fail. `S3_ENDPOINT` must be an `http` or `https` origin with no path, query, or credentials.
+- `NEXT_PUBLIC_APP_URL` is the public origin. Onboarding also saves it as the host's website. `NEXT_PUBLIC_BACKEND_URL` can set a separate backend origin. `PORT` defaults to `3000`.
+- `PUBLIC_SIGNUPS_ALLOWED=true` lets anyone create a user. Leave it `false` unless you mean it.
+
+Optional variables:
+
+| Purpose | Variables |
+|---|---|
+| Mail (password reset, guest mail) | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` |
+| Stripe test-mode cards | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| Signed test webhooks | `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET` |
+| Dashboard AI assistant | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` |
+| Dashboard field order | `NEXT_PUBLIC_VIEW_ORDER` |
+
+Stripe keys must be test keys (`sk_test_`, `pk_test_`). Live keys are not accepted.
+
+## Migrations and dev server
+
+```bash
+npm run dev
+```
+
+This runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js.
+
+<Callout type="warn">
+`npm run dev` migrates the database in `DATABASE_URL`. Do not point it at a shared or production database. `npm run migrate:gen` generates and applies new migrations and is for development databases only.
+</Callout>
+
+Once running:
+
+- Storefront: `/`
+- Host dashboard: `/dashboard`
+- Guest trip entry: `/trips`
+- GraphQL API: `/api/graphql`
+
+## First user
+
+Open `/dashboard/init` and create the first administrator. Sign-in is at `/dashboard/signin`.
+
+## Onboarding
+
+After sign-in, open onboarding from the card in the dashboard sidebar. Running it requires `canManageOnboarding`. Pick a template:
+
+- **Minimal**: one home and one sample stay.
+- **Full**: the Housekind sample portfolio with five properties, guests, stays, tasks, owner records, payment providers, and one iCalendar connection.
+- **Custom**: your own validated JSON on top of the full template.
+
+Items are created one at a time and reused if they already exist. Review properties, rates, and policies before you publish stays. Remove or replace sample data before real use. Details are on the [overview page](/docs/openfront/rental#onboarding).
+
+## Other commands
+
+| Command | What it does |
+|---|---|
+| `npm run build` | Builds Keystone and Next.js. Does not migrate. |
+| `npm start` | Starts the production server. |
+| `npm run migrate` | Applies checked-in migrations. |
+| `npm run release:migrate` | Same as `migrate`, for a release step. |
+| `npm run lint` | Runs ESLint. |
+| `npm run seed:runtime` | Seeds a local `runtime_rental` database only. |
+| `npm run outbox:deliver` | Runs the outbox worker. No dispatcher is installed, so it does nothing yet. |
+
+## Deploy
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run when the app starts. The README also has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, `NEXT_PUBLIC_APP_URL`, and the five `S3_*` variables.
+
+Elsewhere, use this order:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+Back up the database before you apply migrations. A health check is at `/api/health`.

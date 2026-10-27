@@ -1,0 +1,27 @@
+---
+title: External storefronts
+description: Give an LLM the Social storefront skill to adapt the built-in public creator site or create a separate client.
+---
+
+To create a custom Social storefront, copy the skill and give it to your LLM. The skill will explain how `features/personal-site`, `features/storefront`, and the public app routes implement Social's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Social codebase before proposing work.
+
+Skill file: [`/skills/openfront-social-custom-storefront/SKILL.md`](/skills/openfront-social-custom-storefront/SKILL.md)
+
+## Current public routes
+
+Social has no cart, checkout, or booking flow. Visitors read; they do not transact.
+
+| Route | Source | What visitors do there |
+|---|---|---|
+| `/` | `features/storefront/screens/LandingPage.tsx` | Product landing page with sign in, and create a site when sign-up is open |
+| `/account/signin`, `/account/signup` | `features/storefront/account` | Creator sign-in; sign-up only when `PUBLIC_SIGNUPS_ALLOWED=true` |
+| `/[handle]` | `features/personal-site/screens/ProfilePage.tsx` | Creator profile with themed branding and public collections |
+| `/[handle]/[collection]` | `features/personal-site/screens/CollectionPage.tsx` | Paged list of published items in a public or unlisted collection |
+| `/[handle]/[collection]/[slug]` | `features/personal-site/screens/ItemPage.tsx` | Item with rendered markdown and newer and older links |
+| `/feeds/[handle]` | `features/personal-site/lib/rss.ts` | RSS feed of public collections |
+| `/sitemap.xml`, `/robots.txt` | `app/sitemap.ts`, `app/robots.ts` | Indexing of public content; dashboard, API, and account paths are disallowed |
+| `/media/[id]` | `app/media/[id]/route.ts` | Redirect to a fresh presigned image URL |
+
+Public pages call `publicPersonalSite`, `publicPersonalCollection`, `publicPersonalItem`, `publicPersonalFeed`, `publicSitemap`, and `publicHandleRedirect`. Renamed handles redirect to the new address. A separate client can use the same public queries without a session; studio writes need a signed-in creator and `studioCommand`.

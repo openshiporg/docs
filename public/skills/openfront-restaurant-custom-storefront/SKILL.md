@@ -13,13 +13,24 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-restaurant>
 - Built-in Restaurant customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Thin customer-facing route entry points: `app/(storefront)/**`. Route files re-export screens from `features/storefront/screens` (`HomePage`, `MenuItemPage`, `CheckoutPage`, `OrderConfirmedPage`, `AccountPageLayout`, `AccountOrderDetailsPage`, `LoginPage`). There is no country/region segment.
+- Storefront data layer: `features/storefront/lib/data/*` (`menu.ts`, `cart.ts`, `user.ts`, `orders.ts`, `payment.ts`, `cookies.ts`, `checkout-cancellation.ts`), checkout modules in `features/storefront/modules/checkout/**`, and account modules in `features/storefront/modules/account/**`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (custom roots registered in `mutations/index.ts`), `features/keystone/utils/cartAccess.ts` and `cartProof.ts`, and `schema.graphql`.
+- Provider boundaries: `features/integrations/payment/{stripe,paypal,manual}.ts`, `features/keystone/utils/paymentProviderAdapter.ts`, the webhook route `app/api/integrations/payment/[providerCode]/webhook/route.ts`, and the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is menu discovery, cart and ordering, customer account, reservations/waitlist, payment handoff, and order status. This list is orientation, not proof that every flow is safe or complete.
+Current routes: `/` (menu), `/menu/[id]`, `/checkout`, `/order/confirmed/[id]` (guests add `?secretKey=`), `/account` (sign-in slot when signed out), `/account/profile`, `/account/addresses`, `/account/orders`, `/account/orders/details/[id]`. `GET /api/store-config` returns store settings, public payment config, and the current user. There are no customer routes for reservations, waitlist, or gift cards.
+
+Tenancy: one restaurant per deployment; `StoreSettings` is a singleton. Customers are `User` records. Guest checkout creates a `User` with a random password and signs it in. The cart is identified by the `_restaurant_cart_id` cookie plus a signed `_restaurant_cart_proof` cookie (HMAC with `SESSION_SECRET`, 7 days), sent to GraphQL as the `x-restaurant-cart-proof` header.
+
+Models the storefront touches: `StoreSettings`, `MenuCategory`, `MenuItem`, `MenuItemImage`, `MenuItemModifier`, `Cart`, `CartItem`, `PaymentCollection`, `PaymentSession`, `PaymentProvider`, `RestaurantOrder`, `OrderItem`, `Payment`, `Receipt`, `User`, `Address`.
+
+Key storefront operations: `activeCart`, `createActiveCart` (returns `accessProof`), `addActiveCartItem`, `updateActiveCart`, `updateCartItemQuantity`, `removeCartItem`, `activeCartPaymentProviders`, `initiatePaymentSession`, `cancelCheckoutPaymentSession`, `completeActiveCart`, `getCustomerOrder(orderId, secretKey)`, `getCustomerOrders`, `updateActiveUser`, `exportMyRestaurantData`, `recordMyRestaurantPrivacy`, plus Keystone auth (`authenticateUserWithPassword`) and generated `Address`/`User` CRUD. Named documents in the built-in client include `GetMenuCategories`, `GetMenuItems`, `GetMenuItem`, `GetFeaturedItems`, `GetFeaturedMenuItems`, `GetStoreSettings`, `ListPaymentProviders`, `GetCart`, `CreateActiveCart`, `AddActiveCartItem`, `UpdateActiveCart`, `UpdateCartItemQuantity`, `RemoveCartItem`, `InitiatePaymentSession`, `CompleteActiveCart`, `GetCustomerOrder`, `GetCustomerOrders`, `GetAuthenticatedItem`, `SignIn`, `CreateUser`, `UpdateUser`, `CreateGuestUser`, `AuthenticateGuestUser`, `CreateAddress`, `UpdateAddress`, `DeleteAddress`, `UpdateAddressFlags`, `CreateBillingAddress`, `UpdateBillingAddress`. Verify each against the inspected revision.
+
+Server rules to preserve: item availability, store hours and ordering cutoff, meal-period windows, modifier min/max/required rules, delivery country and postal allowlist and minimum, online order capacity, server-side totals, and the frozen checkout quote on the payment session.
+
+The current product focus is menu discovery, item customization, cart and pickup/delivery checkout, payment handoff (Stripe, PayPal, manual), order confirmation, and the customer account. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +78,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around menu discovery, cart and ordering, customer account, reservations/waitlist, payment handoff, and order status. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around menu discovery, cart and ordering, customer account, payment handoff, and order status. Reservations and waitlist have no customer-facing contract today; treat them as needing backend work. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

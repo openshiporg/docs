@@ -1,0 +1,65 @@
+---
+title: Sports Agents integrations and boundaries
+description: S3 storage, SMTP, OpenRouter AI, and MCP in the current source, and what each one does not do.
+icon: Unplug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The current source has four outside connections. None of them is specific to sports agents. There are no sports data feeds, league or team APIs, contract or e-signature services, payment providers, calendar, or messaging integrations.
+
+## S3-compatible image storage
+
+`features/keystone/index.ts` defines one storage named `my_images` (kind `s3`, type `image`). It is used by `Todo.coverImage` and `TodoImage.image`.
+
+- Settings: `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`.
+- `forcePathStyle` is on, so most S3-compatible services work.
+- Image URLs are signed, with a short expiry (`signed: { expiry: 5000 }`).
+- Each variable has a placeholder default. If you do not set them, the app starts but uploads fail.
+- There is no file storage for documents such as contracts. Only image fields exist.
+
+## SMTP email
+
+`features/keystone/lib/mail.ts` uses Nodemailer. It sends one kind of email: the password reset link.
+
+- Settings: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`.
+- The link is `SMTP_STORE_LINK` + `/dashboard/reset?token=...`. If `SMTP_STORE_LINK` is not set, the link has no origin.
+- Without `SMTP_HOST`, the reset page tells the user email is not available and asks them to contact an administrator.
+- There are no notification, invite, or marketing emails.
+
+## OpenRouter AI chat
+
+`app/api/completion/route.ts` streams chat replies through OpenRouter with the Vercel AI SDK.
+
+- **Shared mode.** The server uses `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS`. The caller must be signed in and have `canAccessDashboard`. The key is never sent to the browser; `features/dashboard/actions/ai-chat.ts` returns only whether shared AI is available and the model name.
+- **Local mode.** The user types their own OpenRouter key and model in the chat settings. The browser stores them in `localStorage` and sends them with each request. This mode does not check the dashboard session before calling OpenRouter, but MCP tool calls still run as the caller's cookie.
+- Before each chat, the route checks the key against OpenRouter's models endpoint.
+- Only the last 20 messages are sent. The model can run up to 10 tool steps.
+- The system prompt is generic. It is about turning plain language into Keystone GraphQL calls. It has no sports-agents knowledge.
+
+## MCP endpoint
+
+`app/api/mcp-transport/[transport]/route.ts` is a small JSON-RPC server. On each request it introspects `/api/graphql` with the caller's cookie.
+
+| Tool | What it does |
+|---|---|
+| `listModels`, `searchModels` | List or search GraphQL types and related operations |
+| `getFieldsForType`, `lookupInputType` | Show fields of a type or input type |
+| `queryData` | Run a list query with chosen fields |
+| `modelSpecificSearch` | Search a model by `id` or by `name`, `title`, `label`, `description`, `email` |
+| `createData`, `updateData`, `deleteData` | Run generated create, update, or delete mutations |
+
+Boundaries:
+
+- The endpoint has no auth check of its own. It forwards the request cookie to GraphQL, so it can do exactly what that session can do, and an anonymous caller gets anonymous access.
+- Write tools change real data. There is no confirmation step, dry run, or audit log.
+- `app/api/completion/scopedMcpFetch.ts` makes sure the chat's MCP client sends the cookie only to the one internal MCP URL and does not follow redirects.
+- The base URL comes from the request's `x-forwarded-host` or `host` header (`features/dashboard/lib/getBaseUrl.ts`). Make sure your proxy sets these headers correctly.
+
+<Callout type="warn">
+The AI and MCP tools act with the signed-in user's permissions. Give roles only the flags people need, because the chat can create, update, and delete anything that role can.
+</Callout>
+
+## GraphQL API
+
+`/api/graphql` is open to anyone who can reach it. Keystone access rules decide what each caller sees. The embedded Apollo Sandbox page loads from Apollo's CDN when you open the endpoint in a browser.

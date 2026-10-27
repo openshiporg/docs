@@ -1,84 +1,131 @@
 ---
 title: Getting started with Marketplace
-description: Install the app, configure signing and AI access, curate stores, run checks, and deploy the stateless marketplace.
+description: Install the app, set AI environment variables, list trusted stores, run checks, complete the first-run setup, and deploy.
 icon: Terminal
 ---
 
-## Requirements and installation
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Current source requires Node.js 20.9 or later and does not require PostgreSQL.
+Try the hosted copy first: [marketplace.openship.org](https://marketplace.openship.org).
+
+## Requirements
+
+- Node.js 20.9 or later (the app uses Next.js 16).
+- npm.
+- Outbound HTTPS access to the stores you list and to your AI provider.
+- At least one public HTTPS Openfront E-commerce or Openfront Restaurant store.
+
+<Callout type="info">
+Marketplace has no database. Unlike most Openfront products, current source does not read `DATABASE_URL`, `SESSION_SECRET`, or any `S3_*` variable. There are no migrations to run and no first admin user to create. If you see empty `features/keystone`, `features/platform`, `migrations`, or `app/dashboard` folders in a local checkout, they hold no files and nothing in the app uses them.
+</Callout>
+
+## Install
 
 ```bash
-npm ci
+git clone https://github.com/openshiporg/marketplace.git
+cd marketplace
+npm install
 ```
 
-Create an environment file with a signing secret of at least 32 random bytes:
+## Environment
+
+Copy `.env.example` to `.env`. These are the only variables the code reads:
 
 ```bash
-MARKETPLACE_CAPABILITY_SECRET=replace-with-at-least-32-random-bytes
-```
-
-Cart operations require that secret in every AI mode. A separate `MARKETPLACE_SESSION_SECRET` may be used for store-session envelopes; otherwise current source falls back to the capability secret. Use independent managed secrets in a deployed system.
-
-## AI configuration
-
-Shared OpenRouter mode uses:
-
-```bash
-OPENROUTER_API_KEY=replace-with-an-operator-owned-key
+# Shared ("Global") AI mode. All buyers use this OpenRouter key.
+OPENROUTER_API_KEY=replace-with-your-openrouter-key
 OPENROUTER_MODEL=openai/gpt-4o-mini
 OPENROUTER_MAX_TOKENS=4000
+
+# Set to true to hide the Local option and force shared mode.
+MARKETPLACE_DISABLE_LOCAL_AI=false
+
+# Optional comma-separated allowlist for custom OpenAI-compatible endpoints.
+# MARKETPLACE_CUSTOM_AI_ORIGINS=https://proxy.example.com
 ```
 
-Without shared values, the built-in UI can accept a buyer's OpenRouter key and store it in browser `localStorage`. That key is sent to the marketplace completion endpoint for requests to the fixed OpenRouter origin. Decide whether browser key storage is acceptable for your audience, threat model, support model, and privacy disclosures before enabling it.
+What each one does:
 
-External MCP clients can connect to `/api/mcp-transport/http`. Cart workflows require an MCP UI-capable client and equivalent secure storage/propagation of store-bound capabilities and sessions. Do not expose mutation tools to a client that cannot preserve those boundaries.
+| Variable | Effect |
+|---|---|
+| `OPENROUTER_API_KEY` | Key used in shared mode. Shared mode is offered only when this and `OPENROUTER_MODEL` are both set. |
+| `OPENROUTER_MODEL` | Model used in shared mode. The completion route falls back to `openai/gpt-4o-mini`. |
+| `OPENROUTER_MAX_TOKENS` | Output token cap in shared mode. Defaults to 4000. Must be a positive whole number or shared requests fail. |
+| `MARKETPLACE_DISABLE_LOCAL_AI` | `true`, `1`, `yes`, or `on` turns off "bring your own key" mode and the `/api/ai-models` route. |
+| `MARKETPLACE_CUSTOM_AI_ORIGINS` | Restricts custom AI endpoints to these origins. When unset, any public HTTPS origin is allowed. |
 
-## Curate stores
+All variables are optional. With none set, each buyer must enter their own OpenRouter key or a custom OpenAI-compatible endpoint.
 
-Edit the server-owned `marketplace.config.json`. Every store needs an explicit stable ID, a root public HTTPS origin, and an adapter that current source implements:
+## List your stores
+
+Edit `marketplace.config.json` in the repository root. This file is the server-side allowlist. The server only talks to stores in it.
 
 ```json
 [
   {
-    "storeId": "northwind-goods",
     "baseUrl": "https://store.example.com",
-    "platform": "openfront",
-    "name": "Northwind Goods"
+    "platform": "openfront"
+  },
+  {
+    "baseUrl": "https://restaurant.example.com",
+    "platform": "openfront-restaurant"
   }
 ]
 ```
 
-Current source permits `openfront`. Do not add another platform string until its adapter and conformance/security tests exist. Buyers must select registry IDs; do not restore browser endpoint editing or accept request-supplied origins.
+Rules the code enforces:
 
-A loopback or private development store is intentionally rejected by production egress rules. Use dedicated public test fixtures or an explicitly isolated test harness rather than weakening the deployed policy.
+- `baseUrl` must be HTTPS with no username, password, query string, or fragment.
+- `platform` must be `openfront` or `openfront-restaurant` to work. Other names parse but have no adapter.
+- `id` is optional. If you include it, it must equal the derived ID (`source-v2-<platform>-<encoded baseUrl>`). A mismatched ID makes the server skip that entry.
+- Duplicate endpoints are skipped.
+- `name` is optional and overrides the store name shown in the UI.
 
-## Run locally and verify
+The GraphQL endpoint is `baseUrl` plus `/api/graphql` for both supported platforms.
+
+Buyers can remove, re-add, and rename stores in the in-app store editor. They cannot add a store that is not already in `marketplace.config.json`.
+
+## Run locally
 
 ```bash
 npm run dev
 ```
 
-Before deployment, run the current project gates:
+Open `http://localhost:3000`.
+
+## First-run setup
+
+There is no server-side onboarding or seed. The first visit opens a setup dialog in the browser:
+
+1. **Marketplace name and theme.** Default name is "Common Goods". Themes are `clay`, `forest`, and `midnight`. Saved in `localStorage` only.
+2. **AI mode.** "Global" uses the server's OpenRouter key (shown only when it is configured). "Local" asks for a provider (OpenRouter or a custom OpenAI-compatible endpoint), a model, an API key, and a token limit.
+3. **Risk confirmation.** The buyer confirms before the chat is enabled.
+
+Local keys are stored in the buyer's browser and sent with each `/api/completion` request.
+
+## Checks
 
 ```bash
 npm test
+npm run test:security
+npm run test:platform
 npm run typecheck
 npm run lint
 npm run build
 ```
 
-Use synthetic merchant accounts and carts. Verify product discovery, variant selection, capability creation, tampered/cross-store capability denial, session isolation, address and shipping updates, checkout readiness, exact-origin handoff, redirect refusal, private-network denial, timeout/response limits, merchant failure, and browser storage cleanup.
+`npm test` runs the Node test files in `tests/`. They cover source IDs, request size limits, private-address blocking, redirect refusal, MCP UI action rules, model output projection, chat history storage, and token budgets. There are no browser end-to-end tests.
 
-## Deployment
+## Deploy
 
-The application can run on a Node.js host that supports Next.js server routes and outbound HTTPS. Deployment needs:
+The app runs on any Node.js host that supports Next.js server routes. The README includes Vercel and Railway buttons.
 
-- stable signing secrets and optional shared AI credentials in managed secret storage;
-- a reviewed store registry in the deployed artifact;
-- DNS and network behavior compatible with address-pinned HTTPS requests;
-- outbound network policy, timeouts, request/response limits, rate limits, abuse controls, and observability;
-- privacy disclosure for prompts, browser-held keys/capabilities/sessions, connected stores, and AI-provider processing;
-- incident response, registry rollback, secret rotation, and store-disable procedures.
+For a deployment you need:
 
-The public marketplace at [marketplace.openship.org](https://marketplace.openship.org) was reachable during the 2026-07-20 documentation check. That reachability is only URL evidence; it does not validate every configured store, tool, checkout, privacy, or failure path.
+- the AI variables above in your host's secret store (or none, for bring-your-own-key only);
+- a reviewed `marketplace.config.json` built into the artifact;
+- outbound HTTPS from the server to every listed store and the AI provider.
+
+The completion route calls the app's own `/api/mcp-transport/http` endpoint. It builds that URL from the `x-forwarded-host` (or `host`) and `x-forwarded-proto` request headers, so your proxy must set them correctly.
+
+External MCP clients can connect to `https://your-host/api/mcp-transport/http`. Product, cart, and checkout cards need a client that renders MCP UI resources.

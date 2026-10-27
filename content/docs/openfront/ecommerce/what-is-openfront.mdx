@@ -3,24 +3,33 @@ title: What is Openfront Ecommerce?
 description: Self-hosted commerce across catalog, storefront, checkout, orders, payments, and fulfillment.
 ---
 
-Openfront Ecommerce is a self-hosted, single-Store commerce application built from Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The operator owns the source, database, storefront and customer relationships. Regions, countries, currencies, locations, and sales channels configure commerce behavior; they are not proven independent tenant boundaries.
+Openfront Ecommerce is a self-hosted, single-store commerce application built with Next.js, Keystone 6, GraphQL, Prisma and PostgreSQL. The operator runs the source, database, storefront and customer records. Regions, countries and currencies configure where and how you sell; they are not separate tenants. Source: [github.com/openshiporg/openfront](https://github.com/openshiporg/openfront). Demo: [e-commerce.openship.org](https://e-commerce.openship.org).
 
-It also establishes application patterns used by other Openfront products. Restaurant, Grocery, Hotel, Construction and other products reuse its source/data ownership and feature boundaries while replacing commerce-specific models with their own domain records.
+Other Openfront products, such as Restaurant, Grocery and Vape, reuse its layout and patterns while replacing commerce models with their own.
 
 ## Main surfaces
 
 ### Operator dashboard
 
-The dashboard has feature-owned pages for products, orders, inventory, fulfillment, regions/currencies/countries, payments, shipping, discounts, gift cards, price lists, stores, users, API keys, apps, invoices, business accounts and system settings.
+`/dashboard/platform` has pages for orders and fulfillment, analytics, markets (regions, countries, currencies), store settings, products, categories, collections, users, business account requests and accounts, discounts, price lists, gift cards, shipping options, shipping and payment providers, claims, OAuth apps, API keys and system settings. Other lists use generic admin pages. See [Dashboard](/docs/openfront/ecommerce/dashboard).
 
 ### Storefront
 
-Country-code routes provide home, store, product, category, collection, cart, checkout, confirmation and account journeys. Storefront clients should use narrow data operations and ownership-checked cart/order workflows rather than unrestricted private lists.
+Country-code routes provide home, store, product, category, collection, cart, checkout, confirmation and account pages, including business invoicing. Carts are protected by a signed cart proof or by the signed-in owner. See [Storefront](/docs/openfront/ecommerce/storefront).
 
-### Payment and fulfillment
+### Payments and fulfillment
 
-Payment and shipping provider models and adapter source exist. Provider records are configuration, not proof of live settlement or shipping. Before enabling an adapter, verify environment secrets, server-derived totals, signed webhooks, replay handling, refunds, failures and reconciliation in the deployed environment.
+Stripe and PayPal adapters run checkout and invoice payment, with signed webhooks. Shippo and ShipEngine adapters provide rates, labels, tracking and cancellation. Both adapter systems also accept external HTTP endpoints. See [Payment providers](/docs/openfront/ecommerce/payment-providers) and [Shipping providers](/docs/openfront/ecommerce/shipping-providers).
 
-## Before using real data
+### AI assistant and MCP
 
-Review the source-specific security and limitation notes on each workflow page before using real customer, provider, or payment data.
+A dashboard chat assistant uses OpenRouter and the app's MCP endpoint, acting with your permissions. External MCP clients can connect with OAuth. See [AI assistant](/docs/openfront/ecommerce/ai-assistant).
+
+## Not in the current source
+
+- Gift card redemption at checkout.
+- Manual (offline) payment completion and refunds.
+- Restocking on returns, and refunds or replacements driven by claims.
+- A working inventory list page and inventory import.
+- Draft orders (the button is a placeholder).
+- Scheduled webhook retries or any background worker.

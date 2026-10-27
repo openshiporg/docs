@@ -6,3 +6,52 @@ description: Give an LLM the Law Firm dashboard skill to adapt the built-in expe
 To create a custom Law Firm dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Law Firm's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Law Firm codebase before proposing work.
+
+Skill file: [`/skills/openfront-law-firm-custom-dashboard/SKILL.md`](/skills/openfront-law-firm-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens live in `features/platform/<slice>`. The sidebar groups come from `features/platform/lib/navigation.ts`.
+
+| Page | Sidebar group | What staff do there |
+|---|---|---|
+| `/dashboard/platform/today` | (top) | Current intake, matter, work, billing, and hold queues from `practiceOverview` |
+| `/dashboard/platform/intake` | Practice | Intake pipeline, screening, conflict review (terms, matches, decisions), and conversion to a matter |
+| `/dashboard/platform/matters`, `/[matterId]` | Practice | Matter list; matter workspace with parties, team access, ethical walls, confidentiality, status actions, history, and registers for tasks, deadlines, documents, messages, and invoices |
+| `/dashboard/platform/contacts`, `/[contactId]` | Practice | Search and filter contacts, create a contact; detail with identity, status, addresses, contact methods, matters, intakes, and portal access |
+| `/dashboard/platform/work`, `/[kind]/[recordId]` | Work | Calendar and tasks: deadlines, tasks, and consultations, with consultation confirm, schedule, cancel, outcome, and no-show actions on the drill-in |
+| `/dashboard/platform/dockets`, `/[docketId]` | Work | Courts and dockets; docket detail with entries (record, verify), linked deadlines, and status |
+| `/dashboard/platform/documents`, `/[kind]/[recordId]` | Work | Documents, version upload, current version, and signature request preparation (signers, cancel) |
+| `/dashboard/platform/communications`, `/[kind]/[recordId]` | Work | Threads, recipients, drafts, preparing deliveries, and delivery status |
+| `/dashboard/platform/time-expenses`, `/[kind]/[recordId]` | Work | Timer and manual time, expenses, review and pricing |
+| `/dashboard/platform/billing` | Finance | Rate cards and rules, invoice assembly and transitions (approve, issue, void, overdue), manual payments, allocations, refund request and review |
+| `/dashboard/platform/retainers`, `/[retainerId]` | Finance | Retainer agreements by status, create, terms, transitions, and related invoices |
+| `/dashboard/platform/accounting` | Finance | Trust accounts, client and matter ledgers, postings, and reconciliations |
+| `/dashboard/platform/portal` | Finance | Portal invitations, the versioned matter directory for grants, resource shares, and revocation |
+| `/dashboard/platform/ai` | Intelligence | Legal AI home: authorized matter evidence, read-only |
+| `/dashboard/platform/ai/matters/[matterId]` | Intelligence | One matter's documents, tasks, deadlines, and audit history as evidence |
+| `/dashboard/platform/ai/reviews`, `/[reviewId]` | Intelligence | Review workbench: authorized matters as review sets; no model output |
+| `/dashboard/platform/ai/knowledge` | Intelligence | Title search over authorized research, internal, and contract documents; no semantic index |
+| `/dashboard/platform/ai/workflows` | Intelligence | Workflow definitions; only evidence preparation is available, the rest show as unavailable |
+| `/dashboard/platform/ai/evaluation` | Intelligence | Evaluation gates, all shown as not available |
+| `/dashboard/platform/ai/providers` | Intelligence | Provider boundary; states that no AI provider is connected |
+| `/dashboard/platform/governance` | Control | Retention policies (create, activate, retire), legal holds (place, release), disposal evidence |
+| `/dashboard/platform/reports` | Control | Deadline and audit event reports |
+| `/dashboard/platform/firm` | Control | Firm defaults (time zone, currency) and offices (create, edit, status) |
+| `/dashboard/platform/team` | Control | Staff invitations, memberships, office scope, and roles with grouped permission toggles |
+| `/dashboard/platform/data` | Control | Contact CSV import (preview, then apply) and practice export |
+| `/dashboard/platform/integrations` | Control | Provider connections, API keys (issued secret shown once, revoke), webhooks, and OAuth |
+| `/dashboard/platform/public-site` | Storefront | Publish the site policy and notices, public practice areas, and attorney profiles |
+| `/dashboard/platform/branding` | Storefront | Store Settings: display name, logo, accent color, tagline, and support email |
+
+Other dashboard routes:
+
+| Route | Purpose |
+|---|---|
+| `/dashboard` | Dashboard home |
+| `/dashboard/init` | Create the first user on an empty database |
+| `/dashboard/onboarding` | First-firm setup |
+| `/dashboard/signin`, `/signup`, `/reset`, `/no-access` | Staff auth pages; sign-up only when `PUBLIC_SIGNUPS_ALLOWED=true` |
+| `/dashboard/models`, `/dashboard/[listKey]`, `/[listKey]/create`, `/[listKey]/[id]` | Generic Keystone list pages; agents, OAuth tokens, and other lists without a platform page are managed here |
+
+Gaps the code itself marks: signature requests cannot reach sent or signed without a provider, refunds stop before processing, payments are recorded manually, and legal AI execution is not connected. See the limitations on the [overview page](/docs/openfront/law-firm#limitations).

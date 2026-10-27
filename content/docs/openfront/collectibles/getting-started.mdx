@@ -1,0 +1,120 @@
+---
+title: Getting started with Collectibles
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, and run onboarding.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [https://collectibles.openship.org](https://collectibles.openship.org). It is the "Eighth Street Cards" shop created by the normal **Complete card shop** onboarding. Its slab certificate numbers are labelled samples (`SAMPLE-…`) and never link to a grader lookup.
+
+## Requirements
+
+- Node.js 20 or later (`engines.node` in `package.json` is `>=20.0.0`; the README targets Node.js 22 with Next.js 16).
+- A PostgreSQL database you are allowed to migrate.
+- npm (the repository ships a `package-lock.json`).
+- S3-compatible object storage for production.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-collectibles.git
+cd openfront-collectibles
+npm ci
+```
+
+## Environment
+
+Copy `.env.example` to `.env` and replace the placeholders. The application refuses to start without `DATABASE_URL` and `SESSION_SECRET`, and the session secret must be at least 32 characters.
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_collectibles
+SESSION_SECRET=replace-with-output-of-openssl-rand-hex-32
+
+# S3-compatible file storage (required when NODE_ENV=production)
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-endpoint
+```
+
+The five S3 variables are read in `features/keystone/index.ts`. Outside production they fall back to development defaults; in production a missing value stops startup.
+
+Optional settings used by the code:
+
+| Variable | Purpose |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset and order emails |
+| `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment provider |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment provider |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI assistant |
+| `NEXT_PUBLIC_DEFAULT_REGION` | Default storefront country |
+| `NEXT_PUBLIC_BACKEND_URL` | GraphQL origin when the storefront runs apart from the backend |
+| `CREDENTIAL_PEPPER` | Pepper for hashed API keys and customer tokens (falls back to `SESSION_SECRET`) |
+| `TRUSTED_PROXY_IPS` | Proxies whose forwarded client IP is trusted for API-key IP restrictions |
+| `HIDE_OPENFRONT_BRANDING` | Hide Openfront branding in the storefront |
+
+Provider details are on [Integrations and boundaries](/docs/openfront/collectibles/integrations-boundaries). Never commit `.env`.
+
+## Migrations
+
+Checked-in Prisma migrations live in `migrations/`. The scripts are:
+
+```bash
+npm run migrate       # prisma migrate deploy: apply checked-in migrations
+npm run migrate:gen   # keystone build, regenerate view order, then keystone prisma migrate dev
+```
+
+Use `migrate:gen` only against a disposable development database, when you change models.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+The `dev` script runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`, so it applies migrations to the database in `DATABASE_URL`.
+
+<Callout type="warn">
+Do not point `npm run dev` at a shared or production database. It applies migrations before starting.
+</Callout>
+
+Then open:
+
+- Storefront: `/[countryCode]`, for example `/us`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql`
+
+## First operator and onboarding setup
+
+1. Visit `/dashboard/init` on an empty database to create the first administrator, then sign in.
+2. Open the onboarding dialog from the dashboard sidebar and choose a template: **Complete card shop**, **Starter shop**, or **Custom setup**.
+3. Onboarding creates the store, regions and countries, payment providers (Stripe and a bank-transfer manual provider), shipping options, categories, collections, card sets with market readings (via `importCardCatalog`), singles, slabs, and sealed products, then pricing rules and a buylist.
+4. Review **Payment Providers** before taking real orders. Stripe needs its keys; the bank-transfer provider creates orders with a pending payment that a manager confirms with `confirmManualPayment`.
+
+The seed data is evaluation data. Remove or replace it before running a real shop.
+
+## Deployment
+
+`package.json` defines:
+
+```bash
+npm run build           # keystone build --no-ui && next build (does not migrate)
+npm run release:migrate # prisma migrate deploy
+npm start               # next start
+```
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the database is not reachable during the Railway build. The README also links a Vercel import button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and the S3 variables.
+
+A deployment needs:
+
+1. A PostgreSQL database, backed up before each migration.
+2. `DATABASE_URL`, `SESSION_SECRET`, and the five S3 variables set as secrets.
+3. Migrations applied as a release step (`npm run migrate` or `npm run release:migrate`) before `npm start`.
+4. SMTP and payment provider variables for the providers you enable.
+5. The same database, session secret, and storage settings across all application processes.
+
+Market price refresh is a staff action on **Market & Repricing**. There is no scheduled job or background worker in the repository, so nothing refreshes prices or reprices on its own.

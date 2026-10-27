@@ -1,0 +1,59 @@
+---
+title: Sports Agents current limitations
+description: What is missing or partial in the current Sports Agents source.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+The sports-agents domain has not been built yet in the public source. The repository is close to the next-keystone-starter template. Do not plan around sports-agents features until they appear in the code.
+</Callout>
+
+## No sports-agents domain
+
+- There are no models for athletes, clients, agents, agencies, teams, leagues, contracts, deals, endorsements, commissions, or schedules. The only lists are `User`, `Role`, `Todo`, and `TodoImage`.
+- `Todo` and `TodoImage` are starter examples. Their fields (tags like "Frontend" and "Bug Fix", `secretNote`, `largeNumber`) are there to show field types, not to model real work.
+- There are no custom mutations beyond the starter's `redirectToInit` query.
+
+## No platform pages or storefront
+
+- There is no `features/platform` folder and no `/dashboard/platform/...` routes. Only the generic Keystone list and item pages exist.
+- There is no `features/storefront` folder and no customer-facing routes. `/` is the starter's welcome page.
+- No list allows anonymous reads, so there is no public data to show.
+
+## No onboarding or seed data
+
+There is no onboarding flow and no seed script. A new install has only the first user and the Admin role.
+
+## Starter leftovers
+
+- `README.md` is still the starter's README. It names the old repository, says Next.js 15 and Node.js 18, and mentions an `env.example` file that does not exist.
+- The `package.json` name is `weekday-keystone`.
+- The landing page and dashboard logo still show starter branding ("keystone x next").
+- The README's Vercel and Railway deploy buttons point at the original starter.
+- The `app-sidebar.tsx` component in `features/dashboard/components/dual-sidebar` has placeholder links ("Playground", "Genesis", "Quantum") that point to `#`.
+- The README mentions TipTap and SWR. The document field uses Keystone's Slate-based editor, and the dashboard uses TanStack Query.
+
+## Tenancy and access
+
+- There is no organization or tenant model. One deployment serves one group of users.
+- Permissions are seven role flags written for todos and people. Any sports-agents data will need its own flags and rules.
+- New users from public sign-up get no role and cannot use the dashboard until an admin assigns one.
+
+## AI and MCP
+
+- The MCP endpoint has no auth of its own and no audit log. It acts with whatever session cookie the caller sends.
+- AI write tools change data without a confirmation step.
+- Local AI mode stores the user's OpenRouter key in the browser's `localStorage`.
+- The AI system prompt is generic and has no domain knowledge.
+
+## Runtime
+
+- `npm run dev` and `npm run build` run migrations against `DATABASE_URL`.
+- `DATABASE_URL` falls back to a SQLite-style path that does not work with the PostgreSQL provider.
+- `SESSION_SECRET` and the S3 settings fall back to placeholder values. Set them in every environment.
+- There is no `test` script in `package.json`. The two test files in `tests/` must be run directly with Node.
+- Email covers password reset only.
+
+See [Getting started](/docs/openfront/sports-agents/getting-started) for setup and [Integrations and boundaries](/docs/openfront/sports-agents/integrations-boundaries) for outside services.

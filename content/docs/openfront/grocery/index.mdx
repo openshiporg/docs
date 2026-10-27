@@ -1,88 +1,125 @@
 ---
 title: Openfront Grocery
-description: Single-store grocery catalog, ordering, substitutions, pickup, delivery, purchasing, and subscriptions.
+description: Single-store grocery storefront and operator platform for catalog, lots, purchasing, picking, substitutions, pickup, delivery, payments, and recurring baskets.
 icon: ShoppingBasket
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-grocery) · [Catalog](https://openship.org/products/openfront-grocery)
+[Source](https://github.com/openshiporg/openfront-grocery) · [Live demo](https://grocery.openship.org) · [Catalog](https://openship.org/products/openfront-grocery)
 
-Openfront Grocery is a single-store grocery storefront and operator platform. It combines departments and fresh catalog data, carts, coupons, substitutions, delivery and curbside capacity, shopping lists, subscriptions, supplier purchasing, lot inventory, fulfillment, Stripe payment evidence, refunds, and an operational outbox.
+Openfront Grocery is a self-hostable grocery storefront and store-operations app. Shoppers browse departments and products, build a basket, keep lists and favorites, choose pickup or delivery, pay with Stripe, and track their order. Store staff use `/dashboard/platform/*` pages for products, merchandising, lot inventory, suppliers, purchasing, picking, substitutions, pickup, delivery, payments, recurring baskets, staff, reports, and customer messages.
+
+It runs on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/grocery/getting-started).
 
 <Callout type="warn">
-Current source is not a self-contained multi-store bootstrap. First-user initialization does not create/assign a Store, while `runGroceryOnboarding` requires the signed-in user to already have one. Complete and verify that ownership step on an isolated database before running onboarding. Do not infer organization/location tenancy, payment settlement, supplier execution, or delivery execution from the current records.
+The app serves one store per deployment. A migration creates the Store row `store_juniper`, and production requires `PUBLIC_STORE_ID=store_juniper`. Data is scoped to that Store, but there is no organization or multi-location model.
 </Callout>
 
 ## Customer and operator surfaces
 
-Customer routes cover `/`, departments and product detail, `/cart`, `/checkout`, `/deals`, `/lists`, `/subscriptions`, `/account`, and `/order/[id]`. A shopper can manage an owned guest/account cart, substitution preferences, coupons, lists and recipes, a pickup or delivery window, subscriptions, and pickup check-in.
+- **Storefront** (`app/(storefront)`, logic in `features/storefront`): home, departments, products, specials, delivery and pickup times, basket, checkout, order tracking, guest order access, account, lists, favorites, recurring baskets, help, and policies. See [External storefronts](/docs/openfront/grocery/external-storefront) for the route table.
+- **Operator platform** (`app/dashboard/(admin)/platform`, logic in `features/platform`): seventeen task pages gated by role capabilities. See [External dashboards](/docs/openfront/grocery/external-dashboard) for the route table.
+- **Generic admin** (`features/dashboard`): Keystone list and item pages at `/dashboard/<list-key>` for records without a dedicated page. They follow the same list access rules.
 
-Purpose-built operator routes are:
+## Store model and tenancy
 
-- `/dashboard/platform/orders` and `/fulfillment` for picking, substitution, packing, handoff, and delivery state;
-- `/dashboard/platform/delivery` and `/pickup` for slots, capacity, routes, parking, check-in, and handoff;
-- `/dashboard/platform/inventory` for lots, expiry, quantity, and adjustments;
-- `/dashboard/platform/purchasing` and `/suppliers` for purchase-order drafts, transitions, and receipt;
-- `/dashboard/platform/merchandising` for departments/products/coupons;
-- `/dashboard/platform/customers` and `/subscriptions` for account and recurring-order operations.
+- `Store` holds code, name, timezone, currency, and an active flag. GraphQL cannot create, update, or delete a Store. The only Store comes from the migration.
+- `User.store` is a required relationship. The first-user flow at `/dashboard/init` connects the new user to `PUBLIC_STORE_ID` and creates an `Admin` role with every capability.
+- `StoreSettings` is one row per Store (unique `store` relationship). It holds the profile, hours, rolling fulfillment policy, delivery postal prefixes, minimums, fees, tax rate, logo, and brand hue.
+- Signed-in access uses `currentMembershipStoreId`. It reads the user's current Store from the database on each request and denies access when the account is erased or the Store is inactive. Custom commands call `requireSessionStore`.
+- Public reads (products, departments, coupons, availability, settings) use `PUBLIC_STORE_ID`. Shoppers see only published products and active departments. Cost, supplier, and internal product fields are readable only with `canManageProducts`.
+- Roles carry `canAccessDashboard`, `canManageProducts`, `canManageOrders`, `canManageInventory`, `canManageSuppliers`, `canManageDelivery`, `canManageUsers`, `canManagePayments`, and `canManageOnboarding`. Role fields and `User.role` cannot be changed through generic GraphQL. Staff access changes go through the staff commands.
 
-Thin route wrappers delegate to `features/storefront`, `features/platform`, and the Keystone mutation/projection layer. Generic list administration remains available only under its permissions.
+## Data models
 
-## Schema and store boundary
+The model registry in `features/keystone/models/index.ts` defines 66 lists:
 
-The graph includes Store and singleton StoreSettings, users/roles, departments/products, suppliers and purchase orders, lots/adjustments, carts/items, orders and immutable lines, substitutions, delivery/pickup/parking/route records, coupons/loyalty/subscriptions/lists/recipes, providers/sessions/payments/refunds/webhook events, and GroceryOutboxEvent.
+| Area | Lists |
+|---|---|
+| Store and staff | `Store`, `StoreSettings`, `User`, `Role`, `StaffInvitation`, `StaffAccessEvent`, `RateLimitBucket` |
+| Catalog | `Department`, `Product`, `ProductInformationVersion`, `CatalogImport`, `Coupon`, `UserCoupon`, `Recipe`, `RecipeIngredient` |
+| Inventory | `InventoryLot`, `InventoryMovement`, `InventoryAdjustment`, `InventoryCount`, `InventoryRecall`, `InventoryConversion`, `OrderLineInventoryAllocation` |
+| Suppliers and purchasing | `Supplier`, `PurchaseOrder`, `POItem`, `PurchaseReceipt`, `SupplierInvoice`, `SupplierCredit` |
+| Baskets and orders | `Cart`, `CartItem`, `CheckoutAttempt`, `Order`, `OrderLineItem`, `OrderItemSubstitution`, `SubstitutionPreference`, `OrderLineFulfillment`, `OrderSettlement` |
+| Pickup and delivery | `PickupSlot`, `DeliverySlot`, `ParkingSpot`, `DeliveryRoute` |
+| Payments and finance | `PaymentProvider`, `PaymentSession`, `Payment`, `PaymentRefund`, `OrderLineRefund`, `PaymentWebhookEvent`, `SettlementMatch`, `FinancialClose` |
+| Customers and retention | `Address`, `ShoppingList`, `ShoppingListItem`, `FavoriteProduct`, `Subscription`, `SubscriptionRun`, `LoyaltyProgram`, `LoyaltyTransaction`, `LoyaltyRedemption`, `BackInStockAlert`, `PriceAlert`, `NotificationPreference` |
+| Messages and privacy | `ContactMessage`, `CustomerMessage`, `CustomerPrivacyRequest`, `CustomerBatchRequest`, `GroceryOutboxEvent` |
 
-The current boundary is one active Store per user/session:
+Order `status` values are `pending`, `picking`, `packed`, `out_for_delivery`, `delivered`, `delivery_failed`, `delivery_refused`, `returned`, and `cancelled`. Pickup readiness is tracked in order metadata, not as its own status value.
 
-- `User.store` is required in the current model/migration state;
-- `requireSessionStore()` resolves the current user's store for protected commands;
-- public reads select the first active Store;
-- operational records carry direct Store relationships and custom mutations recheck them;
-- `StoreSettings` remains singleton and is not itself related to Store;
-- current backfills use fixed identity `store_juniper`.
+## Workflows in the code
 
-This is not an organization or location tenant graph. Model-level access remains role-oriented in several places, so custom command checks and relationship constraints are material. Raw Cart/CartItem writes are operator-only, raw Order lifecycle fields are restricted, and immutable order lines cannot be freely updated.
+- **Checkout.** `initiatePaymentSession` creates a Stripe payment with manual capture. `submitGroceryOrder` re-reads products, lots, the chosen slot, the coupon code, the delivery policy (postal prefix, minimum, fee), and the payment session. It locks lots in expiry order, allocates stock, and writes the order with line snapshots. Guests get a signed order token. `resumeGroceryCheckout` and `restartGroceryCheckout` recover an interrupted checkout.
+- **Picking and final sale.** Staff advance orders through picking, packed, and ready for pickup. They record actual weights or quantities per line (`resolveOrderLineFulfillment`) and record or propose substitutions. The customer accepts or declines proposals on the order page (`respondToOrderLineSubstitution`). `finalizeGroceryOrderActuals` freezes the picked goods and captures payment. If the final total is higher than the authorization, the customer must approve a new authorization (`authorizeOrderAdjustment`).
+- **Pickup and delivery.** Slots come from a rolling policy in store hours plus dated slot records. Customers check in for curbside pickup and pick a parking spot. Staff build delivery routes from orders, resolve each stop with proof and condition notes, and reschedule returned deliveries.
+- **Inventory.** Lots have quantity, expiry, condition, and safety status. Staff adjust lots, run counts and recounts, convert cases to units, and hold, quarantine, recall, or release lots. Recalls record notices and dispositions and close only after affected orders have a delivered notice.
+- **Purchasing.** Purchase orders move `draft` → `sent` → `confirmed`, and any of these can be cancelled. Receiving creates lots with lot number, expiry, and condition. Supplier invoices, claims, debits, and settlement are recorded through `manageSupplierSettlement`.
+- **Refunds and reports.** Staff refund by order line or by amount, void an authorization, and replay stored webhook events. Reports close a trading period, import a settlement statement CSV, review matches, and export the close.
+- **Recurring baskets and rewards.** Customers create, pause, resume, skip, and cancel recurring baskets. Due runs prepare a basket for the customer to check out; they do not place an order on their own. Staff can configure one loyalty program; customers redeem points.
+- **Messages and privacy.** The Help page creates `ContactMessage` records for the staff inbox. Customer emails are queued as outbox events. Customers request data export or erasure; staff review erasure requests.
 
-Catalog pages currently use field-access-controlled generated Product and Department queries rather than bespoke DTOs for every read. Product field access protects cost, low-stock, supplier, and inventory relationships, but those field names remain in the generated schema. Guest order access uses a token-checked resolver returning the Order type. Describe this as controlled raw catalog reads plus named operational projections—not a fully projection-only public API.
+## Named GraphQL operations
 
-## Controlled GraphQL boundary
+These are custom roots added in `features/keystone/mutations/index.ts` (also in `schema.graphql`).
 
-Customer/public queries include `groceryCart`, `clippedCoupons`, `scaleRecipe`, `activeCartPaymentProviders`, `guestGroceryOrder`, `publicGroceryCoupons`, `publicGroceryAvailability`, pickup-slot queries, and parking availability.
+**Public and customer queries:** `groceryCart`, `customerOrderSubstitutions`, `clippedCoupons`, `activeCartPaymentProviders`, `guestGroceryOrder`, `publicGroceryCoupons`, `publicGroceryStorefrontSettings`, `publicGroceryProducts`, `publicGroceryProduct`, `publicGroceryAvailability`, `availablePickupSlots`, `pickupSlotsByDate`, `availableParkingSpots`, `getGroceryLoyalty`, `groceryCustomerPrivacy`, `redirectToInit`.
 
-Named customer commands cover:
+**Customer commands:**
 
-- add/update/remove/clear/merge cart and substitution preference;
-- clip/unclip/preview/apply coupons;
-- create/update/pause/resume/cancel/skip subscriptions;
-- create/manage shopping lists and add lists/recipes to cart;
-- reserve/release pickup capacity, check in, release parking, and complete handoff;
-- `initiatePaymentSession` and `submitGroceryOrder`.
+- Basket: `addItemToGroceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `mergeGuestGroceryCart`, `updateGrocerySubstitutionPreference`, `reorderGroceryOrder`.
+- Lists and favorites: `createCustomerShoppingList`, `deleteCustomerShoppingList`, `addToShoppingList`, `removeFromShoppingList`, `updateShoppingListItemQuantity`, `toggleShoppingListItemChecked`, `addShoppingListToCart`, `saveFavoriteProduct`.
+- Alerts: `requestGroceryBackInStockAlert`, `requestGroceryPriceAlert`.
+- Checkout and orders: `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `requestGuestOrderAccess`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot`.
+- Account: `registerGroceryCustomer`, `updateActiveUser`, `updateActiveUserPassword`, `updateGroceryNotificationPreferences`, `manageGrocerySubscription`, `redeemGroceryLoyalty`, `requestGroceryCustomerPrivacy`, `exportGroceryCustomerData`, `acceptGroceryStaffInvitation`, `submitGroceryContactMessage`.
 
-Operator commands include delivery-route creation/transition, `advanceOrderFulfillment`, substitution recording, `refundPayment`, capacity configuration, lot adjustment, purchase-order draft/remove/transition/receive, and outbox claim/complete/replay/status.
+**Operator projections:** `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`, `groceryOutboxStatus`.
 
-Named task projections are `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, and `groceryPlatformSubscriptions`.
+**Operator commands:**
 
-Checkout re-reads product, lot, slot, provider session, amount, and settlement state; allocates eligible lots in expiry order; and writes order/payment/fulfillment/outbox evidence with immutable line snapshots. Those source checks still require runtime concurrency and rollback tests against the target PostgreSQL configuration.
+- Orders and fulfillment: `advanceOrderFulfillment`, `cancelGroceryOrder`, `reconcileCheckoutAttempts`, `resolveOrderLineFulfillment`, `recordOrderItemSubstitution`, `proposeOrderLineSubstitution`, `finalizeGroceryOrderActuals`, `completeOrderHandoff`.
+- Capacity and delivery: `configureDeliverySlot`, `configurePickupSlot`, `configureParkingSpot`, `createDeliveryRouteFromOrders`, `updateDeliveryRouteWorkflow`, `resolveDeliveryStop`, `rescheduleReturnedGroceryDelivery`, `updateGroceryDeliveryPolicy`.
+- Inventory and purchasing: `adjustInventoryLot`, `manageInventoryCount`, `manageInventorySafety`, `convertInventoryCases`, `createPurchaseOrderDraft`, `removePurchaseOrderDraftItem`, `transitionPurchaseOrder`, `receivePurchaseOrder`, `manageSupplierSettlement`, `updateSupplierMinimumOrder`.
+- Catalog: `importGroceryCatalog`, `updateProductInformation`.
+- Payments and finance: `refundPayment`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `recoverGroceryPaymentCreation`, `recoverRevisedAuthorization`, `reconcilePaymentRefunds`, `replayPaymentWebhookEvent`, `handlePaymentProviderWebhook`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch`.
+- Customers, staff, and retention: `provisionGroceryCustomer`, `inviteGroceryStaff`, `revokeGroceryStaffInvitation`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty`.
+- Store and onboarding: `runGroceryOnboarding`, `updateGroceryStoreProfile`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue`.
+- Outbox: `claimGroceryOutboxEvents`, `completeGroceryOutboxEvent`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery`, `deliverGroceryOutboxNow`.
 
-## Onboarding and local data
+Some storefront and dashboard pages also use generated Keystone queries and mutations, for example `departments`, `orders`, `addresses`, `favoriteProducts`, `shoppingLists`, `subscriptions`, `createProduct`, `updateProduct`, `createDepartment`, `updateCoupon`, and `updateContactMessage`. List and field access rules apply to them.
 
-`runGroceryOnboarding` uses an advisory lock and serializable transaction to create synthetic Juniper settings, departments, suppliers, products, lots, fulfillment capacity, providers, coupons, loyalty, a customer/address/list/subscription, and sample orders/payments. It marks the current user complete and includes repeat/failure-injection logic.
+## Onboarding
 
-It does not create the Store required by `requireSessionStore()`. On a clean database, first establish and assign a Store through an approved owning-source path, then run onboarding twice and verify stable tenant/catalog relationships. Seeded customers, addresses, prices, orders, and payment records are fictional local data, not a hosted demo or operating evidence.
+When no users exist, every page redirects to `/dashboard/init`. After the first admin signs in, the dashboard shows onboarding cards and a dialog (`features/platform/onboarding`). It offers three templates:
+
+- **Complete Setup**: 6 departments, 3 suppliers, 8 products, 8 lots, 5 delivery windows, 5 pickup windows, 4 parking spots, the Stripe provider record, and 2 coupons (`WELCOME10`, `FRESH5`).
+- **Basic Setup**: 4 departments, 2 suppliers, 4 products, 4 lots, 2 delivery windows, 2 pickup windows, 2 parking spots, the Stripe provider record, and 1 coupon.
+- **Custom Setup**: start from the smaller seed JSON and edit it before running.
+
+`runGroceryOnboarding` needs `canManageOnboarding`. It takes a PostgreSQL advisory lock, checks the actor still belongs to the active Store, and writes everything in one transaction. Store settings are seeded with "Replace with your …" placeholder text. The storefront does not publish those placeholders, and the store is not counted as ready until it has a real name. Edit them in **Settings** after onboarding.
+
+If the Store already has a settings row, running onboarding again does not reseed. It reports what is still missing (store name, active department, published product, sellable stock, delivery windows, pickup windows) and marks the user complete only when nothing is missing. The Stripe provider record is created as installed only when the three Stripe environment variables are set. Onboarding does not create customers, orders, or a loyalty program.
 
 ## Payments and integrations
 
-The current adapter registry exposes Stripe under `pp_stripe_default`. A manual module exists, but it is not registered; the seeded manual row is disabled/operator-only and cannot be described as an available checkout adapter.
+- **Payments.** The adapter registry in `features/integrations/payment` has two entries: Stripe (`pp_stripe_default`, public checkout) and a local test adapter (`pp_test_default`, not public, refused in production). A `manual.ts` file exists but is not registered, and the selector `manual` is rejected. Stripe is off unless `STRIPE_ENABLED=true` and all three Stripe keys are set. Production requires live keys unless `STRIPE_ALLOW_TEST_MODE=true`. Custom remote adapters must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.
+- **Webhooks.** `POST /api/payments/webhooks/[providerCode]` reads a size-limited raw body, verifies the provider signature, throttles invalid signatures per sender, and records a `PaymentWebhookEvent`.
+- **Email.** Customer messages and password resets use SMTP (`SMTP_HOST`, `SMTP_FROM`, and related settings). Without SMTP, queued messages stay pending and reset links cannot be sent.
+- **Outbound events.** If `GROCERY_EVENT_WEBHOOK_URL` is set, the event worker posts outbox events to that HTTPS URL, signed with HMAC-SHA256 using `GROCERY_EVENT_WEBHOOK_SECRET` (at least 32 characters).
+- **Storage.** Product images use an S3-compatible bucket (`S3_*` variables).
+- **AI and MCP.** `/api/mcp-transport/[transport]` exposes generic Keystone tools (`listModels`, `queryData`, `createData`, `updateData`, `deleteData`, and others) that run GraphQL as the signed-in user. It returns 404 unless `MCP_ENABLED=true`. `/api/completion` needs a dashboard user plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
+- **Other routes.** `/api/health` checks the database. `/api/store-icon` serves the store logo as an icon.
 
-The Stripe adapter implements intent create/capture/refund/status/link and raw-body signature verification. Webhook ingress is `/api/payments/webhooks/[providerCode]`; the handler verifies the adapter signature before privileged work, claims replay identity, updates matching payment evidence, and records PaymentWebhookEvent. Provider source/configuration is not proof of authorization, capture, refund, or reconciliation.
+Background workers run as separate processes: `npm run worker:events` (emails, stock and price alerts, outbound events), `npm run worker:subscriptions` (prepares due recurring baskets), and `npm run worker:refund-reconcile` (checks pending refunds with the provider). Each needs a staff user id from the store with the right capability; see `.env.example`.
 
-Supplier purchasing, tax, loyalty accounting, outbound delivery, notifications, and outbox dispatch have no provider execution implied by their rows. Add each effect behind typed allowlisted adapters, encrypted/denied credentials, signed ingress, idempotency, durable retries, reconciliation, and operator exception handling.
+## Current limitations
 
-## Deployment and current limitations
-
-Recent migrations add refund relationships, retain Store ownership, convert catalog identity links to relations, and enforce non-null Store/evidence constraints. They include retained-data failure checks and depend on the preceding `store_juniper` backfill. Review and apply the full ordered history; do not cherry-pick the final constraints.
-
-Both the npm `dev` and `build` scripts run migration deployment before Next.js. Railway instead builds without migration and migrates at start. Use deliberate database credentials, separate migration from immutable build where needed, supply real S3/payment secrets, back up/restore-test the target, and run current schema, type, build, ownership, checkout, refund, substitution, capacity, inventory, procurement, webhook, and outbox tests.
-
-Current source does not establish multi-store isolation, organization/location tenancy, complete first-store onboarding, a registered manual provider, provider settlement, delivery/fleet execution, supplier transmission, tax calculation, durable outbox delivery, or production-load inventory safety. Do not use real customer/payment data until those exact release and deployment boundaries have been independently verified.
+- One Store per deployment. No organizations, locations, or multi-store switching.
+- Stripe is the only public checkout adapter. There is no cash, manual, or pay-at-pickup option.
+- Tax is a store-level rate in basis points stored in settings. There is no tax provider.
+- Delivery routes and stops are recorded by staff. There is no driver app, map routing, or carrier integration.
+- Purchase orders are not sent to suppliers. "Sent" and "confirmed" are status changes made by staff.
+- `Recipe`, `RecipeIngredient`, and `UserCoupon` lists exist, and the schema still has `clippedCoupons` and some recipe and coupon-clip result types. There is no storefront recipe page, and no command to clip a coupon. Shoppers enter a coupon code at checkout.
+- Emails, recurring baskets, outbound events, and refund reconciliation depend on the workers running. The web process alone does not send them.
+- `package.json` has no `test` or `typecheck` script.

@@ -1,11 +1,12 @@
 {
   "title": "Construction",
-  "description": "Construction project controls, field operations, safety, contracts, and billing",
+  "description": "Construction project controls, field operations, safety, contracts, billing, public website, and project portal",
   "icon": "HardHat",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

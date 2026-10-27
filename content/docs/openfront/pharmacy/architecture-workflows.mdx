@@ -1,72 +1,91 @@
 ---
 title: Pharmacy architecture and workflows
-description: Operator and customer surfaces, conceptual relationships, bounded GraphQL operations, and human-controlled pharmacy lifecycles.
+description: Source layout, the 45 Keystone lists, prescription, inventory, recall, commerce, and payment lifecycles, and the named GraphQL operations.
 icon: Workflow
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-## Application surfaces
+## Source layout
 
-The public application provides the pharmacy storefront at `/`, cart at `/cart`, and checkout at `/checkout`. Public queries return enabled locations and non-prescription catalog products. A guest cart uses an opaque token; the stored form is hashed. A successful order returns a separate token accepted by the bounded `guestPharmacyOrder` projection. Current source has no public order-status route or storefront helper that consumes that projection, so it is an API boundary rather than a complete customer order-tracking surface.
-
-Authenticated operators use `/dashboard/platform/*` routes:
-
-| Area | Current routes and work |
+| Path | What lives there |
 |---|---|
-| Prescriptions | Queue, intake, and prescription task pages for source verification, pharmacist review, dispensing authorization, lot selection, and dispensing evidence |
-| Inventory | Lot/expiry/cold-chain queue, controlled receipt, lot task, quantity adjustment, temperature-excursion evidence, and movement history |
-| Recalls | Recall queue and recall task for opening a bounded recall and quarantining affected lots |
-| Orders | Order queue and task pages for immutable lines, payment state, and controlled fulfillment transitions |
-| Patients and POS | Patient-safe directory/detail and a location-scoped non-prescription POS catalog |
-| Integrations and evidence | Provider state, audit timeline, outbox timeline, failed-delivery queue, and permissioned replay |
+| `features/keystone/models/**` | The 45 Keystone lists |
+| `features/keystone/mutations/**` | Custom GraphQL queries and mutations, registered in `mutations/index.ts` |
+| `features/keystone/workflows/**` | Pure rules: state machines, lot eligibility, clinical safety, fill entitlement, tax and cart totals |
+| `features/keystone/access.ts` | Permission helpers built on the 19 role flags |
+| `features/platform/**` | Pharmacy operator pages, server actions, and onboarding |
+| `features/dashboard/**` | Shared Keystone admin shell, auth pages, generic list and item screens |
+| `features/storefront/**` | Customer screens, components, and data loaders |
+| `features/integrations/**` | Payment, eRx, and insurance adapters |
+| `app/**` | Thin route files and API routes |
+| `docs/schema-map.md` | Schema map and platform coverage notes in the source repo |
 
-Generic Keystone administration still exists for permitted configuration records. Consequential lifecycle and evidence records omit raw create/update/delete GraphQL fields; focused platform pages call named operations instead.
+## Models
 
-## Conceptual data model
+Most clinical, inventory, and money lists set `create`, `update`, and `delete` to deny in the generic API. Their records change only through the named commands below. The generic create and edit drawers are used only for Product, DrugReference, Supplier, Prescriber, PharmacyLocation, PaymentProvider, OrganizationMembership, and Organization.
 
-- **Business and staff:** organizations, locations, memberships, users, and roles establish tenant and location authority.
-- **Medication and catalog:** drug references carry bounded medication identity such as NDC snapshots; products connect that reference to pharmacy-owned SKU, availability, price, tax, prescription requirement, and cold-chain policy.
-- **Patients and prescribers:** patient profiles, prescribers, consent records, prescriptions, items, reviews, refills, and transfers keep identity, authorization, consent, and medication facts explicit.
-- **Inventory and safety evidence:** suppliers, lots, immutable movements, recalls, temperature excursions, and human approvals connect what was received, held, quarantined, released, recalled, or dispensed.
-- **Commerce and fulfillment:** carts and items lead to immutable order lines, payment sessions/payments, fulfillment, and guest-safe order access. Prescription requirement, NDC, name, quantity, and price are snapshotted where needed.
-- **Operations evidence:** audit and outbox events identify the actor, aggregate, event key, and bounded metadata without using raw patient, prescription, payment, or provider payloads as the audit record.
+| Area | Lists |
+|---|---|
+| Tenant and access | `Organization`, `PharmacyLocation`, `OrganizationMembership`, `User`, `Role`, `MachineCredential` |
+| Catalog and inventory | `DrugReference`, `DrugReferenceReview`, `Product`, `Supplier`, `InventoryLot`, `InventoryMovement`, `TemperatureExcursion` |
+| Patients | `PatientProfile`, `PatientAllergy`, `PatientMedication`, `ConsentRecord`, `Prescriber` |
+| Prescriptions | `Prescription`, `PrescriptionItem`, `PrescriptionReview`, `ClinicalSafetyReview`, `PrescriptionFill`, `PrescriptionFillEvent`, `DispensingLabel`, `RefillRequest`, `PrescriptionTransfer`, `PrescriptionRequest` |
+| Orders and payments | `Cart`, `CartItem`, `Order`, `OrderLineItem`, `Fulfillment`, `PaymentProvider`, `PaymentSession`, `Payment`, `PaymentWebhookEvent` |
+| Recalls, integrations, evidence | `Recall`, `RecallExposure`, `IntegrationProvider`, `ExternalIntegrationWorkflow`, `IntegrationWebhookEvent`, `HumanApproval`, `AuditEvent`, `OutboxEvent` |
 
-Model presence is not a capability claim. Capability comes from a routed, permissioned operation with a defined lifecycle, transaction, projection, test, and operational owner.
+`Product.prescriptionRequirement` is one of `none`, `prescription_required`, or `pharmacist_review_required`. Only `none` products can enter a public cart or appear in the public catalog.
 
-## Bounded GraphQL queries
+## Prescription lifecycle
 
-Customer queries are limited to public locations/catalog, token-scoped cart, enabled payment choices, and token-scoped guest order. Operator projections cover the catalog queue, POS catalog, setup options, prescription/inventory/recall/order queues and tasks, patient-safe views, provider state, summary counts, onboarding state, audit timeline, and outbox state.
+Statuses: `draft` → `pending_review` → `needs_information` or `approved` → `ready_to_dispense` → `partially_dispensed` → `dispensed` → `fill_closed`. A prescription can also end as `rejected` or `cancelled`.
 
-Those projections deliberately omit patient contact and birth details from patient-safe views; provider credentials and adapter function names; payment payload data; guest-token hashes; audit metadata; and outbox payload/error text. Requesting an omitted field fails at the schema boundary.
+1. **Intake.** `intakePharmacyPrescription` records the patient, prescriber, location, source, dates, and items. Every product must have an active drug reference review that marks it active and non-controlled.
+2. **Clinical safety review.** `recordPrescriptionClinicalSafetyReview` records seven checks: allergies, medication history, interactions, duplicate therapy, contraindications, dose, and counseling plan. It also records an outcome. `holdPrescriptionForClinicalReReview` sends a stale review back for another look.
+3. **Pharmacist review.** `recordPrescriptionReview` records the decision.
+4. **Authorize.** `authorizePrescriptionDispensing` moves an approved prescription to `ready_to_dispense`.
+5. **Fill.** `reservePharmacyPrescriptionFill` and `releasePharmacyPrescriptionFill` manage per-fill entitlement under the organization's fill policy (`recordPharmacyFillPolicy`).
+6. **Dispense.** `recordPrescriptionDispensing` checks the lot (location, product, expiry, quantity, quarantine, recall, and cold-chain state). It then writes the movement, a `DispensingLabel`, an order, and a cash payment. Dispensing needs a recorded cash and tax policy. Cash is the only tender on this path.
 
-## Named mutations
-
-Current source registers these pharmacy operations:
-
-- **Customer commerce:** `createPharmacyCart`, `addPharmacyCartItem`, `updatePharmacyCartItem`, `removePharmacyCartItem`, `initiatePharmacyPaymentSession`, and `submitPharmacyOrder`.
-- **Prescription and patient requests:** `intakePharmacyPrescription`, `recordPrescriptionReview`, `authorizePrescriptionDispensing`, `recordPrescriptionDispensing`, `requestPrescriptionRefill`, `requestPrescriptionTransfer`, and `approvePrescriptionTransfer`.
-- **Inventory, recall, and cold chain:** `receivePharmacyInventoryLot`, `adjustPharmacyInventoryLot`, `openPharmacyRecall`, `quarantineRecallLots`, and `recordTemperatureExcursion`.
-- **Operations:** `transitionOrderFulfillment`, `replayPharmacyOutboxEvent`, `runPharmacyOnboarding`, and `setPharmacyOnboardingStatus`.
-
-These are application operations, not declarations that an external pharmacy network, insurer, wholesaler, tax service, sensor, delivery provider, or regulator accepted the result.
-
-## Prescription and dispensing path
-
-The controlled path is intake -> source verification -> pharmacist review -> approval or rejection -> dispensing authorization -> eligible lot selection -> dispensing evidence. A prescription cannot jump from draft to dispensed. Terminal records do not re-enter active workflow. Dispensing verifies the authorized prescription, location, product/lot match, expiry, available quantity, quarantine quantity, recall/cold-chain eligibility, pharmacist permission, attestation, and reason.
+Refills: a patient calls `requestPrescriptionRefill` from the account page, and staff call `resolvePrescriptionRefill`. Transfers: `requestPrescriptionTransfer` records the request and consent, and `approvePrescriptionTransfer` approves it. Online requests (`registration`, `transfer`, `new_prescription`) come in through `submitPharmacyPrescriptionRequest`. Staff resolve them with `resolvePharmacyPrescriptionRequest`.
 
 <Callout type="warn">
-Software checks do not make a prescription valid or dispensing lawful. The authorized pharmacist remains responsible for clinical and legal review, identity, prescriber authority, substitution, counseling, controlled-substance rules, jurisdictional records, and the physical act of dispensing.
+These checks do not make a prescription valid or dispensing lawful. The pharmacist is still responsible for clinical and legal review, identity, prescriber authority, substitution, counseling, and the physical act of dispensing.
 </Callout>
 
-## Lot, recall, and cold-chain path
+## Inventory, recall, and cold chain
 
-Receipt creates lot identity, quantity, approval, movement, audit, and outbox evidence together. A cold-chain lot without complete evidence starts quarantined. A temperature excursion records the observed range and time, quarantines the lot, marks evidence incomplete, and creates disposition evidence. Opening a recall binds a recall identity and selected tenant-owned lots; quarantining the recall moves each affected lot to a recalled/quarantined state and records immutable movements.
+- `receivePharmacyInventoryLot` creates a lot with a `receive` movement. It rejects cold-chain lots ("Cold-chain receiving is not supported yet").
+- `adjustPharmacyInventoryLot` sets a counted quantity and writes an `adjust` movement.
+- A recall goes through `openPharmacyRecall` (selected lots), `quarantineRecallLots`, `recordRecallExposureAction` (patient outreach), `disposeRecallLot`, and `closePharmacyRecall`. Exposure rows are built from `dispense` and `sale` movements on the recalled lots.
+- `recordTemperatureExcursion` exists in `coldChainWorkflows.ts`, but it is not registered in the GraphQL schema. No page records or resolves excursions.
 
-The implementation records evidence supplied by authorized people or adapters. It does not ingest calibrated sensor data, validate a shipping lane, identify every affected patient, submit regulatory reports, or prove that a physical product was removed from circulation.
+## Commerce and payments
 
-## Commerce and fulfillment path
+- Carts: `createPharmacyCart`, `addPharmacyCartItem`, `updatePharmacyCartItem`, `removePharmacyCartItem`. A guest cart has an opaque token, and only its hash is stored. Cart tax is always 0 in the current cart hook.
+- Checkout: `initiatePharmacyPaymentSession`, then `submitPharmacyOrder`. Card payments must be `captured` or `succeeded` with the provider before the order commits. Pay-at-pickup orders commit with a pending payment that is collected at handoff. A successful guest order returns a `guestOrderToken`.
+- Fulfillment: `transitionOrderFulfillment` moves through `preparing`, `ready`, `out_for_delivery` (delivery only), and `handed_off`. Only the assigned staff member can record the handoff. Cancelling goes through a refund, not a transition.
+- Counter sales: `submitPharmacyPosCashOrder` records an OTC cash sale using the organization's cash tax rate. `pharmacyPosCashReceipt` reads the receipt back.
+- Money: `refundPharmacyPayment`, `refundPharmacyCashPayment`, `reconcilePharmacyPaymentSession` (for sessions left `settled_unordered` or `compensation_pending`), and `handlePaymentProviderWebhook`.
 
-The public cart rejects any product whose prescription requirement is not `none`. Checkout re-reads server-owned product, lot, location, payment, amount, and availability facts; creates immutable order and line snapshots; decrements eligible inventory in a transaction; and records audit/outbox evidence. Current concurrency evidence used database locks so only one competing one-unit checkout committed, but each deployed database and workflow still needs load and failure testing.
+## Named GraphQL operations
 
-Order fulfillment is separate from prescription review and dispensing. A paid OTC order can move through fulfillment states; a medication order cannot use a generic fulfillment transition to bypass pharmacist-controlled dispensing.
+All are defined in `features/keystone/mutations/index.ts`.
+
+**Public and customer queries:** `publicPharmacyTenant`, `publicPharmacyLocations`, `publicPharmacyCatalog`, `publicPharmacyCategories`, `pharmacyCart`, `activePharmacyPaymentProviders`, `guestPharmacyOrder`, `lookupPharmacyOrder`, `pharmacyCustomerAccount`, `pharmacyCustomerOrder`, `pharmacyCustomerOrderDetails`, `pharmacyCustomerPrescriptionRequests`, `pharmacyPatientPortal`, `redirectToInit`.
+
+**Operator queries:** `pharmacyOperationalSummary`, `pharmacyOnboardingState`, `pharmacyOperatorLocations`, `pharmacyCatalogQueue`, `pharmacyPosCatalog`, `pharmacyPosCustomers`, `pharmacyPosCashReceipt`, `pharmacyPrescriberDirectory`, `pharmacyPrescriptionIntakeOptions`, `pharmacyPrescriptionQueue`, `pharmacyPrescriptionWorklist`, `pharmacyPrescriptionTask`, `pharmacyPrescriptionRequestQueue`, `pharmacyFillPolicy`, `pharmacyFillWorkbench`, `pharmacyFillHistory`, `pharmacyInventoryReceiptOptions`, `pharmacyInventoryReceiptProductWorklist`, `pharmacyInventoryQueue`, `pharmacyInventoryLotTask`, `pharmacyRecallOpenOptions`, `pharmacyRecallQueue`, `pharmacyRecallWorklist`, `pharmacyRecallTask`, `pharmacyOrderQueue`, `pharmacyOrderTask`, `pharmacyPatientRecordOptions`, `pharmacyPatientAccountCandidates`, `pharmacyPatientDirectory`, `pharmacyPatientSafeView`, `pharmacyCredentialReviewOptions`, `pharmacyIntegrationStatus`, `pharmacyAuditTimeline`, `pharmacyOutboxTimeline`, `pharmacyOutboxQueue`.
+
+**Customer mutations:** `registerPharmacyCustomer`, `updateActiveUser`, `createPharmacyCart`, `addPharmacyCartItem`, `updatePharmacyCartItem`, `removePharmacyCartItem`, `initiatePharmacyPaymentSession`, `submitPharmacyOrder`, `submitPharmacyPrescriptionRequest`, `requestPrescriptionRefill`.
+
+**Patients and prescriptions:** `createPharmacyPatient`, `updatePharmacyPatientContact`, `recordPharmacyPatientAllergy`, `recordPharmacyPatientMedication`, `recordPharmacyPatientNoneKnown`, `linkPharmacyPatientAccount`, `resolvePharmacyPrescriptionRequest`, `intakePharmacyPrescription`, `recordPrescriptionClinicalSafetyReview`, `holdPrescriptionForClinicalReReview`, `recordPrescriptionReview`, `authorizePrescriptionDispensing`, `recordPrescriptionDispensing`, `recordPharmacyFillPolicy`, `reservePharmacyPrescriptionFill`, `releasePharmacyPrescriptionFill`, `resolvePrescriptionRefill`, `requestPrescriptionTransfer`, `approvePrescriptionTransfer`.
+
+**Credentials:** `recordPharmacyStaffCredentialReview`, `recordPharmacyPrescriberCredentialReview`, `recordPharmacyDrugReferenceReview`.
+
+**Inventory and recalls:** `receivePharmacyInventoryLot`, `adjustPharmacyInventoryLot`, `openPharmacyRecall`, `quarantineRecallLots`, `recordRecallExposureAction`, `disposeRecallLot`, `closePharmacyRecall`.
+
+**Orders and payments:** `transitionOrderFulfillment`, `submitPharmacyPosCashOrder`, `recordPharmacyCashPolicy`, `refundPharmacyPayment`, `refundPharmacyCashPayment`, `reconcilePharmacyPaymentSession`, `handlePaymentProviderWebhook`.
+
+**Integrations and operations:** `configurePharmacyIntegrationProvider`, `validatePharmacyPrescriber`, `submitPharmacyExternalWorkflow`, `refreshPharmacyExternalWorkflow`, `ingestPharmacyIntegrationWebhook`, `replayPharmacyOutboxEvent`, `runPharmacyOnboarding`, `setPharmacyOnboardingStatus`.
+
+Patient-safe and guest projections leave out fields such as guest-token hashes, provider credentials, audit metadata, and outbox payloads. If you request an omitted field, the query fails at the schema.

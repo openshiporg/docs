@@ -13,13 +13,23 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-dealership>
 - Built-in Dealership customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin customer-facing route entry points: `app/(storefront)/**` (no country segment). Screens in `features/storefront/screens`, server actions in `features/storefront/actions` (`submissions.ts`, `account.ts`, `customerRecords.ts`), GraphQL documents in `features/storefront/lib/data`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/tenantRecords.ts` (which rooftop the storefront serves), `features/keystone/mutations/**` (custom operations declared in `mutations/index.ts`), and `schema.graphql`.
 - Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is vehicle inventory/detail/compare, inquiry, finance intake, test-drive, trade-in, and service-request journeys. This list is orientation, not proof that every flow is safe or complete.
+Current routes: `/`, `/inventory`, `/inventory/[id]`, `/compare`, `/test-drive`, `/trade-in`, `/financing`, `/service`, `/contact`, `/photo-credits`, `/account` (sign in or sign up when signed out; request history when signed in), `/account/reset`, `/account/requests/[ref]`, `/account/vehicles`, `/account/service`, `/account/service/[id]`, `/account/profile`, `/account/verify`. `/[...slug]` always returns not found.
+
+Operations the storefront uses:
+
+- Reads: `publicInventoryVehicles`, `publicInventoryVehicle`, `publicInventoryVehicleRecord`, `publicInventoryCount`, `storefrontProfile`, `makes`, `models`, `servicePackages`.
+- Submissions: `submitInquiry`, `submitTestDrive`, `submitTradeIn`, `submitFinancing`, `submitServiceBooking`. Each needs an `idempotencyKey`, has a `website` honeypot, and resolves the single served rooftop.
+- Account: `registerCustomerAccount`, `requestCustomerEmailVerification`, `confirmCustomerEmailVerification`, `customerRequestHistory`, `customerRequestDetail`, `customerPurchases`, `customerPayments`, `customerServiceHistory`, `customerServiceOrder`, `customerEmailLinkStatus`, `cancelCustomerBooking`, `rescheduleCustomerBooking`, and generic `updateUser` for the profile.
+
+Relevant models: Vehicle, VehicleImage, Make, Model, ServicePackage, DealershipProfile, Rooftop, Customer, Lead, TestDrive, TradeIn, FinancingApplication, ServiceAppointment, and (read through customer queries) Deal, DeliveryCase, WeOweItem, ServiceOrder, PaymentTransaction. Customer ownership rules are in `features/keystone/mutations/customerOwnership.ts`.
+
+The current product focus is vehicle inventory/detail/compare, inquiry, finance intake, test-drive, trade-in, and service-request journeys, plus a customer account with request detail, booking cancel/reschedule, purchases, payments, and service history. There is no online purchase, reservation, or deposit. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

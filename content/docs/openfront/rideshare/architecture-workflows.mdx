@@ -1,0 +1,105 @@
+---
+title: Rideshare architecture and workflows
+description: Keystone schema by domain, fleet setup, driver onboarding, booking, dispatch, trip, payment, and safety lifecycles, custom GraphQL operations, and access control.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Application structure
+
+```text
+app/                    thin routes: storefront, /dashboard, /api/graphql, /api/completion, /api/mcp-transport
+features/keystone/      models, access.ts, domain rules, custom GraphQL mutations and queries
+features/platform/      operator workspaces mounted at /dashboard/platform/*
+features/dashboard/     shared Keystone admin shell, auth screens, generic list/item pages
+features/storefront/    rider screens and components
+features/integrations/  payment, mapping, and notification adapters
+```
+
+## Data model
+
+The schema registers 38 Keystone lists. Key relationships by domain:
+
+| Domain | Lists | Key relationships |
+|---|---|---|
+| Identity | `User`, `Role`, `Fleet`, `FleetMembership`, `DriverProfile`, `RiderProfile`, `FleetBrandingChange` | A `Fleet` has memberships, drivers, vehicles, service areas, services, fare rules, rides, trips, policies, and providers. A `User` can hold memberships, a driver profile, and a rider profile. |
+| Operations | `Vehicle`, `ComplianceDocument`, `Policy`, `PolicyEvaluation`, `ProviderConnection` | Documents and evaluations attach to a driver or a vehicle. Evaluations reference a policy version. Vehicles link to many drivers. |
+| Service | `ServiceArea`, `RideService`, `AvailabilityRule`, `AvailabilityException`, `FareRule`, `RideQuote` | A `FareRule` prices one service in one area. A quote snapshots the fare rule and links to the resulting request. Availability attaches to a driver. |
+| Ride | `RideRequest`, `RequestCancellationCommand`, `MatchOffer`, `Trip`, `TripEvent`, `LocationEvent`, `Cancellation` | A request has offers and at most one trip. An accepted `MatchOffer` creates the `Trip`, which links to rider, driver, vehicle, events, location events, cancellations, payments, ledger entries, incidents, support cases, a conversation, and reviews. |
+| Safety | `SafetyIncident`, `SupportCase`, `Conversation`, `Message`, `Review` | All attach to a trip. |
+| Finance | `PaymentProvider`, `Payment`, `Refund`, `PaymentObservation`, `LedgerEntry`, `Payout` | Payments and refunds reference a provider; ledger entries reference a trip, payment, or payout. |
+| Integration | `Notification`, `MarketplaceRegistration` | Notification intents attach to a trip; the marketplace registration attaches to a fleet. |
+
+Money fields are integer minor units (for example `baseFareMinor`, `amountMinor`). Fare rules are versioned: activating a new version retires the previous one.
+
+## Workflows
+
+### Fleet setup and go-live
+
+`setupFleet` creates a fleet (status `setup`) with you as owner. Staff are added with `addFleetMember` and changed with `updateFleetMember` (membership `invited` -> `active` and back to `suspended`). Then `setupServiceArea`, `setupRideService`, and `setupFareRule`. In Settings an owner moves the fleet to `active`, sets operations mode from `off` to `manual`, and sets rider accounts to `open` or `closed`. Booking readiness is reported to riders through each service's `readiness` field.
+
+### Driver and vehicle onboarding
+
+1. `addFleetDriver` creates a `DriverProfile` with status `pending_review` and dispatch status `offline`. (The schema also has an `applicant` status, which the built-in commands do not set.)
+2. `addComplianceDocument` records a licence, insurance, registration, or inspection document (`submitted`). `reviewComplianceDocument` moves it to `accepted_evidence` or `rejected_evidence`.
+3. `reviewDriver` records a `PolicyEvaluation` against the active eligibility policy (creating the policy on first review) and moves the driver to `active`, `paused`, `ineligible`, or `offboarded`.
+4. `addFleetVehicle`, `assignVehicleDrivers`, and `reviewVehicle` do the same for vehicles (`pending_review` -> `active`, `maintenance`, `suspended`, `retired`).
+5. `setDriverAvailability` replaces weekly `AvailabilityRule` rows; `addDriverTimeOff` and `removeDriverTimeOff` manage `AvailabilityException` rows.
+6. `setDriverOnline` toggles dispatch status between `offline` and `available`.
+
+Dispatch reads the latest current `eligible` policy evaluation.
+
+### Rider booking
+
+1. `marketplaceRideshareServices`, `marketplaceRideshareService`, and `marketplaceRideshareServiceAreas` list active services.
+2. `marketplaceRideshareQuote` prices the trip from the active fare rule and the built-in route estimate. It returns a `quoteProof` and expires after 10 minutes.
+3. `requestRide` (or `resolveRideRequestIntent`, which also recovers an existing receipt) turns the quote into a `RideRequest` (`requested`) and returns a receipt with a `requestProof`.
+4. `riderRequestStatus`, `publicRideshareRequest`, and `myRideshareRequests` show request status; `cancelRideRequest` cancels it, journaled in `RequestCancellationCommand`.
+
+### Dispatch and trip
+
+1. Dispatchers see open requests and use `dispatchCandidatePage` to find eligible drivers and vehicles.
+2. `offerRideToDriver` creates a `MatchOffer` (`offered`) with an expiry and moves the driver to `offered`.
+3. The driver calls `respondToRideOffer` with accept or decline. Accepting creates the `Trip` (`driver_assigned`) and returns a confirmation code and trip token. `expireRideOffers` and `expireRequestFleetOffers` release stale offers.
+4. `transitionTrip` advances the trip:
+
+| Action | From | To |
+|---|---|---|
+| `start_en_route` | `driver_assigned` | `driver_en_route` |
+| `arrive` | `driver_en_route` | `driver_arrived` |
+| `start_trip` | `driver_arrived` | `in_progress` |
+| `complete` | `in_progress` | `completed` |
+| `no_show` | `driver_arrived` | `no_show` |
+
+A scheduled trip cannot start en route more than two hours early. Cancellation is not a `transitionTrip` action: `cancelRide` records a `Cancellation` with reason code and fee (previewed with `tripCancellationPreview`) from `driver_assigned`, `driver_en_route`, or `driver_arrived`, and can reassign the request. Every transition writes a `TripEvent`. `recordTripLocation` appends coarse, expiring `LocationEvent` rows.
+
+### Payments
+
+`initiateTripPayment` creates a `Payment` (`pending`) for a trip in a payable state using an installed provider. With the manual provider, a finance operator calls `confirmManualPayment` to mark it `captured` and post ledger entries. `requestTripRefund` creates a `Refund` (`requested`); `confirmManualRefund` marks it `succeeded`. Provider observations are appended to `PaymentObservation`.
+
+### After the ride, safety, and support
+
+- `submitTripReview` lets a signed-in participant of a completed trip leave a rating; `moderateReview` publishes, hides, or removes it.
+- `reportSafetyIncident` opens a `SafetyIncident` (`open` -> `triage` -> `investigating` -> `resolved` -> `closed`), managed with `triageSafetyIncident`.
+- `openSupportCase` opens a `SupportCase` (`open` -> `waiting` -> `resolved` -> `closed`), managed with `triageSupportCase`.
+- `sendTripMessage` creates the trip `Conversation` on first use and appends `Message` rows.
+
+### Branding
+
+`saveFleetBranding` sets the fleet logo icon and colour shown on the storefront and journals each save in `FleetBrandingChange`.
+
+## Commands are idempotent
+
+Dispatch, transitions, cancellations, payments, refunds, reviews, reports, messages, and branding saves take an `idempotencyKey`. The built-in clients persist the original intent in the browser so a lost response is recovered by replaying the same key rather than issuing a new command. Several commands also take expected-state arguments such as `expectedActorId`, `expectedAcceptedOfferId`, or `expectedUpdatedAt` and fail if the record changed.
+
+## Access control
+
+- Fleet-scoped lists filter by membership capability (see [ownership and tenancy](/docs/openfront/rideshare#ownership-and-tenancy)). Generic create and delete return false on tenant lists; generic update remains for descriptive fields on lists such as `Fleet`, `DriverProfile`, `Vehicle`, `ServiceArea`, `RideService`, `FareRule`, `Policy`, `ProviderConnection`, and `RiderProfile`.
+- Scope probes for the dashboard: `rideshareCapabilities`, `dispatchQueueScope`, `safetyQueueScope`, `financeQueueScope`.
+- Drivers reach their own offers and trips through `myDriverWorkspace`. Operators view a trip timeline through `operatorTripHandoff`.
+- Rider data is returned through projections (`PublicRideshareTrip`, `PublicRideshareRequest`) gated by account ownership, a request proof, or a trip token.
+
+<Callout>
+The schema-level guarantees come from `features/keystone/access.ts` and the mutation resolvers. Check them directly before building a client that relies on a specific rule.
+</Callout>

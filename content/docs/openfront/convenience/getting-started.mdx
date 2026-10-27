@@ -1,0 +1,126 @@
+---
+title: Getting started with Convenience
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first user, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js 20 or later (`package.json` `engines` is `>=20.0.0`). The README suggests Node.js 22 for Next.js 16.
+- npm. The repo ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage for product photos in production.
+
+## Live demo
+
+A hosted demo runs at [convenience.openship.org](https://convenience.openship.org). It uses demo data. Payments, fuel, lottery, and money services there are records only, as they are in the source.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-convenience.git
+cd openfront-convenience
+npm install
+```
+
+## Environment
+
+Create `.env` in the repo root. The repo has no `.env.example`.
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL` and `SESSION_SECRET`, and rejects a session secret shorter than 32 characters. The five S3 values fall back to development placeholders outside production. They are required when `NODE_ENV=production`.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_convenience
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+Optional settings read by the code:
+
+| Variable | Used for |
+|---|---|
+| `SHADOW_DATABASE_URL` | Prisma shadow database, used by `npm run migrate:gen` |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open `/dashboard/signup`; closed otherwise |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email and the link inside it |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard assistant (`/api/completion`) |
+| `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN` | Outbox and alert workers: GraphQL URL and a machine API key |
+| `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, `OUTBOX_SIGNING_VALUE`, `OUTBOX_WORKER_ID` | Outbox worker target and HMAC signing |
+| `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, `ALERT_EXPIRY_WINDOW_DAYS`, `ALERT_WORKER_ID` | Alert worker thresholds |
+| `RUNTIME_ADMIN_EMAIL`, `RUNTIME_ADMIN_PASSWORD`, `ALLOW_DISPOSABLE_RUNTIME_SEED` | `npm run seed:runtime`, a non-production seed for a database named `runtime_convenience` |
+
+Any `env://NAME` credential reference you set on a payment provider also needs `NAME` in the environment, with a value of at least 32 characters. Keep `.env` out of source control.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy`, and starts Next.js. The repo has 30 migration directories. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+Once running:
+
+- Public site: `/`
+- Operator dashboard: `/dashboard`
+- Operator pages: `/dashboard/platform`
+- GraphQL API: `/api/graphql`
+- Health check: `/api/health/live`
+
+## First user and onboarding
+
+1. While the database has no users, every route redirects to `/dashboard/init`. Create the first user there. That user becomes an approved platform admin.
+2. Sign in. The dashboard opens the onboarding dialog. Pick **Sample store** to prefill the form, or **Blank**.
+3. Fill in the business, store, address, timezone, currency, and standard tax percent. Tick **This store sells fuel** if needed, and **Add sample products** for the 18 demo items. Choose **Draft** or **Published** for the storefront.
+4. Submit. `onboardConvenienceBusiness` creates the business, store, Owner role and employee, two stock locations, a price book, tax categories and rate, a register, a loyalty program, an external-terminal payment provider, and optional fuel and sample catalog. See [Onboarding](/docs/openfront/convenience#onboarding) for the full list.
+5. Open `/dashboard/platform/store-settings` to set the public name, logo, hours, and location, and to add registers and stock locations.
+6. Add staff at `/dashboard/platform/staff`. Give each person a role with only the permissions they need. Each cashier sets a POS PIN.
+
+"Skip for now" in the sidebar dismisses the dialog without creating anything.
+
+## Scripts
+
+| Script | Effect |
+|---|---|
+| `npm run dev` | Build schema, apply migrations, start Next.js dev |
+| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm run migrate:gen` | Generate a new migration against a disposable database |
+| `npm start` | `next start` |
+| `npm run lint` / `npm run typecheck` | ESLint / `tsc --noEmit` |
+| `npm run worker:outbox` | Outbox delivery worker |
+| `npm run worker:alerts` | Operational alert worker |
+| `npm run seed:runtime` | Non-production seed for a dedicated runtime database |
+| `npm run backup` / `npm run backup:verify` | PostgreSQL backup and backup check scripts |
+
+## Deployment
+
+A typical release builds, applies migrations against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`railway.toml` does the same on Railway: it builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. `railway.outbox.json` and `railway.alerts.json` describe separate services for the two workers. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to provide the S3 values and run migrations yourself.
+
+Before real use:
+
+- set `NODE_ENV=production` and all five S3 values;
+- use a fixed, long `SESSION_SECRET`;
+- put the app behind a proxy that sets `Host` and `X-Forwarded-*` headers to fixed values, because the app builds its own base URL from them;
+- keep `PUBLIC_SIGNUPS_ALLOWED` off unless you want open dashboard sign-up;
+- run the outbox and alert workers if you use those features, each with its own machine API key;
+- remove or mark demo records created by onboarding;
+- test backups and restores.

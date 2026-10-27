@@ -1,0 +1,49 @@
+---
+title: Openfront Sportsbook
+description: Self-hosted sportsbook operator application with a sports catalog, trading, wagers, results, grading, settlement, a double-entry ledger, responsible gaming, and dual-control approvals.
+icon: Trophy
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Sportsbook is a self-hosted sportsbook application. Operators build a sports catalog (sports, competitions, seasons, events, markets, selections), set prices, take fixed-odds wagers, enter and approve official results, grade markets, and settle wagers into a double-entry ledger. Around that core it records customer verification, location checks, AML and integrity cases, player limits and self-exclusion, support cases and disputes, promotions and bonuses, reconciliation, safeguarding, tax, audit, and provider queues.
+
+<Callout type="warn">
+Every provider adapter in the current source is a sandbox adapter. The customer API at `/api/sandbox/sportsbook/*` only answers when `SPORTSBOOK_SANDBOX=true`, and a production build additionally requires an isolated sandbox origin and database. Otherwise every storefront page shows "Betting closed". Openfront Sportsbook does not grant a gambling licence, certify any provider, or provide legal advice. Nothing in it is approval to accept real-money wagers.
+</Callout>
+
+## Who it is for
+
+- **Operators:** traders who manage catalog, prices, and market status; risk staff who set limits and settle; compliance staff who review verification, AML, privacy, and integrity cases; finance staff who run payments, reconciliation, tax, and ledger adjustments; and an independent approver who decides sensitive requests.
+- **Customers (sandbox only):** people who register, verify, browse the board, build a bet slip, place straight and combination wagers, cash out, fund a wallet, set limits, claim promotions, and raise disputes.
+- **Developers:** teams adapting the operator dashboard or storefront, or replacing the sandbox adapters with real provider integrations.
+
+## Product surfaces
+
+- **Operator dashboard:** the shared Openfront shell in `features/dashboard`, with Sportsbook workspaces in `features/platform` mounted at `/dashboard/platform/*`: Control room, Catalog, Trading, Wagers, Risk, Results, Grading, Settlement, Customers, Compliance, Responsible gaming, Closures, Support, Notifications, Finance, Reconciliation, Tax, Promotions, Providers, Integrations, Recovery, Incidents, Reports, Configuration, Jurisdictions, Settings, Roles, Operator security, Approvals, Audit, and Onboarding.
+- **Storefront:** root routes `/`, `/sports/**`, `/events/[event]`, `/betslip`, `/promotions`, and `/account/*` in `features/storefront`. Customer data flows through REST routes under `/api/sandbox/sportsbook/*`, not through GraphQL.
+- **GraphQL:** `/api/graphql` (Keystone with custom operations from `features/keystone/mutations`). Most lists are read-only through GraphQL; changes go through named mutations.
+- **Worker:** `npm run worker` runs `features/sportsbook/workers/main.ts`, a separate process that drains the outbox, inbox, and scheduled jobs and writes worker heartbeats.
+- **Operations endpoints:** `/api/health`, `/api/ready`, and `/api/metrics`.
+
+## Architecture
+
+Next.js 16 App Router with React 19, Keystone 6 with GraphQL, Prisma, and PostgreSQL. The schema has 139 Keystone lists defined in `features/keystone/models` (`Sportsbook.ts`, `SportsbookFull.ts`, `SportsbookP0.ts`, `Customer.ts`, `User.ts`, `Role.ts`). Domain logic (pricing, acceptance gates, combinations, grading, settlement, ledger, cash-out economics) lives in `features/sportsbook`. The repository ships `docs/schema-map.md`, which maps every list to its workflow and page.
+
+## Ownership and tenancy
+
+The data model is multi-tenant. `Tenant` is the operator boundary, and almost every list carries a `tenant` relation. GraphQL requests run inside the tenant of the signed-in operator, and the Prisma client sets a PostgreSQL `app.tenant_id` setting for row-level security policies created by the migrations. Onboarding creates the tenant and binds the onboarding user to it.
+
+Operator authority comes from role flags: `canAccessDashboard`, `canManageOnboarding`, `canManageSportsbook`, `canTrade`, `canManageRisk`, `canManageCompliance`, `canManageFinance`, `canManageIntegrations`, `canApproveSensitiveActions`, `canReadAudit`, `canManagePeople`, and `canManageRoles`. Custom operations also require an operator session with verified two-factor (TOTP) assurance. Sensitive changes use dual control: one operator requests, a different operator with `canApproveSensitiveActions` decides, and the request is then applied.
+
+The storefront resolves a single operator brand: the brand matching the sandbox origin, a brand whose domain matches the host, or the only operator-owned brand. Customer sessions are separate from operator sessions and use an `openfront_customer` cookie whose digest is stored in `CustomerSession`.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/sportsbook/getting-started" description="Requirements, environment, migrations, first operator, MFA, onboarding, worker, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/sportsbook/architecture-workflows" description="Models by domain, operator workflows, dual control, and named GraphQL operations." />
+  <Card title="External dashboards" href="/docs/openfront/sportsbook/external-dashboard" description="Skill and page map for adapting or replacing the operator dashboard." />
+  <Card title="External storefronts" href="/docs/openfront/sportsbook/external-storefront" description="Skill and route map for adapting or replacing the customer storefront." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/sportsbook/integrations-boundaries" description="Sandbox adapters, provider contract, webhooks, worker, email, MCP, and observability." />
+  <Card title="Current limitations" href="/docs/openfront/sportsbook/limitations" description="What the current source does not do, including the closed customer API outside sandbox mode." />
+</Cards>

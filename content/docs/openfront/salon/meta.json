@@ -1,11 +1,12 @@
 {
   "title": "Salon",
-  "description": "Services, stylists, booking, schedules, resources, checkout, memberships, and commissions",
+  "description": "Services, stylists, booking, schedules, resources, checkout, refunds, memberships, gift cards, loyalty, and commissions",
   "icon": "Sparkles",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

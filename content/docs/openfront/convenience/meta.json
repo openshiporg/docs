@@ -1,11 +1,12 @@
 {
   "title": "Convenience",
-  "description": "Convenience retail, POS, inventory, loyalty, compliance, prepared food, and fuel",
+  "description": "Convenience-store POS, cash, catalog, stock, purchasing, loyalty, restricted sales, prepared food, fuel, lottery, and money services",
   "icon": "Store",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

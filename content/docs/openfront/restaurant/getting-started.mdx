@@ -1,196 +1,139 @@
 ---
 title: Getting started
-description: Install Openfront Restaurant, create your first admin user, and seed a demo restaurant.
+description: Clone Openfront Restaurant, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first admin, run onboarding, and deploy.
+icon: Terminal
 ---
 
-import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-This guide prepares an isolated local restaurant evaluation. The onboarding flow creates synthetic StoreSettings, menu data, kitchen stations, floor/section/table records, and payment-provider configuration. It does not create a live restaurant, provider account, hosted demo, or multi-location tenant.
+This guide sets up one restaurant on your own machine or server. Onboarding creates sample setup records: store settings, menu, modifiers, kitchen stations, floors, sections, tables, and payment provider records. It does not create provider accounts or prove that payments, delivery zones, or staff permissions are ready for service.
 
-## What you need
+## Live demo
 
-- Node.js 20 or newer
-- PostgreSQL
-- A `SESSION_SECRET` that is at least 32 characters long
-- Stripe keys if you want card checkout on day one
+A hosted demo runs at [restaurant.openship.org](https://restaurant.openship.org). The operator dashboard is at `/dashboard` on the same host. It uses demo data.
 
-<Callout type="warn">
-The source expects Stripe variables for card flows. Configuration alone is not payment verification: use test credentials and confirm signatures, replay handling, server-derived totals, failure paths and refunds before enabling a provider.
-</Callout>
+## Requirements
 
-## Install and boot the project
+- Node.js 20 or newer (`package.json` sets `engines.node` to `>=20.0.0`).
+- npm. The repository ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate. `DATABASE_URL` must start with `postgresql://` or `postgres://`.
+- S3-compatible object storage for menu images. It is required in production.
 
-<Steps>
-<Step>
-### Clone the repository
+## Install
 
 ```bash
 git clone https://github.com/openshiporg/openfront-restaurant.git
 cd openfront-restaurant
-```
-</Step>
-<Step>
-### Install dependencies
-
-```bash
 npm install
 ```
-</Step>
-<Step>
-### Add your environment variables
-Create a `.env` file in the project root.
+
+The README mentions `cp .env.example .env`, but the repository does not include a `.env.example` file. Create `.env` yourself.
+
+## Environment
+
+`features/keystone/runtimeConfig.ts` reads the core settings. When `NODE_ENV` is `production`, `DATABASE_URL`, `SESSION_SECRET`, and all five `S3_*` values are required and the app will not start without them. Outside production, the code falls back to a local database URL, a development session secret, and placeholder storage values. `SESSION_SECRET` must be at least 32 characters. The same secret signs the storefront cart proof cookie.
 
 ```bash
-# Required
-DATABASE_URL="postgresql://username:password@localhost:5432/openfront_restaurant"
-SESSION_SECRET="replace-this-with-a-long-random-string-of-32-chars-or-more"
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_restaurant
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
 
-# Recommended for storefront and card payments
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-NEXT_PUBLIC_STRIPE_KEY="pk_test_..."
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
-
-# Optional PayPal adapter setup
-NEXT_PUBLIC_PAYPAL_CLIENT_ID="your-paypal-client-id"
-PAYPAL_CLIENT_SECRET="your-paypal-client-secret"
-PAYPAL_WEBHOOK_ID="your-paypal-webhook-id"
-NEXT_PUBLIC_PAYPAL_SANDBOX="true"
-
-# Optional AI assistant
-OPENROUTER_API_KEY="sk-or-v1-..."
-OPENROUTER_MODEL="anthropic/claude-3.5-sonnet"
-OPENROUTER_MAX_TOKENS="4000"
-
-# Optional customer self-signup
-PUBLIC_SIGNUPS_ALLOWED="true"
-
-# Optional file storage
-S3_BUCKET_NAME="your-bucket"
-S3_REGION="us-east-1"
-S3_ACCESS_KEY_ID="your-key"
-S3_SECRET_ACCESS_KEY="your-secret"
-S3_ENDPOINT="https://your-s3-endpoint"
-
-# Optional email
-SMTP_FROM="no-reply@example.com"
-SMTP_HOST="smtp.example.com"
-SMTP_PORT="587"
-SMTP_USER="smtp-user"
-SMTP_PASSWORD="smtp-password"
-SMTP_STORE_LINK="http://localhost:3000"
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
 ```
-</Step>
-<Step>
-### Start the app
+
+Optional settings read by the code:
+
+| Variable | Used for |
+|---|---|
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe adapter and webhook signature checks |
+| `NEXT_PUBLIC_STRIPE_KEY` (falls back to `STRIPE_PUBLISHABLE_KEY` in some server code) | Stripe card form in storefront checkout and POS |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | PayPal adapter and webhook verification |
+| `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal sandbox mode. Sandbox is used unless this is `false` |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared keys for the dashboard AI assistant |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Password reset email, order notifications, and campaigns |
+| `SMTP_STORE_LINK` | Base link used in password reset emails |
+| `MAIL_USER` | Only checked to log Ethereal test-mail preview links |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open `/dashboard/signup` |
+| `NEXT_PUBLIC_BACKEND_URL` | Points the storefront GraphQL client at another host. Defaults to the current origin |
+| `NEXT_PUBLIC_VIEW_ORDER` | Fallback dashboard field view order when the generated file is missing |
+
+Keep `.env` out of source control.
+
+## Migrations and local run
 
 ```bash
 npm run dev
 ```
 
-This command builds the Keystone schema, applies migrations, and starts the Next.js dev server.
-</Step>
-</Steps>
+`npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy` (`npm run migrate`), and starts Next.js.
 
-## Create your first admin and seed the restaurant
+To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds Keystone, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and migrations together.
 
-<Steps>
-<Step>
-### Create the initial user
-If the database is empty, go to:
+<Callout type="warn">
+`npm run dev` and `npm run build` both apply migrations to whatever `DATABASE_URL` points at. Do not point them at a shared database by accident.
+</Callout>
 
-```text
-http://localhost:3000/dashboard/init
-```
-
-Create your first admin account there.
-</Step>
-<Step>
-### Sign in to the dashboard
-After the first user exists, the main dashboard lives at:
-
-```text
-http://localhost:3000/dashboard
-```
-</Step>
-<Step>
-### Run onboarding
-The sidebar includes onboarding cards for a fresh install. Use that flow to seed:
-
-- store settings
-- menu categories and items
-- modifiers
-- kitchen stations
-- floors, sections, and tables
-- payment providers
-
-The seed data is restaurant-specific and lives in `features/platform/onboarding/lib/seed.json`.
-</Step>
-<Step>
-### Open the key surfaces
-Once onboarding finishes, you can jump straight into the main workflows:
+Once running:
 
 - Storefront: `http://localhost:3000/`
-- POS: `http://localhost:3000/dashboard/platform/pos`
-- Service floor: `http://localhost:3000/dashboard/platform/service-floor`
-- KDS: `http://localhost:3000/dashboard/platform/kds`
-- Reports: `http://localhost:3000/dashboard/platform/reports`
-</Step>
-</Steps>
+- Operator dashboard: `http://localhost:3000/dashboard`
+- GraphQL API: `http://localhost:3000/api/graphql`
 
-## What gets created during onboarding
+The README lists `/pos` and `/kds` routes. Those do not exist. The POS is at `/dashboard/platform/pos` and the KDS is at `/dashboard/platform/kds`.
 
-The out-of-the-box seed is intentionally practical. It gives you a burger-restaurant setup with:
+## First user
 
-- branded store settings and hours
-- kitchen stations like Grill, Fryer, Salad, Bar, Dessert, and Prep
-- a main floor plus sections
-- a table layout with capacities and coordinates
-- featured items, burgers, chicken, sides, drinks, and desserts
-- Stripe, PayPal, and manual payment-provider records
+When the database has no users, every request redirects to `/dashboard/init`. Create the first user there with a name, email, and password. That user gets an `Admin` role with every permission flag turned on. Then sign in at `/dashboard/signin`.
 
-That is enough to test the storefront, POS, KDS, reports, and floor workflows without building everything from scratch.
+Dashboard sign-up at `/dashboard/signup` stays closed unless `PUBLIC_SIGNUPS_ALLOWED=true`. Password reset email only works when `SMTP_HOST` is set.
 
-## Good first checks after boot
+## Onboarding
 
-### Check the storefront
-Open the homepage and confirm you can:
+On a fresh install the dashboard sidebar shows an onboarding card ("Welcome to Openfront Restaurant"). It opens a dialog with three templates:
 
-- browse categories
-- open an item customization modal
-- add items to the bag
-- open the checkout modal
+| Template | What it creates |
+|---|---|
+| Complete Restaurant Setup | Store settings for "Stack Kitchen", 6 categories, 23 menu items, 11 modifiers, 6 kitchen stations (Grill, Fryer, Salad, Bar, Dessert, Prep), 1 floor, 2 sections (Main Dining, Patio), 8 tables, and 3 payment methods |
+| Basic Menu | A small subset: 3 categories, 3 items, 4 modifiers, 3 stations, 1 floor, 1 section, 2 tables, Cash and Credit Card |
+| Custom Setup | Your own JSON for each section |
 
-### Check the staff tools
-Open the dashboard and make sure you can:
+The seed data lives in `features/platform/onboarding/lib/seed.json`. Records are written through the `ensureRestaurantOnboardingRecord` mutation, which checks the permission for each record type and only accepts known fields.
 
-- create a POS order
-- see it in Orders
-- sync it into the KDS
-- move through the payment screen
+The three payment methods map to provider records:
 
-### Check localization
-If you changed currency, locale, or timezone in store settings, confirm those changes show up in:
+| Onboarding name | Provider record | Code |
+|---|---|---|
+| Credit Card | Stripe | `pp_stripe_stripe` |
+| Mobile Payment | PayPal | `pp_paypal_paypal` |
+| Cash | Manual / Cash | `pp_system_default` |
 
-- storefront prices
-- payment screens
-- reports
-- footer hours
+The seeded store has delivery turned off and an empty postal code allowlist. After onboarding, the dialog shows a readiness checklist (menu prices and modifiers, service hours and delivery zone, payment and refund flow, staff permissions). Every item is marked "Not verified". The app does not check them for you.
 
-## Common setup mistakes
+Onboarding status is stored on the user (`not_started`, `in_progress`, `completed`, `dismissed`).
 
-- **Short `SESSION_SECRET`**: the app expects a secret with at least 32 characters.
-- **Missing Stripe publishable key**: the checkout modal reads `NEXT_PUBLIC_STRIPE_KEY`, and some storefront components still fall back to `STRIPE_PUBLISHABLE_KEY`, so set both.
-- **No store settings**: the storefront depends on the singleton `StoreSettings` record. Onboarding is the easiest way to create it.
-- **Expecting PayPal parity on day one**: the adapter is in the codebase, but Stripe is the safer first launch path today.
+## Deploy
+
+Scripts in `package.json`:
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui`, `npm run migrate`, then `next build` |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run lint` | ESLint |
+| `npm run test:offline` | Node test runner over `tests/*.test.ts` |
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build step cannot reach an internal database. The README also has a Vercel deploy button that asks for `SESSION_SECRET` and a Postgres database.
+
+Either way, provision PostgreSQL, S3-compatible storage, and any SMTP and payment credentials yourself. All app processes must share the same database, `SESSION_SECRET`, and storage. There is no background worker in the source. Notifications, campaigns, webhook retries, and recovery jobs are run by operators from the dashboard.
 
 ## Where to go next
 
-<Cards>
-  <Card title="Storefront" href="/docs/openfront/restaurant/storefront" description="Understand the guest ordering and checkout flow." />
-  <Card title="POS" href="/docs/openfront/restaurant/pos" description="Learn the fastest way to open and send a new order." />
-  <Card title="Service floor" href="/docs/openfront/restaurant/service-floor" description="Run live dining-room operations from the table-service workspace." />
-  <Card title="KDS" href="/docs/openfront/restaurant/kds" description="See how orders get routed and completed in the kitchen." />
-</Cards>
+- [Point of sale](/docs/openfront/restaurant/pos)
+- [Service floor](/docs/openfront/restaurant/service-floor)
+- [Kitchen display system](/docs/openfront/restaurant/kds)
+- [Storefront ordering](/docs/openfront/restaurant/storefront)
+- [Payment providers](/docs/openfront/restaurant/payment-providers)

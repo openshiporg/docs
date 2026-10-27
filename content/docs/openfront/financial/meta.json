@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Financial",
+  "description": "Paper brokerage with accounts, orders, transfers, a double-entry ledger, approvals, compliance review, and an operator console",
+  "icon": "Landmark",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

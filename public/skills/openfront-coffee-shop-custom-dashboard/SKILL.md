@@ -11,15 +11,18 @@ Use this skill to adapt the built-in Coffee Shop operator dashboard or create a 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-coffeeshop>
-- Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Coffee Shop-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Repository: <https://github.com/openshiporg/openfront-coffee-shop>
+- Generic Keystone dashboard shell, list/item screens, authentication helpers, onboarding host, and admin client: `features/dashboard`.
+- Coffee Shop-specific operator navigation (`features/platform/lib/navigation.ts`), screens, server actions, and workflows mounted into that shell: `features/platform`. Slices: `orders`, `menu`, `pos`, `reports`, `register`, `inventory`, `suppliers`, `recipes`, `coffee-operations`, `loyalty`, `catering`, `subscriptions`, `kds`, `store-settings`, and `onboarding`.
+- Thin route entry points: `app/dashboard/(admin)/platform/**`. Current routes: `/dashboard/platform/orders`, `/menu`, `/pos`, `/reports`, `/register` and `/register/[id]`, `/inventory` and `/inventory/[id]`, `/suppliers` and `/suppliers/[id]`, `/recipes` and `/recipes/[id]`, `/coffee-operations`, `/loyalty` and `/loyalty/[id]`, `/catering` and `/catering/[id]`, `/subscriptions` and `/subscriptions/[id]`, `/kds`, `/store-settings`. Generic list pages are `/dashboard/[listKey]`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (wired in `mutations/index.ts`, projection types in `mutations/coffeeBoundarySchema.ts`), `schema.graphql`, and `docs/schema-map.md`.
+- Models: `StoreSetting` (singleton, one store per deployment, USD only), `MenuCategory`, `MenuItem`, `MenuItemImage`, `MenuItemModifier`, `CafeOrder`, `OrderItem`, `PosOrder`, `Payment`, `PaymentEvent`, `PaymentProvider`, `RegisterShift`, `CashMovement`, `InventoryItem`, `InventoryLot`, `StockMovement`, `Supplier`, `PurchaseOrder`, `Recipe`, `Ingredient`, `PrepBatch`, `PrepBatchConsumption`, `WasteLog`, `StaffShift`, `LoyaltyAccount`, `LoyaltyEvent`, `Subscription`, `CateringOrder`, `User`, `Role`, and the system-only `CoffeeDomainEvent` and `CoffeeOutboxDelivery`.
+- Staff projections: `getCoffeeOrderQueue`, `getCoffeeKdsBoard`, `getCoffeeKdsRecoveryScope`, `getCoffeeMenuManager`, `getCoffeeMenuInventoryOptions`, `getCoffeePosRegister`, `quoteCafeOrder`, `getCoffeeReports`, `getCoffeeOperations`.
+- Staff commands: `acceptCafePickupOrder`, `updateCafeOrderStatus`, `updateCafeOrderItemStatus`, `recordCafePayment`, `refundCafePayment`, `updatePosOrderStatus`, `createCafePickupOrder` (POS with a register shift), `applyCafeLoyalty`, `adjustCoffeeLoyaltyAccount`, menu commands (`createCoffeeMenuCategory`, `createCoffeeMenuItem`, `updateCoffeeMenuItem`, `createCoffeeMenuModifier`, `updateCoffeeMenuModifier`, `updateCoffeeModifierStock`), register commands (`openRegisterShift`, `recordRegisterCashMovement`, `closeRegisterShift`), stock commands (`createCoffeePurchaseOrder`, `receiveCoffeePurchaseOrder`, `cancelCoffeePurchaseOrder`, `completeCoffeePrepBatch`, `recordCoffeeWaste`, `recordCoffeeStockCount`), `scheduleCoffeeStaffShift`, `updateCoffeeStaffShiftStatus`, `updateCateringOrderStatus`, `updateSubscriptionStatus`, and `runCoffeeOnboarding`. Suppliers, inventory item metadata, recipes, ingredients, catering facts, subscription creation, store settings, and the Stripe enable switch still use generated Keystone CRUD from the platform pages.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is menu, POS, KDS, orders, recipes, inventory, loyalty, catering, staff, and reporting. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is orders, menu, POS and register, KDS, inventory, suppliers, recipes, prep and waste, staff shifts, rewards, catering, subscriptions (records only, no billing), store settings, and analytics. Payment defaults to pay at pickup or at the counter; Stripe Checkout is optional and off by default; the PayPal adapter is not wired into any flow; the MCP transport route returns 404. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +70,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around menu, POS, KDS, orders, recipes, inventory, loyalty, catering, staff, and reporting. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around orders, menu, POS and register, KDS, inventory, suppliers, recipes, prep, staff shifts, rewards, catering, subscriptions, and analytics. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

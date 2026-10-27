@@ -1,0 +1,38 @@
+---
+title: External storefronts
+description: Give an LLM the Medspa storefront skill to adapt the built-in experience or create a separate client.
+---
+
+To create a custom Medspa storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Medspa's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Medspa codebase before proposing work.
+
+## Current storefront routes
+
+Routes live in `app/(storefront)/(main)/**` and render screens from `features/storefront/screens`. Data loaders are in `features/storefront/lib/data`, and client account actions are in `features/storefront/account`.
+
+| Route | What clients do there |
+|---|---|
+| `/` | Practice home with featured services and providers |
+| `/services`, `/services/[id]` | Browse treatments by category and view a treatment |
+| `/providers`, `/team`, `/team/[id]` | Browse providers and view a provider profile |
+| `/book` | Pick a treatment, provider, and time from `checkAvailability`, then submit `bookAppointment` |
+| `/booking/[id]` | Booking confirmation; guests view or cancel their request with the link token |
+| `/account/sign-in`, `/account/sign-up` | Client sign-in and registration (`registerCustomer`) |
+| `/account` | Client portal (`clientPortal`): upcoming and past visits, aftercare replies, and reviews |
+| `/account/intake/[appointmentId]` | Complete required intake forms (`clientIntakeForms`, `submitIntake`) |
+| `/appointments` | Redirects to `/account` |
+| `/reviews` | Approved reviews (`storefrontReviews`) |
+| `/gallery` | Practice gallery images |
+| `/contact` | Location, hours, and contact details |
+| `/gift-cards` | States that gift cards are not sold online and links to contact |
+
+## Customer journeys
+
+- **Book a visit:** choose a treatment and provider, pick a slot, and submit. The appointment is created as `pending` with no payment taken. Guests receive a confirmation link; signed-in clients see it in their account.
+- **Join the waitlist:** when no slot fits, `requestWaitlistSpot` records a waitlist entry.
+- **Prepare for a visit:** complete intake from the account page before the appointment.
+- **After a visit:** reply to aftercare follow-ups (`submitFollowUpResponse`) and leave a review (`submitAppointmentReview`).
+- **Cancel:** guests cancel with `cancelGuestAppointment` and their link token; signed-in clients cancel from their account.
+
+The storefront serves the practice pinned by `MEDSPA_PRACTICE_SLUG`, or the single active practice with a published storefront. Online deposits, card payments, and gift card sales are not part of the current storefront.

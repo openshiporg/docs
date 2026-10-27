@@ -13,13 +13,21 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-salon>
 - Built-in Salon customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Thin customer-facing route entry points: `app/(storefront)/(main)/**` (the `(booking)` group is empty). Screens: `features/storefront/screens`. Data loaders: `features/storefront/lib/data/*`. Account server actions: `features/storefront/account/actions.ts`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`), `features/keystone/extendGraphqlSchema/**`, and `schema.graphql`. The source repo's `docs/schema-map.md` maps lists and storefront workflows.
+- Provider boundaries: inspect `features/integrations/payment/**` and the exact server actions called by the built-in client. The built-in storefront takes no online payment.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is services/stylists, availability and booking, appointments, gift cards, reviews, gallery, memberships, and customer access. This list is orientation, not proof that every flow is safe or complete.
+Current routes: `/`, `/services`, `/services/[id]`, `/team`, `/team/[id]`, `/stylists` (redirects to `/team`), `/book` (`?service=`, `?stylist=`), `/booking/[id]`, `/account`, `/account/signin`, `/account/signup`, `/appointments` (redirects to `/account`), `/memberships`, `/gift-cards` (balance check; purchase in-salon only), `/gallery`, `/reviews`, `/contact`.
+
+Key operations: queries `publicStorefrontSettings`, `storefrontStylists`, `storefrontStylist`, `checkAvailability`, `clientPortal`, `storefrontBenefits`, `giftCardBalance`, plus generated reads of `services`, `serviceCategories`, `reviews`, `salonImages`, `locations`, and `appointment`; mutations `registerSalonCustomer`, `authenticateUserWithPassword`, `endSession`, `bookAppointment`, `joinWaitlistAsClient`, `transitionAppointment` (cancel), `scheduleAppointmentSegments` (reschedule), `submitAppointmentReview`, `submitConsultation`.
+
+Key models: `StoreSettings`, `Location`, `ServiceCategory`, `Service`, `Stylist`, `StylistSchedule`, `Appointment`, `Client`, `Review`, `SalonImage`, `Membership`, `ServicePackage`, `GiftCard`, `ClientPoints`, `ConsultationTemplateVersion`, `ConsultationSubmission`, `WaitlistEntry`.
+
+Rules to preserve: guests can book with name/email/phone; booking requires accepting the current policy version; online cancel/reschedule respect notice windows; `registerSalonCustomer` never claims existing guest records and fails before the first dashboard user exists; with more than one active location, pass `locationId`. There is one salon per deployment and no tenant scope.
+
+This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

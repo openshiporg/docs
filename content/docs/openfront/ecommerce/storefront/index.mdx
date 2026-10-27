@@ -6,42 +6,63 @@ description: Country-aware catalog, cart, checkout, confirmation, and account ro
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The built-in storefront lives under `app/(storefront)/[countryCode]`. It reads region-aware catalog data and provides product discovery, cart, checkout, confirmation and customer-account routes.
+The built-in storefront lives under `app/(storefront)/[countryCode]`. Screens are in `features/storefront/screens`, UI in `features/storefront/modules`, and GraphQL calls in `features/storefront/lib/data`.
 
-## Current routes
+## Country routing
 
-- regional home and store pages;
-- product, category and collection detail;
-- cart and checkout;
-- order confirmation;
-- sign-in and checkout-link entry;
-- account profile, addresses, orders, invoices and invoicing.
+`proxy.ts` hands storefront requests to `features/storefront/middleware.ts`. It loads regions and their countries, then picks a country code from the URL, the Vercel geo header, `NEXT_PUBLIC_DEFAULT_REGION` (default `us`), or the first region. Requests without a country code are redirected, so `/` becomes `/us`. While the database has no users, every page redirects to `/dashboard/init`.
 
-Storefront UI and data helpers live under `features/storefront`. Product, cart, checkout, payment and order truth remains in the Keystone/domain layer.
+## Routes
 
-## Current storefront workflow
+| Route under `/[countryCode]` | Screen | Customer journey |
+|---|---|---|
+| `/` | `HomePage` | Home page with store title and description |
+| `/store` | `StorePage` | All products, sortable by price through `getProductsSortedByPrice` |
+| `/categories/[...category]` | `CategoryPage` | Category listing |
+| `/collections/[handle]` | `CollectionPage` | Collection listing |
+| `/products/[handle]` | `ProductPage` | Product detail with options and regional price. Only published products are readable. |
+| `/cart` | `CartPage` | Cart lines, quantities and discount codes |
+| `/checkout` | `CheckoutPage` | Address, shipping method, payment, review |
+| `/order/confirmed/[id]` | `OrderConfirmedPage` | Confirmation. Guests use the order `secretKey`. |
+| `/account` (login slot) | `LoginPage` | Sign in and register |
+| `/account` (dashboard slot) | `AccountDashboardPage` | Overview |
+| `/account/profile`, `/account/addresses` | `AccountProfilePage`, `AccountAddressesPage` | Profile, password and saved addresses |
+| `/account/orders`, `/account/orders/details/[id]` | `AccountOrdersPage`, `AccountOrderDetailsPage` | Order history and detail |
+| `/account/invoicing` | `AccountInvoicingPage` | Business account request form, account balance, unpaid items, invoice creation and payment, customer token |
+| `/account/invoices` | `AccountInvoicesPage` | Paid invoices |
+| `/account/checkout-link` | inline pages | Legacy checkout link. See limitations. |
 
-1. Resolve a country code and region.
-2. Browse products, variants and prices for that region.
-3. Create or resume a cart whose ID is stored in the storefront cookie.
-4. Add or update lines and collect address, shipping and payment choices.
-5. Initiate a payment session for an installed provider.
-6. Call `completeActiveCart` to capture or record payment and create the order.
-7. Load the resulting order for confirmation or customer history.
+## Cart identity
+
+`createActiveCart` returns a signed cart proof. The storefront stores it in the `_openfront_cart_id` cookie (httpOnly) and sends it as the `x-openfront-cart-proof` header. Cart operations call `assertCartAccess`: a guest must present a valid proof, and a signed-in customer must own the cart. Staff with `canManageOrders` can read any cart. A checkout link may carry `?cart_proof=`. The middleware turns it into the cookie and sends the shopper to the address step. A bare cart ID is never accepted.
+
+## Checkout workflow
+
+1. `createActiveCart(regionId)` creates a cart in the region for the current country.
+2. Add and change lines (`updateActiveCart`, `updateActiveCartLineItem`) and apply discount codes (`addDiscountToActiveCart`, `removeDiscountFromActiveCart`).
+3. Set email and addresses with `updateActiveCart`. Changing them clears the payment collection.
+4. List options with `activeCartShippingOptions` and choose one with `addActiveCartShippingMethod`.
+5. List providers with `activeCartPaymentProviders(regionId)`. Then call `createActiveCartPaymentSessions` and `initiatePaymentSession`. Only installed providers that are configured in the environment and linked to the cart's region can start a session.
+6. Call `completeActiveCart(cartId, paymentSessionId)`. The server reserves stock and discount usage, checks the provider status, captures if needed, checks amount and currency against the cart, and creates the order with line snapshots. Each step is recorded so a retry resumes instead of charging twice.
+7. Without a `paymentSessionId`, a signed-in customer with an active business account checks out on account credit. The order is added to the account if it fits the credit limit and uses the account currency.
+
+## Limitations
 
 <Callout type="warn">
-Current Ecommerce source does not consistently establish this as an ownership-safe, idempotent checkout boundary. `activeCart`, `updateActiveCart`, line-item updates, payment-session initiation and completion accept caller-supplied IDs and use privileged Keystone access without complete cart-owner, parent-line, replay or transaction checks. Treat the built-in flow as implementation source to harden, not as proof that an external client can safely expose those operations.
+- The Manual provider (`pp_system_default`, shown as Cash on Delivery) is refused by `completeActiveCart`. The storefront still shows a "Place order" button for it, and that order fails.
+- Gift cards cannot be applied. `updateActiveCart` rejects `giftCards`, even though the cart UI has gift-card display code.
+- The account checkout-link pages read a bare `cartId` and try to set the cart's user. Cart access rules reject a cart ID without a proof for anyone who does not own the cart, and `updateActiveCart` drops user changes. Treat that route as not working. The MCP `getCheckoutLink` tool builds the same kind of URL.
+- Customers cannot start returns or claims from the storefront. Staff create them in the dashboard.
+- `getMyPrivacyData`, `updatePrivacyPreferences` and `requestPrivacyAction` exist in the API, but no storefront page calls them.
 </Callout>
-
-Before accepting live checkout, derive or validate totals on the server, bind every line and payment session to the authorized cart, serialize inventory changes, add an idempotency boundary, verify signed webhook replay handling, reconcile provider state, and test wrong-user and replay cases.
 
 ## Custom storefronts
 
-You can change the built-in storefront or build another client. Use narrow public/catalog operations and ownership-scoped cart/order operations. Do not expose private Keystone lists, provider credentials, internal costs or unrestricted status updates to make a separate client easier.
+You can change the built-in storefront or build another client. Use the same cart proof header and the named cart, checkout and account operations. Do not expose provider credentials or call generic list mutations from the browser.
 
 <Cards>
-  <Card title="Custom storefront" href="/docs/openfront/ecommerce/storefront/custom" description="Preserve the data and ownership boundary in another client." />
-  <Card title="Products" href="/docs/openfront/ecommerce/products" description="Understand the catalog and pricing graph." />
-  <Card title="Payments" href="/docs/openfront/ecommerce/payment-providers" description="Review enabled adapter and webhook requirements." />
-  <Card title="Shipping" href="/docs/openfront/ecommerce/shipping-providers" description="Review rates, labels, tracking and adapter safety." />
+  <Card title="Custom storefront" href="/docs/openfront/ecommerce/storefront/custom" description="Keep the same data and ownership boundary in another client." />
+  <Card title="Products" href="/docs/openfront/ecommerce/products" description="Catalog and pricing graph." />
+  <Card title="Payments" href="/docs/openfront/ecommerce/payment-providers" description="Adapters and webhooks." />
+  <Card title="Shipping" href="/docs/openfront/ecommerce/shipping-providers" description="Rates, labels, tracking and adapters." />
 </Cards>

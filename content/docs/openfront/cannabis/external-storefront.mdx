@@ -1,0 +1,20 @@
+---
+title: External storefronts
+description: Give an LLM the Cannabis storefront skill to adapt the built-in public menu or create a separate client.
+---
+
+To create a custom Cannabis storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Cannabis's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Cannabis codebase before proposing work.
+
+## Current storefront routes
+
+| Route | Screen | Customer journey |
+|---|---|---|
+| `/` | `MenuPage` | Age gate, then the menu with form filter, adult-use or medical filter, search, and sort |
+| `/menu/[id]` | `ProductPage` | Product detail for a released, in-stock product |
+| `/visit` | `VisitPage` | Address, directions, today's hours and open-now state, phone, minimum ages, accepted payment types |
+
+The age gate reads minimum ages from the store's sales rules and stores confirmation in a cookie. It is a notice, not identity verification; ID is checked at the counter.
+
+Data comes from two public queries, `publicCannabisMenu` and `publicCannabisStorefrontSettings`, loaded in `features/storefront/lib/data/menu.ts`. There is no cart, checkout, customer account, or order history. `submitCannabisCustomerIntake` and `createCustomerPickupCart` exist in the API but are disabled by runtime capability, and the `CustomerIntakeForm` screen is not mounted on any route. A custom storefront that needs online ordering requires those backend workflows to be completed first.

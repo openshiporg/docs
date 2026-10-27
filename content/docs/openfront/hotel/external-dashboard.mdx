@@ -6,3 +6,43 @@ description: Give an LLM the Hotel dashboard skill to adapt the built-in experie
 To create a custom Hotel dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Hotel's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Hotel codebase before proposing work.
+
+Skill file: [`/skills/openfront-hotel-custom-dashboard/SKILL.md`](/skills/openfront-hotel-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file only re-exports a screen from `features/platform/<slice>`. Navigation is defined in `features/platform/lib/navigation.ts`.
+
+| Page | Permission | What staff do there | Main operations |
+|---|---|---|---|
+| `/dashboard/platform/front-desk` | `canManageBookings` | Arrivals, in-house guests, departures, and guest change requests for the business date. Assign rooms, check in and out, cancel, resolve modification requests. Panels for loyalty, relocation, and stay services. | `hotelFrontDesk`, `assignRoomToBooking`, `updateBookingStatus`, `cancelBooking`, `resolveBookingModificationRequest` |
+| `/dashboard/platform/reservations` | `canManageBookings` | Room-by-room stay calendar. Create staff bookings, drag to change dates, amend, cancel, keep the stay register. | `hotelReservationCalendar`, `createStaffBooking`, `amendStaffBooking`, `updateBookingStatus`, `hotelStayRegister`, `updateHotelStayRegister` |
+| `/dashboard/platform/housekeeping` | `canManageHousekeeping` | Room readiness, cleaning and inspection queue, staff skills, room outages, maintenance reports. | `hotelHousekeepingOperations`, `scheduleHousekeepingTask`, `updateHousekeepingTaskStatus`, `updateHotelHousekeepingStaffCapability`, `updateHotelRoomOutage`, `reportRoomMaintenanceIssue` |
+| `/dashboard/platform/analytics` | `canManageBookings` | Occupancy, ADR, RevPAR, posted revenue, tax, payments, refunds, and folio exposure for a date range, with export. | `hotelAnalyticsOperations` |
+| `/dashboard/platform/property` | `canManageOnboarding` | Property details, contact, stay times, tax, fees, deposit, loyalty, groups, approval thresholds, storefront media and logo. | `updateHotelPropertySettings` |
+| `/dashboard/platform/rooms` | `canManageRooms` | Room readiness by floor with housekeeping and maintenance status; change a room's operational status. | `hotelRoomOperations`, `updateRoomOperationalStatus` |
+| `/dashboard/platform/rate-plans` | `canManageRooms` | Rate plans by room type, publication, derived rates, and day-level inventory controls. | `hotelRateOperations`, `updateRatePlanPublication`, `updateHotelDerivedRate`, `updateRoomInventoryControls` |
+| `/dashboard/platform/messages` | `canManageBookings` or `canManageGuests` | Read contact-page messages. Replies go out by your own email client (`mailto:`). | `hotelGuestMessages` |
+| `/dashboard/platform/guests`, `/guests/[id]` | `canManageGuests` | Guest list, profile, stay history, contact details. | `hotelGuestOperations` |
+| `/dashboard/platform/payments` | `canManagePayments` | Booking payments and refunds; request a refund. | `hotelPaymentOperations`, `hotelRefundQuote`, `requestBookingPaymentRefund` |
+| `/dashboard/platform/payouts` | `canManagePayments` | Import a reviewed provider statement, match payments, approve the bank deposit. | `hotelPayoutOperations`, `manageHotelPayout` |
+| `/dashboard/platform/receivables` | `canManagePayments` | Company accounts, direct billing, invoices, payer routing, collections. | `hotelReceivableOperationsPage`, `hotelPayerWindows`, `manageHotelReceivable` |
+| `/dashboard/platform/disputes` | `canManagePayments` | Stripe dispute notices and evidence notes. Evidence is submitted in Stripe. | `hotelDisputeOperations`, `annotateHotelDispute` |
+| `/dashboard/platform/cashier` | `canManagePayments` | Open a cash drawer, record drops, count and close, confirm cash refunds, deposit holds, receipts. | `hotelCashierOperations`, `manageHotelCashier`, `hotelSecurityAuthorization`, `manageHotelSecurityAuthorization`, `hotelFolioReceipt` |
+| `/dashboard/platform/approvals` | `canManagePayments`, `canManageRooms`, or `canApproveHotelExceptions` | Request an approval for an exact target and amount; a different user with `canApproveHotelExceptions` decides. | `hotelApprovalWorkspace`, `updateHotelApproval` |
+| `/dashboard/platform/guest-governance` | `canManageGuestPrivacy` | Consent, legal holds, retention, identity documents, data requests, guest merge and unmerge. | `hotelGuestGovernance`, `hotelGovernanceGuestSearch`, `updateHotelGuestGovernance` |
+| `/dashboard/platform/folios` | `canManagePayments` | Folio ledgers: post charges or credits, reverse entries, record payments, close reconciled folios, resolve overdue stays, run night audit. | `hotelFolioOperations`, `postFolioEntry`, `reverseFolioEntry`, `recordBookingPayment`, `closeReconciledFolio`, `resolveOverdueCheckedInBooking`, `hotelNightAuditOperations`, `runHotelNightAudit` |
+| `/dashboard/platform/channels` | `canManageBookings` and `canManageIntegrations` | Channel records, draft configuration, manual push, pull, and retry. Channels are off unless set to live mode. | `hotelChannelOperations`, `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs` |
+| `/dashboard/platform/groups` | `canManageBookings` | Group blocks, status, rooming lists, pickup, detach, master folio close. | `hotelGroupWorkspace`, `createHotelGroupBlock`, `updateHotelGroupBlockStatus`, `createHotelGroupRoomingList`, `detachHotelGroupBooking`, `closeHotelGroupMasterFolio` |
+| `/dashboard/platform/maintenance` | `canManageRooms` | Room issues from report to repair to return-to-service check, with cost details. | `hotelMaintenanceOperations`, `updateMaintenanceRequestStatus`, `hotelMaintenanceCommercial`, `updateHotelMaintenanceCommercial` |
+| `/dashboard/platform/payment-providers` | `canManagePayments` (saving also needs `canManageIntegrations`) | Enable Stripe or PayPal and enter credentials. Secrets are encrypted and not shown again. | `hotelPaymentProviderOperations`, `configureHotelPaymentProvider` |
+| `/dashboard/platform/outbox` | `canManageAudit` | Guest message and refund delivery status; replay failures. | `hotelOutboxOperations`, `replayHotelOutboxEvent`, `replayRefundIntent` |
+| `/dashboard/platform/security` | `canAccessDashboard` | Set up your own TOTP second factor and recovery codes. | `hotelMfaStatus`, `manageHotelMfa`, `verifyHotelMfa` |
+
+Shortcut routes outside `/platform` render the same screens: `/dashboard/reservations`, `/dashboard/housekeeping`, and `/dashboard/guests/[id]`.
+
+Sign-in and setup pages sit outside the admin layout: `/dashboard/init` (first user), `/dashboard/signin`, `/dashboard/signin/mfa`, `/dashboard/reset`, `/dashboard/signup` (closed unless `PUBLIC_SIGNUPS_ALLOWED=true`), and `/dashboard/no-access`. The onboarding dialog is opened from the dashboard layout; its code is in `features/platform/onboarding`.
+
+The dashboard home is `/dashboard`. Lists without a dedicated page (for example `Role`, `User`, `RoomType`, `Booking`) use the generic `/dashboard/[listKey]` list, item, and create pages. Writes there still go through model access rules, which deny direct edits to `Booking`, `ReservationLineItem`, and `FolioEntry`.
+
+Navigation shows every entry. Each page, query, and mutation checks its own permission.

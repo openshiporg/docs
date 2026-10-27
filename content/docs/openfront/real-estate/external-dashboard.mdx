@@ -6,3 +6,45 @@ description: Give an LLM the Real Estate dashboard skill to adapt the built-in e
 To create a custom Real Estate dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Real Estate's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Real Estate codebase before proposing work.
+
+## Current platform pages
+
+All routes are under `/dashboard/platform`. Route files in `app/dashboard/(admin)/platform/**` are thin and re-export screens from `features/platform`.
+
+| Page | Route | What staff do there |
+|---|---|---|
+| Listings | `/platform/listings` | Listings by status tab with search; change status |
+| New listing | `/platform/listings/new` | Create a draft listing |
+| Listing detail | `/platform/listings/[id]` | Edit details, follow the status track, add media by URL, set the cover, reorder or remove media, schedule and close open houses, see leads, showings, and syndication |
+| Leads | `/platform/leads` | Lead list by status, search, duplicate groups, and a "New lead" drawer |
+| Lead detail | `/platform/leads/[id]` | Contact and inquiry, activity timeline, add activity, change status, schedule a showing, resolve duplicates |
+| Showings | `/platform/showings` | Upcoming or past showings by status, with search |
+| Showing detail | `/platform/showings/[id]` | Original request, history, confirm, cancel, mark no-show, complete with feedback |
+| Pipeline | `/platform/pipeline` | Deal board by stage with counts and projected commission; create a deal |
+| Deal detail | `/platform/pipeline/[id]` | Stage, next step, financial terms, offers and counters, closing checklist, documents, disclosures, inspections, mortgage, title and escrow, commissions |
+| Tasks | `/platform/tasks` | Agent tasks by status; create, edit, and move tasks |
+| Agents & Teams | `/platform/people` | Agent workload and teams; invite or suspend members |
+| Lead Routing | `/platform/routing` | Create, edit, pause, activate, and delete routing rules |
+| Reports | `/platform/reports` | Funnel, lead sources, and per-agent numbers |
+| Operations | `/platform/operations` | Offers, deals, commissions and the commission ledger, disclosures, inspections, mortgage/title/escrow, open houses, comparables, valuations, syndication, import feeds, saved search alerts, jobs, licenses and agreements, document history, retention policies, and file activity |
+| Store Settings | `/platform/store-settings` | Business name, market label, city, state, headline, contact details, showing length, logo icon and color |
+
+The sidebar also links to the generic Keystone `/dashboard/roles` list. Other lists, such as `Neighborhood`, are only available through the generic `/dashboard/[listKey]` pages.
+
+## Data each page uses
+
+| Slice | Named operations |
+|---|---|
+| `listings` | `PlatformListings`, `PlatformListing`, `CreateListing`, `UpdateListing`, `TransitionListing`, `AddMedia`, `UpdateMedia`, `DeleteMedia`, `ScheduleOpenHouse`, `ListingMedia`, `ListingOpenHouses`, `ListingLeads`, `ListingShowings`, `ListingSyndications`, `AgentOptions` |
+| `leads` | `PlatformContacts`, `PlatformLeadStatusCounts`, `PrivateLeadDetail`, `CreateLead`, `UpdateLeadStatus`, `AddLeadActivity`, `ResolveDuplicateLead`, `ScheduleShowing`, `ShowingRequestViewer`, `VerifyScheduledShowing` |
+| `showings` | `PlatformShowings`, `ShowingDetail`, `UpdateShowingStatus`, `AddShowingFeedback` |
+| `pipeline` | `PlatformPipeline`, `PlatformDeal`, `DealOptions`, `CreateDeal`, `TransitionDealStage`, `UpdateDealNextStep`, `UpdateDealFinancialTerms`, `AddDocument`, `AddInspection`, `AddMortgage`, `AddTitleOrder`, `AddEscrow`, `AddCommission` |
+| `tasks` | `PlatformTasks`, `PlatformTaskQueue`, `TaskOptions`, `TaskViewer`, `CreateTask`, `UpdateTask` |
+| `people` | `PlatformPeople`, `InviteBrokerageMember`, `SuspendBrokerageMember` |
+| `routing` | `RoutingRules`, `RoutingOptions`, `CreateRule`, `UpdateRule`, `RuleStatus`, `DeleteRule` |
+| `reports` | `BrokerageReport` |
+| `operations` | `PlatformOperations` plus command mutations for offers, counters, checklists, documents, disclosures, inspections, open houses, commissions, ledger entries, authority records, evidence, retention, legal holds, export manifests, syndication, imports, alerts, and tasks |
+| `store-settings` | `PlatformStorefrontSettings`, `UpdatePlatformStorefrontSettings` |
+| `onboarding` | `RunRealEstateOnboarding`, `DismissRealEstateOnboarding`, `UpdateOnboardingStatus`, `OnboardingUser` |
+
+These are the operation names in the client documents. They call the server fields listed on the [overview page](/docs/openfront/real-estate#named-graphql-operations).

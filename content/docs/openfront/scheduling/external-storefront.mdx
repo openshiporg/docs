@@ -1,0 +1,41 @@
+---
+title: External storefronts
+description: Give an LLM the Scheduling storefront skill to adapt the built-in booking pages or create a separate client.
+---
+
+To create a custom Scheduling storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Scheduling's current booking experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Scheduling codebase before proposing work.
+
+## Current storefront routes
+
+The public application serves one team: the team named by `STOREFRONT_TEAM_SLUG`, or the oldest active team with public booking turned on.
+
+| Route | Route group | Purpose |
+|---|---|---|
+| `/` | root | Public home page for the team |
+| `/book` | `(storefront)/(main)` | Published event types |
+| `/book/[slug]` | `(storefront)/(main)` | Event page: time zone, date and time selection, details, questions, payment |
+| `/team/[teamSlug]/[memberId]` | `(storefront)/(main)` | A host's public page |
+| `/routes`, `/routes/[slug]` | `(storefront)/(main)` | Routing forms that recommend an event type and host |
+| `/embed` | `(storefront)/(main)` | Published embeds |
+| `/embed/[slug]` | `(embed)` | Iframe booking widget, restricted to the embed's allowed origins |
+| `/book/manage` | `(storefront)/(private)` | Guest manage link: reschedule, cancel, cancel future series occurrences, pay |
+| `/book/payment` | `(storefront)/(private)` | Return page after a Stripe Checkout |
+| `/book/manage/recover`, `/embed/[slug]/recover` | `(booking-recovery)` | Recover a booking attempt whose outcome was not confirmed |
+| `/account`, `/account/bookings/[id]` | `(storefront)/(private)` | Customer booking history and detail: move, cancel, pay |
+| `/account/profile` | `(storefront)/(private)` | Profile, password, email change |
+| `/account/signin`, `/signup`, `/forgot`, `/reset` | `(storefront)/(private)` | Customer sign-in, registration, password recovery |
+| `/account/invitation` | `(storefront)/(private)` | Team invitees accept an invitation token from the URL fragment |
+
+The embed loader script is served from `/api/embed/v1.js` and supports `inline`, `modal`, and `popover` modes.
+
+## Customer journeys
+
+1. **Book:** `/book` -> `/book/[slug]` -> pick a time (creates a hold) -> enter details and answers -> receipt with a manage link, and payment if the event requires it.
+2. **Route then book:** `/routes/[slug]` -> answers -> recommended event type and host -> book.
+3. **Manage as a guest:** open the manage link -> reschedule, cancel, or cancel future occurrences.
+4. **Manage with an account:** `/account` -> booking detail -> move, cancel, or pay.
+5. **Book from another site:** the embed script opens `/embed/[slug]` in an iframe.
+
+A separate client builds against the same GraphQL API at `/api/graphql`, using the storefront projections and commands listed in [Architecture and workflows](/docs/openfront/scheduling/architecture-workflows).

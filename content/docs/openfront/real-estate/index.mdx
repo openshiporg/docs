@@ -1,43 +1,134 @@
 ---
 title: Openfront Real Estate
-description: Listings, leads, showings, offers, transactions, and brokerage operations.
+description: Listings, leads, showings, offers, deals, closing records, and commissions for a brokerage, with a public listing site.
 icon: House
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-realestate) · [Catalog](https://openship.org/products/openfront-real-estate)
+[Source](https://github.com/openshiporg/openfront-real-estate) · [Live demo](https://real-estate.openship.org) · [Catalog](https://openship.org/products/openfront-real-estate)
 
-Openfront Real Estate combines a public listing site with brokerage work for leads, showings, offers, deals, documents, inspections, title/escrow milestones, commissions and reports.
+Openfront Real Estate is a self-hosted app for one brokerage. Visitors browse listings, ask questions, request tours, and save homes and searches. Brokerage staff manage listings, leads, showings, deals, closing records, commissions, and team setup in the dashboard.
+
+To install it, see [Getting started](/docs/openfront/real-estate/getting-started).
 
 <Callout type="warn">
-Escrow, mortgage, title and commission models record workflow facts. They do not prove fund custody, lending, title services, settlement, MLS authorization or regulatory compliance.
+Escrow, title, mortgage, commission, and syndication records store what staff enter. The app does not hold funds, issue loans, run title searches, pay commissions, or connect to an MLS.
 </Callout>
 
-## Architecture and schema
+## Tenancy
 
-`Brokerage` and active `BrokerageMembership` are the tenant roots; agent assignment narrows selected records. Access helpers and lifecycle hooks validate brokerage relationships rather than treating a listing feed or team as a tenant. The graph includes brokerage settings, properties/media/neighborhoods, listings/syndication, leads/activities/routing, saved properties/searches/alerts, showings/feedback/open houses, market comps/valuations, offers/deals, disclosures/inspections/documents, transaction milestones, title orders, escrow and commission records, mortgage applications, source feeds, agent teams/tasks and users.
+- `Brokerage` is the tenant. Operational records have a required or derived `brokerage` relation. Child records such as media, inspections, and milestones take their brokerage from the parent.
+- Access comes from `activeBrokerageIds(session)`: the user's selected `activeBrokerage`, or their one live membership. A user with two live memberships and no selection sees nothing.
+- `BrokerageMembership` links a user to a brokerage with a role (`owner`, `admin`, `team_lead`, `agent`, `coordinator`, `analyst`) and a status (`invited`, `active`, `suspended`).
+- `Role` flags decide what a member can do: `canAccessDashboard`, `canManageListings`, `canManageLeads`, `canManageShowings`, `canManageDeals`, `canManagePeople`, `canManageRoles`, `canViewReports`, `canManageOnboarding`, `canSeeOtherPeople`, `canEditOtherPeople`. Without `canManagePeople`, agents work only on records assigned to them.
+- Storefront customers are `User` rows with an `activeBrokerage` and no membership. Their showings, inquiries, saved homes, and saved searches are linked to their account by the server, never by matching an email.
+- The storefront serves the first active brokerage marked `isPrimary`.
 
-The public site has listing index/detail plus inquiry and showing-request flows. Operator routes under `/dashboard/platform` cover listings, leads, pipeline, showings, operations, and reports.
+## Data model
 
-## Main workflow
+The model registry has 44 lists.
 
-A brokerage publishes a listing. A visitor or agent creates a lead, saved search, showing request or offer. Operators qualify the lead, schedule the showing, move the offer/deal through controlled states, and track inspection, disclosure, title and closing milestones. External settlement remains outside the current payment boundary.
+| Area | Lists |
+|---|---|
+| Brokerage and people | `Brokerage`, `BrokerageSettings`, `BrokerageMembership`, `User`, `Role`, `AgentTeam`, `AgentTask` |
+| Listings | `Property`, `PropertyMedia`, `OpenHouse`, `ListingSyndication`, `MarketComp`, `PropertyValuation`, `Neighborhood`, `SourceFeed` |
+| Authority records | `ListingEngagementAuthority`, `ListingPublicationAuthority`, `PractitionerLicenseAuthority`, `RepresentationAuthority` |
+| Leads and showings | `Lead`, `LeadActivity`, `LeadRoutingRule`, `Showing`, `ShowingFeedback` |
+| Shopper data | `SavedProperty`, `SavedSearch`, `SavedSearchAlert` |
+| Deals and closing | `Deal`, `Offer`, `TransactionMilestone`, `DealDocument`, `DocumentEvidenceEvent`, `Disclosure`, `PropertyInspection`, `Escrow`, `TitleOrder`, `MortgageApplication` |
+| Commission | `Commission`, `CommissionLedgerEntry` |
+| Records and events | `RetentionPolicy`, `TransactionFileEvent`, `DomainOutboxEvent`, `DomainAuditEvent` |
 
-## Bounded GraphQL operations
+`Neighborhood` has no brokerage field. It is shared reference data and is managed through the generic list page.
 
-Public projections expose brokerage identity and published listings; customer operations submit inquiries and showing requests, save properties/searches, and manage alerts. `platformProjections` and `platformCommands` provide task-oriented operator reads/actions. Commands record lead activity, routing and dedupe; schedule and complete showings; create/counter/transition offers; move deals and milestones; manage disclosures, documents and commissions; and queue/replay source and outbox work. Mortgage, title, escrow, and commission commands preserve local workflow facts but do not execute regulated settlement.
+### Main state machines
 
-## Setup and onboarding
+| Record | States | Changed by |
+|---|---|---|
+| Property | `draft` → `coming_soon` → `active` ⇄ `pending` → `sold` or `rented`; any → `off_market` | `transitionPropertyStatus` |
+| Lead | `new` → `attempted_contact` → `qualified` → `tour_scheduled` → `offer` → `closed` or `lost` | `transitionLeadStatus` |
+| Showing | `requested` → `scheduled` → `completed` or `no_show`; `requested` or `scheduled` → `cancelled` | `transitionShowingStatus`, `reviewShowingCommand`, `completeShowingWithFeedback`, `cancelCustomerShowing` |
+| Deal | `prospecting` → `active_search` → `offer_drafted` → `under_contract` → `inspection` / `financing` → `closed_won`; open → `closed_lost` | `transitionDealStage` |
+| Offer | `draft` → `submitted` → `countered`, `accepted`, `rejected`, or `withdrawn` | `transitionOfferStatus`, `createCounterOfferCommand` |
+| Milestone | `not_started` → `in_progress` → `complete`; `blocked` | `transitionTransactionMilestoneStatus` |
+| Document | `draft` → `sent` → `signed` → `archived` | `transitionDocumentCommand` |
+| Disclosure | `draft` → `sent` → `acknowledged`; `expired` | `transitionDisclosureStatus` |
+| Inspection | `scheduled` → `completed`, `needs_follow_up`, or `waived` | `transitionInspectionCommand` |
+| Commission | `projected` → `approved` → `paid`; `clawed_back` | `transitionCommissionStatus` |
+| Open house | `scheduled` → `completed` or `cancelled` | `transitionOpenHouseStatus` |
+| Agent task | `open` → `in_progress` → `done`; `blocked` | `transitionAgentTaskCommand` |
+| Outbox event | `pending`, `processing`, `dispatched`, `failed` | `replayDomainOutboxEvent` resets `failed` or `dispatched` to `pending` |
 
-Use a disposable PostgreSQL database. `runRealEstateOnboarding` creates a synthetic brokerage, membership, settings, listings, leads, and pipeline data for local evaluation. Run it twice on an isolated current database, then test public listing projections, lead ownership and routing, showing conflicts, lifecycle snapshots, and deal transitions. Seeded brokerage data is not a hosted demo.
+Authority records, `DocumentEvidenceEvent`, `CommissionLedgerEntry`, `RetentionPolicy`, `TransactionFileEvent`, and `DomainAuditEvent` are append-only.
+
+## Workflows
+
+**Publish a listing.** Create a draft `Property` and add media and open houses. A listing shows on the storefront only when it is `active` or `coming_soon` and there is an effective practitioner license, a signed listing engagement with marketing authority, and `public_site` publication authority for it.
+
+**Capture a lead.** The storefront question form (`submitListingInquiry`) and tour form (`requestPropertyShowing`) create or reuse a `Lead`. Leads are deduplicated per listing by an email or phone identity key. The first matching active `LeadRoutingRule` picks the agent, then the listing agent, then a fallback rule. The agent must still hold an active membership; otherwise the lead stays unassigned. Staff can also add leads by hand.
+
+**Tour a home.** A tour request creates a `requested` showing. Its length comes from `showingDurationMinutes` in brokerage settings, clamped to 15–240 minutes. Staff confirm it, complete it with feedback, mark it no-show, or cancel it. Confirming checks that the property and agent have no other confirmed showing at that time.
+
+**Close a deal.** Create a deal from a lead and listing. Add offers and counters, checklist milestones, documents with evidence events, disclosures, inspections, a mortgage application, a title order, and escrow. Move the deal stage to `closed_won` or `closed_lost`.
+
+**Track commission.** Create a commission per side. Use the ledger commands to propose and approve a split, record a receipt, reverse an entry, and reconcile.
+
+**Run the team.** Owners and admins invite and suspend members. Only an owner can add another admin. Staff manage teams, tasks, and lead routing rules.
+
+**Keep records.** Record retention policies, apply retention to a deal file or document, place or release a legal hold, and create an export manifest.
+
+## Named GraphQL operations
+
+All custom operations are in `features/keystone/mutations/index.ts`.
+
+**Public and customer queries:** `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `customerShowingHistory`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes`, `redirectToInit`.
+
+**Public and customer mutations:** `submitListingInquiry`, `requestPropertyShowing`, `registerRealEstateCustomer`, `cancelCustomerShowing`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser`.
+
+**Operator queries:** `platformContacts`, `platformLeadDetail`, `platformShowingRequestViewer`, `platformListings`, `platformShowings`, `platformShowingDetail`, `scheduledShowingReceipt`, `platformPipeline`, `platformPeople`, `platformReports`, `platformOperations`, `platformStorefrontSettings`, `domainOutboxEventStatus`.
+
+**Status transitions:** `transitionLeadStatus`, `transitionPropertyStatus`, `transitionShowingStatus`, `reviewShowingCommand`, `transitionOpenHouseStatus`, `transitionOfferStatus`, `transitionDealStage`, `transitionCommissionStatus`, `transitionDisclosureStatus`, `transitionTransactionMilestoneStatus`. They take an idempotency key and can check the expected status or `updatedAt`.
+
+**Operator commands:**
+
+- Leads and showings: `addLeadActivityCommand`, `resolveDuplicateLeadCommand`, `scheduleShowingForLeadCommand`, `completeShowingWithFeedback`.
+- Deals: `createOfferCommand`, `createCounterOfferCommand`, `createChecklistItemCommand`, `transitionDocumentCommand`, `transitionInspectionCommand`, `updateDealFinancialTermsCommand`, `updateDealNextStepCommand`.
+- Authority and evidence: `recordPractitionerLicenseAuthorityCommand`, `recordListingEngagementAuthorityCommand`, `recordListingPublicationAuthorityCommand`, `recordRepresentationAuthorityCommand`, `appendDocumentEvidenceEventCommand`.
+- Commission ledger: `proposeCommissionAllocationCommand`, `approveCommissionAllocationCommand`, `recordCommissionReceiptCommand`, `reverseCommissionLedgerEntryCommand`, `reconcileCommissionLedgerCommand`.
+- Records: `recordRetentionPolicyCommand`, `assignTransactionFileRetentionCommand`, `recordTransactionLegalHoldCommand`, `createTransactionExportManifestCommand`.
+- Feeds and alerts: `queueSourceImportCommand`, `transitionListingSyndicationCommand`, `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand`, `replayDomainOutboxEvent`.
+- People and tasks: `inviteBrokerageMemberCommand`, `suspendBrokerageMemberCommand`, `transitionAgentTaskCommand`.
+- Setup: `runRealEstateOnboarding`, `dismissRealEstateOnboarding`, `updatePlatformStorefrontSettings`.
+
+Some dashboard pages also use the generated Keystone CRUD mutations, for example to create listings, leads, media, open houses, deals, tasks, routing rules, inspections, escrow, title orders, mortgage applications, and commissions. Those writes still go through list access rules and tenant hooks.
+
+## Onboarding
+
+The first user is created at `/dashboard/init` together with a starter brokerage, an `Admin` role, and an owner membership. The dashboard then offers a basic or complete sample setup through `runRealEstateOnboarding`. Details are in [Getting started](/docs/openfront/real-estate/getting-started#onboarding).
 
 ## Integrations
 
-`SourceFeed` and ListingSyndication describe local inbound/outbound state, but current source has no integration adapter registry. There is no evidenced MLS/IDX, title, escrow, mortgage, calendar, messaging, signing, or payment adapter. Credentials must be unreadable, and a feed is not working until fetch/auth, mapping, dedupe, retries, provenance, and reconciliation pass. Payment processing is currently N/A.
+- **Email:** password reset email through nodemailer and the `SMTP_*` variables. No other email is sent.
+- **AI chat:** an optional dashboard chat at `/api/completion` uses OpenRouter. It is available only to signed-in users with dashboard access and calls the MCP endpoint at `/api/mcp-transport/[transport]` with the user's session cookie.
+- **MCP endpoint:** exposes generic tools that list models, query, search, create, update, and delete data through GraphQL with the caller's session. The same file still declares e-commerce tools (products, carts, checkout, orders). This product has no product or cart schema, so those tools do not work here.
+- **Calendar files:** the storefront generates `.ics` files for a customer's own showing and for open houses.
+- **Feeds and syndication:** `SourceFeed` and `ListingSyndication` hold status that staff record. `queueSourceImportCommand` and `queueSavedSearchAlertCommand` write outbox events. There is no MLS, IDX, RETS, or RESO adapter, no alert email sender, and no worker that processes the outbox.
+- **Payments, e-signature, and lenders:** none. Payment processing does not exist in this product.
 
-## Security and deployment
+## Limitations
 
-Protect source credentials, lead contact data, mortgage applications, disclosures, and documents. Keep accepted/closed snapshots immutable. Railway builds then migrates at start. The checked-in lint script uses the removed `next lint` command under Next.js 16, and the README references a missing `env.example`; neither is a valid release instruction without repair.
+- Listing media is stored as URLs. The dashboard accepts `https://` URLs or `/images/` paths. The storefront only shows images under `/images/real-estate/`. There is no upload.
+- Saved search alerts are queued but never sent.
+- The outbox has no dispatcher in the source. Events stay `pending` until something outside the app processes them.
+- The storefront serves one brokerage, the primary one.
+- Neighborhoods are shared across brokerages and have no platform page.
+- `next.config.ts` sets `typescript.ignoreBuildErrors: true`, so the build does not fail on type errors.
+- There is no license file in the repository.
+- Authority, escrow, title, mortgage, disclosure, and commission records do not prove that any external party acted. Brokerage licensing and legal duties stay with the brokerage.
 
-Deploy only after reviewed migrations, current schema/type/tests/build, cross-brokerage/agent negatives, public-intake abuse controls, showing conflicts, lifecycle replay/terminal denial, source-feed failures, restore, and responsive transaction workflow checks. Current source does not custody escrow, originate mortgages, provide title/settlement, execute commission payments, connect an MLS, or establish brokerage/regulatory certification.
+## More
+
+- [Getting started](/docs/openfront/real-estate/getting-started)
+- [External dashboards](/docs/openfront/real-estate/external-dashboard)
+- [External storefronts](/docs/openfront/real-estate/external-storefront)

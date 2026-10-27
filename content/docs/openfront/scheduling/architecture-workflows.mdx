@@ -1,0 +1,117 @@
+---
+title: Scheduling architecture and workflows
+description: Schema by domain, booking, payment, team, routing, and workflow lifecycles, named GraphQL commands, and access control.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Architecture
+
+Route files under `app/` are thin. Operator screens live in `features/platform/<slice>`, customer screens in `features/storefront`, and the shared Keystone admin shell in `features/dashboard`. The server contract is `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and the generated `schema.graphql`. Scheduling logic such as availability, host assignment, routing, workflows, and payment transitions lives in `features/keystone/lib`. Side effects go through outbox rows that `schedulingOutboxWorker.ts` processes.
+
+## Data model by domain
+
+### Identity and team
+
+- `User` signs in operators and customers. `Role` carries dashboard flags: `canAccessDashboard`, `canManageScheduling`, `canManageOnboarding`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`. Sessions are stored in `AuthSession`.
+- `Team` is the business and tenant root: name, slug, status (`active`, `paused`, `archived`), time zone, `publicBookingEnabled`, storefront copy, and logo.
+- `Member` is a person's seat in a team with role (`owner`, `admin`, `host`, `viewer`), status, `roundRobinWeight`, `dailyBookingCapacity`, and `publicProfileEnabled`.
+- `TeamInvitation`, `TeamInvitationDelivery` (email outbox), and `TeamAdministrationEvent` (append-only audit log).
+
+### Event types and availability
+
+- `EventType`: title, slug, status (`draft`, `published`, `private`, `archived`), `schedulingType` (`individual`, `collective`, `round_robin`), duration, buffers, location and conference provider, `requiresConfirmation`, payment policy (`free` or `required`, set only through `configureEventPaymentPolicy`), daily limits, and recurrence. It links to host `Member` records, a `Schedule`, a `PaymentProvider`, a `ConferenceConnection`, and an optional `ManagedEventTemplate`.
+- `BookingQuestion` (intake questions, at most 50 active per event type), `BufferRule`, `EventTypeLifecycleEvent`.
+- `Schedule` (named weekly hours in a time zone) and `AvailabilityRule` (`weekly`, `date` override, or `block`). Overrides change through `manageAvailabilityOverride` and are audited in `AvailabilityOverrideEvent`.
+- `Resource` (room, equipment, or capacity pool), `EventResourceRequirement` (units an event type needs), `ResourceAllocation` (`held`, `reserved`, `released`, `expired`), `ResourceLifecycleEvent`.
+
+### Bookings
+
+- `BookingHold` reserves a slot while the customer fills the form: `held` to `converted`, `expired`, or `abandoned`.
+- `Booking`: status (`pending`, `confirmed`, `cancelled`, `completed`, `no_show`), start and end, time zone, payment fields. It links to hosts, `BookingAttendee`, `BookingResponse`, `BookingLifecycleEvent`, and optionally a `BookingSeries` for recurring bookings.
+- `RescheduleRequest` exists in the schema, but no code path writes it. Rescheduling is direct.
+
+### Routing, automation, delivery
+
+- `RoutingForm` (`draft`, `published`, `archived`), ordered `RoutingRule` rows that target an event type and optional host, and `RoutingSubmission` (`evaluated`, `converted`, `expired`).
+- `WorkflowDefinition` with triggers `booking_created`, `booking_confirmed`, `booking_rescheduled`, `booking_cancelled`, `booking_completed`, `booking_no_show`, `before_start`, and `after_end`. Steps are `WorkflowAction` rows of type `email` or `webhook`. Runs are `WorkflowExecution` and `WorkflowActionExecution`.
+- `WorkflowReminder` (email, SMS, or webhook reminder per event type) and `ReminderDelivery`.
+- `WebhookSubscription`, `WebhookDelivery`, and `NotificationSubscription`.
+
+### Payments, calendars, conferencing
+
+- `PaymentProvider` (`stripe` or `manual` adapter), `PaymentBooking`, `PaymentSession`, `PaymentOperation` (outbox), `PaymentLifecycleEvent`.
+- `CalendarConnection` (Google or Microsoft per host), `CalendarBusyInterval`, `CalendarEventLink`, `CalendarOperation`.
+- `ConferenceConnection`, `ConferenceMeeting`, `ConferenceOperation`.
+
+### Embeds, developers, data
+
+- `EmbedConfig` (`draft`, `published`, `archived`) and immutable `EmbedRelease` snapshots.
+- `ApiKey`, `OAuthClient`, `OAuthToken` for machine access.
+- `DataJob` and `DataJobEvent` for imports (dry run or apply) and exports of event types, availability, resources, and bookings.
+- `AnalyticsFact`, `AnalyticsProjection`, and the hidden `PublicRequestBucket` rate-limit counter.
+
+## Customer booking workflow
+
+1. `storefrontEventTypes` and `storefrontAvailability` return published event types and open slots for the storefront team. Availability combines schedules, rules, buffers, existing bookings, calendar busy intervals, host capacity, and resource requirements.
+2. `createStorefrontBookingHold` (or `createStorefrontRecurringBookingHold`) creates a `BookingHold` and resource allocations.
+3. `createStorefrontBooking` (or `createStorefrontRecurringBooking`) converts the hold. Attendee details and answers are stored. Status starts as `pending` when the event type requires confirmation or payment, otherwise `confirmed`. Round-robin hosts are picked using member weight and daily capacity.
+4. The receipt includes a private manage link signed with `BOOKING_MANAGE_SECRET`. `manageStorefrontBooking` lets the guest reschedule or cancel. `manageStorefrontBookingSeries` cancels future occurrences of a series.
+5. Signed-in customers use `customerBookingHistory`, `customerBookingDetail`, and `manageCustomerBooking`.
+6. Routing path: `storefrontRoutingForm` -> `evaluateStorefrontRouting` records a `RoutingSubmission` and returns the matched event type and host. The submission ID carries into availability and booking.
+
+## Operator booking lifecycle
+
+`transitionBooking` applies these transitions:
+
+| Action | From | To | Extra checks |
+|---|---|---|---|
+| `confirm` | `pending` | `confirmed` | Payment must be `paid` if required; booking must not have ended |
+| `decline` | `pending` | `cancelled` | Actor must manage the team or be an assigned host |
+| `cancel` | `pending`, `confirmed` | `cancelled` | |
+| `no_show` | `confirmed` | `no_show` | Booking must have started |
+| `complete` | `confirmed` | `completed` | Booking must have ended |
+| `reschedule` | `pending`, `confirmed` | keeps status | New start required; payment must be `paid` if required |
+
+Every transition writes a `BookingLifecycleEvent`. Workflow executions, reminders, webhooks, calendar writes, and conference meeting updates follow through the outbox.
+
+## Payment workflow
+
+1. `configureEventPaymentPolicy` sets price, currency, payment window, and provider on an event type.
+2. `initiateBookingPayment` creates a `PaymentSession`. For storefront payments Stripe creates a hosted Checkout Session with an expiry; other Stripe payments create a PaymentIntent with manual capture. The `manual` adapter records an offline payment.
+3. Stripe events reach `/api/payments/webhook/[providerCode]` and are verified against the provider's webhook secret.
+4. `transitionBookingPayment` captures or refunds. Failed provider calls land in `PaymentOperation` and can be retried with `retryPaymentOperation`.
+5. Session states run `created`, `pending`, `authorized`, `captured`, `refunded`, with `failed` and `expired` exits.
+
+## Team workflow
+
+`inviteTeamMember` -> email through `TeamInvitationDelivery` -> invitee accepts at `/account/invitation` with `acceptTeamInvitation` -> `manageTeamMember` (`update_profile`, `change_role`, `suspend`, `reactivate`, `remove`) -> `transferTeamOwnership`. `resendTeamInvitation`, `revokeTeamInvitation`, and `retryTeamInvitationDelivery` handle invitation problems.
+
+## GraphQL commands
+
+Besides generated list queries, the schema registers these named operations:
+
+- **Storefront:** `storefrontSettings`, `storefrontEventTypes`, `storefrontAvailability`, `storefrontRoutingForms`, `storefrontRoutingForm`, `storefrontEmbedConfigs`, `storefrontManagedBooking`, `storefrontManagedBookingSeries`, `storefrontManagedBookingAvailability`, `createStorefrontBookingHold`, `createStorefrontRecurringBookingHold`, `createStorefrontBooking`, `createStorefrontRecurringBooking`, `closeStorefrontBookingAttempt`, `manageStorefrontBooking`, `manageStorefrontBookingSeries`, `evaluateStorefrontRouting`, `recoverStorefrontBookingCommand`.
+- **Customer account:** `registerSchedulingCustomer`, `customerProfile`, `updateSchedulingCustomerProfile`, `changeSchedulingCustomerPassword`, `requestSchedulingCustomerEmailChange`, `confirmSchedulingCustomerEmailChange`, `requestSchedulingPasswordReset`, `redeemSchedulingPasswordReset`, `customerBookingHistory`, `customerBookingHistoryPage`, `customerBookingDetail`, `customerBookingAvailability`, `manageCustomerBooking`.
+- **Bookings and availability:** `transitionBooking`, `operatorBookingAcceptedEvidence`, `operatorBookingRecoveryOptions`, `manageAvailabilityOverride`.
+- **Catalog and resources:** `configureEventPaymentPolicy`, `applyManagedEventTemplate`, `detachManagedEventTemplate`, `upsertSchedulingResource`, `transitionSchedulingResource`, `configureEventResourceRequirement`.
+- **Team:** `inviteTeamMember`, `resendTeamInvitation`, `revokeTeamInvitation`, `acceptTeamInvitation`, `retryTeamInvitationDelivery`, `manageTeamMember`, `transferTeamOwnership`.
+- **Integrations and delivery:** `beginCalendarOAuth`, `completeCalendarOAuth`, `syncCalendarConnection`, `retryCalendarOperation`, `configureStripePaymentProvider`, `initiateBookingPayment`, `transitionBookingPayment`, `retryPaymentOperation`, `configureConferencingConnection`, `retryConferenceOperation`, `retryWorkflowAction`, `transitionWebhookDelivery`, `transitionNotificationSubscription`, `publishEmbedConfig`.
+- **Developers, data, analytics:** `createSchedulingApiKey`, `revokeSchedulingApiKey`, `createSchedulingOAuthClient`, `revokeSchedulingOAuthClient`, `machineViewer`, `createSchedulingDataJob`, `retrySchedulingDataJob`, `schedulingAnalytics`.
+- **Onboarding:** `bootstrapSchedulingOnboarding`, `upsertSchedulingOnboardingSampleBooking`, `upsertSchedulingOnboardingCalendarConnection`, `upsertSchedulingOnboardingPaymentProvider`, `updateSchedulingStorefrontBrandHue`.
+
+Operator commands take an `idempotencyKey`, so a retried request replays its result rather than repeating the change.
+
+## Access control
+
+- **Team scope:** `teamOwnedListAccess` filters reads to teams with an active membership and restricts writes to `owner` and `admin` members of the owning team. Records cannot be re-parented across teams.
+- **Hosts:** `canConfirmAssignedBooking` lets a `host` confirm or decline bookings they are assigned to.
+- **Command-only lists:** `Booking`, `Member`, `TeamInvitation`, `Resource`, `EventResourceRequirement`, `PaymentBooking`, `ConferenceConnection`, `ApiKey`, and similar lists refuse raw create, update, and delete.
+- **Dashboard:** the Keystone UI and `/dashboard` require `canAccessDashboard`. Accepting a team invitation grants dashboard access.
+- **Machine access:** API keys and OAuth client-credential tokens carry scopes such as `bookings:read`, `bookings:write`, `payments:write`, and `analytics:read`. `requireMachineScope` checks them in commands.
+- **Public endpoints:** storefront queries return bounded projections. `PublicRequestBucket` rate-limits public requests. GraphQL uses CSRF prevention and query depth and size limits.
+
+<Callout type="info">
+A model in the schema does not by itself mean a feature works end to end. The platform pages and named commands above are the supported paths.
+</Callout>

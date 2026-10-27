@@ -11,15 +11,17 @@ Use this skill to adapt the built-in Real Estate storefront or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-realestate>
-- Built-in Real Estate customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
+- Repository: <https://github.com/openshiporg/openfront-real-estate>
+- Built-in Real Estate customer experience: `features/storefront`. Screens in `features/storefront/screens` (home, listings, listing detail, inquiry and showing forms, account pages, login, password reset); data loaders and server actions in `features/storefront/lib/data` (`settings`, `properties`, `leads`, `showings`, `saved`, `account`, `neighborhoods`); calendar, sitemap, robots, and brand-mark helpers in `features/storefront/lib`.
+- Thin route entry points in `app/(storefront)`: `/`, `/listings`, `/listings/[slug]`, `/account` (parallel `@login` and `@dashboard` slots), `/account/showings/[id]`, `/account/questions`, `/account/saved`, `/account/profile`, `/password-reset`, `/calendar/showing/[id]`, `/calendar/open-house/[slug]/[id]`, `/brand-mark.svg`; plus `app/sitemap.ts` and `app/robots.ts`.
+- Server fields the storefront uses: `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `submitListingInquiry`, `requestPropertyShowing`, `registerRealEstateCustomer`, `customerShowingHistory`, `cancelCustomerShowing`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser`, and Keystone auth and password reset mutations.
+- Tenancy: the storefront serves the first active primary `Brokerage`. Customers are `User` rows with an `activeBrokerage` and no membership; their showings, inquiries, and saved records are linked by session, never by email. Listings appear only when `active` or `coming_soon` with effective `public_site` listing authority.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Provider boundaries: there is no `features/integrations` folder. The only outside services are SMTP password reset (`features/keystone/lib/mail.ts`) and `.ics` calendar files (`features/storefront/lib/calendar.ts`). Inspect the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is listing discovery/detail, inquiries, showing requests, saved properties/searches, alerts, and customer deal milestones. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is listing discovery and detail, questions, tour requests with calendar files, saved homes and searches, and customer account pages. There is no customer deal view, payment, or alert email. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around listing discovery/detail, inquiries, showing requests, saved properties/searches, alerts, and customer deal milestones. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around listing discovery and detail, questions, tour requests, saved homes and searches, and customer accounts. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

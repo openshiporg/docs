@@ -5,47 +5,51 @@ description: Local and external shipping adapter dispatch for rates, labels, val
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront's `ShippingProvider` model and `features/keystone/utils/shippingProviderAdapter.ts` support:
+The `ShippingProvider` model and `features/keystone/utils/shippingProviderAdapter.ts` support:
 
-- local modules such as `shippo`, `shipengine`, and `manual`;
-- independently deployed HTTP adapter apps configured per operation.
+- local modules `shippo`, `shipengine` and `manual` in `features/integrations/shipping`;
+- separately deployed HTTP adapter apps, set per operation.
 
-The five operation fields cover rate lookup, address validation, label creation, tracking, and cancellation. When a field begins with `http`, Openfront sends that route a JSON `POST` containing the provider and operation arguments. Otherwise, it imports the matching local file under `features/integrations/shipping`.
+There are five operation fields: `getRatesFunction`, `validateAddressFunction`, `createLabelFunction`, `trackShipmentFunction` and `cancelLabelFunction`. When a field starts with `http`, Openfront sends that URL a JSON `POST` with the provider and the operation arguments. Otherwise it imports the matching local file and calls the export with the field's name.
 
-This configuration-driven route selection is intentional. It allows a merchant to connect a carrier, warehouse, aggregator, local courier, or custom shipping service without changing Openfront source.
+## Operations and who can call them
+
+| Mutation | Adapter call | Permission |
+|---|---|---|
+| `getRatesForOrder(orderId, providerId, dimensions)` | rates | `canReadOrders` or `canManageOrders` |
+| `validateShippingAddress(providerId, address)` | validate | `canReadOrders` or `canManageOrders` |
+| `trackShipment(providerId, trackingNumber)` | track | `canReadOrders` or `canManageOrders` |
+| `createProviderShippingLabel(orderId, providerId, rateId, dimensions, lineItems, idempotencyKey)` | label | `canManageFulfillments` |
+| `cancelShippingLabel(providerId, labelId)` | cancel | `canManageFulfillments` |
+
+`createProviderShippingLabel` checks that each line has unfulfilled quantity, refuses inactive providers, and returns the existing label when the same idempotency key is retried. `createOrderFulfillment` and `cancelOrderFulfillment` record fulfillments without a carrier and also take an idempotency key and a reason respectively.
 
 ## Data boundary
 
-Shipping profiles and options define store policy. Fulfillment providers, methods, labels, fulfillments, and fulfillment items record execution. The adapter translates the selected order, address, parcel, rate, or tracking context to its external service and returns a provider-neutral result.
-
-The current callers query `accessToken` and send the selected provider object to the adapter. For an HTTP adapter, that means the configured app becomes a trusted credential and customer-data processor. Restrict route configuration, authenticate Openfront to the app, minimize forwarded fields, redact logs, validate responses, and apply outbound destination controls appropriate to the deployment.
+Shipping options define what customers can choose at checkout. Shipping providers, labels, fulfillments and fulfillment items record what was actually shipped. The callers read the provider's `accessToken` and send the provider record to the adapter. For an HTTP adapter, that app receives the access token and the order's address and line items.
 
 <Callout type="warn">
-External HTTP adapters are supported, but the current bridge supplies only a JSON `POST`: it has no built-in timeout, request signature, destination validation, or runtime response schema. Add those controls rather than replacing route adapters with a code-only registry.
+The HTTP bridge sends a plain JSON `POST`. It has no timeout, request signature, destination allowlist or response schema. Restrict who can edit provider records, use HTTPS endpoints you control, and validate requests inside the adapter app.
 </Callout>
 
-## Current source gaps
+## Current gaps
 
-The backend operation fields are usable through a trusted administrative path, but both custom-provider UI paths are incomplete:
+- The order-level "new provider" form stores an API URL in `metadata.apiUrl` and does not set any operation field.
+- The provider drawer's "Custom Provider" option sets every operation to the local name `custom`, but there is no `custom.ts` module, so calls fail.
+- Set URL operation fields on the generic `/dashboard/shipping-providers` editor instead.
+- The `manual` module is a mock. Its label function reads a `rate` argument while the dispatcher passes `rateId`, and it returns made-up tracking numbers and `example.com` label URLs. Do not use it for real shipments.
 
-- the order-level form collects an API URL and stores it under `metadata.apiUrl` without assigning the operation fields;
-- the provider drawer assigns the local token `custom`, but no matching `features/integrations/shipping/custom.ts` exists.
+A provider record existing does not mean its calls work. Run each operation you need.
 
-Do not claim a custom provider is connected merely because one of those forms creates a record. Verify the actual operation fields and execute each intended route.
+## Before enabling a provider
 
-## Verification before enabling a provider
-
-1. Confirm each configured operation destination and payload from current source.
-2. Prove only an authorized operator can read credentials or change routes.
-3. authenticate Openfront-to-adapter calls and reject replay where relevant.
-4. validate order, address, parcel, line-item, rate, and provider relationships.
-5. validate adapter JSON before writing fulfillment or label records.
-6. make label purchase and cancellation idempotent.
-7. reconcile uncertain provider outcomes before retrying.
-8. deduplicate tracking updates and preserve operator recovery.
+1. Confirm each operation field points where you expect.
+2. Check that only trusted operators can read the access token or change the fields.
+3. Run rates, address validation, label purchase, tracking and cancellation in the carrier's sandbox.
+4. Retry a label purchase with the same idempotency key and confirm one label.
 
 ## Manual fulfillment
 
-Manual shipping can record an operator-managed fulfillment without a carrier API. It should remain explicit and must not fabricate carrier tracking events.
+Onboarding creates a manual fulfillment provider (`fp_manual`) for shipping options. Operators can record a fulfillment with an optional tracking number and carrier through `createOrderFulfillment`, without calling a carrier.
 
 Start with [Add a shipping adapter](/docs/openfront/ecommerce/how-to-guides/custom-shipping-provider).

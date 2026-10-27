@@ -11,15 +11,19 @@ Use this skill to adapt the built-in Real Estate operator dashboard or create a 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-realestate>
+- Repository: <https://github.com/openshiporg/openfront-real-estate>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Real Estate-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Real Estate-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`. Slices: `listings`, `leads`, `showings`, `pipeline`, `tasks`, `people`, `routing`, `reports`, `operations`, `store-settings`, `onboarding`, plus shared `components` and `lib` (navigation in `features/platform/lib/navigation.ts`).
+- Thin route entry points under `app/dashboard/(admin)/platform/**`: `listings`, `listings/new`, `listings/[id]`, `leads`, `leads/[id]`, `showings`, `showings/[id]`, `pipeline`, `pipeline/[id]`, `tasks`, `people`, `routing`, `reports`, `operations`, `store-settings`. Generic list pages are `app/dashboard/(admin)/[listKey]/**`; first-user setup is `/dashboard/init`.
+- Server contract: `features/keystone/models/**` (44 lists), `features/keystone/access.ts` (`activeBrokerageIds`, role flags), `features/keystone/mutations/**` (all custom fields registered in `mutations/index.ts`), `features/keystone/onboarding/**`, and `schema.graphql`.
+- Projections the built-in pages read: `platformContacts`, `platformLeadDetail`, `platformListings`, `platformShowings`, `platformShowingDetail`, `platformPipeline`, `platformPeople`, `platformReports`, `platformOperations`, `platformStorefrontSettings`.
+- Commands they write through: `transition*` status mutations (lead, property, showing, open house, offer, deal stage, commission, disclosure, milestone), `reviewShowingCommand`, `completeShowingWithFeedback`, `scheduleShowingForLeadCommand`, `addLeadActivityCommand`, `resolveDuplicateLeadCommand`, `createOfferCommand`, `createCounterOfferCommand`, `createChecklistItemCommand`, `transitionDocumentCommand`, `transitionInspectionCommand`, `transitionAgentTaskCommand`, `updateDealFinancialTermsCommand`, `updateDealNextStepCommand`, the authority, document-evidence, commission-ledger, and retention `record*`/`*Command` mutations, `queueSourceImportCommand`, `transitionListingSyndicationCommand`, `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand`, `replayDomainOutboxEvent`, `inviteBrokerageMemberCommand`, `suspendBrokerageMemberCommand`, `updatePlatformStorefrontSettings`, `runRealEstateOnboarding`, `dismissRealEstateOnboarding`. Some pages also use generated CRUD (for example `createProperty`, `createLead`, `createPropertyMedia`, `createOpenHouse`, `createDeal`, `createAgentTask`, `createLeadRoutingRule`).
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is brokerage listings, leads, pipeline, showings, offers/deals, disclosures, milestones, source feeds, and reporting. This list is orientation, not proof that every flow is safe or complete.
+Tenancy: `Brokerage` is the tenant. Access is scoped to the session's active brokerage (or its single live membership) and narrowed by role flags (`canManageListings`, `canManageLeads`, `canManageShowings`, `canManageDeals`, `canManagePeople`, `canViewReports`, `canManageOnboarding`). Without `canManagePeople`, agents act only on records assigned to them. `Neighborhood` is shared and has no brokerage.
+
+The current product focus is brokerage listings and media, leads and routing, showings, deals with offers, checklists, documents, disclosures, inspections, mortgage/title/escrow records, commissions and the commission ledger, agent tasks, teams, authority records, retention, and reporting. This list is orientation, not proof that every flow is safe or complete. There is no payment, MLS, e-signature, or lender adapter, and no outbox worker.
 
 ## Then interview the user
 
@@ -67,7 +71,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around brokerage listings, leads, pipeline, showings, offers/deals, disclosures, milestones, source feeds, and reporting. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around brokerage listings, leads, routing, showings, deals, closing records, commissions, tasks, and reporting. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

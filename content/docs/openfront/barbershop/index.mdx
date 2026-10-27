@@ -1,43 +1,108 @@
 ---
 title: Openfront Barbershop
-description: Services, barber schedules, booking, queue, POS, customers, and reports.
+description: Services, barbers and chairs, booking, walk-in queue, POS, customers, payroll, inventory, and reports for one shop or several.
 icon: Scissors
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-barbershop) · [Catalog](https://openship.org/products/openfront-barbershop)
+[Source](https://github.com/openshiporg/openfront-barbershop) · [Live demo](https://barbershop.openship.org) · [Catalog](https://openship.org/products/openfront-barbershop)
 
-Openfront Barbershop is a service-booking branch with public services and barber profiles, scheduled appointments, walk-in queues, customer history, packages/memberships, POS/manual payments, commissions, inventory, and reports.
+Openfront Barbershop is a self-hosted Next.js and Keystone app for a barbershop. Customers browse services and barbers, book a time, join the walk-in line, and see their visits and balances. Staff run the booking board, walk-in queue, POS checkout, customer records, packages and memberships, barber schedules, payroll, retail stock, policies, and reports from `/dashboard/platform`.
+
+Start with [Getting started](/docs/openfront/barbershop/getting-started). The operator pages are listed in [External dashboards](/docs/openfront/barbershop/external-dashboard). The customer routes are listed in [External storefronts](/docs/openfront/barbershop/external-storefront).
 
 <Callout type="warn">
-Current source provides shop-scoped booking, queue, checkout, inventory, commission, and customer workflows. The only registered payment adapter is manual and has no public webhook behavior; the presence of a webhook route does not establish card settlement.
+Card payments are limited. The only online payment path is a Stripe Checkout for booking deposits, and it only works when `STRIPE_SECRET_KEY` is set and Stripe is set up on the Payments page. Counter checkout takes cash, card (recorded by staff, not processed), or a prepaid package visit. There is no online checkout for retail products, packages, or memberships.
 </Callout>
 
-## Architecture and schema
+## Tenancy
 
-`Shop` is the tenant root. `ShopMembership`, active-shop selection, and managed-shop checks scope appointments, services, staff, customers, transactions, payment sessions, inventory, commissions, and queue records. The graph includes shop settings, service categories/services, barbers, chairs and schedules, customers/notes/grooming notes, appointments and immutable line items, queue/waitlist records, packages/memberships, products/lots/suppliers, transactions, tips/commissions, waivers, payment providers/sessions, and webhook events.
+`Shop` is the tenant. Almost every merchant record has a `shop` relation. Reads and writes are scoped to the caller's active shop (`features/keystone/access.ts`).
 
-Public routes cover `/services`, `/barbers`, `/book`, and `/appointment`. Operator routes under `/dashboard/platform` cover booking, customers, POS, queue, reports, services, staff, and barbershop operations.
+- A `ShopMembership` links a `User` to a `Shop` with a role: `owner`, `manager`, `front_desk`, `barber`, or `viewer`. Status moves `invited` → `active` → `suspended` or `revoked`. Memberships are not deleted, and each shop keeps at least one active owner.
+- The membership role narrows the user's global `Role` flags inside that shop. For example, a `barber` membership allows appointments, queue, customers, and customer notes, but not services, staff, payments, or reports. A `viewer` can open the dashboard and view reports.
+- `selectActiveShop` switches the active shop. The selector is on the Store settings page.
+- If a dashboard user has no shop, the platform pages show a shop access panel instead. Instance admins (users with both `canManagePeople` and `canManageRoles`) can take over an existing shop with `claimShopOwnership`. Everyone else needs an owner or manager to add them.
+- The storefront shows exactly one shop: the single active shop with `isPublic` set. If none or more than one is public, public booking is unavailable.
+
+## Data model
+
+The schema has 49 Keystone lists in `features/keystone/models`. The repository's `docs/schema-map.md` describes each one.
+
+| Area | Lists |
+|---|---|
+| Shop and access | `Shop`, `ShopSettings` (legacy; superseded by `Shop` fields), `ShopMembership`, `User`, `Role` |
+| Service menu | `ServiceCategory`, `Service`, `ServicePackage`, `ServicePackageItem`, `MembershipPlan` |
+| Team and time | `Barber`, `BarberChair`, `BarberSchedule`, `ScheduleException`, `StaffShift`, `PractitionerCredential` |
+| Bookings | `BookingPolicy`, `Appointment`, `AppointmentChangeEvent`, `AppointmentLineItem`, `NoShowPolicy`, `NoShowEvent`, `WalkInQueueEntry`, `WaitlistEntry`, `GuestBookingCommand` |
+| Customers | `Customer`, `CustomerNote`, `GroomingNote`, `WaiverForm`, `CustomerPackage`, `PackageUsage`, `MembershipEvent` |
+| Money | `CheckoutTransaction`, `CashRefund`, `PaymentProvider`, `PaymentSession`, `PaymentReconciliation`, `PaymentWebhookEvent`, `Tip`, `Commission`, `CommissionPayout` |
+| Retail | `Product`, `Supplier`, `InventoryLot`, `InventoryMovement`, `ProductSaleLine` |
+| System | `LifecycleOutboxEvent` |
+
+Many state-bearing lists cannot be created or updated through generic CRUD. They change only through named commands. Those commands take an idempotency key, write a ledger row where one exists, and record an event in `LifecycleOutboxEvent`.
+
+Key lifecycles:
+
+- **Appointment:** `requested` → `confirmed` → `checked_in` → `in_chair` → `completed`. `completed` is reached only through a paid checkout. `cancelled` and `no_show` are terminal. Check-in and seating happen only on the visit's shop day. A no-show can be marked only after the start time plus the policy grace period.
+- **Walk-in:** `waiting` → `texted` → `in_chair` → `served`, or `left`. Seating goes through `seatWalkInQueueEntry`, which creates an appointment. Waiting entries from earlier days close as `left`.
+- **Waitlist:** `waiting` → `notified` → `booked` or `expired`.
+- **Commission:** `projected` → `approved` → `paid`, or `voided`.
+- **CheckoutTransaction:** `open` → `paid` → `partially_refunded` or `refunded`, or `voided`.
+- **CustomerPackage:** `active` ↔ `paused` → `used_up`, `expired`, or `cancelled`.
+- **PractitionerCredential:** `active` ↔ `suspended` → `revoked` or `expired`. Credentials are only enforced for services marked `credentialRequired`.
+- **BookingPolicy:** versions move `active` → `retired`. Each booking stores a snapshot of the policy in force.
+
+## Named GraphQL operations
+
+These custom operations are defined in `features/keystone/mutations/index.ts`. Generated Keystone CRUD exists for lists that allow it.
+
+**Public and account queries:** `getPublicStorefrontSettings`, `getPublicServiceCatalog`, `getPublicBarbers`, `getPublicBarberWeek`, `getPublicProducts`, `getPublicMembershipOffers`, `getPublicBookingEligibility`, `getPublicPaymentOptions`, `checkBarberAvailability`, `getPublicAppointment`, `getPublicQueue`, `getPublicQueueEntry`, `getPublicWalkInStatus`, `accountBookings`, `accountBalances`, `exportMyAccountData`.
+
+**Public and account mutations:** `createOnlineBooking`, `recoverGuestBooking`, `createAccountBooking`, `recoverAccountBooking`, `managePublicAppointment` (cancel or reschedule, with a fee preview), `signPublicWaiver`, `startDepositCheckout`, `confirmDepositCheckout`, `createPublicQueueEntry`.
+
+**Dashboard projections:** `platformBooking`, `platformQueue`, `platformCustomers`, `platformPos`, `platformReports`, `platformServices`, `platformStaff`, `platformOperations`, `platformTeam`, `activeShopStorefrontSettings`, `claimableShops`.
+
+**Dashboard commands:**
+
+| Area | Operations |
+|---|---|
+| Shop and team | `selectActiveShop`, `claimShopOwnership`, `addShopMemberByEmail`, `updateActiveShopStorefrontSettings`, `runBarbershopOnboarding` |
+| Appointments | `createStaffAppointment`, `manageStaffAppointment`, `transitionAppointment`, `markAppointmentNoShow` |
+| Walk-ins and waitlist | `createStaffQueueEntry`, `assignWalkInQueueEntry`, `transitionQueueEntry`, `seatWalkInQueueEntry`, `manageWaitlist` |
+| Checkout and payments | `checkoutAppointment`, `refundCashCheckout`, `recordProductSale`, `returnProductSaleLine`, `ensureDefaultPaymentProvider`, `initiateAppointmentPaymentSession`, `captureAppointmentPaymentSession`, `refundAppointmentPaymentSession`, `cancelAppointmentPaymentSession`, `reconcilePaymentSession` |
+| Customers | `addCustomerNote`, `setCustomerStatus`, `setCustomerConsent`, `issueCustomerWaiver`, `manageMembership` (purchase, purchase package, renew, pause, resume, cancel) |
+| Staff | `manageStaffShift`, `manageScheduleException`, `linkBarberAccount`, `setPractitionerCredentialStatus` |
+| Payroll and stock | `transitionCommission`, `payApprovedCommissions`, `receiveInventoryLot`, `recordInventoryMovement` |
 
 ## Main workflow
 
-The shop publishes services, barber availability and policies. A guest books a service or joins the walk-in flow. Staff assign the work, check the client in, complete service and checkout, then record tips, commission and customer history. Appointment lines keep the accepted service and price context.
-
-## Bounded GraphQL operations
-
-Current platform queries provide booking and customer workspaces. Named operations add customer notes; set customer state; mark no-shows; record and return product sales; transition and pay approved commissions; reconcile payment sessions; select the active shop; and drive booking, queue, checkout, and membership work through scoped actions. Generated CRUD remains for permitted configuration, but appointment, stock, payment, and commission transitions need the named transaction and evidence paths.
-
-## Setup and onboarding
-
-Use a disposable PostgreSQL database. `runBarbershopOnboarding` invokes a dependency-ordered custom seed runner for synthetic Stack & Fade shop, services, barbers/schedules, customers, packages/memberships, appointments, queue, retail inventory, transactions, and manual payment records. It does not use the canonical shared hook filename and is not a hosted demo. Run it twice on an isolated database, then test active-shop selection, cross-shop relations, guest-token ownership, queue/appointment transitions, commission and inventory evidence, and concurrent slot requests.
+1. Set up the shop: name, timezone, hours, brand color, and publication on Store settings.
+2. Build the menu: categories, services (price, duration, deposit, barbers, licensed flag, waiver), packages, and membership plans.
+3. Add barbers, chairs, and weekly hours. Add shifts, time off, and shop closures.
+4. Publish a booking policy version and set a no-show policy.
+5. Customers book online or join the walk-in line. Staff can also book or add walk-ins from the dashboard.
+6. On the day, staff confirm, check in, and seat. Walk-ins are seated into an appointment.
+7. POS checkout takes payment (cash, card recorded by staff, or a package visit), records tips and line items, and creates projected commissions.
+8. Payroll approves and pays commissions per barber. Inventory receives deliveries and records waste and count corrections.
+9. Reports show revenue, appointments, walk-ins, and barber and service performance for a date range.
 
 ## Integrations
 
-The current registered payment shape is manual-only. The manual adapter is operator/offline-oriented and does not register webhooks. Although `/api/payment-webhooks/[providerCode]` exists, the domain utility rejects providers without an allowlisted public-settlement webhook adapter. No Stripe or PayPal adapter is current. A public flow must never mark itself paid from the existence of a session or route.
+- **Payments:** two adapters are registered in `features/integrations/payment`. `manual` is offline (pay in person) and is the default provider (`pp_manual`). `stripe` uses Stripe Checkout for booking deposits only, needs `STRIPE_SECRET_KEY`, and confirms payment by reading the Checkout Session back from Stripe. Neither adapter handles webhooks. `POST /api/payment-webhooks/[providerCode]` exists but rejects providers without a registered webhook, so it accepts nothing today. `checkoutAppointment` rejects a processor payment session at the counter.
+- **Email:** SMTP sends password reset emails, booking and status emails, and reminders about a day before a visit. There is no scheduler. The reminder sweep runs on ordinary traffic (storefront queue and dashboard projections), at most every five minutes per server. Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASSWORD`, emails are not sent.
+- **Images:** service, barber, and product images use S3-compatible storage configured with the `S3_*` variables.
+- **AI assistant and MCP:** `/api/completion` and `/api/mcp-transport/[transport]` return 403 unless `ENABLE_AI_TOOLS=true`. The chat also needs `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. The MCP tools are generic Keystone tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`). They run with the caller's session cookie.
 
-## Security and deployment
+## Limitations
 
-Appointment and queue lookup should use opaque hashed tokens. Booking capacity needs database serialization. Customer notes, waivers, payment records and provider credentials need narrow access. Railway configuration builds then migrates at start, but does not prove deployment.
-
-Deploy only after current schema/type/tests, reviewed migrations, cross-shop and active-membership negatives, concurrent booking/queue, public-token, manual-settlement, stock, commission, restore, and responsive operator/customer checks pass. Current source does not establish external card processing, barber licensing, messaging, payroll, tax, accessibility, privacy, or operating certification.
+- No online card checkout for visits, retail, packages, or memberships. Card at the counter is a record of a payment taken elsewhere.
+- Services that need a deposit cannot be booked online unless Stripe is set up. Without it, the storefront tells customers to book by phone.
+- No payment webhooks. Stripe deposits are confirmed when the customer returns to the appointment page or when staff run a processor check.
+- Reminders depend on site traffic; there is no background worker.
+- The storefront serves one public shop per deployment.
+- No SMS sending. The `texted` queue state is set by staff.
+- Practitioner credentials are records entered by staff. The app does not verify licences with any authority.
+- No tax engine. Tax at checkout is an amount staff enter.
+- The repository has no top-level license file.

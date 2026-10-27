@@ -1,118 +1,169 @@
 ---
 title: Openfront Convenience
-description: Convenience retail, POS, inventory, loyalty, compliance, prepared food, and fuel.
+description: Convenience-store POS, cash, catalog, stock, purchasing, loyalty, restricted sales, prepared food, fuel, lottery, and money services.
 icon: Store
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-convenience) · [Catalog](https://openship.org/products/openfront-convenience)
+[Source](https://github.com/openshiporg/openfront-convenience) · [Live demo](https://convenience.openship.org) · [Catalog](https://openship.org/products/openfront-convenience)
 
-Openfront Convenience is an open-source operations application for convenience stores. It connects scan-and-price POS, tenders and receipts, cash control, purchasing and receiving, lot-aware inventory, loyalty, regulated-sale checks, prepared food, and optional fuel records in one business-owned PostgreSQL system.
+Openfront Convenience is an open-source operations app for convenience stores. Staff ring sales at a register, run tills and the store day, keep the catalog and stock, buy from vendors, and run optional fuel, lottery, money-service, and prepared-food work. Customers get a public catalog site with an account page for points and receipts.
+
+It is a Next.js 16 app with a Keystone 6 GraphQL backend and PostgreSQL. One database holds every business that uses the install.
 
 <Callout type="warn">
-Payment capture, signed payment webhooks, and fuel-controller protocols require explicit provider adapters. Current source can record configured external references and outcomes, but it does not claim an external effect that an adapter did not execute and reconcile.
+The public site is a catalog. It has no online checkout. Card payments, fuel controllers, lottery operators, money-service providers, and accounting systems are not called by this code. The app records references and outcomes that staff or a signed adapter confirm. See [Integrations](#integrations) and [Limitations](#limitations).
 </Callout>
 
-## Install and configure
+Start with [Getting started](/docs/openfront/convenience/getting-started).
 
-Use Node.js 20 or later and PostgreSQL. From the repository root:
+## Where things live
 
-```bash
-npm install
-```
+| Path | What it holds |
+|---|---|
+| `features/keystone/models` | 95 Keystone lists, registered in `models/index.ts` |
+| `features/keystone/mutations` | Named queries and mutations, registered in `mutations/index.ts` |
+| `features/keystone/access.ts` | Permission keys, tenant filters, store scope |
+| `features/platform` | Operator pages under `/dashboard/platform` and the onboarding dialog |
+| `features/dashboard` | Shared Keystone admin shell, sign-in, generic list and item pages |
+| `features/storefront` | Public site screens, data loaders, and server actions |
+| `features/integrations/payment` | Payment adapters (`manual_external`, `hmac_json_v1`) |
+| `features/keystone/scripts` | Outbox worker, alert worker, runtime seed |
+| `docs/schema-map.md` | A table of every list, its states, and the page that shows it |
 
-Create `.env` for the intended local database:
+## Tenancy and permissions
 
-```bash
-DATABASE_URL=postgresql://127.0.0.1:5432/openfront_convenience
-SHADOW_DATABASE_URL=postgresql://127.0.0.1:5432/openfront_convenience_shadow
-SESSION_SECRET=replace-with-at-least-32-random-characters
-INTERNAL_APP_ORIGIN=http://127.0.0.1:3000
-PUBLIC_SIGNUPS_ALLOWED=false
-```
+`Business` is the tenant root. A `Store` belongs to one business. Almost every other record carries a direct business link, and most also carry a store link. List access rules filter reads by the business and stores the signed-in person can reach.
 
-`INTERNAL_APP_ORIGIN` is the trusted destination for cookie-bearing internal requests. In a deployed environment it must be the application's fixed origin; request host headers do not select it.
+A `User` is a sign-in identity. Staff access comes from an `Employee` row that joins a user to one business, one business-owned `Role`, and a set of stores. Only active employees count. A role is a set of 47 permission checkboxes, such as `canAccessDashboard`, `canManageCatalog`, `canReadCash`, `canManageFuel`, `canManageApiKeys`, `canUseAssistant`, and `canReadAudit`. Most areas have a read and a manage permission.
 
-Apply checked-in migrations and start development:
+The first user created on an empty database is marked as an approved platform admin. Only a platform admin can create a new business through onboarding.
 
-```bash
-npm run migrate
-npm run dev
-```
-
-`npm run dev` also deploys migrations before starting Next.js, so point `DATABASE_URL` only at the database you intend to change. Do not use schema push or reset commands. The app is served at `/`, the operator dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
-
-## Architecture
-
-`Business` is the tenant root. Active employee memberships and business-owned roles determine permissions. Stores, employees, registers, inventory, pricing, purchasing, sales, integrations, and audit records carry a direct business relationship. Consequential operations also validate store ownership before using serializable Prisma transactions.
-
-Money uses integer minor units, rates use basis points, and stock and weighted quantities use fixed four-decimal arithmetic. Inventory, cash, loyalty, idempotency, and audit history is append-only through the public API. Completed sale lines retain product, price, tax, promotion, and compliance snapshots.
-
-Fuel is an optional bounded module. Retail catalog, sales, purchasing, and inventory do not depend on a fuel-controller connection.
+Machine access uses `ApiKey` bearer tokens. A key belongs to one business, has a list of scopes, and is limited to chosen stores or all stores. The plaintext token is shown once. Machine keys cannot open the dashboard UI.
 
 ## Data model
 
-- **Business and stores:** businesses, roles, employees, store assignments, stores, registers, shifts, sessions, store days, and cash movements.
-- **Catalog and pricing:** products, variants, categories, barcodes, tax categories and rates, price books and entries, promotions, rules, and redemptions.
-- **Inventory and purchasing:** locations, stock levels, lots, ledger entries, counts and lines, vendors and items, purchase orders and lines, receiving and lines, and waste.
-- **Sales:** carts and lines, sales and immutable sale lines, tenders, refunds and lines, returns and lines, and original-lot restocking links.
-- **Customers and compliance:** loyalty programs, accounts and ledger entries, compliance policies, age-verification evidence, and operational alerts.
-- **Prepared food:** recipes, ingredients, prep batches, output lots, ingredient consumption, and waste.
-- **Fuel:** sites, grades, tanks and readings, pumps and nozzles, effective prices, deliveries, transactions, and reconciliation.
-- **Operations:** payment-provider records, API keys, webhook events, scoped idempotency keys, and audit events.
+Money is stored as integer cents. Fuel prices use mills per gallon. Rates use basis points or fractions. Quantities use fixed four-decimal values.
 
-Provider and controller configuration accepts opaque secret references such as `env://...` or `vault://...`; inline secret-like values are rejected.
+- **Tenancy and people:** `Business`, `Store`, `User`, `Employee`, `Role`, `Shift`.
+- **Registers and cash:** `Register`, `RegisterSession`, `CashMovement`.
+- **Selling:** `Cart`, `CartLine`, `Sale`, `SaleLine`, `Tender`, `Refund`, `RefundLine`, `RefundTenderAllocation`, `Return`, `ReturnLine`.
+- **Catalog:** `Product`, `ProductVariant`, `ProductBarcode`, `ProductCategory`, `ProductImage`.
+- **Pricing and tax:** `PriceBook`, `PriceBookEntry`, `TaxCategory`, `TaxRate`, `Promotion`, `PromotionRule`, `PromotionRedemption`.
+- **Inventory:** `InventoryLocation`, `StockLevel`, `InventoryLot`, `InventoryLedgerEntry`, `InventoryCount`, `InventoryCountLine`, `InventoryTransfer`, `InventoryTransferLine`, `InventoryTransferLotAllocation`.
+- **Purchasing:** `Vendor`, `VendorItem`, `PurchaseOrder`, `PurchaseOrderLine`, `Receiving`, `ReceivingLine`.
+- **Customers:** `LoyaltyProgram`, `LoyaltyAccount`, `LoyaltyLedgerEntry`.
+- **Restricted sales:** `CompliancePolicy`, `AgeVerification`, `ComplianceIncident`.
+- **Prepared food:** `Recipe`, `RecipeIngredient`, `PrepBatch`, `WasteEvent`.
+- **Fuel:** `FuelSite`, `FuelGrade`, `FuelTank`, `FuelTankReading`, `FuelPump`, `FuelNozzle`, `FuelPrice`, `FuelDelivery`, `FuelTransaction`, `FuelReconciliation`.
+- **Lottery:** `LotteryGame`, `LotteryPack`, `LotteryPackEvent`, `LotterySettlement`.
+- **Money services:** `MoneyServiceProvider`, `MoneyServiceTransaction`, `MoneyServiceSettlement`.
+- **Store-day close:** `StoreDay`, `StoreDayLine`, `BankDeposit`.
+- **Payments:** `PaymentProvider`, `PaymentReconciliation`, `PaymentReconciliationLine`, `WebhookEvent`.
+- **Accounting exports:** `ExportDestination`, `ExportBatch`, `ExportLine`.
+- **Offline registers:** `OfflineDevice`, `OfflineOperationBatch`, `OfflineOperation`.
+- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `OutboxEvent`, `OutboxAttempt`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
+
+Most operational lists have generic create and update turned off. They change only through a named mutation. Sales, sale lines, tenders, refunds, ledger entries, cash movements, readings, audit events, and idempotency keys are written only by the system. `docs/schema-map.md` in the source repo marks each list as op-only, immutable, or CRUD.
 
 ## Workflows
 
-The primary POS path is barcode scan -> server-side price, promotion, tax, and compliance validation -> sale snapshot and tenders -> receipt -> inventory and cash ledger postings.
+These are the main paths the code supports. Each step is a named mutation. Each mutation takes an idempotency key, checks business and store scope, and writes an audit event.
 
-Named GraphQL operations also cover:
+1. **Ring a sale.** `openEmployeeShift` and `openRegisterSession` with an opening float. `createPosCart`, then `addPosCartLine` by barcode or variant. Price comes from the store price book, tax from the store tax rate. `applyPromotionToCart`, `applyLoyaltyRedemptionToCart`, and `verifyRestrictedSaleAge` run where needed. `completePosSale` takes one or more tenders, posts stock from FIFO lots, posts cash, earns points, and returns a receipt.
+2. **Refund or void.** `refundPosSale` refunds some or all lines across the original tenders, records a return, and can restock to the original lot, quarantine, or destroy. `voidCompletedPosSale` voids a cash sale. Some cases need a manager PIN.
+3. **Close the till and the day.** `recordCashMovement` for paid in, paid out, and safe drops. `closeRegisterSession` with counted cash gives over/short. `closeEmployeeShift`. `generateStoreDayReconciliation` and `approveStoreDayReconciliation` build and lock the day. `prepareBankDeposit` and `transitionBankDeposit` track the deposit. `generateDailyAccountingExport` builds a CSV batch.
+4. **Keep the catalog.** `configureCatalogItem` creates or edits a product, variant, barcode, category, and tax category. `setRetailPrice` publishes a price-book entry. `configurePromotion`, `configureStoreTaxRate`, and `configureAgeRestrictionPolicy` set the rest. Product photos are `ProductImage` rows stored in S3.
+5. **Keep stock right.** `startInventoryCount`, `recordInventoryCountLine`, `transitionInventoryCount`, `approveInventoryCount`. `postInventoryAdjustment` for corrections, spoilage, waste, and theft. `draftInventoryTransfer` and `transitionInventoryTransfer` move stock between stores with lot allocations.
+6. **Buy from vendors.** `configureVendor`, `configureVendorItem`, `draftPurchaseOrder`, `transitionPurchaseOrder` (submit, approve, cancel), and `receivePurchaseOrder` with accepted and rejected quantities, lot numbers, and expiry.
+7. **Prepared food.** `configurePreparedFoodRecipe`, `startPrepBatch`, `completePrepBatch` (consumes ingredients, makes an output lot), and `recordWasteEvent`.
+8. **Fuel.** `configureFuelTopology`, `setFuelPrice`, `recordFuelTankReading`, `recordFuelDelivery`, `authorizeFuelPayment`, `cancelFuelPaymentAuthorization`, `completeFuelTransaction`, `generateFuelReconciliation`, `approveFuelReconciliation`.
+9. **Lottery.** `configureLotteryGame`, `receiveLotteryPack`, `activateLotteryPack`, `recordLotteryPackSale`, `closeLotteryPack`, `generateLotterySettlement`, `approveLotterySettlement`.
+10. **Money services.** `configureMoneyServiceProvider`, `recordExternalMoneyServiceTransaction`, `voidExternalMoneyServiceTransaction`, `generateMoneyServiceSettlement`, `approveMoneyServiceSettlement`.
+11. **Loyalty.** `configureLoyaltyProgram`, `enrollLoyaltyAccount`, `adjustLoyaltyPoints`, `expireLoyaltyPoints`.
+12. **Payments.** `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation`. Signed provider webhooks arrive at `/api/webhooks/payment/[providerId]`.
+13. **Alerts and recovery.** `evaluateOperationalAlerts` and `transitionOperationalAlert` for cash, fuel, stock, expiry, and settlement variances. `registerOfflineDevice`, `transitionOfflineDevice`, and `recordOfflineReplayBatch` replay offline register work. `claimOutboxEvents`, `completeOutboxEvent`, and `replayOutboxEvent` drive the outbox. `createBusinessApiKey` and `revokeBusinessApiKey` manage machine keys.
 
-- first-business onboarding with owner role, store, register, inventory locations, price book, tax defaults, and active membership;
-- shift and register-session opening and closing, balanced cash movement, expected cash, and over/short reconciliation;
-- cash sales, split tenders, partial/full refunds, returns, and restoration to original inventory lots;
-- purchase-order submission and approval, partial receiving, rejected quantities, lot creation, and stock posting;
-- inventory adjustments, counts, count approval, FIFO lot consumption, and idempotent replay;
-- promotion application, loyalty-ledger adjustments, and minimum-data age verification;
-- recipe consumption, prep output lots, and waste posting;
-- fuel delivery reconciliation and completed dispense recording; and
-- one-time API-key issuance and revocation.
+## Named GraphQL operations
 
-Purpose-built platform routes cover overview, POS, inventory, pricing, purchasing, restricted sales, loyalty, prepared food, fuel, reconciliation, exceptions, reports, and operations. `/dashboard/onboarding` handles first-business setup, while generic administration remains available for permitted records.
+All custom operations are declared in `features/keystone/mutations/index.ts`. GraphQL is served at `/api/graphql`.
 
-## Bounded GraphQL operations
+**Queries:** `storefrontCatalog`, `storefrontBasket`, `storefrontHistory`, `storefrontRewards`, `conveniencePublicStorefront`, `conveniencePlatformProjection`, `conveniencePlatformNavigation`, `convenienceReportingSummary`, `posSaleReceipt`, `posOperationOutcome`, `downloadExportArtifact`, `assistantCapability`, `redirectToInit`.
 
-The platform reads business-scoped operational and reporting projections. Named mutations onboard a business; open/close shifts and register sessions; create and price carts; complete and refund sales; receive purchase orders; post inventory adjustments and counts; apply promotions; adjust loyalty; verify restricted-sale age; run prepared-food and waste work; record fuel prices, deliveries, tank readings, transactions, and reconciliation; manage store-day/bank-deposit reconciliation; and issue/revoke API keys. Outbox claim, completion, replay, and failure state are separate worker operations. Generated CRUD is not a substitute for these transaction, fixed-point, lifecycle, and evidence boundaries.
+**Mutations, by area:**
+
+| Area | Mutations |
+|---|---|
+| Setup and brand | `onboardConvenienceBusiness`, `configureBusinessBrand`, `configureRegister`, `configureInventoryLocation` |
+| Staff and sessions | `setOwnPosPin`, `openEmployeeShift`, `closeEmployeeShift`, `revokeCurrentUserSessions` |
+| Tills | `openRegisterSession`, `recordCashMovement`, `closeRegisterSession` |
+| POS | `createPosCart`, `addPosCartLine`, `updatePosCartLine`, `removePosCartLine`, `transitionPosCart`, `applyPromotionToCart`, `completePosSale`, `refundPosSale`, `voidCompletedPosSale` |
+| Catalog and pricing | `configureCatalogItem`, `setRetailPrice`, `configureStoreTaxRate`, `configurePromotion` |
+| Restricted sales | `configureAgeRestrictionPolicy`, `verifyRestrictedSaleAge`, `transitionComplianceIncident` |
+| Loyalty | `configureLoyaltyProgram`, `enrollLoyaltyAccount`, `adjustLoyaltyPoints`, `applyLoyaltyRedemptionToCart`, `expireLoyaltyPoints` |
+| Purchasing | `configureVendor`, `configureVendorItem`, `draftPurchaseOrder`, `transitionPurchaseOrder`, `receivePurchaseOrder` |
+| Inventory | `startInventoryCount`, `recordInventoryCountLine`, `postInventoryAdjustment`, `transitionInventoryCount`, `approveInventoryCount`, `draftInventoryTransfer`, `transitionInventoryTransfer` |
+| Prepared food | `configurePreparedFoodRecipe`, `startPrepBatch`, `completePrepBatch`, `recordWasteEvent` |
+| Fuel | `configureFuelTopology`, `setFuelPrice`, `recordFuelTankReading`, `recordFuelDelivery`, `authorizeFuelPayment`, `cancelFuelPaymentAuthorization`, `completeFuelTransaction`, `generateFuelReconciliation`, `approveFuelReconciliation` |
+| Store day | `generateStoreDayReconciliation`, `approveStoreDayReconciliation`, `prepareBankDeposit`, `transitionBankDeposit` |
+| Exports | `configureExportDestination`, `generateDailyAccountingExport`, `transitionExportBatch` |
+| Alerts | `evaluateOperationalAlerts`, `transitionOperationalAlert`, `recordOperationalHeartbeat` |
+| Lottery | `configureLotteryGame`, `receiveLotteryPack`, `activateLotteryPack`, `recordLotteryPackSale`, `closeLotteryPack`, `generateLotterySettlement`, `approveLotterySettlement` |
+| Money services | `configureMoneyServiceProvider`, `recordExternalMoneyServiceTransaction`, `voidExternalMoneyServiceTransaction`, `generateMoneyServiceSettlement`, `approveMoneyServiceSettlement` |
+| Payments | `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation` |
+| Offline and outbox | `registerOfflineDevice`, `transitionOfflineDevice`, `recordOfflineReplayBatch`, `claimOutboxEvents`, `completeOutboxEvent`, `replayOutboxEvent` |
+| API keys | `createBusinessApiKey`, `revokeBusinessApiKey` |
+| Storefront | `updateStorefrontBasket` |
+
+Generated Keystone CRUD still exists for lists that allow it, such as `Store`, `Role`, `Employee`, and `User`. The staff page creates people through `createUser` and `createEmployee`.
+
+## Onboarding
+
+On first sign-in the dashboard shows an onboarding dialog. It submits `onboardConvenienceBusiness`. The form starts blank, or from a sample store filled in from `features/platform/onboarding/lib/seed.json`. It asks for business name and code, timezone, store name and code, currency, address, phone, standard tax percent, whether the store sells fuel, whether to add sample products, and whether the storefront is draft or published.
+
+One run creates, in one transaction:
+
+- the business and its first store, set as the storefront store;
+- an `Owner` role with every permission, and an active owner employee for the signed-in user;
+- `Sales Floor` and `Back Room` inventory locations;
+- a `Default Retail` price book and `Standard` and `Exempt` tax categories, with a standard tax rate;
+- `Register 1`;
+- a `Store Rewards` loyalty program (1 point per dollar, 100 points worth one dollar);
+- an `External Terminal` payment provider using the `manual_external` adapter;
+- with sample products on: five categories (Cold Drinks, Snacks & Pantry, Coffee Bar, Prepared Food, Everyday Essentials) and 18 products, each with one variant, a barcode, and a price-book entry. Sample variants track stock but allow negative stock until real stock is received;
+- with fuel on: a fuel site, one `Regular Unleaded` grade, one empty tank, one pump, and one nozzle, all offline with the `manual_external` controller key.
+
+The run sets the user's onboarding status to completed. A replay with the same idempotency key returns the first result. "Skip for now" marks onboarding dismissed.
 
 ## Integrations
 
-Checkout and refund operations can record cash and externally confirmed non-cash references. They do not call an unconfigured payment provider. A payment adapter needs server-owned amount and currency, provider idempotency, signed raw-body webhook verification, event replay protection, controlled state transitions, and reconciliation.
+**Payments.** Two adapters are registered:
 
-Fuel models record controller and device references without coupling the domain to one protocol. A controller adapter needs exact store/site scope, secret references, device mapping, signed or mutually authenticated ingress, duplicate-event handling, sequence and meter reconciliation, offline recovery, and an operator-visible exception path.
+- `manual_external` records a card or wallet payment that a separate terminal already took. It accepts no webhooks.
+- `hmac_json_v1` also accepts signed webhooks at `/api/webhooks/payment/[providerId]`. The request needs `x-openfront-timestamp` and `x-openfront-signature: v1=<hex>`, an HMAC-SHA256 over `timestamp.body`, within five minutes. It handles `payment.captured`, `payment.failed`, `refund.completed`, and `refund.failed`. Duplicate event IDs are replayed, not re-applied.
 
-The same adapter rule applies to accounting, loyalty, tax, ordering, and notification providers: a configuration row is not proof of execution.
+Both adapters require a short-lived signed authority proof for each non-cash tender and refund. The signing key is read from an `env://NAME` credential reference, and the value must be at least 32 characters. Neither adapter calls a payment network.
 
-## Security
+**Credential references.** Payment, money-service, export, and fuel configuration take `env://` or secret-manager references. Inline secret-like values are rejected.
 
-Tenant filters hide other businesses, and relationship access rejects cross-business connections. Consequential mutations recheck business and store scope. Sale, inventory, cash, loyalty, idempotency, and audit evidence cannot be rewritten through ordinary GraphQL CRUD.
+**Fuel, lottery, money services, exports.** These record what an operator or an outside system confirms. Fuel controller, lottery operator, and money-service provider protocols are not implemented. Accounting exports produce a CSV artifact (up to 5 MiB) that staff download from the Exports page. Delivery to a destination is marked by `transitionExportBatch`, not sent by the app.
 
-Employee PINs and API tokens are one-way hashed. API-key plaintext is returned once and excluded from idempotency and audit snapshots. Restricted-sale evidence stores a cryptographic fingerprint and decision metadata rather than raw identity numbers, full birth dates, or document scans. Completion transport uses request-local cookie forwarding to the exact configured internal origin and does not patch process-global fetch.
+**Outbox worker.** `npm run worker:outbox` claims outbox events with a machine key and posts them, HMAC-signed, to an HTTPS sink. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, and `OUTBOX_SIGNING_VALUE` (32+ characters).
 
-Before real operations, verify role grants, cross-business negatives, register and inventory concurrency, refund authorization, provider callback handling, secret management, backups, monitoring, rate limits, physical register controls, and applicable payment, tax, age-restriction, food-safety, fuel, and privacy requirements.
+**Alert worker.** `npm run worker:alerts` calls `evaluateOperationalAlerts`. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, and optional thresholds `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, and `ALERT_EXPIRY_WINDOW_DAYS`.
 
-## Deployment
+**Email.** Password reset email uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`. Without `SMTP_HOST`, the reset page says email is not set up.
 
-Current source contains eleven checked-in migration directories: seven inherited starter migrations and four Convenience migrations covering the operating graph, return-lot allocation, store-day/fuel reconciliation, and durable operation/outbox records. `npm run build` generates Keystone artifacts and builds Next.js without deploying migrations; `npm run dev` deploys them first. No hosted Convenience demo is advertised by these docs.
+**Assistant.** The dashboard assistant at `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`) and needs the `canUseAssistant` permission. It talks to a read-only MCP endpoint at `/api/mcp-transport/http` with four tools: `listModels`, `searchModels`, `getFieldsForType`, and `queryData` (scalar fields only, at most 50 rows). It cannot run mutations.
 
-For deployment, review and apply migrations separately, use stable secrets and a fixed `INTERNAL_APP_ORIGIN`, back up and test restoration, and run current schema tests, completion-transport tests, typecheck, build, tenant negatives, register/shift control, sale/refund, purchasing/receiving, FIFO lots, prepared-food, fuel records, API-key, and outbox replay flows. Configure only implemented adapters and stage rollout with monitoring and rollback. Those local paths do not establish real payment, fuel, accounting, tax, loyalty, or notification execution, and the application must not be deployed with inherited or synthetic credentials.
+## Limitations
 
-## Extension paths
-
-- Add domain records under `features/keystone/models` and register them in `features/keystone/models/index.ts`; preserve direct business ownership and generate a reviewed migration.
-- Add consequential behavior under `features/keystone/mutations` using the existing operation runner, fixed-point helpers, tenant checks, idempotency, serializable transactions, and append-only evidence.
-- Extend first-business defaults in `features/platform/onboarding` without making seed data the authority for runtime permissions or prices.
-- Add payment, fuel, accounting, tax, loyalty, or notification adapters behind the corresponding provider boundary. Keep secrets out of model JSON and prove callback authentication, replay, failure, and reconciliation behavior.
-- Build cashier and operator surfaces under `app` or `features/dashboard`; call named domain operations instead of reproducing POS, refund, receiving, or inventory rules in the browser.
-- Add tests for cross-business access, fixed-point arithmetic, lot allocation, oversell/concurrency, idempotent replay, lifecycle denial, callback duplication, and failed external effects before enabling a new workflow.
+- The public site cannot take orders. `/basket` and `/checkout` redirect to `/shop`. A basket API (`storefrontBasket`, `updateStorefrontBasket`) exists, but no page uses it, and a storefront basket cannot be completed into a sale.
+- Only one business can publish a storefront per install. If two are published, the public site shows nothing.
+- Age-restricted products are never listed on the public site.
+- No real payment, fuel-controller, lottery, money-service, or accounting connection exists. Outside systems must be wired through an adapter you write and test.
+- Age checks store the outcome, method, and a document fingerprint. The app does not scan or validate IDs itself.
+- The README mentions an `npm run bootstrap:admin` script and an `npm run test` script. Neither is defined in the current `package.json`.
+- The app builds its own base URL from request `Host` and `X-Forwarded-*` headers. Run it behind a proxy that sets those headers to fixed values.
+- A passing build or page render does not show that tax, age-restriction, fuel, lottery, money-service, or payment rules are met for your location. Check them yourself before real use.

@@ -6,3 +6,53 @@ description: Give an LLM the Construction dashboard skill to adapt the built-in 
 To create a custom Construction dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Construction's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Construction codebase before proposing work.
+
+Skill file: [`/skills/openfront-construction-custom-dashboard/SKILL.md`](/skills/openfront-construction-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file only imports a screen from `features/platform/<slice>`.
+
+**Company and pursuits**
+
+| Page | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/portfolio` | `portfolio` | Project portfolio with budget, cost, and open-item metrics across companies the user can see |
+| `/dashboard/platform/projects` | `projects` | Project list; create a project (`createConstructionProject`) |
+| `/dashboard/platform/setup` | `onboarding` | First-company onboarding (custom or fictional sample) and the readiness checklist |
+| `/dashboard/platform/store-settings` | `store-settings` | Company brand and logo, public site profile, services, and portfolio projects (`updateConstructionStoreSettings`) |
+| `/dashboard/platform/trade-partners`, `/[id]` | `trade-partners` | Directory of subcontractors, vendors, owners, designers, consultants, and authorities; create, edit, and change status (prospective, approved, inactive, blocked) |
+| `/dashboard/platform/cost-codes` | `cost-codes` | Company cost code library; create, edit name and division, activate or deactivate |
+| `/dashboard/platform/resources` | `resources` | Equipment fleet and material catalog; create, edit, and change status |
+| `/dashboard/platform/pipeline` | `crm` | Leads, opportunities, and website inquiries |
+| `/dashboard/platform/pipeline/create` | `crm` | Create an opportunity |
+| `/dashboard/platform/pipeline/[id]` | `crm` | Opportunity detail |
+| `/dashboard/platform/pipeline/requests/[id]` | `crm` | Website inquiry (`IntakeSubmission`) detail |
+| `/dashboard/platform/service-requests` | `service-requests` | Customer quote requests; save a quote or cancel (`commandConstructionRequest`) |
+
+**Project tools** at `/dashboard/platform/projects/[projectId]/<tool>`
+
+Most tools render `ProjectWorkspacePage` from `features/platform/projects` with a register, command forms, lifecycle actions, and links to record detail. Workspace content comes from `constructionProjectWorkspace`.
+
+| Tool route | Sidebar label | What operators do there |
+|---|---|---|
+| (none) | Overview | Project summary and open items |
+| `preconstruction` | Preconstruction | Bid packages, invitations, submissions, bid leveling (`constructionBidComparison`), award; estimates and revisions |
+| `financials` | Financials | Budget lines, budget changes, direct costs and reversals, approval panel |
+| `structure` | Cost structure | Project budget codes and site locations (`features/platform/project-structure`) |
+| `contracts` | Contracts & changes | Prime contracts, commitments, change events, quotes, change orders, approval panel |
+| `procurement` | Subcontractors & procurement | Procurement requests, orders, material receipts, commitment, bid invitation, and lien waiver registers |
+| `execution` | RFIs & submittals | RFI and submittal registers, routing, responses, reviews, specification sections |
+| `field` | Field operations | Daily logs and entries, field photos, labor time, resource log register with recovery |
+| `schedule` | Schedule & tasks | Schedules, tasks, dependencies, progress |
+| `quality-safety` | Quality & safety | Incidents (with restricted private details), observations, inspections, corrective actions, punch items |
+| `documents` | Documents | Drawings and documents, signed S3 upload and download, distribution |
+| `billing` | Billing | Progress claims, payments, allocations, reversals, retainage releases, lien waivers, approval panel |
+| `reports` | Reports | Job cost and forecast, commitment and change exposure, RFI, submittal, claim, waiver, safety, and corrective aging; CSV export |
+| `team` | Project team | Members, invitations with one-time links, revoke and reissue |
+| `audit` | Audit | Agent actions, outbox messages, idempotency keys; issue and revoke API keys |
+| `records/[recordType]/[recordId]` | — | Record detail with fields, evidence, history, and allowed transitions (`constructionRecordDetail`) |
+
+Financials, contracts, procurement, billing, reports, team, and audit are internal-only tools.
+
+Lists without a dedicated page, such as `Role`, `User`, `ProjectLocation`, `ApprovalPolicy`, and `AgentIdentity`, are edited on the generic `/dashboard/<list-key>` pages, subject to role permissions. Lifecycle status fields are read-only there.

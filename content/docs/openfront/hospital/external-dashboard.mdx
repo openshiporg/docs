@@ -6,3 +6,37 @@ description: Give an LLM the Hospital dashboard skill to adapt the built-in expe
 To create a custom Hospital dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Hospital's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Hospital codebase before proposing work.
+
+Skill file: [`/skills/openfront-hospital-custom-dashboard/SKILL.md`](/skills/openfront-hospital-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server actions live in `features/platform/<slice>`. Sidebar order comes from `features/platform/lib/navigation.ts`.
+
+| Page | Slice | What operators do there |
+|---|---|---|
+| `/dashboard/platform/appointments` | `appointments` | Appointment queue with status counts; confirm, check in (`arriveAppointment`), start, complete, cancel, or mark no-show through `transitionAppointment` |
+| `/dashboard/platform/care-queue` | `clinical` | Today's arrival queue; call, start care, complete, or cancel tickets (`transitionCareQueue`) and open an encounter from a ticket |
+| `/dashboard/platform/encounters` | `clinical` | Open encounters (`openEncounter`), move them through `transitionEncounter`, review the facility episode closure policy, and recover a closure |
+| `/dashboard/platform/inpatient` | `operations` | Bed board, active admissions, and bed holds; reserve or release a bed, admit, transfer, discharge, and change bed readiness |
+| `/dashboard/platform/clinical-operations` | `clinical` | Read-only overview of facilities, encounters, admissions, care plans, wards and beds, departments and clinicians, and recent vitals, orders, and procedures |
+| `/dashboard/platform/clinical-fulfillment` | `operations` | Orders, results, prescriptions, procedures, and care plans; place orders, collect specimens, record and correct lab results, record vitals, draft clinical documents |
+| `/dashboard/platform/claims` | `operations` | Prepare insurance claims and move them through submit, acknowledge, reject, correct, or cancel |
+| `/dashboard/platform/operational-fabric` | `operational-fabric` | Per-facility tabs for billing (coverage, manual payments, refunds), consent decisions, inventory and CSV import, communication templates and preferences, integrations and machine credentials, outbox dispatch, external identity links, retention policies, holds and dispositions, and exports |
+| `/dashboard/platform/registration` | `registration` | Register a patient with MRN and consent; resolve duplicate candidates (`registerPatient`) |
+| `/dashboard/platform/patients`, `/[id]` | `patients` | Patient list and a read-only chart: demographics, identifiers, facilities, appointments, encounters, intake, messages, consents, registrations, coverage, payments |
+| `/dashboard/platform/providers`, `/[id]` | `providers` | Create and edit providers and clinicians, link facilities and visit types, see schedule blocks |
+| `/dashboard/platform/visit-types`, `/[id]` | `visit-types` | The bookable visit catalog: duration, buffers, price, providers, intake requirements, status |
+| `/dashboard/platform/schedules` | `schedules` | Provider schedule blocks with conflict checks (`appointmentScheduleConflicts`); blocks are created and edited on the generic `/dashboard/provider-schedule-blocks` pages |
+| `/dashboard/platform/intake` | `intake` | Submitted intake forms; mark reviewed or needs review (`transitionIntakeReview`) |
+| `/dashboard/platform/communications` | `communications` | Patient message tasks; send a message (`sendSecurePatientMessage`) and complete manual phone follow-ups (`transitionPatientMessage`) |
+| `/dashboard/platform/facilities`, `/[id]` | `facilities` | Facilities, departments, wards, rooms, and beds; create and edit them and set their status |
+| `/dashboard/platform/lab-tests` | `lab-tests` | Lab test catalog; create, edit, activate, deactivate |
+| `/dashboard/platform/staff` | `staff` | Staff users and roles; create, edit, delete users and create or edit roles |
+| `/dashboard/platform/audit` | `audit` | Clinical audit log and workflow transition trail |
+| `/dashboard/platform/store-settings` | `store-settings` | Public site identity, logo, theme, location, and scheduling contact (`HospitalProfile`) |
+| `/dashboard/platform/reports` | `reports` | Appointment, intake, message, and inventory summaries and provider completion; needs `canViewReports` plus the underlying scopes |
+
+Onboarding (`features/platform/onboarding`) appears as a card and dialog on the dashboard home, not as a route. `features/platform/bootstrap` has a screen that no route mounts.
+
+Lists without a dedicated page, such as `ProviderScheduleBlock`, `PhiReadAudit`, and the image lists, are edited on the generic `/dashboard/<list-key>` pages, subject to list access. Controlled clinical lists hide create and delete there; their writes go through the workflow mutations above.

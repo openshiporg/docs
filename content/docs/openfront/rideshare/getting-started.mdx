@@ -1,0 +1,108 @@
+---
+title: Getting started with Rideshare
+description: Install the source, configure PostgreSQL, sessions, and optional S3 storage, apply migrations, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Live demo
+
+A hosted demo runs at [rideshare.openship.org](https://rideshare.openship.org). Use it to look at the rider booking pages and the operator dashboard before installing. Treat any data you enter there as public.
+
+## Requirements
+
+- Node.js 20 or later (`engines` in `package.json`); the README recommends Node.js 22 for Next.js 16.
+- npm (the repository ships a `package-lock.json`).
+- A PostgreSQL database you are allowed to migrate.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-rideshare.git
+cd openfront-rideshare
+npm ci
+```
+
+## Environment
+
+Copy `.env.example` to `.env` and replace the placeholders:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_rideshare
+SESSION_SECRET=replace-with-at-least-32-random-characters
+PUBLIC_SIGNUPS_ALLOWED=false
+
+# Optional S3-compatible image storage
+S3_BUCKET_NAME=
+S3_REGION=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_ENDPOINT=
+```
+
+| Variable | Used for |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection for Keystone and Prisma. Required in production. |
+| `SESSION_SECRET` | Signs stateless session cookies (30-day max age). In production it is required and must be at least 32 characters; startup throws otherwise. Generate one with `openssl rand -hex 32`. |
+| `PUBLIC_SIGNUPS_ALLOWED` | When `true`, opens `/dashboard/signup` and also opens rider signup at `/account/signup`. Keep it `false` unless you want open signup. With it `false`, rider signup opens only while at least one active fleet has rider accounts set to `open`. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Optional S3-compatible image storage. Storage is configured only when `S3_BUCKET_NAME` is set; `S3_REGION` defaults to `auto`. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Optional SMTP for password reset email. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional dashboard AI assistant. Without the key and model, the completion endpoint returns 503. |
+
+Never commit `.env`.
+
+## Migrations
+
+The repository contains checked-in Prisma migrations: seven inherited starter migrations followed by Rideshare migrations for the foundation schema, atomic offer acceptance, time-window constraints, branding/cancellation/payment observations, fleet operations mode, and fleet rider accounts.
+
+```bash
+npm run migrate        # prisma migrate deploy
+npm run migrate:gen    # after schema changes: keystone build, view-order generation, prisma migrate dev
+```
+
+<Callout type="warn">
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`. It applies migrations to whatever database `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+| Path | Surface |
+|---|---|
+| `/` and `/book` | Rider booking |
+| `/rides/[confirmationCode]` | Trip status page |
+| `/account`, `/account/signup`, `/account/rides` | Rider sign-in, signup, and ride history |
+| `/dashboard` | Operator dashboard |
+| `/api/graphql` | GraphQL API |
+
+## First user and onboarding
+
+1. Open the app. While no users exist, every route redirects to `/dashboard/init`, which creates the first user. That user receives the Admin role.
+2. The onboarding dialog offers demo templates. `bootstrapRideshare(mode: "minimal" | "full")` creates one demo fleet with an owner membership for you, a service area, a ride service and fare rule, driver and vehicle eligibility policies, a driver and vehicle with compliance documents and policy evaluations, availability rules, the manual payment provider (if missing), provider connections, and a marketplace registration. `full` adds an accessible ride service and a wheelchair-accessible vehicle. Running it again inspects the existing demo fleet instead of creating a duplicate.
+3. Alternatively, use the custom setup steps or Settings, which call `setupFleet`, `setupServiceArea`, `setupRideService`, and `setupFareRule`. `dismissRideshareOnboarding` hides the dialog.
+4. To take bookings, the fleet needs status `active`, operations mode `manual` (manual dispatch), an active ride service with an active fare rule, and at least one approved driver with an approved vehicle who is online (`available`) for immediate rides; scheduled rides can be offered to active drivers who are not currently available. Set rider accounts to `open` if riders should be able to sign up. Rider signup is global: it opens when any active fleet has rider accounts `open`.
+
+Seed values are examples for evaluation, not operating data.
+
+## Checks
+
+```bash
+npm test          # tsx --test tests/*.test.ts
+npm run typecheck
+npm run lint
+npm run audit     # tsx scripts/audit.ts
+```
+
+## Deployment
+
+- **Build:** `npm run build` runs `keystone build --no-ui && next build`. The build script does not migrate.
+- **Start:** `npm start` runs `next start`. Run `npm run migrate` against the production database before starting a new release.
+- **Railway:** `railway.toml` sets the build command to `keystone build --no-ui && next build` and the start command to `npm run migrate && next start`, because Railway builds cannot reach internal databases.
+- **Vercel:** the README includes a Deploy with Vercel button that prompts for `DATABASE_URL` and `SESSION_SECRET`.
+- **Postgres and S3:** provision a managed PostgreSQL database and, if you need image storage, an S3-compatible bucket with the five `S3_*` variables. Keep secrets in the host's secret store.
+
+Back up the database before applying migrations to retained data.

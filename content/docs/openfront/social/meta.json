@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Social",
+  "description": "Creator-owned personal sites with collections, versioned publishing, destination consent, and privacy review",
+  "icon": "PenLine",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

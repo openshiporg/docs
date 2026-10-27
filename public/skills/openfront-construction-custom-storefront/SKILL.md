@@ -5,20 +5,26 @@ description: Plan and build a custom Openfront Construction storefront by explai
 
 # Openfront Construction custom storefront
 
-Use this skill to determine and build the appropriate customer/client experience for Construction. Current source has no canonical built-in storefront, so do not pretend there is one to adapt. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt Construction's built-in public website, customer account, and project portal, or to build a separate client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-construction>
-- Current source has no canonical `features/storefront` directory. Do not describe the root page or portal as a complete storefront without inspecting it.
-- Inspect `app/**` for the actual public, portal, token, inquiry, or client-facing routes that exist.
-- Inspect `features/platform/**` for operator-owned workflow state and `features/keystone/**` plus `schema.graphql` for any safe public projections or commands.
+- Public website and customer account: `features/storefront` (`screens/`, `components/`, `account/`, `data.ts`, `actions.ts`). Routes sit directly under `app/` with no route group.
+- Client and trade partner project portal: `features/portal` (`screens/PortalPage.tsx`, `screens/PortalProjectPage.tsx`, `acceptance/`, `actions.ts`, `data.ts`, `session.ts`).
+- Server contract: `features/keystone/queries/public-site.ts`, `queries/portal.ts`, `mutations/public-intake.ts`, `mutations/customer-requests.ts`, `mutations/portal.ts`, `mutations/invitations.ts`, all declared in `features/keystone/mutations/index.ts`, plus `features/keystone/models/public.ts` and `service-requests.ts`, and `schema.graphql`.
 
-Explain that a new customer/client experience may require new bounded backend contracts before presentation work can start.
+Current routes:
 
-The current product focus is client, subcontractor, or public project experiences; current source has no canonical features/storefront layer. This list is orientation, not proof that every flow is safe or complete.
+- Website: `/`, `/services`, `/services/[slug]`, `/projects` (market filter), `/projects/[slug]`, `/privacy`, inquiry forms `/start-a-project` and `/client-intake` (`project_inquiry`), `/estimate`, `/rfp`, `/trade-partners` and `/bid` (`trade_partner_interest`), `/contact`, and `/requests/[publicReference]/confirmation`. Data: `publicConstructionSite`, `publicConstructionService`, `publicConstructionProject`, `publicIntakeReceipt`; writes: `submitPublicIntake`. The site shown is the published `PublicSiteProfile` selected by the server-side `PUBLIC_SITE_KEY`.
+- Customer account: `/account` (sign in, `registerConstructionCustomer`, profile, quote request form, history), `/account/requests/[id]`, `/account/requests/[id]/payment` (redirects back; no online payment), `/account/reset`. Data: `constructionCustomerRequests`, `constructionCustomerRequestCount`, `constructionCustomerRequest`; writes: `commandConstructionRequest` with `request`, `accept`, or `cancel`. States: requested, quoted, `payment_pending` (shown as accepted), cancelled.
+- Portal: `/accept-invitation?token=…` (`acceptProjectInvitation`), `/portal`, `/portal/projects/[projectId]`, `/portal/projects/[projectId]/[tool]` with tools `preconstruction`, `execution`, `documents`, `billing`, `schedule`, `field`, `quality-safety`. Data: `constructionPortalInbox`, `constructionPortalApprovalSnapshot`; writes: `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver`, `decideConstructionApproval`, `acknowledgeDocumentDistribution`.
+
+Known gaps: website inquiries (`IntakeSubmission`) have no customer link and do not appear in the account; there is no checkout or payment; invitation links are not emailed.
+
+The current product focus is the public contractor website, customer quote requests, and the client, designer, subcontractor, and vendor project portal. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -66,7 +72,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around client, subcontractor, or public project experiences; current source has no canonical features/storefront layer. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around the public contractor website, customer quote requests, and the project portal for clients, designers, subcontractors, and vendors. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

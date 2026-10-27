@@ -11,15 +11,17 @@ Use this skill to adapt the built-in Coffee Shop storefront or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-coffeeshop>
-- Built-in Coffee Shop customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Repository: <https://github.com/openshiporg/openfront-coffee-shop>
+- Built-in Coffee Shop customer experience, screens, components, data loaders (`features/storefront/lib/data`), cart storage, and UI composition: `features/storefront`.
+- Thin customer-facing route entry points: `app/page.tsx` for `/`, and `app/(storefront)/**` for `/menu/[id]`, `/checkout`, `/order-confirmed`, `/catering`, `/account`, and `/account/reset`. There is no country or region prefix.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (wired in `mutations/index.ts`), `schema.graphql`, and `docs/schema-map.md`.
+- Customer-facing operations: `getCoffeeStore`, `getCoffeeMenu`, `quoteCafeOrder`, `createCafePickupOrder`, `getCafeOrder` (order `secretKey` or owning session), `getCafeLoyaltyAccount`, `applyCafeLoyalty`, `requestCafeCatering`, `getCoffeeCustomerCatering`, `getCoffeeCustomerOrders`, `registerCoffeeCustomer`, `updateCoffeeCustomerProfile`, `initiateCafePaymentSession`, plus Keystone `authenticateUserWithPassword`, `endSession`, and password reset.
+- Main models behind them: `StoreSetting` (singleton, one store per deployment, USD only), `MenuCategory`, `MenuItem`, `MenuItemModifier`, `CafeOrder`, `OrderItem`, `Payment`, `LoyaltyAccount`, `LoyaltyEvent`, `CateringOrder`, `User`.
+- Provider boundaries: `features/integrations/payment/**` (Stripe, PayPal, manual adapters) and the webhook route `app/api/payment-providers/[providerCode]/webhook`.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is menu discovery, modifiers, pickup ordering, cart/checkout, loyalty, catering, and order confirmation/status. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is menu browsing and search, modifiers, a browser-stored cart, pickup order requests that staff accept, pay at pickup by default with optional Stripe Checkout, order receipt and status, rewards linking, catering inquiries, and a customer account with orders, rewards, catering, and profile. PayPal, customer subscriptions, and drink-credit redemption are not offered. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around menu discovery, modifiers, pickup ordering, cart/checkout, loyalty, catering, and order confirmation/status. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around menu discovery, modifiers, pickup order requests, checkout, order receipt and status, rewards, catering inquiries, and the customer account. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

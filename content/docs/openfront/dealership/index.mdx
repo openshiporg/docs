@@ -1,43 +1,116 @@
 ---
 title: Openfront Dealership
-description: Vehicle inventory, leads, deals, test drives, trade-ins, finance intake, and service.
+description: Vehicle inventory, CRM, deals, finance and F&I records, delivery, service, parts, payments, and accounting batches.
 icon: Car
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-dealership) · [Catalog](https://openship.org/products/openfront-dealership)
+[Source](https://github.com/openshiporg/openfront-dealership) · [Live demo](https://dealership.openship.org) · [Catalog](https://openship.org/products/openfront-dealership)
 
-Openfront Dealership combines a public vehicle inventory with the operator work that follows an inquiry: leads, test drives, trade-ins, deals and approvals, finance intake, service appointments, repair orders, parts, tasks, and reporting.
+Openfront Dealership is a self-hostable vehicle storefront and dealership operations app. Shoppers browse and compare vehicles and send sales, test-drive, trade-in, financing, and service requests. Staff work those requests through inventory, CRM, deal, finance, delivery, service, parts, payment, and accounting desks.
+
+It is built with Next.js 16, React 19, Keystone 6 (GraphQL), PostgreSQL through Prisma, and Tailwind CSS. Start with [Getting started](/docs/openfront/dealership/getting-started).
 
 <Callout type="warn">
-Finance forms are lead intake, not underwriting or lender decisions. Current source does not establish payment processing, credit compliance, identity verification, e-signature, or DMS/accounting parity.
+Financing in this source is intake and record keeping. It does not pull credit, send applications to lenders, sign contracts, or file anything with a government agency. Lender decisions, compliance checks, contract status, and accounting postings are entered by staff as evidence.
 </Callout>
 
-## Architecture and schema
+## Code layout
 
-`DealerGroup` and active group membership are the tenant root; `Rooftop` and RooftopMembership narrow staff and operational scope. Relationship hooks and custom commands validate rooftop ownership for submitted IDs. The graph includes dealer groups, rooftops and memberships; makes/models, vehicles, images, history, condition and price records; inventory acquisition, stock, feed, merchandising and reconciliation records; leads and interactions; test drives and trade-ins; deals and approvals; financing applications and lender submissions/decisions; service appointments, service orders, repair lines/packages and parts; delivery work, tasks, audit/outbox events, and dealership profiles.
+| Path | What it holds |
+|---|---|
+| `features/keystone/models` | 71 registered lists (`models/index.ts`) |
+| `features/keystone/mutations` | Custom GraphQL queries and commands (`mutations/index.ts`) |
+| `features/keystone/lifecycle` | State machines, pricing, and the audit/outbox writer |
+| `features/platform` | Dealership operator desks under `/dashboard/platform` |
+| `features/dashboard` | Shared Keystone admin shell, sign-in, and generic list pages |
+| `features/storefront` | Public site and customer account |
+| `features/integrations` | Payment, financing, and inventory-channel adapters |
 
-Public routes cover inventory/detail/compare, contact, financing, service, test-drive, and trade-in intake. Operator routes under `/dashboard/platform` cover overview, vehicles, CRM, deals, delivery, finance, test drives, trade-ins, service, and analytics.
+## Tenancy and access
 
-## Main workflow
+- `DealerGroup` is the tenant root. A `Rooftop` is one store. Most operating lists carry a `rooftop` field and are filtered to the rooftops the user can reach.
+- Access comes from the user's `Role`. Operating permissions can also come from an active `DealerGroupMembership` (optionally all rooftops) or `RooftopMembership`, for that scope only. Memberships change only through `changeDealerMembership`, which writes a `MembershipAuditEvent`.
+- Some permissions are role-only: people, users, roles, settings, onboarding, API keys, and payments.
+- Leads, deals, approvals, and trade-ins are limited to the assigned salesperson unless the user has `canViewAllLeads` across all rooftops. Dealer cost needs inventory or financing management across all rooftops.
+- API keys (`ApiKey`) are owned by a user and limited to scopes: `read_inventory`, `write_inventory`, `write_leads`, `write_deals`, `write_service`, `read_reports`.
+- Most operational lists are command-only. Their Keystone create and update are denied, so writes go through named mutations. Each command writes a `DomainAuditEvent` and a `DomainOutboxEvent` in the same transaction, keyed by an idempotency key.
 
-A buyer browses a published vehicle and submits an inquiry, test-drive request, trade-in, finance inquiry, or service request. Staff qualify the lead, schedule work, and move a deal or service order through controlled internal steps. Sensitive financial inputs should be minimized and routed through a purpose-built secure boundary rather than copied into generic notes.
+## Data model
 
-## Bounded GraphQL operations
+| Area | Lists |
+|---|---|
+| Organization | User, Role, DealerGroup, Rooftop, DealerGroupMembership, RooftopMembership, MembershipAuditEvent, DealershipProfile, ApiKey, AuthenticationThrottle (unused, not in GraphQL) |
+| Inventory | Make, Model, Vehicle, VehicleImage, VehicleConditionReport, VehicleHistory, PriceHistory, InventoryAcquisition, InventoryAcquisitionEvent, InventoryStock, InventoryStockEvent, InventoryReconWorkItem, InventoryMerchandisingVersion, InventoryFeedRun, InventoryFeedError |
+| CRM | Customer, CustomerMergeEvent, CustomerHousehold, CustomerContactPreferenceEvent, Lead, LeadAssignmentEvent, LeadRoutingRule, CustomerInteraction, Task, SalesVisit, TestDrive, TradeIn |
+| Deals and finance | Deal, DealApproval, FinancingApplication, LenderSubmission, LenderDecision, FinanceProduct, FinanceProductQuote, FinanceMenuVersion, FinanceComplianceCheck, FinanceContractPackage, FinanceFundingCase, FinanceProductCancellation |
+| Delivery | DeliveryCase, WeOweItem |
+| Service and parts | ServiceAppointment, ServiceOrder, RepairOrderLineItem, ServiceLaborOperation, ServicePackage, PartsInventory, PartsMovement, PartsPurchaseOrder |
+| Payments and accounting | PaymentProvider, PaymentTransaction, PaymentRefund, PaymentProviderEvent, AccountingMapping, AccountingBatch, AccountingProviderResponse |
+| Reporting and system | SavedReport, ReportRun, RetentionPolicy, DomainAuditEvent, DomainOutboxEvent |
 
-Public intake mutations submit inquiries, test drives, trade-ins, financing, and service requests with rooftop scope and abuse controls. `operatorProjections`, `operatorWorkspaces`, and `inventoryWorkspace` provide task reads. Named commands cover lead ownership/activity, deal pencils and transitions, financing queue/decisions, inventory acquisition/stock/feed/merchandising/reconciliation, test-drive workflow, trade-in appraisal, service orders, tasks, membership changes, and delivery completion. Finance operations record applicant and lender workflow evidence; they do not underwrite or originate credit.
+A CRM `Customer` is separate from the login `User`. Public submissions find or create a Customer per rooftop by email or phone. A storefront account is linked to Customers only after it confirms its email with `confirmCustomerEmailVerification`.
 
-## Setup and onboarding
+## Main workflows
 
-Use a disposable PostgreSQL database. `runDealershipOnboarding` creates a synthetic dealer group, rooftop, membership, profile, and evaluation records. Run it against an isolated current database, verify that a second execution does not duplicate tenant identity, and inspect all seeded names, inventory, leads, applications, and appointments before publishing screenshots. The local seed is not a hosted demo.
+**Inventory.** A unit enters through `intakeInventoryVehicle` (one step) or `startInventoryAcquisition` then `transitionInventoryAcquisition` (appraised, approved, purchased, arrived, reconditioning, frontline) and `establishInventoryStock`. Staff move stock, record costs, open and close recon work, edit listing content and photos, then submit and approve or reject merchandising. A vehicle shows on the storefront only when its current revision is approved, recon is complete, it is frontline, and its status is `available`. `recordInventoryFeedRun` records a feed run. Price changes append `PriceHistory`.
+
+**Leads.** Public forms create a Lead and the matching record. Staff can open a lead (`openLead`), edit it (`updateLeadDetails`), route it by rule (`routeLead`) or by hand (`transferLeadOwnership`), log interactions, add and complete tasks, run cadences, schedule sales visits, and close it won or lost (`transitionLead`).
+
+**Deals.** `createDealPencil` starts a deal at `pencil`, with tax and doc fee from the dealership profile. Staff save, present, and accept the worksheet (cash, finance, or lease), pick a lender offer for finance or lease, then move the deal through `submitted`, `approved`, `financed`, and `delivered`, or cancel it. Submitting reserves the vehicle. Delivery marks it sold.
+
+**Finance and F&I.** Applications are queued with the `operator-recorded` adapter and decisions are entered with `recordLenderDecision`. The finance desk records product quotes, the F&I menu and customer choice, compliance checks (identity, OFAC, red-flag, privacy), the contract package, prerequisite review, funding, cash deposits (`recordCashDealDeposit`), and product cancellations.
+
+**Delivery.** `manageDeliveryCase` schedules, records arrival and the checklist, takes the customer acknowledgment, or cancels. `completeDealDelivery` delivers the deal. `manageWeOweItem` tracks promises after the sale.
+
+**Service and parts.** Appointments move through `transitionServiceAppointment`. `openServiceOrder` opens a repair order, which moves `estimate`, `approved`, `in-progress`, `completed`, `invoiced`, `paid`. Staff add, edit, and remove labor, part, and sublet lines, set tax, and run labor operations. Parts have a movement ledger and purchase orders. Receiving a purchase order posts receipt movements.
+
+**Payments and accounting.** `createPaymentCheckout` creates a checkout for an approved deal or an invoiced repair order. Webhooks update transactions and refunds. `stageAccountingBatch` builds a balanced batch from mappings, and `manageAccountingBatch` records posting, failure, reconciliation, and lock.
+
+## Named GraphQL operations
+
+Custom operations are declared in `features/keystone/mutations/index.ts`.
+
+| Group | Operations |
+|---|---|
+| Storefront reads | `publicInventoryVehicles`, `publicInventoryVehicle`, `publicInventoryVehicleRecord`, `publicInventoryCount`, `storefrontProfile` |
+| Public submissions | `submitInquiry`, `submitTestDrive`, `submitTradeIn`, `submitFinancing`, `submitServiceBooking` |
+| Customer account | `registerCustomerAccount`, `requestCustomerEmailVerification`, `confirmCustomerEmailVerification`, `cancelCustomerBooking`, `rescheduleCustomerBooking`, `customerRequestHistory`, `customerRequestDetail`, `customerPurchases`, `customerServiceHistory`, `customerServiceOrder`, `customerPayments`, `customerEmailLinkStatus` |
+| Workspace reads | `inventoryWorkspace`, `crmWorkspace`, `dealDeskWorkspace`, `dealWorkspace`, `dealLenderOffers`, `financeWorkspace`, `deliveryWorkspace`, `fixedOpsWorkspace`, `accountingWorkspace`, `operationalReport`, `auditSearch`, `domainTimeline`, `customerDuplicateCandidates` |
+| Inventory | `intakeInventoryVehicle`, `startInventoryAcquisition`, `transitionInventoryAcquisition`, `establishInventoryStock`, `moveInventoryStock`, `recordInventoryCost`, `openInventoryReconWorkItem`, `transitionInventoryReconWorkItem`, `updateInventoryMerchandisingDraft`, `updateInventoryVehicleDetails`, `submitInventoryMerchandising`, `decideInventoryMerchandising`, `recordInventoryFeedRun`, `addInventoryVehiclePhoto`, `arrangeInventoryVehiclePhotos`, `removeInventoryVehiclePhoto` |
+| CRM | `openLead`, `updateLeadDetails`, `transitionLead`, `recordLeadInteraction`, `createLeadTask`, `completeTask`, `transferLeadOwnership`, `routeLead`, `configureLeadRoutingRule`, `enrollLeadCadence`, `advanceLeadCadence`, `manageSalesVisit`, `updateCustomerContact`, `updateCustomerCommunicationPreferences`, `mergeCustomers`, `linkCustomerHousehold`, `unlinkCustomerHousehold`, `updateTestDriveWorkflow`, `createWalkInTradeIn`, `recordTradeInAppraisal` |
+| Deals and delivery | `createDealPencil`, `saveDealWorksheet`, `presentDealWorksheet`, `acceptDealWorksheet`, `selectDealLenderOffer`, `reopenDealWorksheet`, `setDealTradeIn`, `transitionDeal`, `manageDeliveryCase`, `manageWeOweItem`, `completeDealDelivery` |
+| Finance | `queueFinancingApplication`, `recordLenderSubmissionStatus`, `recordLenderDecision`, `openFinanceFollowUp`, `configureFinanceProduct`, `recordFinanceProductQuote`, `presentFinanceMenu`, `decideFinanceMenu`, `recordFinanceComplianceCheck`, `manageFinanceContractPackage`, `reviewFinancePrerequisites`, `manageFinanceFundingCase`, `recordCashDealDeposit`, `recordFinanceProductCancellation` |
+| Service and parts | `transitionServiceAppointment`, `openServiceOrder`, `recordServiceOrderEvidence`, `addServiceOrderLineItem`, `updateServiceOrderLineItem`, `removeServiceOrderLineItem`, `setServiceOrderTax`, `transitionServiceOrder`, `manageLaborOperation`, `configurePart`, `recordPartsMovement`, `managePartsPurchaseOrder` |
+| Payments and accounting | `createPaymentCheckout`, `requestPaymentRefund`, `reconcilePaymentTransaction`, `handlePaymentProviderWebhook`, `configureAccountingMapping`, `stageAccountingBatch`, `manageAccountingBatch` |
+| Organization and reporting | `changeDealerMembership`, `configureRetentionPolicy`, `saveOperationalReport`, `runSavedReport`, `queueDueSavedReports`, `ensureDealershipOnboardingRecord`, `updateActiveUser`, `redirectToInit` |
+
+Lists that are not command-only (for example Make, Model, ServicePackage, Role, DealerGroup, Rooftop, DealershipProfile, PaymentProvider, ApiKey, VehicleConditionReport, VehicleHistory) also use Keystone's generated CRUD.
 
 ## Integrations
 
-The current payment decision is N/A because deal and service fields record externally handled facts. There is no payment adapter directory. Inventory-feed and financing/lender models/routes are local intake and evidence boundaries; no lender, credit bureau, DMS, OEM, e-signature, accounting, identity, or payment adapter was found. Do not claim external execution until adapter authentication, consent, mapping, retries, reconciliation, and privacy controls are implemented and tested.
+| Boundary | What the code does |
+|---|---|
+| Payments | `features/integrations/payment` has `stripe` and `manual` adapters. Stripe creates Checkout Sessions, refunds, and verifies webhooks with `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Webhooks arrive at `POST /api/payment-webhooks/{providerCode}`. The manual adapter does not accept webhooks. |
+| Financing | Only the `operator-recorded` adapter exists. Queuing an application sends no external request. |
+| Inventory channels | `public-inventory-feed` (built in) and `manual-marketplace-export` (operator-recorded). Neither sends an external request. `GET /api/inventory-feed` returns listed vehicles as JSON for the served rooftop. |
+| Accounting | Mappings and batches accept only the `operator-recorded` provider. No GL system is called. |
+| Email | SMTP through nodemailer for password reset and customer email verification. |
+| File storage | S3-compatible storage for vehicle images. |
+| AI assistant | `/api/completion` uses OpenRouter and calls the app's own MCP endpoint at `/api/mcp-transport/http` with the user's session cookie. MCP tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`. |
 
-## Security and deployment
+No credit bureau, lender network, DMS, OEM, e-signature, identity-verification, or vehicle-history provider adapter exists in the source.
 
-Protect income, credit-range, contact, vehicle-history, deal, approval, and service records. Deal and approval transitions need immutable evidence and restricted raw edits. Railway builds then migrates at start. Current source has targeted onboarding/payment/platform checks, but the repository README's `env.example` instruction points to a missing file and must not be copied as a setup guarantee.
+## Limitations
 
-Before deployment, verify public-intake rate/abuse controls, cross-group/rooftop and membership denial, relationship changes, financing-field privacy, inventory acquisition/feed reconciliation, deal/service terminal states, reviewed migrations, audit/outbox, restore, and responsive customer/operator routes. Current source does not underwrite credit, originate loans, settle payments, provide external vehicle history, or establish dealer/lender/compliance certification.
+- The storefront serves one rooftop: the oldest active rooftop in an active dealer group. Public submissions and the feed reject any other rooftop slug.
+- Customers cannot buy, reserve, or pay a deposit online. `createPaymentCheckout` is staff-only.
+- `[...slug]` storefront pages always return not found. There is no CMS list.
+- `DomainOutboxEvent` rows are written as `pending`. No dispatcher in this repository delivers them.
+- Queued report runs are processed only when someone runs them. There is no background worker.
+- Retention policies can be configured, but nothing reads them to delete data.
+- F&I product cancellations record a refund amount. The money refund is a separate payment refund; no field links the two.
+- Seeded payment providers include Stripe marked as installed. It fails until Stripe keys are set.
+- Onboarding adds lists, catalogs, and inventory only. Leads, deals, applications, appointments, and payments start empty.
+- The repository has no license file and no `test` npm script. Test files under `tests/` use Node's test runner.

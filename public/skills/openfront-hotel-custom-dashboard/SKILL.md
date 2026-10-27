@@ -14,12 +14,18 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-hotel>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Hotel-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route file only re-exports a screen from `features/platform/<slice>/screens` (approvals, guest governance, and security screens live in `features/platform/guest-governance`). Navigation and per-page permissions are in `features/platform/lib/navigation.ts`.
+- Current platform routes: front-desk, reservations, housekeeping, analytics, property, rooms, rate-plans, messages, guests and `guests/[id]`, payments, payouts, receivables, disputes, cashier, approvals, guest-governance, folios, channels, groups, maintenance, payment-providers, outbox, security. Shortcuts `/dashboard/reservations`, `/dashboard/housekeeping`, and `/dashboard/guests/[id]` render the same screens. Other lists use the generic `/dashboard/[listKey]` pages.
+- Auth pages outside the admin layout: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signin/mfa`, `/dashboard/reset`, `/dashboard/signup`, `/dashboard/no-access`. Onboarding: `features/platform/onboarding` and the `runHotelOnboarding` mutation.
+- Server contract: `features/keystone/models/**` (40 lists registered in `models/index.ts`), `features/keystone/access.ts`, `features/keystone/mutations/index.ts` (custom schema), staff projections in `features/keystone/queries/hotelOperations.ts`, business commands in `features/keystone/{bookings,cashier,channels,folios,groups,guest-governance,operations,payments,rates,receivables,refunds,security}`, and `schema.graphql`.
+- Staff operations are named `hotel*` queries (for example `hotelFrontDesk`, `hotelReservationCalendar`, `hotelFolioOperations`, `hotelCashierOperations`, `hotelReceivableOperationsPage`) and commands such as `createStaffBooking`, `amendStaffBooking`, `assignRoomToBooking`, `updateBookingStatus`, `postFolioEntry`, `reverseFolioEntry`, `recordBookingPayment`, `runHotelNightAudit`, `manageHotelCashier`, `manageHotelReceivable`, `manageHotelPayout`, `updateHotelApproval`, and `configureHotelPaymentProvider`. Most take an `idempotencyKey`.
+- `Booking`, `ReservationLineItem`, and `FolioEntry` deny create, update, and delete through generated CRUD; changes go through named commands. Cashier shifts, receivables, approvals, stay services, outages, relocations, the stay register, and governance requests are stored as `HotelAuditEvent` rows, not their own lists.
+- One property per database: `HotelSettings` is a singleton and roles are global. There is no organization or property tenancy model.
+- The MCP transport at `/api/mcp-transport/[transport]` returns HTTP 410, so the dashboard AI chat at `/api/completion` cannot load its tools.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is rooms/rates, reservations, front desk, guests, folios/payments, housekeeping, maintenance, channels, groups, and night audit. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is rooms/rates, reservations, front desk, guests, folios/payments, cashier, receivables, payouts, disputes, approvals, guest governance, housekeeping, maintenance, channels, groups, outbox, and night audit. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 

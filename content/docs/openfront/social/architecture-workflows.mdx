@@ -1,0 +1,127 @@
+---
+title: Social architecture and workflows
+description: Keystone lists, owner scoping, the item publish lifecycle, studio commands, public queries, privacy review, and roles.
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Application surfaces
+
+| Surface | Routes | Audience |
+|---|---|---|
+| Landing and account | `/`, `/account/signin`, `/account/signup` | Visitors and creators |
+| Public site | `/[handle]`, `/[handle]/[collection]`, `/[handle]/[collection]/[slug]`, `/feeds/[handle]`, `/sitemap.xml`, `/media/[id]` | Visitors |
+| Platform | `/dashboard/platform/*`, `/dashboard/onboarding` | Creators and people managers |
+| Generic admin | `/dashboard/[listKey]` | Users and roles; most lists are hidden from it |
+| API | `/api/graphql`, `/api/creator-export`, `/api/completion` | Dashboard and server actions |
+
+The older `/dashboard/studio/*` routes still exist and redirect to their platform equivalents.
+
+## Data model
+
+Ten lists are registered in `features/keystone/models/index.ts`.
+
+| Domain | List | Key fields and relationships |
+|---|---|---|
+| People | `User` | name, email, password (12 or more characters, common passwords rejected), `onboardingStatus`; `role` to `Role`; owns one `PersonalSite`. Delete is blocked while the user owns a site or retained publications. |
+| People | `Role` | `systemKey` (`creator` is the stable creator identity), `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canUseStudio` |
+| Site | `PersonalSite` | unique `handle` (reserved names blocked), displayName, bio, location, website, avatarUrl, `isPublished`, theme (`paper`, `midnight`, `forest`), sanitized SVG `logoIcon`, `logoColor`, `publishingVersion`; `owner` to `User` (required, unique) |
+| Site | `Collection` | title, slug (unique per site, stable after create), description, `kind` (notes, writing, runs, projects, albums, films, books, links, custom), `visibility` (public, unlisted, private), position, `publishingVersion`; `site` to `PersonalSite` |
+| Content | `Item` | title, slug (unique per collection), summary, markdown body, externalUrl, `type` (post, note, run, project, album, film, book, link, custom), `status` (draft, published, archived), occurredAt, publishedAt, firstPublishedAt, `contentVersion`, `publishGeneration`; `collection` to `Collection` |
+| Content | `MediaAsset` | image (S3 `my_images`), filename; `site` to `PersonalSite`. Served at `/media/[id]` as a redirect to a fresh presigned URL. |
+| Publishing | `Publication` | immutable snapshot (title, slug, summary, body, url, type), `snapshotProvenance`, `destination` (personal_site, x, instagram, threads), `status` (queued, published, not_configured, failed, cancelled), revision, consent binding; links to `Item`, `ConnectedAccount`, `consentedBy` user, and jobs |
+| Publishing | `PublishJob` | status (queued, processing, succeeded, failed, cancelled), attempts, maxAttempts, errorMessage; `publication` to `Publication` |
+| Publishing | `ConnectedAccount` | provider (x, instagram, threads), accountLabel, status (unconfigured, pending_connection, connected, revoked, error), `publishingVersion`; `site` to `PersonalSite` |
+| Evidence | `SocialEvent` | unique `eventKey`, action, targetId, evidence JSON, occurredAt; actor and site. Append-only, no generic access. |
+
+## Ownership and access
+
+Every creator list is query-only for `canUseStudio` roles and filtered by `rules.own*` in `features/keystone/access.ts` (for example, items match `collection.site.owner.id` equal to the session user). Generic create, update, and delete are closed. All writes go through one GraphQL mutation:
+
+```graphql
+mutation {
+  studioCommand(command: "publishItem", input: { itemId: "...", expectedVersion: 3, expectedGeneration: 1, expectedStatus: "draft" }) {
+    ok
+    code
+    field
+    message
+    value
+  }
+}
+```
+
+Each command locks the owner's site row (`withPublishingSite`, `FOR UPDATE`), checks the version the user reviewed (an optimistic fence on `publishingVersion`, `contentVersion`, `publishGeneration`, and status), writes, and appends a `SocialEvent`. A stale version returns a conflict instead of overwriting. Results never return raw rows or exception text.
+
+### Studio commands
+
+| Group | Commands |
+|---|---|
+| Site | `createSite`, `updateSite`, `deleteSite` |
+| Collections | `createCollection`, `updateCollection`, `reorderCollection`, `removeEmptyCollection` |
+| Items | `createItem`, `updateItem`, `publishItem`, `unpublishItem`, `archiveItem`, `restoreItem` |
+| Destinations | `addDestination`, `updateDestinationLabel`, `revokeDestination`, `requestExternal`, `cancelExternal` |
+| Privacy | `requestPrivacy` |
+
+The schema also registers older named mutations (`createMyPersonalSite`, `publishPersonalItem`, `requestExternalPublication`, and others) that call the same functions. `onboardMyPersonalSite` creates the demo site.
+
+## Workflows
+
+### Item publish lifecycle
+
+1. **Draft.** `createItem` adds a draft to a collection. `updateItem` edits it and increments `contentVersion`. Archived items cannot be edited or published.
+2. **Publish.** `publishItem` creates a new canonical `Publication` with destination `personal_site` and an immutable snapshot of the current content. A previous canonical publication for the item is cancelled.
+3. **Republish.** Editing a published item creates unpublished changes; publishing again creates a new snapshot.
+4. **Unpublish.** `unpublishItem` returns the item to draft and cancels the canonical publication.
+5. **Archive and restore.** `archiveItem` works only from draft; `restoreItem` returns it to draft.
+
+What a visitor sees also depends on the site and collection: the site must be published (`isPublished`), and the collection must be public (listed and in RSS) or unlisted (served by link, `noindex`). Private collections are not served. Hiding a site or moving a collection off public cancels undispatched external intents.
+
+### Collections
+
+Create a collection, edit its name, kind, and visibility, reorder it on the profile, and remove it only when it has no items. Slugs are stable after creation.
+
+### Destinations and consent
+
+1. `addDestination` creates a `ConnectedAccount` label with status `unconfigured`.
+2. `requestExternal` records consent for the live version of an item. It requires an idempotency key and the reviewed site, collection, canonical publication, and account versions. It creates a `Publication` with status `not_configured` and one failed, zero-attempt `PublishJob`.
+3. `cancelExternal` cancels an intent that was never dispatched.
+4. `revokeDestination` blocks new intents and cancels undispatched ones.
+
+### Privacy
+
+1. A creator files `request_access`, `request_correction`, or `request_erasure` from Your data (`requestPrivacy`). The request is a `privacy.requested` event.
+2. A people manager sees it in `privacyRequestQueue` and calls `reviewPrivacyRequest` with Granted or Declined and a note.
+3. For a granted erasure, `erasePrivacyRequest` deletes the creator's site, collections, items, publications, jobs, connected accounts, and media asset rows, and replaces the user's name, email, and password, removes the role, and clears the evidence on the creator's own events. The user row is kept because consent records reference it.
+
+Creators export their records page by page through `socialPrivateExport` (events, privacy, items, publications, destinations), downloadable from `/api/creator-export`.
+
+### Start over
+
+`deleteSite` removes a site only when all its publications are flagged as samples, so a demo site can be deleted and setup run again. Sites with real published versions keep their history.
+
+## GraphQL queries
+
+| Query | Purpose |
+|---|---|
+| `studioLibrary`, `studioCollection`, `studioRecord`, `studioHistory`, `creatorWorkspace` | Owner-scoped studio reads |
+| `publicPersonalSite`, `publicPersonalCollection`, `publicPersonalItem`, `publicPersonalFeed`, `publicSitemap`, `publicHandleRedirect` | Public reads of published, exposable content only |
+| `creatorDirectory`, `privacyRequestQueue` | People manager reads |
+| `socialPrivateExport` | The signed-in creator's own export |
+
+## Roles
+
+| Capability | Effect |
+|---|---|
+| `canAccessDashboard` | Enter `/dashboard` |
+| `canUseStudio` | Read own lists and run studio commands |
+| `canManageOnboarding` | Run demo onboarding |
+| `canManagePeople` | Create and delete users, add creators, review and carry out privacy requests |
+| `canSeeOtherPeople`, `canEditOtherPeople` | Read or update other users; also opens the creator directory |
+| `canManageRoles` | Manage roles |
+
+The first user gets an `Admin` role with every capability. The `creator` role has dashboard, studio, and onboarding access only.
+
+<Callout type="info">
+`SocialEvent` has no generic GraphQL access. It is only readable through the owner's export, the activity page, and the admin privacy queue.
+</Callout>

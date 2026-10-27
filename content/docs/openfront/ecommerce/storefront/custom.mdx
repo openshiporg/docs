@@ -6,3 +6,39 @@ description: Give an LLM the storefront skill to adapt an Openfront built-in sto
 To create a custom storefront, copy the skill and give it to your LLM. It will first ask which Openfront product and codebase you are using, whether you want to adapt the built-in storefront or build a separate client, what you dislike about the current storefront, what should stay, and what the replacement should feel like.
 
 The skill tells the LLM to inspect that product's built-in storefront, routes, feature slices, GraphQL calls, generated schema, access rules, session behavior, and provider boundaries before proposing work. Tell it the customer journeys you need, the parts of the built-in experience you want changed, and any design, content, device, accessibility, or deployment requirements.
+
+Skill file: [`/skills/openfront-custom-storefront/SKILL.md`](/skills/openfront-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Source: [github.com/openshiporg/openfront](https://github.com/openshiporg/openfront). Routes live under `app/(storefront)/[countryCode]/`. Logic lives in `features/storefront` (`screens`, `modules`, `lib/data`).
+
+| Route | Customer journey |
+|---|---|
+| `/` | Home |
+| `/store` | All published products, sorted by price (`getProductsSortedByPrice`) |
+| `/categories/[...category]`, `/collections/[handle]` | Category and collection listings |
+| `/products/[handle]` | Product detail |
+| `/cart` | Cart and discount codes |
+| `/checkout` | Address, shipping, payment, review |
+| `/order/confirmed/[id]` | Confirmation (guests use the order `secretKey`) |
+| `/account` (login slot) | Sign in and register |
+| `/account` (dashboard slot) | Overview, profile, addresses, orders and order detail |
+| `/account/invoicing`, `/account/invoices` | Business account request, balance, invoice creation and payment, customer token; paid invoices |
+| `/account/checkout-link` | Legacy checkout link (does not work with current cart access rules) |
+
+## Named operations a storefront uses
+
+- Region and catalog: `activeCartRegion(countryCode)`, `getProductsSortedByPrice`, and the generated `products`, `productCategories`, `productCollections` and `regions` queries. Non-staff callers only see published products and active categories.
+- Cart: `createActiveCart`, `activeCart`, `updateActiveCart`, `updateActiveCartLineItem`, `addDiscountToActiveCart`, `removeDiscountFromActiveCart`.
+- Shipping and payment: `activeCartShippingOptions`, `addActiveCartShippingMethod`, `activeCartPaymentProviders`, `createActiveCartPaymentSessions`, `initiatePaymentSession`, `setActiveCartPaymentSession`.
+- Completion: `completeActiveCart(cartId, paymentSessionId)`.
+- Customer: `updateActiveUser`, `updateActiveUserPassword`, `createActiveUserAddress`, `updateActiveUserAddress`, `deleteActiveUserAddress`, `getCustomerOrders`, `getCustomerOrder(orderId, secretKey)`.
+- Business accounts: `getCustomerAccounts`, `getCustomerAccount`, `getUnpaidLineItemsByRegion`, `createInvoiceFromLineItems`, `activeInvoice`, `createInvoicePaymentSessions`, `initiateInvoicePaymentSession`, `setInvoicePaymentSession`, `completeInvoicePayment`, `getCustomerPaidInvoices`, `regenerateCustomerToken`.
+
+## Rules for a separate client
+
+- Keep the signed cart proof from `createActiveCart` and send it as the `x-openfront-cart-proof` header. A cart ID alone is not accepted.
+- Do not send prices or totals. The server computes them, and `completeActiveCart` checks the provider amount against the cart.
+- Use publishable Stripe or PayPal keys from `Store.paymentProviders` or your environment. Secret keys stay on the server.
+- Gift-card redemption and manual-tender checkout are not supported by the current checkout.

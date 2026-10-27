@@ -1,59 +1,134 @@
 ---
 title: Openfront Rental
-description: Professional short-term accommodation listings, quotes, reservations, guest trips, host operations, channels, and payouts.
+description: Short-term accommodation listings, quotes, reservations, guest trips, host operations, calendar exchange, and payments.
 icon: KeyRound
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-[Source](https://github.com/openshiporg/openfront-rental) · [Catalog](https://openship.org/products/openfront-rental)
+[Source](https://github.com/openshiporg/openfront-rental) · [Live demo](https://rental.openship.org) · [Catalog](https://openship.org/products/openfront-rental)
 
-Openfront Rental is a professional short-term accommodation and host-property-management product. Current models and routes are accommodation-specific: properties and listings, units/bedrooms/beds, guest search and quote checkout, reservations and trip links, stay agreements, host calendar/pricing/inbox/tasks, channels, payments, payouts, reviews, and owner statements.
+Openfront Rental is a self-hostable app for people who manage short-term accommodation. Guests search stays, get a quote, reserve, sign a stay agreement, and follow a private trip link. Hosts use the dashboard for properties, listings, calendar, pricing, reservations, guests, inbox, tasks, payments, payouts, reports, channels, reviews, and store settings.
+
+It is built with Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreSQL. To install it, see [Getting started](/docs/openfront/rental/getting-started).
 
 <Callout type="warn">
-Historical equipment-rental names remain in old migration/audit history, but they are not the current active model or route graph. Current limitations are live-runtime concerns: no OTA adapter, no customer card processor, unproved booking concurrency, manual settlement, and deployment-specific host/guest/token verification.
+Card payments use Stripe in test mode only. Live keys are rejected. No Airbnb, Vrbo, Booking.com, or other OTA adapter exists. Calendar exchange is iCalendar availability only. The outbox has no delivery target installed. See [Limitations](#limitations).
 </Callout>
 
 ## Guest and host surfaces
 
-Guest routes are `/search`, `/stays/[slug]`, `/checkout/[quoteToken]`, `/trips/[token]`, and `/agreements/[token]`. A guest searches published listings, requests a server-owned quote, creates a reservation, follows token-bound trip information, signs a stay agreement, and can request cancellation through the bounded lifecycle.
+The storefront lives at `/` and is built from `features/storefront`. Its main routes are `/search`, `/stays/[slug]`, `/collections`, `/compare`, `/checkout/[quoteToken]`, `/trips`, `/trips/[token]`, `/agreements/[token]`, `/messages/[token]`, `/account`, `/help`, and `/policies`. See [External storefronts](/docs/openfront/rental/external-storefront) for the full table.
 
-Host/operator routes under `/dashboard/platform` cover properties, listings, calendar, pricing, reservations, guests, inbox, channels, payments, payouts, reviews, agreements, and property tasks. These are professional host operations, not equipment inventory or ecommerce product pages.
+The host operator dashboard lives at `/dashboard`. Product pages are under `/dashboard/platform` and are built from `features/platform`. The generic Keystone list and item screens (`/dashboard/[listKey]`) come from `features/dashboard`. See [External dashboards](/docs/openfront/rental/external-dashboard) for the full table.
 
-## Schema and tenancy
+## Models and tenancy
 
-`HostOrganization` and active `HostMembership` are the tenant roots. Property, listing, accommodation unit, guest, quote, reservation/line, agreement, payment, payout, channel, task, review, owner, and conversation records carry host organization scope. Access helpers validate active membership, prevent host moves, and verify that submitted related-record IDs belong to the same host—not only that the previous row was visible.
+`HostOrganization` is the tenant root. `HostMembership` links a user to a host with a role (`owner`, `admin`, `manager`, `operations`, or `finance`) and a status (`invited`, `active`, `suspended`). Host-scoped records are visible to a user only through an active membership in the record's host. Users whose role has `canManagePeople` or `canManageRoles` are treated as platform administrators and see all hosts.
 
-The accommodation graph includes properties/addresses, units, bedrooms/beds, amenities, listings/media, rules, rates/seasonal rates/fees/taxes, quotes, reservations and immutable line snapshots, guest parties/profiles, agreements, conversations/messages, calendar blocks, channel listings/reservations/sync events, property tasks, reviews, deposits/damage claims, payments/refunds/payouts/providers/webhook events, owners/assignments/statements, and marketplace settings.
+Role permissions come in read/manage pairs: properties, listings, calendar, pricing, reservations, guests, messages, payments, payouts, reports, channels, and reviews. Other flags are `canAccessDashboard`, `canManageSettings`, `canManageOnboarding`, `canManagePeople`, `canManageRoles`, `canSeeOtherPeople`, and `canEditOtherPeople`.
 
-Host scope is a source boundary, not runtime proof. Test creation, relationship changes, organization switching, inactive membership, and cross-host IDs across every generated and custom path.
+Current models in `features/keystone/models`:
 
-## Bounded queries and commands
+| Area | Models |
+|---|---|
+| People and tenancy | `User`, `Role`, `HostOrganization`, `HostMembership`, `MarketplaceSettings` |
+| Properties | `Property`, `PropertyAddress`, `PropertyOwner`, `PropertyOwnerAssignment`, `AccommodationUnit`, `Bedroom`, `Bed`, `Amenity` |
+| Listings | `Listing`, `ListingMedia`, `StayCollection`, `HouseRule`, `CalendarBlock` |
+| Pricing and policy | `RatePlan`, `SeasonalRate`, `FeeDefinition`, `TaxRule`, `CancellationPolicy` |
+| Booking | `StayQuote`, `GuestProfile`, `GuestParty`, `Reservation`, `ReservationAmendment`, `ReservationLineItem`, `StayAgreement` |
+| Money | `SecurityDeposit`, `DamageClaim`, `Payment`, `PaymentProvider`, `PaymentWebhookEvent`, `Refund`, `Payout`, `OwnerStatement`, `OwnerStatementLine` |
+| Guest contact and work | `Conversation`, `Message`, `Review`, `TaskRule`, `PropertyTask` |
+| Channels and jobs | `ChannelConnection`, `ChannelListing`, `ChannelReservation`, `ChannelSyncEvent`, `DataExchangeJob`, `OutboxEvent` |
 
-Public projections are `searchStays`, `publicMarketplaceSettings`, `publicListing`, `publicStayQuote`, `publicTrip`, and `publicStayAgreement`. They expose published/owned facts through exact slugs or opaque tokens instead of raw host records.
+`MarketplaceSettings` is a single record for the public store identity: name, tagline, contact details, policy links, currency, locale, timezone, logo, accent color, and whether test bookings are allowed.
 
-Named mutations include `quoteStay`, `createStayReservation`, `requestStayCancellation`, `signStayAgreement`, `transitionStayReservation`, `initiateStayPayment`, `captureStayPayment`, and onboarding status. Reservation and quote snapshots preserve accepted dates, rates, fees, taxes, guest counts, currency, and listing facts. Host calendar actions remain scoped model/action operations rather than one broad workspace projection.
+Quotes and reservation line items keep a snapshot of the accepted dates, rates, fees, taxes, deposit, guest counts, and currency. Later rate changes do not rewrite them.
 
-Generated CRUD must not bypass host ownership, quote expiry, reservation snapshots, availability locks, agreement tokens, operator settlement, or payment webhook state. Prove simultaneous quote/reservation behavior and idempotent replay against the deployed database before accepting bookings.
+## Named GraphQL operations
 
-## Onboarding and synthetic runtime
+Custom operations are merged in `features/keystone/mutations/index.ts`. The API is served at `/api/graphql`.
 
-Current `seed.json` creates Commonstay Collective accommodation data: one host organization and membership, properties/listings, units/bedrooms/beds, amenities, guests, reservations, calendar blocks, tasks, channel mappings, messages, reviews, payouts, owner statements, and manual payment evidence.
+### Public and guest
 
-`seedAccommodationPlatform.ts` is restricted to the named `runtime_rental` local database and writes through a serializable transaction with reservation snapshot/line creation. `runAccommodationOnboardingWorkflow` controls status and cleanup. Run the flow twice on an isolated database and inspect stable host ownership, listing/quote/reservation relations, token access, calendar blocks, agreement state, and seed cleanup. It is not a hosted accommodation service or provider connection.
+| Kind | Operations |
+|---|---|
+| Queries | `publicMarketplaceSettings`, `searchStays`, `publicListing`, `publicStayAvailability`, `publicStayQuote`, `publicTrip`, `publicStayAgreement`, `publicGuestThread`, `myGuestAccount`, `guestPasswordResetAvailable` |
+| Booking | `quoteStay`, `createStayReservation`, `recoverStayCheckout`, `requestStayCancellation`, `signStayAgreement` |
+| Card payment (test mode) | `startGuestStayPayment`, `completeGuestStayPayment` |
+| Guest account and messages | `registerGuestAccount`, `updateMyGuestProfile`, `changeGuestEmail`, `changeGuestPassword`, `openAccountTrip`, `recoverStayTrip`, `claimStayTrip`, `submitGuestInquiry`, `replyToGuestThread`, `sendTripMessage`, `submitStayReview` |
 
-## Payments and channels
+Public reads use exact slugs or opaque tokens. Trip, agreement, and message links use 48-character hex tokens.
 
-The enabled seed provider is manual `pp_system_default`, intended for operator-recorded settlement. A signed-test provider exists to exercise webhook authentication; it is not a real customer processor. Current source does not establish Stripe, PayPal, bank transfer, deposit custody, payout rails, chargebacks, or customer card checkout.
+### Host
 
-Channel connection/listing/reservation/sync models are local integration state. No Airbnb, Vrbo, Booking.com, Expedia, or other OTA adapter is implemented by current source. A configured channel or synthetic sync row does not prove authentication, availability exchange, reservation import, cancellation, retries, or reconciliation.
+| Area | Operations |
+|---|---|
+| Reservations | `transitionStayReservation`, `reassignStayReservation`, `amendConfirmedStay`, `cancelStayQuote` |
+| Payments and refunds | `initiateStayPayment`, `captureStayPayment`, `refundStayPayment` |
+| Deposits and claims | `transitionSecurityDeposit`, `createStayDamageClaim`, `transitionDamageClaim` |
+| Owners | `generateOwnerStatement`, `transitionOwnerStatement`, `ownerFinanceSummary` |
+| Tasks | `createOperationsTask`, `transitionPropertyTask`, `runPropertyTaskRules` |
+| Calendar | `importListingCalendar`, `exportListingCalendar` |
+| Reports | `hostOperationsReport`, `exportHostArchive`, `permittedHostOrganizations`, `listingReadinessIndex` |
+| Outbox | `deliverOutboxEvents` |
+| Onboarding | `rentalOnboarding`, `updateOnboardingStatus`, `redirectToInit` |
 
-Any provider addition needs code-owned adapter selection, unreadable credentials, server-derived amounts, signed raw-body callbacks, replay IDs, durable attempts, cancellation/refund mapping, and operator reconciliation. Calendar/channel updates must not override accepted reservation snapshots or create double bookings.
+`hostStayCommand(command, input)` is the single entry point most dashboard actions use. Its commands are: `transition`, `amend`, `reassign`, `listing_allocate`, `party_amend`, `party_invites_amend`, `payment_record_manual`, `payment_cancel_attempt`, `refund_create`, `refund_record_manual`, `refund_process`, `refund_decline`, `refund_assess`, `deposit`, `claim_create`, `claim_transition`, `agreement_void`, `agreement_reissue`, `conversation_reply`, `conversation_status`, `conversation_link_revoke`, `conversation_link_reissue`, `review_moderate`, and `catalog_transition`. It requires a signed-in user and returns `{ ok, message, data }`.
 
-## Deployment and current limitations
+Generated Keystone CRUD still exists for every model. Reservation, payment, and refund state should change through these commands, not through raw updates.
 
-The repository uses Node.js/PostgreSQL and Railway's build-then-migrate-at-start shape. The checked-in lint script invokes `next lint` under Next.js 16 and is not a valid gate until the owning source migrates it to the ESLint CLI. Do not report lint as passing based on that script.
+## Onboarding
 
-Before real guest data, run current migrations, schema/type/tests/build, cross-host negatives, token expiry/revocation, simultaneous booking, manual-settlement authorization, signed-test webhook replay, cancellation, channel outage, payout/statement arithmetic, backup restoration, responsive browser, monitoring, and incident checks against the exact source/deployment.
+Onboarding runs from the dashboard. It calls `rentalOnboarding` with `mode` set to `create` (one item at a time), `verify`, or `complete`. The caller needs `canManageOnboarding`. Each item runs in a serializable transaction and is created or reused, so a second run does not duplicate records.
 
-Current source does not provide equipment-rental behavior, customer card processing, OTA synchronization, payout execution, deposit custody, identity verification, property licensing, tax remittance, guest screening, insurance, physical access, or operational certification. The host graph is stronger than the stale cutover warning it replaces, but payment, provider, concurrency, security, privacy, accessibility, and jurisdiction-specific obligations still require independent implementation and verification.
+There are three templates:
+
+- **Minimal**: one home (Pineglass) with its amenities, collection, one guest, and one stay.
+- **Full**: the whole Housekind sample portfolio from `features/platform/onboarding/lib/seed.json`. That is store settings, the Housekind Collective host, amenities, collections, five properties with units and listings, a cancellation policy, house rules, rates, calendar blocks, guests, sample reservations, tasks, owner statement and payout records, a manual payment provider, a Stripe card provider record, and one availability-only iCalendar connection.
+- **Custom**: the full template merged with your own JSON, validated by a schema.
+
+The final step checks readiness for records that onboarding never creates, such as quotes, amendments, damage claims, refunds, webhook events, channel reservations, and outbox events. Those only come from real activity.
+
+`npm run seed:runtime` is a separate local script. It refuses to run unless `DATABASE_URL` points to a local database named `runtime_rental`.
+
+## Integrations
+
+### Payments
+
+Adapters live in `features/integrations/payment`:
+
+| Code | What it does |
+|---|---|
+| `pp_system_default` | Manual. A host records money already received and attests manual refunds. |
+| `pp_stripe_stripe` | Stripe card payments in test mode only. Enabled when `STRIPE_ENABLED=true` and the keys start with `sk_test_` and `pk_test_`. Needs `STRIPE_WEBHOOK_SECRET`. Card checkout is offered only for test bookings. |
+| `pp_signed_test` | Webhook-only provider for testing signed callbacks with `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET`. It cannot create payments or refunds. |
+
+Webhooks arrive at `/api/payment-webhooks/[providerCode]`. The route limits body size and read time before verifying the signature.
+
+### Calendar channels
+
+Adapters live in `features/integrations/channels`. Two are installed: `direct` and `ical`. The `ical` adapter imports and exports availability only. It does not sync rates, reservations, or messages, and it has no remote transport: hosts paste calendar text into `importListingCalendar` and fetch output from `exportListingCalendar`.
+
+### Mail
+
+Password reset and guest mail use SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`). Guest password reset is offered only when host, sender, and store link are set.
+
+### Outbox
+
+`OutboxEvent` records are written for later delivery. `npm run outbox:deliver` runs the worker, but no dispatcher is installed. Runs report `no_dispatcher` and leave events as they are until you add one in `features/keystone/workers/outboxDispatchers.ts`.
+
+### AI assistant and MCP
+
+`/api/completion` powers the dashboard assistant through OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`). `/api/mcp-transport/[transport]` exposes MCP tools that forward the caller's session cookie to GraphQL: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`, and `stayCommand`. `stayCommand` runs a subset of host commands (`transition`, `conversation_reply`, `conversation_status`, `review_moderate`, `catalog_transition`, `refund_decline`, `payment_cancel_attempt`, `payment_record_manual`) and requires `confirm: true`.
+
+## Limitations
+
+- Card payments are Stripe test mode only. There is no live card processing, payout transfer, or deposit custody.
+- No OTA adapter (Airbnb, Vrbo, Booking.com, Expedia) is implemented. Channel records are local state.
+- iCalendar exchange is availability only and has no scheduled fetch.
+- The outbox has no installed dispatcher, so notifications are recorded but not delivered.
+- Owner statements and payouts are records. They do not move money.
+- The repository has no license file and no checked-in `.env.example`.
+- Host scope comes from access rules in source. Test cross-host access, membership changes, token expiry, and concurrent bookings against your own deployment before you take real bookings.
+- The app does not handle identity verification, guest screening, property licensing, tax remittance, insurance, or physical access.

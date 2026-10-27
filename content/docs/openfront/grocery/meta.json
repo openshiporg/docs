@@ -1,11 +1,12 @@
 {
   "title": "Grocery",
-  "description": "Grocery catalog, ordering, substitutions, pickup, delivery, purchasing, and subscriptions",
+  "description": "Grocery catalog, lots, purchasing, picking, substitutions, pickup, delivery, payments, and recurring baskets",
   "icon": "ShoppingBasket",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

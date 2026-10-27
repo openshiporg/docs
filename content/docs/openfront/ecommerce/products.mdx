@@ -5,36 +5,38 @@ description: The current catalog, variant, option, price, image, category, colle
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-A `Product` is the catalog aggregate in Openfront Ecommerce. It has title, description, handle, subtitle, gift-card/discount flags, thumbnail, status and metadata plus relationships to variants, options, images, categories, collections, tags, type, shipping profile, tax and discount records.
+A `Product` is the catalog record. It has `title`, `description` (document field), `handle`, `subtitle`, `isGiftcard`, `discountable`, `status`, `externalId` and `metadata`, plus computed `thumbnail`, `dimensionsRange` and `defaultDimensions`. It links to variants, options, images, categories, collections, tags, type, shipping profile, tax rates and discount conditions and rules.
+
+`status` is one of `draft`, `proposed`, `published` or `rejected`. Callers without `canManageProducts` only see `published` products.
 
 ## Variants and options
 
-`ProductVariant` is the sellable unit. Variants have titles and SKUs and connect to option values and money amounts. `ProductOption` and `ProductOptionValue` describe choices such as size or color without flattening them into arbitrary product JSON.
+`ProductVariant` is the sellable unit. It has `title`, `sku`, `barcode`, `ean`, `upc`, `inventoryQuantity`, `manageInventory`, `allowBackorder`, customs fields (`hsCode`, `originCountry`, `midCode`, `material`), `variantRank` and `metadata`. It links to option values, prices, a location, stock movements, measurements and a primary image. `ProductOption` and `ProductOptionValue` describe choices such as size or color.
 
 ## Prices
 
-Pricing is relational. Money amounts connect sellable variants to price sets and regional/currency context. Price lists and rules provide additional pricing policy. Store accepted price and total facts on order lines so a later catalog change does not rewrite an order.
+`MoneyAmount` connects a variant to an amount in a currency, optionally for a region, a price list or a price set, with `minQuantity` and `maxQuantity`. Amounts are integers in minor units. The computed `calculatedPrice` field applies an active, in-window price list, picks the lowest valid price in a price set, and then applies the set's `PriceRule` records (`fixed` or `percentage`, by priority). See [Price lists](/docs/openfront/ecommerce/price-lists).
+
+When an order is created, `OrderLineItem` and `OrderMoneyAmount` store the accepted price, so later catalog changes do not rewrite the order.
 
 ## Images and organization
 
-- `ProductImage` stores image URL and alt text.
-- categories can form a hierarchy.
-- collections group products for merchandising.
-- tags and product types add classification.
-- shipping profiles and tax relationships affect fulfillment and checkout policy.
+- `ProductImage` has an S3-backed `image`, an `imagePath` for external URLs, `altText` and `order`.
+- `ProductCategory` has `title`, `handle`, `isInternal`, `isActive` and a parent/children hierarchy. Non-staff callers only see active categories.
+- `ProductCollection` groups products for merchandising.
+- `ProductTag` and `ProductType` add classification.
 
 ## Inventory
 
-Inventory uses locations and stock movements rather than one marketing-page number. The exact available quantity depends on the variant, location, movements, reservations/fulfillment behavior and the operation reading it.
+Stock is the `inventoryQuantity` integer on each variant. When `manageInventory` is on and `allowBackorder` is off, checkout decrements stock only if enough is available, and writes a `StockMovement`. `adjustInventory(variantId, delta, reason, note)` changes stock for users with `canManageProducts`, refuses to go negative unless backorders are allowed, and records a `RECEIVE` or `REMOVE` movement.
 
 <Callout type="warn">
-Current source does not justify blanket claims for CSV import/export, forecasting, automatic low-stock alerts, video galleries or every kind of digital/subscription/bundle product. Document those only when the corresponding model, workflow and test exist in your fork.
+- `/dashboard/platform/inventory` queries an `inventoryItems` list that is not in the schema, so it does not load. No platform screen calls `adjustInventory`. The product create page sets the starting `inventoryQuantity`, and the product page only displays it. Change stock through `adjustInventory` or the generic variant editor; the generic editor does not write a stock movement.
+- `importInventory` only creates a `BatchJob` record. Nothing processes it.
+- Each variant has one stock count. `Location` exists as a model, but stock is not split across locations.
+- There is no CSV product import or export, forecasting, or low-stock alert in the source.
 </Callout>
 
 ## Operator path
 
-The dashboard has product list, create and detail routes plus category, collection and inventory pages. Use those feature screens for ordinary work and domain operations for price/inventory changes that need validation or audit. Generic list CRUD should not bypass order snapshots, tenant access or inventory accounting.
-
-## API example
-
-The [GraphQL API page](/docs/openfront/ecommerce/api-reference) shows a query using the current generated field names. Always check `schema.graphql` from the same source revision as the deployment.
+Use `/dashboard/platform/products`, `/products/create` and `/products/[id]` for catalog work, and `/product-categories` and `/product-collections` for organization. See the [GraphQL API page](/docs/openfront/ecommerce/api-reference) for a sample query.

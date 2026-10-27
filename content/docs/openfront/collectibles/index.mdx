@@ -1,0 +1,64 @@
+---
+title: Openfront Collectibles
+description: Self-hosted Pokémon trading card shop with set checklists, singles by condition, graded slabs, sealed product and pre-orders, market repricing, buylist, consignment, and collector binders.
+icon: Layers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Collectibles is a self-hosted shop for Pokémon trading cards. It sells singles stocked per card, printing, language, and condition; graded slabs as single serialized items; and sealed product, including pre-orders with an allocation and a per-customer limit. It also runs a buylist for buying cards from customers, takes items in on consignment, stores market price readings, and applies repricing rules. Collectors get a binder and a want list in their account.
+
+<Callout type="info">
+Card data and image URLs come from Pokémon TCG API data bundled in the repository. Market prices come from TCGplayer readings mirrored by TCGCSV. Neither is a live partnership or an official data feed, and slab grades are recorded observations, not a grading-company guarantee.
+</Callout>
+
+## What the codebase contains
+
+The application uses Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL. Source is laid out as:
+
+| Directory | Contents |
+|---|---|
+| `features/keystone` | Keystone models, access rules, custom GraphQL queries and mutations, checkout, Pokémon catalog and pricing helpers |
+| `features/platform` | Operator pages mounted under `/dashboard/platform/*` and the onboarding flow |
+| `features/dashboard` | Shared Keystone admin shell, sign-in, generic list and item screens |
+| `features/storefront` | Customer storefront screens, modules, and the shared card UI slice |
+| `features/integrations` | Payment (Stripe, PayPal, manual) and shipping (Shippo, ShipEngine, manual) adapters |
+| `app` | Thin route files for the storefront, dashboard, and HTTP endpoints |
+
+### Schema overview
+
+The schema extends the shared Openfront E-commerce commerce lists (products, variants, carts, orders, payments, fulfillment, returns, regions, discounts, gift cards, users, roles) with collectibles lists:
+
+- **Catalog:** `CollectibleSet` (a Pokémon set with series, release date, release status, TCGplayer group id), `CatalogItem` (one card printing or one sealed product), `Specimen`, `SpecimenIdentifier`, `CollectibleMedia`, `MarketPrice`, and `PricingRule`.
+- **Stock and selling:** card fields on `ProductVariant` (`stockKind`, `cardCondition`, `cardFinish`, `cardLanguage`, `pricingMode`, pre-order fields), plus `InventoryUnit`, `InventoryMovement`, `Reservation`, and `Listing` for serialized items such as slabs.
+- **Buying and consignment:** `Buylist`, `BuylistEntry`, `TradeInSubmission`, `TradeInItem`, `ConsignmentIntake`, `ConsignmentItem`, `ConsignmentAgreement`, and `ConsignmentSettlement`.
+- **Evidence and operations:** condition, grade, provenance, custody, and valuation observations; `FulfillmentRequirement`, `ShipmentEvidence`, `DisputeCase`, `SellerProfile`, and `CollectorProfile`.
+- **Collector records:** `Binder`, `BinderCard`, `WishlistItem` (the want list), and `SavedSearch`.
+
+See [Architecture and workflows](/docs/openfront/collectibles/architecture-workflows) for relationships and lifecycles.
+
+## Operator surfaces
+
+Operators work in `/dashboard`. The product-specific pages cover Cards & Sets, Graded Slabs, Sealed & Pre-orders, Market & Repricing, Buylist, Trade-ins, Consignments, Receive Items, condition and grading evidence, disputes, high-value fulfillment, sellers, and the inherited commerce pages (orders, products, regions, discounts, gift cards, payment and shipping providers). The full route list is on [External dashboards](/docs/openfront/collectibles/external-dashboard).
+
+## Storefront
+
+The customer storefront is country-scoped under `/[countryCode]`. It shows each set as its full checklist with stock and the latest market reading, card and product pages, search, a "Sell to us" buylist page at `/trade-in`, cart and checkout, and an account area with orders, binder, want list, saved searches, and trade-in history. See [External storefronts](/docs/openfront/collectibles/external-storefront).
+
+## Onboarding
+
+The dashboard onboarding dialog offers three templates: **Complete card shop** (19 sets imported as checklists with market readings, singles, graded slabs with labelled sample certificates, sealed product including pre-orders, pricing rules, and a buylist), **Starter shop** (two modern sets, a few singles and sealed boxes, one region, bank transfer), and **Custom setup** (the starter data as editable JSON per section). The seed shop, "Eighth Street Cards", is fictional.
+
+## Ownership and tenancy
+
+A deployment is one shop. Collectibles commands such as catalog import, repricing, and trade-in submission look up the single `Store` record and refuse to run until exactly one exists. There is no multi-store or multi-tenant separation inside one database.
+
+Staff access is controlled by role permissions such as `canManageCatalog`, `canManageProducts`, `canManageInventory`, `canManageConsignments`, `canManageEvidence`, and `canReadCollectibles`. Customer records are owner-scoped: binders, binder cards, want-list items, and saved searches are created against the signed-in user and filtered to that user on read, update, and delete. Inventory units, movements, reservations, and listings cannot be created or edited through generic GraphQL CRUD; they change only through named commands.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/collectibles/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/collectibles/architecture-workflows" description="Data model, operator workflows, GraphQL commands, and access control." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/collectibles/integrations-boundaries" description="Payments, shipping, price data, storage, MCP, and webhooks." />
+  <Card title="Current limitations" href="/docs/openfront/collectibles/limitations" description="What the current code does not do." />
+</Cards>

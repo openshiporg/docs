@@ -1,0 +1,20 @@
+{
+  "title": "Openfront Collectibles",
+  "description": "Pokémon card shop: set checklists, singles by condition, graded slabs, sealed and pre-orders, market repricing, buylist, consignment, and collector binders",
+  "icon": "Layers",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "index",
+    "getting-started",
+    "architecture-workflows",
+    "---Dashboard---",
+    "external-dashboard",
+    "---Storefront---",
+    "external-storefront",
+    "---Integrations---",
+    "integrations-boundaries",
+    "---Advanced Features---",
+    "limitations"
+  ]
+}

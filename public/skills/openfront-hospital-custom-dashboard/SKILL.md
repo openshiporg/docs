@@ -14,12 +14,29 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-hospital>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Hospital-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Sidebar order is in `features/platform/lib/navigation.ts`.
+- Server contract: `features/keystone/models/**` (63 lists), `features/keystone/access.ts`, `features/keystone/mutations/**` (custom roots registered in `mutations/index.ts`), `schema.graphql`, and `docs/schema-map.md`.
+
+Current platform routes and slices (`features/platform/<slice>`):
+
+- `/platform/appointments` (appointments): `transitionAppointment`, `arriveAppointment`.
+- `/platform/care-queue`, `/platform/encounters`, `/platform/clinical-operations` (clinical): `transitionCareQueue`, `openEncounter`, `transitionEncounter`, `reviewEpisodePolicy`, `episodePolicyWorkspace`, `episodeClosureWorkspace`, `episodeChildWorkspace`, `recoverEpisodeClosure`.
+- `/platform/inpatient`, `/platform/clinical-fulfillment`, `/platform/claims` (operations): `reserveBed`, `releaseBedReservation`, `admitPatient`, `transitionAdmission`, `transitionBedReadiness`, `placeMedicalOrder`, `transitionMedicalOrder`, `collectSpecimen`, `recordLabResult`, `transitionLabResult`, `correctLabResult`, `labResultReadback`, `recordPrescription`, `transitionPrescription`, `scheduleProcedure`, `transitionProcedure`, `establishCarePlan`, `transitionCarePlan`, `draftClinicalDocument`, `recordVitalSign`, `prepareInsuranceClaim`, `transitionInsuranceClaim`.
+- `/platform/operational-fabric` (operational-fabric): coverage, manual payments, refunds, consent, inventory and CSV import, communication templates and preferences, integrations, machine credentials, outbox dispatch, external identity, retention, record holds, exports.
+- `/platform/registration` (registration): `registerPatient`.
+- `/platform/patients` and `/[id]` (patients): read-only chart; there is no demographic-edit workflow.
+- `/platform/providers` and `/[id]`, `/platform/visit-types` and `/[id]`, `/platform/facilities` and `/[id]`, `/platform/lab-tests`, `/platform/staff`, `/platform/store-settings`: generated Keystone CRUD for master data (`Provider`, `Clinician`, `AppointmentType`, `Facility`, `Department`, `Ward`, `Room`, `Bed`, `LabTest`, `User`, `Role`, `HospitalProfile`).
+- `/platform/schedules` (schedules): `appointmentScheduleConflicts`; blocks are edited on generic `/dashboard/provider-schedule-blocks` pages.
+- `/platform/intake` (intake): `transitionIntakeReview`.
+- `/platform/communications` (communications): `sendSecurePatientMessage`, `transitionPatientMessage`.
+- `/platform/audit` (audit) and `/platform/reports` (reports): read-only projections.
+- Onboarding (`features/platform/onboarding`) is a dashboard-home card calling `applyHospitalOnboarding`; `features/platform/bootstrap` is not mounted on a route.
+
+Tenancy: `Facility` is the data boundary (`Facility.staff` links users). `HospitalProfile` is a single install-wide branding record. A role with `canAccessAllClinicalData` bypasses facility scoping. Controlled clinical and operational lists deny raw GraphQL writes; their writes need `operationKey` and usually `expectedVersion`. The MCP route `app/api/mcp-transport/[transport]` returns 404 in this product.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is registration, appointments, intake, patients, providers, inpatient work, clinical operations, claims, communications, and reports. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is registration, appointments, care queue, encounters, intake, patients, providers, inpatient work, clinical fulfillment, claims, operational fabric, communications, staff, audit, and reports. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +84,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around registration, appointments, intake, patients, providers, inpatient work, clinical operations, claims, communications, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around registration, appointments, care queue, encounters, intake, patients, providers, inpatient work, clinical fulfillment, claims, operational fabric, communications, staff, audit, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

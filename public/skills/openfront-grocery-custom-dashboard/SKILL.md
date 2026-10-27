@@ -14,12 +14,20 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-grocery>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Grocery-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route file only re-exports a screen from `features/platform/<slice>`.
+- Platform slices: `orders`, `fulfillment`, `delivery`, `pickup`, `payments`, `products`, `inventory`, `suppliers`, `purchasing`, `merchandising`, `customers`, `subscriptions`, `staff`, `settings`, `reports`, `messages`, `communications`, plus `onboarding` (a dialog in the dashboard layout, not a route) and shared `lib`/`components`.
+- Navigation and capability per page: `features/platform/lib/navigation.ts`. Shared server actions: `features/platform/lib/taskActions.ts` and each slice's `actions.ts`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/lib/storeAccess.ts` and `storeScope.ts`, `features/keystone/mutations/**` (custom roots registered in `mutations/index.ts`), `features/keystone/projections/platformProjections.ts`, and `schema.graphql`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is catalog, customers, suppliers, purchasing, inventory/lots, fulfillment, substitutions, pickup/delivery, and subscriptions. This list is orientation, not proof that every flow is safe or complete.
+Current routes under `/dashboard/platform`: `orders`, `fulfillment`, `delivery`, `pickup`, `payments`, `products` (`/create`, `/[id]`), `inventory`, `suppliers`, `purchasing`, `merchandising`, `customers` (`/[id]`), `subscriptions`, `staff`, `settings`, `reports`, `messages`, `communications`. Generic list pages are `/dashboard/<list-key>`.
+
+Tenancy: one Store per deployment (`store_juniper`, created by migration; `PUBLIC_STORE_ID`). `User.store` is required. Access resolves the user's current Store from the database. Roles carry `canAccessDashboard`, `canManageProducts`, `canManageOrders`, `canManageInventory`, `canManageSuppliers`, `canManageDelivery`, `canManageUsers`, `canManagePayments`, `canManageOnboarding`. There is no organization or location model.
+
+Key operator operations: projections `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryRecurringOverview`, `groceryStaffDirectory`, `groceryFinancialCloses`, `groceryOutboxStatus`; commands such as `advanceOrderFulfillment`, `cancelGroceryOrder`, `resolveOrderLineFulfillment`, `recordOrderItemSubstitution`, `proposeOrderLineSubstitution`, `finalizeGroceryOrderActuals`, `completeOrderHandoff`, `configureDeliverySlot`, `configurePickupSlot`, `configureParkingSpot`, `createDeliveryRouteFromOrders`, `updateDeliveryRouteWorkflow`, `resolveDeliveryStop`, `rescheduleReturnedGroceryDelivery`, `adjustInventoryLot`, `manageInventoryCount`, `manageInventorySafety`, `convertInventoryCases`, `createPurchaseOrderDraft`, `transitionPurchaseOrder`, `receivePurchaseOrder`, `manageSupplierSettlement`, `updateSupplierMinimumOrder`, `importGroceryCatalog`, `updateProductInformation`, `refundPayment`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `replayPaymentWebhookEvent`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `provisionGroceryCustomer`, `inviteGroceryStaff`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty`, `updateGroceryStoreProfile`, `updateGroceryDeliveryPolicy`, `runGroceryOnboarding`, `deliverGroceryOutboxNow`, `replayGroceryOutboxEvent`. Verify each against the inspected revision.
+
+The current product focus is products and merchandising, lot inventory and recalls, suppliers and purchasing, picking with actual weights and substitutions, pickup and delivery, payments, refunds and financial closes, recurring baskets and loyalty, staff, and customer messages. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +75,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around catalog, customers, suppliers, purchasing, inventory/lots, fulfillment, substitutions, pickup/delivery, and subscriptions. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around products, lot inventory, suppliers, purchasing, picking and substitutions, pickup/delivery, payments and refunds, recurring baskets, staff, and customer messages. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

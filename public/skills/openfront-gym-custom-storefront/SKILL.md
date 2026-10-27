@@ -13,13 +13,18 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-gym>
 - Built-in Gym customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Thin customer-facing route entry points: `app/(storefront)/(browse)/**` (plus `app/(storefront)/classes/[id]` and `app/(storefront)/instructors/[id]`), `app/member/**` (check-in code, profile), and `app/kiosk/**` (staff-unlocked kiosk). The empty `app/(storefront)/order` folder is a leftover, not a route.
+- Inside `features/storefront`: `screens` (one screen per page), `modules` (account, classes, memberships, contact, layout, common), `lib/data` (named GraphQL loaders), and `lib/actions` (server actions). The member check-in code lives in `features/member`; the kiosk UI in `features/kiosk` with API routes under `app/api/kiosk/*`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, `features/keystone/queries/**` (the `publicGym*` and `storefrontOrganization` queries), and `schema.graphql`.
+- Provider boundaries: `features/integrations/payment` (Stripe only; `membership-checkout.ts` holds `initiateMembershipCheckout` and `completeMembershipCheckout`), the Stripe webhook at `/api/stripe/webhook`, and the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is plans/classes, availability and booking/waitlist, member account, trainer discovery, and check-in code. This list is orientation, not proof that every flow is safe or complete.
+Current storefront routes: `/`, `/classes`, `/classes/[id]`, `/schedule`, `/memberships`, `/memberships/signup` (redirects to `/join`), `/join`, `/join/success`, `/join/cancelled`, `/instructors`, `/instructors/[id]`, `/facilities`, `/policies`, `/waiver`, `/contact`, `/forgot-password`, `/reset-password`, `/portal` (redirects to `/account`), `/account` (login and dashboard slots), `/account/bookings`, `/account/membership`, `/account/profile`, `/account/participation`, `/account/training`, `/account/instructor`, `/account/confirm-email`, `/member/check-in-code`, `/member/profile`, `/kiosk`, `/kiosk/check-in`.
+
+Main server operations behind them: public catalog queries (`publicGymSettings`, `publicGymClassTypes`, `publicGymSchedules`, `publicGymClassInstances`, `publicGymInstructors`, `publicGymMembershipTiers` and their single-record forms), `bookClass`, `cancelClassBooking`, `myUpcomingBookingPage`, `memberProfile`, `updateMemberProfile`, `memberCheckInCode`, `registerMember`, `changeMemberPassword`, `requestEmailChange`, `confirmEmailChange`, `initiateMembershipCheckout`, `completeMembershipCheckout`, `cancelMembership`, `freezeMembership`, `unfreezeMembership`, `getStripeBillingPortal`, `trainingWorkspace`, `bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment` (the `/account/training` screen reuses `features/platform/training/actions/training.ts` and staff-intent retries), `instructorAccount`, `submitContactForm`, and the kiosk operations `authorizeKioskSession`, `kioskSearchMembers`, `kioskRecordMemberCheckIn`, `kioskRecordGuestCheckIn`. The storefront serves one organization (`STOREFRONT_ORGANIZATION_ID`, or the only active organization).
+
+The current product focus is plans/classes, availability and booking/waitlist, joining through Stripe checkout, member account, personal training appointments, instructor discovery, participation terms, and check-in code. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +72,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around plans/classes, availability and booking/waitlist, member account, trainer discovery, and check-in code. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around plans/classes, availability and booking/waitlist, joining, member account, personal training appointments, instructor discovery, participation terms, and check-in code. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

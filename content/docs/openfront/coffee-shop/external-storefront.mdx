@@ -6,3 +6,28 @@ description: Give an LLM the Coffee Shop storefront skill to adapt the built-in 
 To create a custom Coffee Shop storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Coffee Shop's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Coffee Shop codebase before proposing work.
+
+Skill file: [`/skills/openfront-coffee-shop-custom-storefront/SKILL.md`](/skills/openfront-coffee-shop-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+The home page is `app/page.tsx`. Other routes live under `app/(storefront)/`. Logic lives in `features/storefront` (`screens`, `components`, `lib/data`). There is no country or region prefix.
+
+| Route | Customer journey | Named operations |
+|---|---|---|
+| `/` | Menu board with search (`?q=`) and category filter (`?category=`), store hours and address, cart bar | `StorefrontMenu` (`getCoffeeMenu`), `CoffeeStorefrontSettings` (`getCoffeeStore`) |
+| `/menu/[id]` | Item detail with modifiers, then add to cart | `StorefrontMenuItem` (`getCoffeeMenu` with `menuItemId`) |
+| `/checkout` | Order ahead for pickup: name, email, phone, pickup time, and notes. Pay at pickup by default; pay online by card when Stripe is enabled | `QuoteCafeOrder`, `CreateCafePickupOrder`, `InitiateCafePaymentSession`, `CheckoutCustomer` |
+| `/order-confirmed?id=...&key=...` | Receipt and live status, handoff code, pay online if still unpaid, and "Add to rewards" | `ConfirmedCafeOrder` (`getCafeOrder`), `LookupCafeLoyalty`, `ApplyCafeLoyalty`, `InitiateCafePaymentSession` |
+| `/catering` | Catering inquiry: event time, guest count, address, notes | `RequestCafeCatering` |
+| `/account` | Sign in or sign up; once signed in, orders, rewards balance, catering requests, and profile | `CustomerSignIn`, `RegisterCoffeeCustomer`, `CustomerSignOut`, `CustomerIdentity`, `CustomerOrders`, `CustomerCatering`, `UpdateCoffeeCustomerProfile` |
+| `/account/reset` | Request a reset email, or set a new password with `?token=` | Keystone password reset link and token redemption |
+
+## Journey boundaries
+
+- The cart lives in the browser's `localStorage`. The server re-prices every line on quote and on order creation. If the quote changed, checkout asks the customer to review the new total.
+- An online order is a request. It stays `open` until staff accept it. Stock is consumed on acceptance, not on submit.
+- Guests read their order with the order `secretKey`, passed as `key` in the receipt URL. Signed-in customers can read their own orders without it.
+- Online payment only works when `getCoffeeStore` returns `onlinePayment: true`. That needs both Stripe keys on the server and the Stripe provider enabled. Stripe Checkout may only return to `/order-confirmed`.
+- PayPal is not offered. Subscriptions are not offered to customers. Drink-credit redemption is disabled.
+- Rewards earn 1 point per dollar of subtotal when the customer links the order by email.

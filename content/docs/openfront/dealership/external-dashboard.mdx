@@ -6,3 +6,53 @@ description: Give an LLM the Dealership dashboard skill to adapt the built-in ex
 To create a custom Dealership dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Dealership's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Dealership codebase before proposing work.
+
+Skill file: [`/skills/openfront-dealership-custom-dashboard/SKILL.md`](/skills/openfront-dealership-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are thin wrappers at `app/dashboard/(admin)/platform/<route>/page.tsx`. Logic lives in `features/platform/<slice>`. Navigation is defined in `features/platform/lib/navigation.ts`.
+
+| Page | Slice | What operators do there | Main operations |
+|---|---|---|---|
+| `/dashboard/platform/overview` | `overview` | Work that needs attention today, latest deals, delivered revenue by month | `operationalReport` |
+| `/dashboard/platform/vehicles` | `vehicles` | Inventory desk: intake, location moves, costs, recon, listing edits, photos, merchandising submit and approve, frontline, publish feed | `inventoryWorkspace`, `intakeInventoryVehicle`, `moveInventoryStock`, `recordInventoryCost`, `openInventoryReconWorkItem`, `transitionInventoryReconWorkItem`, `updateInventoryMerchandisingDraft`, `submitInventoryMerchandising`, `decideInventoryMerchandising`, `transitionInventoryAcquisition`, `recordInventoryFeedRun`, photo commands |
+| `/dashboard/platform/vehicles/[id]` | `vehicles` | Vehicle detail: identity and spec edits, recon (including cancel), merchandising reject, condition report, vehicle history, price history | `updateInventoryVehicleDetails`, `decideInventoryMerchandising`, generic CRUD for `VehicleConditionReport` and `VehicleHistory` |
+| `/dashboard/platform/vehicles/acquisitions` | `vehicles` | Acquisition pipeline: start, move through each status, stock the unit | `startInventoryAcquisition`, `transitionInventoryAcquisition`, `establishInventoryStock` |
+| `/dashboard/platform/vehicles/feed` | `vehicles` | Feed run history | `recordInventoryFeedRun` |
+| `/dashboard/platform/deals` | `deals` | Deal list | `dealDeskWorkspace` |
+| `/dashboard/platform/deals/create` | `deals` | New pencil, prefilled from a CRM lead and an optional trade-in | `createDealPencil` |
+| `/dashboard/platform/deals/[id]` | `deals` | Worksheet (cash, finance, lease), present, accept, lender offer, trade-in, submit, approve, cancel, reopen, timeline | `dealWorkspace`, `saveDealWorksheet`, `presentDealWorksheet`, `acceptDealWorksheet`, `dealLenderOffers`, `selectDealLenderOffer`, `setDealTradeIn`, `transitionDeal`, `reopenDealWorksheet`, `domainTimeline` |
+| `/dashboard/platform/analytics` | `analytics` | Read-only sales, inventory, and operations charts | `operationalReport` and list reads |
+| `/dashboard/platform/store-settings` | `store-settings` | Dealership profile, hours, tax and doc fee, logo, rooftop time zone | Generic `DealershipProfile` and `Rooftop` updates |
+| `/dashboard/platform/crm` | `crm` | Lead list and board; new lead | `crmWorkspace`, `openLead` |
+| `/dashboard/platform/crm/[id]` | `crm` | Lead detail: edit, interactions, tasks, routing, transfer, consent, cadence, sales visits, status | `updateLeadDetails`, `recordLeadInteraction`, `createLeadTask`, `completeTask`, `routeLead`, `transferLeadOwnership`, `updateCustomerCommunicationPreferences`, `enrollLeadCadence`, `advanceLeadCadence`, `manageSalesVisit`, `transitionLead` |
+| `/dashboard/platform/crm/tasks` | `crm` | Task queue across leads | Task list reads, `completeTask` |
+| `/dashboard/platform/test-drives` | `test-drives` | Queue, schedule, verify license, complete, no-show | `submitTestDrive`, `updateTestDriveWorkflow` |
+| `/dashboard/platform/trade-ins` | `trade-ins` | Trade-in queue, walk-in trade-in | `createWalkInTradeIn` |
+| `/dashboard/platform/trade-ins/[id]` | `trade-ins` | Appraisal, attach to a deal, send to inventory as an acquisition | `recordTradeInAppraisal`, `setDealTradeIn`, `startInventoryAcquisition`, `domainTimeline` |
+| `/dashboard/platform/customers` | `customers` | Customer directory | Customer list reads |
+| `/dashboard/platform/customers/[id]` | `customers` | Contact edit, consent, duplicates and merge, household link and unlink, open a lead | `updateCustomerContact`, `updateCustomerCommunicationPreferences`, `customerDuplicateCandidates`, `mergeCustomers`, `linkCustomerHousehold`, `unlinkCustomerHousehold`, `openLead` |
+| `/dashboard/platform/finance` | `finance` | F&I desk: applications, lender queue and decision, menu, compliance, contract, prerequisite review, funding, cash deposits, deal approval | `financeWorkspace`, `queueFinancingApplication`, `recordLenderDecision`, `recordFinanceProductQuote`, `presentFinanceMenu`, `decideFinanceMenu`, `recordFinanceComplianceCheck`, `manageFinanceContractPackage`, `reviewFinancePrerequisites`, `manageFinanceFundingCase`, `recordCashDealDeposit`, `openFinanceFollowUp`, `transitionDeal` |
+| `/dashboard/platform/finance/applications/[id]` | `finance` | Application detail, submission status, lender decision | `recordLenderSubmissionStatus`, `recordLenderDecision`, `queueFinancingApplication`, `openFinanceFollowUp` |
+| `/dashboard/platform/finance/products` | `finance` | F&I product catalog | `configureFinanceProduct` |
+| `/dashboard/platform/finance/cancellations` | `finance` | Product cancellations with a pro-rata refund calculator and links to payments | `recordFinanceProductCancellation` |
+| `/dashboard/platform/delivery` | `delivery` | Schedule, arrive, checklist and waivers, acknowledgment, cancel, complete delivery, we-owe items | `deliveryWorkspace`, `manageDeliveryCase`, `completeDealDelivery`, `manageWeOweItem` |
+| `/dashboard/platform/payments` | `payments` | Transactions, checkout for a deal or repair order, payment providers | `createPaymentCheckout`, generic `PaymentProvider` CRUD |
+| `/dashboard/platform/payments/[id]` | `payments` | Payment detail, refunds, webhook events, reconcile | `requestPaymentRefund`, `reconcilePaymentTransaction` |
+| `/dashboard/platform/accounting` | `accounting` | Batch queue, GL mappings, stage a batch | `configureAccountingMapping`, `stageAccountingBatch`, generic `AccountingMapping` delete |
+| `/dashboard/platform/accounting/[id]` | `accounting` | Batch detail: queue post, record posted or failed, reconcile, lock | `manageAccountingBatch` |
+| `/dashboard/platform/service` | `service` | Service advisor desk: appointments, new appointment, repair orders | `fixedOpsWorkspace`, `submitServiceBooking`, `transitionServiceAppointment`, `openServiceOrder`, `transitionServiceOrder` |
+| `/dashboard/platform/service/appointments/[id]` | `service` | Appointment detail and edit, status, open a repair order | `transitionServiceAppointment`, `openServiceOrder`, generic `ServiceAppointment` update |
+| `/dashboard/platform/service/orders/[id]` | `service` | Repair order: concern, cause, correction, authorization, labor, part and sublet lines, tax, labor operations, status through paid | `recordServiceOrderEvidence`, `addServiceOrderLineItem`, `updateServiceOrderLineItem`, `removeServiceOrderLineItem`, `setServiceOrderTax`, `manageLaborOperation`, `transitionServiceOrder` |
+| `/dashboard/platform/parts` | `parts` | Parts catalog | `configurePart` |
+| `/dashboard/platform/parts/[id]` | `parts` | Part detail, movement ledger, every movement type | `recordPartsMovement` |
+| `/dashboard/platform/parts/purchase-orders` | `parts` | Purchase order list, create | `managePartsPurchaseOrder` |
+| `/dashboard/platform/parts/purchase-orders/[id]` | `parts` | Edit, order, receive (posts receipts), close, cancel | `managePartsPurchaseOrder` |
+| `/dashboard/platform/users` | `users` | Staff accounts (shoppers are excluded) | Generic `User` CRUD |
+| `/dashboard/platform/organization` | `organization` | Tabs: dealer group, rooftops, access (memberships and their audit log), roles, retention | `changeDealerMembership`, `configureRetentionPolicy`, generic `DealerGroup`, `Rooftop`, `Role`, `User` CRUD |
+| `/dashboard/platform/catalog` | `catalog` | Makes and models, service packages, lead routing rules | `configureLeadRoutingRule`, generic `Make`, `Model`, `ServicePackage` CRUD |
+| `/dashboard/platform/reports` | `reports` | Tabs: saved reports, runs (with download), audit search, outbox health | `saveOperationalReport`, `runSavedReport`, `queueDueSavedReports`, `auditSearch`, `DomainOutboxEvent` reads |
+| `/dashboard/platform/api-keys` | `api-keys` | Create, scope, limit by IP, and revoke your own API keys | Generic `ApiKey` CRUD |
+
+Onboarding is a dialog in the dashboard layout, not a route. Every list is also reachable on the generic `/dashboard/<list-key>` pages, subject to its access rules. Command-only lists are read-only there.

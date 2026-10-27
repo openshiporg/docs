@@ -14,12 +14,20 @@ Before asking implementation questions, briefly tell the user where the current 
 - Repository: <https://github.com/openshiporg/openfront-construction>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Construction-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform`.
-- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
+- Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route file only imports a screen from a `features/platform/<slice>`.
+- Server contract: `features/keystone/models/**` (87 lists), `features/keystone/access.ts`, `features/keystone/domain/**` (tenancy, `lifecycle.ts`, `scopes.ts`, onboarding seed), `features/keystone/mutations/**` and `features/keystone/queries/**` (all custom roots are declared in `features/keystone/mutations/index.ts`), and `schema.graphql`. `docs/schema-map.md` maps every list, creator, and state.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is project portfolio, estimates/bids, budgets, contracts, changes, field work, safety, documents, and progress billing. This list is orientation, not proof that every flow is safe or complete.
+Current platform routes and slices (under `/dashboard/platform`):
+
+- Company and pursuits: `portfolio`, `projects`, `setup` (`onboarding`), `store-settings`, `trade-partners` and `trade-partners/[id]`, `cost-codes`, `resources` (equipment and materials), `pipeline`, `pipeline/create`, `pipeline/[id]`, `pipeline/requests/[id]` (`crm`), `service-requests`.
+- Project tools at `projects/[projectId]/<tool>`: overview, `preconstruction`, `financials`, `structure` (`project-structure`), `contracts`, `procurement`, `execution`, `field`, `schedule`, `quality-safety`, `documents`, `billing`, `reports`, `team`, `audit`, and `records/[recordType]/[recordId]`. Most render `features/platform/projects/screens/ProjectWorkspacePage.tsx`; tool data comes from `constructionProjectWorkspace` plus per-tool register queries. Financials, contracts, procurement, billing, reports, team, and audit are internal-only.
+- Supporting slices: `approvals` (`ApprovalPanel`), `agents` (API keys), `documents` (S3 controlled files), `team` (invitations), `reports` (CSV), `assistant` (AI chat handler).
+
+Key model facts: `Company` is the tenant and `Project` is the operating boundary. Access comes from `Role` permissions via `CompanyMembership` and `ProjectMembership` (access level plus portal type). Money is BigInt minor units with a currency code. Lifecycle `status` fields are read-only on generic update; changes go through `transition*Status` mutations (23 of them). Commands go through named mutations such as `createConstructionProject`, `onboardConstructionWorkspace`, `startBidPackage`, `awardBidSubmission`, `createBudgetChangeWithLine`, `createChangeOrderWithLine`, `raiseRfi`, `registerSubmittal`, `startDailyLog`, `recordSafetyIncident`, `prepareProgressClaim`, `allocateSettledPayment`, `requestConstructionApproval`, `decideConstructionApproval`, `inviteProjectMember`, `issueApiCredential`, and `requestAgentAction`. Each is idempotent, audited as `AgentAction`, and emits `OutboxMessage`. The dashboard server actions call them through generic `ConstructionCommand`, `ConstructionWorkflow`, and `TransitionConstructionItem` documents in `features/platform/projects/actions.ts`.
+
+The current product focus is project portfolio, pursuits, estimates/bids, budgets, contracts, changes, procurement, field work, schedule, safety, documents, progress billing, and audit. This list is orientation, not proof that every flow is safe or complete. Absent in current source: accounting/ERP sync, payment processing, e-signature, file malware scanning, and invitation or notification email.
 
 ## Then interview the user
 

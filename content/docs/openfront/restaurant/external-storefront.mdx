@@ -6,3 +6,40 @@ description: Give an LLM the Restaurant storefront skill to adapt the built-in e
 To create a custom Restaurant storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Restaurant's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Restaurant codebase before proposing work.
+
+## Current storefront routes
+
+Route files live under `app/(storefront)`. Each one re-exports a screen from `features/storefront/screens`.
+
+| Route | Screen | Purpose |
+|---|---|---|
+| `/` | `HomePage` | Hero, popular items, house picks, menu by category |
+| `/menu/[id]` | `MenuItemPage` | Item page with modifier selection and add to cart |
+| `/checkout` | `CheckoutPage` | Contact, pickup or delivery, tip, payment, review |
+| `/order/confirmed/[id]` | `OrderConfirmedPage` | Confirmation. Guests pass `?secretKey=` to read their order |
+| `/account` | `AccountPageLayout` | Sign-in when signed out (`@login` slot), overview when signed in |
+| `/account/profile` | | Name, email, phone, password, billing address |
+| `/account/addresses` | | Address book |
+| `/account/orders` | | Order history |
+| `/account/orders/details/[id]` | `AccountOrderDetailsPage` | Order detail |
+
+Every account page also shows a privacy panel. It calls `exportMyRestaurantData` and `recordMyRestaurantPrivacy`.
+
+`GET /api/store-config` returns store settings, the public payment config, and the current user as JSON.
+
+There are no customer routes for reservations, the waitlist, or buying gift cards.
+
+## Named GraphQL operations used by the storefront
+
+From `features/storefront/lib/data/*`:
+
+- Menu and store: `GetMenuCategories`, `GetMenuItems`, `GetMenuItem`, `GetFeaturedItems`, `GetFeaturedMenuItems`, `GetStoreSettings`, `ListPaymentProviders`
+- Cart: `GetCart` (`activeCart`), `CreateActiveCart`, `AddActiveCartItem`, `UpdateActiveCart`, `UpdateCartItemQuantity`, `RemoveCartItem`
+- Checkout: `InitiatePaymentSession`, `CompleteActiveCart`; recovery uses `cancelCheckoutPaymentSession`
+- Orders: `GetCustomerOrder`, `GetCustomerOrders`
+- Account: `GetAuthenticatedItem`, `SignIn`, `CreateUser`, `UpdateUser`, `CreateAddress`, `UpdateAddress`, `DeleteAddress`, `UpdateAddressFlags`, `CreateBillingAddress`, `UpdateBillingAddress`
+- Guest checkout: `CreateGuestUser`, `AuthenticateGuestUser`
+
+## Cart cookies
+
+The cart uses two cookies: `_restaurant_cart_id` and `_restaurant_cart_proof`. The proof is an HMAC of the cart ID signed with `SESSION_SECRET`, valid for 7 days. Server code sends it to GraphQL in the `x-restaurant-cart-proof` header. A separate client must keep this proof server-side and send it with cart operations.

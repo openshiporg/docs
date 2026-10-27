@@ -11,21 +11,21 @@ Use this skill to adapt the built-in Pharmacy storefront or create a separately 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- No public source URL is advertised for this product. Ask for the current checkout path and do not substitute a guessed repository.
-- Built-in Pharmacy customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Repository: https://github.com/openshiporg/openfront-pharmacy. Confirm the checkout path and revision the user wants changed.
+- Built-in Pharmacy customer experience in `features/storefront`: `screens` (HomePage, StorePage, ProductPage, CartPage, CheckoutPage, OrderStatusPage, PrescriptionServicesPage, AccountOverviewPage, AccountProfilePage, CustomerOrderPage, LoginPage, ResetPasswordPage, PrivacyPage), `components` (CheckoutForm, StripeCardStep, LocationPicker, PrescriptionRequestForm, OrderStatusClient, and others), and `lib/data` (store, cart, checkout, orders, account, prescriptions, requests, user, cookies).
+- Thin route entry points under `app/(storefront)/(main)/`: `/`, `/products`, `/products/[handle]`, `/cart`, `/checkout`, `/order-status`, `/prescriptions`, `/privacy`, and `/account` with `@login` (sign in, register, `/account/reset`) and `@dashboard` (overview, `/account/profile`, `/account/orders/details/[id]`) slots.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/index.ts`, `schema.graphql`, and `docs/schema-map.md`.
+- Provider boundaries: `features/integrations/payment` (stripe, paypal, manual), `app/api/payment-webhooks/[providerId]`, and the exact server actions called by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is OTC catalog/cart/checkout, authenticated prescription intake, patient-safe status, order lookup, and pharmacist-controlled handoffs. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is a host-resolved tenant (`publicPharmacyTenant`), a location picker stored in a cookie, the OTC catalog (`publicPharmacyCatalog`, `publicPharmacyCategories`; only products with `prescriptionRequirement` `none`), a token-scoped guest cart (`createPharmacyCart`, `addPharmacyCartItem`, `updatePharmacyCartItem`, `pharmacyCart`), checkout with pickup or delivery and pay-at-pickup or Stripe card (`activePharmacyPaymentProviders`, `initiatePharmacyPaymentSession`, `submitPharmacyOrder`), order status by number and email or guest token (`lookupPharmacyOrder`, `guestPharmacyOrder`), customer accounts (`registerPharmacyCustomer`, `pharmacyCustomerAccount`, `pharmacyCustomerOrderDetails`, `updateActiveUser`), patient-portal prescriptions and refill requests (`pharmacyPatientPortal`, `requestPrescriptionRefill`), and online registration, transfer, and new-prescription requests (`submitPharmacyPrescriptionRequest`, `pharmacyCustomerPrescriptionRequests`). The storefront has no PayPal approval step. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
 After the source orientation, ask one concise set of questions and skip anything already answered:
 
-1. Where is the exact Pharmacy source checkout, and which revision/deployment is the target?
+1. Is the target the public repository (https://github.com/openshiporg/openfront-pharmacy) or a fork/local checkout, and which revision/deployment is it?
 2. Do they want to adapt the built-in storefront or create an independently deployed client?
 3. What do they dislike about the current experience, what must stay, and what should change?
 4. Which customer journeys, routes, content, brand, devices, accessibility, and commerce/booking states are required?
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around OTC catalog/cart/checkout, authenticated prescription intake, patient-safe status, order lookup, and pharmacist-controlled handoffs. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around the location-scoped OTC catalog, cart and checkout, order lookup, customer accounts, refill requests, online prescription requests, and pharmacist-controlled handoffs. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

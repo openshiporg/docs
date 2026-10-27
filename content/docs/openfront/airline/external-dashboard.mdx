@@ -6,3 +6,46 @@ description: Give an LLM the Airline dashboard skill to adapt the built-in exper
 To create a custom Airline dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Airline's product-specific operator experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Airline codebase before proposing work.
+
+Skill file: [`/skills/openfront-airline-custom-dashboard/SKILL.md`](/skills/openfront-airline-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. The older desks (bookings, departures, disruptions, inventory, manifests, offers, passengers, payments, schedules, settings) render from `features/platform/screens/Canonical/PlatformDeskPages.tsx` with desk components in `features/platform/components`. Newer pages have their own slice in `features/platform/<slice>`.
+
+| Page | What operators do there | Main operations |
+|---|---|---|
+| `/dashboard/platform/network` | Tabs for airports, routes, and schedules. Register airports, create and edit routes, author schedules, and publish, suspend, or retire them | `registerAirport`, `CreateRoute`, `UpdateRoute`, `SetRouteStatus`, `CreateFlightSchedule`, `UpdateFlightSchedule`, `SetScheduleStatus` |
+| `/dashboard/platform/fares` | Tabs for cabins, fare brands, fare rules, and ancillaries. Create, edit, and change status | `CreateCabin`, `CreateFareBrand`, `CreateFareRule`, `CreateAncillaryProduct` and their update and status mutations |
+| `/dashboard/platform/schedules`, `/[id]` | Provision dated flights from published schedules; open or close sales | `provisionDatedFlight`, `setDatedFlightSalesStatus` |
+| `/dashboard/platform/flight-ops` | Day board by date and station. Set gates, terminals, estimated and actual times, delayed, departed, arrived | `updateFlightOperations` |
+| `/dashboard/platform/inventory`, `/[id]` | Review buckets per dated flight and change authorization | `setInventoryAuthorization` |
+| `/dashboard/platform/offers`, `/[id]` | Search flights for a passenger party and create held offers; review recent offers | `airlineFlightOptions`, `createOfferFromShopping` |
+| `/dashboard/platform/bookings`, `/[id]` | Accept offers into bookings, record money received, approve or reject evidence, mark paid, issue tickets, cancel, refund, reissue the traveler access code, view the receipt | `createBookingFromOffer`, `recordReceivedPayment`, `approveManualPaymentEvidence`, `rejectManualPaymentEvidence`, `captureBookingPayment`, `issueBookingTickets`, `cancelBooking`, `processBookingRefund`, `reissueBookingAccessCode`, `operatorBookingReceipt` |
+| `/dashboard/platform/tickets`, `/[id]` | Search tickets by number, locator, or passenger; view coupons | read only |
+| `/dashboard/platform/passengers`, `/[id]` | Passenger profiles with booking, request, check-in, and bag counts | read only |
+| `/dashboard/platform/departures`, `/[id]` | Departure manifest by date and station. Register travel documents, check in, accept bags, board, offload | `departureManifest`, `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger`, `acceptCheckedBag`, `boardBookingPassenger`, `offloadBookingPassenger` |
+| `/dashboard/platform/baggage`, `/[id]` | Find bags by tag or locator; record scan events and see the timeline | `recordBagEvent` |
+| `/dashboard/platform/disruptions`, `/[id]` | Publish delays, cancellations, and schedule changes; reaccommodate affected bookings | `publishFlightDisruption`, `reaccommodateBooking` |
+| `/dashboard/platform/payments`, `/[id]` | Evidence awaiting approval (each row links to its booking, where it is approved) and payment records | read only |
+| `/dashboard/platform/refunds`, `/[id]` | Refund list by status, with booking and payment detail | read only |
+| `/dashboard/platform/payment-providers` | Add a manual (evidence-only) provider or connect Stripe with a secret key; activate or disable | `CreateManualPaymentProvider`, `CreateStripePaymentProvider`, `SetPaymentProviderStatus` |
+| `/dashboard/platform/manifests`, `/[id]` | Command log of audit events and audit detail | read only |
+| `/dashboard/platform/stations` | Grant users station access at an airport with check-in, bag, and boarding flags; suspend or revoke | `CreateStationAssignment`, `UpdateStationAssignment`, `SetStationAssignmentStatus` |
+| `/dashboard/platform/store-settings` | Carrier name, legal name, brand colour, homepage title and description, customer service email, phone, and hours, with a preview | `updateCarrierStorefrontSettings` |
+| `/dashboard/platform/settings`, `/[id]` | Direct-sales state and provider connections with last success and last attempt | read only |
+
+Other dashboard routes:
+
+- `/dashboard/operations` is the Carrier operations home. It shows queues (unpaid bookings, approvals, delayed flights, disruptions, bags), next departures, and links to every desk.
+- `/dashboard/onboarding` is the carrier launch setup form.
+- `/dashboard/bookings` renders the bookings workspace. `/dashboard/departures`, `/dashboard/network`, `/dashboard/recovery`, and `/dashboard/shopping` redirect to the platform desks.
+- `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`, and `/dashboard/no-access` are the shared auth pages. Sign-up needs `PUBLIC_SIGNUPS_ALLOWED=true`.
+
+Lists without a dedicated page (for example `User`, `Role`, `ApprovedAgent`, `ServiceRequest`, `WebhookEndpoint`, `OutboxEvent`, `ElectronicMiscDocument`, `Exchange`) are edited on the generic `/dashboard/<list-key>` pages. Those pages do not run the airline commands, and command-only lists reject direct writes.
+
+## Gaps
+
+- No page creates service requests, EMDs, or exchanges. No command exists for them.
+- No page calls `submitManualPaymentEvidence` or `requeueDeadLetteredOutboxEvent`.
+- Machine credentials are issued from the onboarding form, not a separate page.

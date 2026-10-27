@@ -1,8 +1,62 @@
 ---
 title: External storefronts
-description: Give an LLM the Construction storefront skill to adapt the built-in experience or create a separate client.
+description: Give an LLM the Construction storefront skill to adapt the built-in public website, customer account, and project portal or create a separate client.
 ---
 
-To create a custom Construction storefront, copy the skill and give it to your LLM. The skill will first explain that current Construction source has no canonical `features/storefront` layer, then inspect the actual public or portal routes and identify any backend contracts needed before treating them as a storefront.
+To create a custom Construction storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` implements the public contractor website and customer account, and how `features/portal` implements the client and trade partner project portal.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Construction codebase before proposing work.
+
+Skill file: [`/skills/openfront-construction-custom-storefront/SKILL.md`](/skills/openfront-construction-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live directly under `app/` (there is no route group). Screens live in `features/storefront/screens`, `features/storefront/account`, and `features/portal`. The website shows the `PublicSiteProfile` selected by `PUBLIC_SITE_KEY`, and only when that profile is published and its company is active.
+
+**Public website**
+
+| Route | Customer journey |
+|---|---|
+| `/` | Home: brand, services, past projects, start-a-project call to action |
+| `/services` | Published services |
+| `/services/[slug]` | Service detail with a link to request a quote |
+| `/projects` | Published portfolio projects, filterable by market |
+| `/projects/[slug]` | Project case study |
+| `/start-a-project`, `/client-intake` | Project inquiry form (`project_inquiry`) |
+| `/estimate` | Estimate request form (`estimate_request`) |
+| `/rfp` | RFP invitation form (`rfp_invitation`) |
+| `/trade-partners`, `/bid` | Trade partner interest form (`trade_partner_interest`) |
+| `/contact` | General contact form (`general_contact`) |
+| `/requests/[publicReference]/confirmation` | Inquiry receipt (`publicIntakeReceipt`) |
+| `/privacy` | Privacy notice from the site profile |
+
+All inquiry forms call `submitPublicIntake`. It creates an `IntakeSubmission` and links a lead and opportunity for staff.
+
+**Customer account**
+
+| Route | Customer journey |
+|---|---|
+| `/account` | Sign in, sign up (`registerConstructionCustomer`, needs a published site), profile, quote request form, request history |
+| `/account/requests/[id]` | One quote request: status, quote version, amount, terms, expiry; accept or cancel |
+| `/account/requests/[id]/payment` | Redirects to the request page. Online payment is not offered |
+| `/account/reset` | Password reset (needs SMTP) |
+
+Quote requests use `commandConstructionRequest` with `request`, `accept`, or `cancel`. Staff use `quote` and `cancel`. States are requested, quoted, accepted (stored as `payment_pending`), and cancelled.
+
+**Project portal**
+
+| Route | Participant journey |
+|---|---|
+| `/accept-invitation?token=…` | Accept a one-time project invitation (`acceptProjectInvitation`) |
+| `/portal` | Projects the participant belongs to |
+| `/portal/projects/[projectId]` | Project overview and inbox (`constructionPortalInbox`) |
+| `/portal/projects/[projectId]/[tool]` | Tools: `preconstruction` (Bids), `execution` (RFIs & submittals), `documents`, `billing` (Billing & waivers), `schedule`, `field` (Field updates), `quality-safety` |
+
+Portal actions call `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver`, `decideConstructionApproval` (owner approvals, after `constructionPortalApprovalSnapshot`), and `acknowledgeDocumentDistribution`. Unknown tool slugs fall back to the overview.
+
+## Journey boundaries
+
+- Website inquiries are anonymous. They are not linked to a customer and do not appear in `/account`.
+- There is no checkout or payment. An accepted quote is settled with the contractor outside the app.
+- Portal users see only items for their own project membership and portal organization. Financials, contracts, procurement, reports, team, and audit are not available in the portal.
+- Invitation links are shown once to the operator. The app does not email them.

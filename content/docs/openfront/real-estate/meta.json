@@ -1,11 +1,12 @@
 {
   "title": "Real Estate",
-  "description": "Listings, leads, showings, offers, transactions, and brokerage operations",
+  "description": "Listings, leads, showings, offers, deals, closing records, and commissions for a brokerage",
   "icon": "House",
   "root": true,
   "pages": [
     "---Introduction---",
     "index",
+    "getting-started",
     "---Dashboard---",
     "external-dashboard",
     "---Storefront---",

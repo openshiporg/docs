@@ -1,0 +1,28 @@
+---
+title: External storefronts
+description: Sports Agents has no customer-facing storefront yet. Use the skill to plan one and see which public routes exist.
+---
+
+To create a custom Sports Agents storefront, copy the skill and give it to your LLM. The skill will explain that Sports Agents has no `features/storefront` folder and no customer-facing app routes today, so any storefront starts from the Keystone schema and access rules rather than from an existing client.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, GraphQL schema, access rules, sessions, and provider boundaries in the supplied Sports Agents codebase before proposing work.
+
+Skill file: [`/skills/openfront-sports-agents-custom-storefront/SKILL.md`](/skills/openfront-sports-agents-custom-storefront/SKILL.md)
+
+## Current public routes
+
+There is no customer-facing storefront in the current source. These are the routes that answer without a dashboard session:
+
+| Route | What it does |
+|---|---|
+| `/` | Starter landing page with links to the dashboard and GraphQL API |
+| `/api/graphql` | GraphQL endpoint. Anonymous requests can run `redirectToInit` and `authenticatedItem`; list queries return nothing because every list needs a signed-in user |
+| `/dashboard/signin`, `/dashboard/reset` | Dashboard sign-in and password reset |
+| `/dashboard/signup` | Open only when `PUBLIC_SIGNUPS_ALLOWED=true` |
+| `/api/mcp-transport/[transport]` (GET) | Returns a small status message |
+
+## What a storefront would need
+
+- Public data. No list allows anonymous reads today. A storefront needs new models or new access rules that expose only what customers may see.
+- Customer identity. Sign-up creates a `User` with no role. There is no separate customer account or profile model.
+- Routes and UI. There is no `app/(storefront)` folder to adapt.

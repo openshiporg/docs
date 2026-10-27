@@ -1,43 +1,109 @@
 ---
 title: Openfront UIKit
-description: Component kits, releases, registry access, orders, payments, and entitlements.
+description: A self-hosted storefront and registry for one studio's shadcn-compatible components and kits, with releases, review, checkout, entitlements, and registry keys.
 icon: PanelsTopLeft
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront UIKit is a self-hosted component-kit catalog and private registry foundation. It models kits, releases and files, compatibility and examples, accessibility/review evidence, registry keys, checkout orders, payments and access grants.
+Openfront UIKit is a self-hosted storefront and registry for one studio's shadcn-compatible component source. Visitors browse components and kits. Signed-in customers unlock free items or buy paid ones, then pull source files with a registry API key. Operators author drafts, validate them, review and publish releases, and manage orders, payments, refunds, entitlements, and keys.
+
+- Source: [github.com/openshiporg/openfront-uikit](https://github.com/openshiporg/openfront-uikit)
+- Live demo: [uikit.openship.org](https://uikit.openship.org)
+- Setup: [Getting started](/docs/openfront/uikit/getting-started)
 
 <Callout type="warn">
-Before enabling paid access, verify manual-payment restrictions, immutable settlement, webhook replay, and entitlement behavior in the deployed environment.
+Before you sell paid kits, test checkout, webhooks, refunds, entitlement revocation, and registry key access against your own deployment with test credentials.
 </Callout>
 
-## Architecture and schema
+## Stack
 
-Catalog/release/design-system records are globally scoped. Customer commerce is user/product scoped through Order, KitAccess, and RegistryApiKey; there is no organization/team tenant graph. The graph includes brand settings, kit products, releases, component files, package exports, compatibility targets, usage examples, integration recipes, screenshots, accessibility audits, review workflows and changelogs. Commerce records include orders/items, provider/session/payment/event records and kit access. Registry API keys control package access.
+Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, PostgreSQL through Prisma 6, Tailwind CSS 4. Sessions are Keystone stateless cookie sessions that last 30 days.
 
-Public routes cover the kit catalog, `/kits/[slug]`, kit checkout, account token, and registry docs. `/api/registry/[code]` validates the code, product, rate limit, key/access summary, release/version, and manifest integrity before returning files. Operator routes cover catalog, design systems, components, quality, releases, API keys, orders, payments, refunds, access, and audit.
+## Models and tenancy
 
-## Main workflow
+There is one studio per deployment. There is no organization, team, or store tenant model. Catalog, release, and design-system records are global. Customer records are scoped to the signed-in user through `Order`, `Payment`, `KitAccess`, and `RegistryApiKey`.
 
-An operator publishes a kit release and its immutable files/exports. A user selects a kit, completes a verified checkout, receives a scoped entitlement, and creates or rotates a registry key. Registry requests validate both key and active access before returning a release artifact.
+The model registry is `features/keystone/models/index.ts`. Current lists:
 
-## Bounded GraphQL operations
+| Area | Models |
+|---|---|
+| People and roles | `User`, `Role` |
+| Studio identity | `BrandSettings` (name, mark, hue, logo icon and color, tagline, description, email, website, copyright name) |
+| Catalog | `KitProduct`, `DesignSystem`, `DesignToken` |
+| Releases | `ComponentRelease`, `ComponentFile`, `ComponentValidation`, `ReviewWorkflow`, `ChangelogEntry`, `PackageExport` |
+| Quality and docs | `AccessibilityAudit`, `CompatibilityTarget`, `Screenshot`, `UsageExample`, `IntegrationRecipe` |
+| Commerce | `Order`, `OrderItem`, `Payment`, `PaymentEvent`, `PaymentProvider`, `PaymentSession`, `Refund` |
+| Access | `KitAccess`, `RegistryApiKey` |
+| Records | `AuditEvent`, `OutboxEvent`, `RequestRateLimit` |
 
-Public catalog and operator projections expose kit/release/access/order state without returning key hashes or private files. Named operations submit, publish, deprecate, and review releases; create/revoke registry keys and kit access; create/complete/refund kit orders; handle payment webhooks; settle permitted offline orders; edit products; and run onboarding. Registry delivery independently checks the key, user, kit entitlement, release, and artifact before returning content.
+Key states in code:
 
-## Setup and onboarding
+- `KitProduct.registryType`: `ui`, `block`, `component`, `hook`, `lib`, `page`, `file`, `theme`, `style`, `base`, `item`. `accessType`: `free` or `paid`.
+- `ComponentRelease.status`: `draft` → `review` → `stable` → `deprecated`. No other transitions are allowed.
+- `ReviewWorkflow.status`: `requested`, `in_review`, `approved`, `changes_requested`.
+- `Order.status`: `pending`, `awaiting_payment`, `paid`, `failed`, `cancelled`, `refunded`.
+- `Payment.status`: `pending`, `authorized`, `captured`, `failed`, `canceled`, `refunded`.
+- `Refund.status`: `pending`, `succeeded`, `failed`.
+- `KitAccess.status`: `active` or `revoked`. `source`: `free`, `purchase`, or `admin`. One access row per user and product.
+- `RegistryApiKey.status`: `active` or `revoked`. Scope is `registry_read`.
 
-Use a disposable PostgreSQL database with synthetic packages and test credentials. `runUIKitOnboarding` creates local catalog, design-system, token, component, release, quality, and commerce data. Run it twice on an isolated current database, then verify catalog projections, review/publish/deprecate transitions, key revocation, checkout, operator settlement, refund, and entitlement access. Seeded kits are not a hosted registry or package service.
+## Roles and permissions
+
+`Role` has twelve flags: `canAccessDashboard`, `canReadProducts`, `canManageProducts`, `canReadOrders`, `canManageOrders`, `canReadPayments`, `canManagePayments`, `canReadUsers`, `canManageUsers`, `canReadRoles`, `canManageRoles`, `canManageOnboarding`. The first user created at `/dashboard/init` gets an Admin role with all of them.
+
+Many raw lists deny direct GraphQL writes. Operator screens read through bounded queries (`uikitOperations`, `uikitOperatorAccess`) and write through named mutations. Consequential mutations re-read the role from the database (`requireLivePermissions`) instead of trusting only the session copy.
+
+## Main workflows
+
+**Release lifecycle.** An operator creates a draft for a product (`createComponentDraft`), edits files (`saveComponentDraft`, which checks the expected revision and manifest hash), and runs `validateComponentDraft`. Validation runs the draft in an isolated sandbox and stores a `ComponentValidation` record. The operator then submits for review, a reviewer approves or requests changes, and the release is published as `stable`. Stable releases can be deprecated. Publishing checks that product terms and release notes did not change after approval.
+
+**Checkout.** A signed-in customer calls `createKitCheckoutSession`. Free products unlock at once and create a `KitAccess` row with source `free`. Paid products need a stable release with a manifest hash, then go through Stripe or PayPal. The provider webhook or `completeKitOrder` settles the order and grants access. Manual (offline) payments cannot be used by customers; an operator records them with `settleKitOrderOffline`.
+
+**Registry delivery.** A customer creates a registry key at `/account/token` (up to five active keys). The key is shown once and stored as a SHA-256 hash. `GET /r/<code>.json` and `GET /api/registry/<code>` return the stable release manifest. Paid files are returned only if the key or session has access. Without access the response is 401 (not signed in) or 402 (signed in, no purchase) with public metadata and links to sign in or check out.
+
+**Refunds and revocation.** Operators refund captured payments (`refundKitPayment`, idempotent by key), reconcile pending refunds (`reconcileKitRefund`), and revoke access (`revokeKitAccess`). These write `AuditEvent` and `OutboxEvent` records.
+
+## Named GraphQL operations
+
+Custom roots are defined in `features/keystone/mutations/index.ts`.
+
+| Kind | Operations |
+|---|---|
+| Public queries | `publicBrand`, `publicCatalog(code, slug, details, limit)` (at most 24 items, active and visible products only), `viewerAccessSummary`, `redirectToInit` |
+| Operator queries | `uikitOperations(limit)`, `uikitOperatorAccess`, `uikitProductEditor(id)`, `uikitDesignSystemEditor`, `uikitBrandSettings`, `componentDraftAuthoringContext(releaseId)`, `componentDraftReviewContext(releaseId)` |
+| Customer mutations | `createKitCheckoutSession`, `completeKitOrder`, `createStorefrontRegistryApiKey`, `revokeStorefrontRegistryApiKey`, `updateActiveUser` |
+| Release mutations | `createComponentDraft`, `saveComponentDraft`, `validateComponentDraft`, `submitComponentReleaseForReview`, `decideComponentReview`, `publishComponentRelease`, `deprecateComponentRelease` |
+| Catalog and studio mutations | `createUIKitProduct`, `updateUIKitProduct`, `createUIKitDesignSystem`, `updateUIKitDesignSystem`, `createUIKitDesignToken`, `updateUIKitDesignToken`, `updateUIKitBrandSettings` |
+| Commerce mutations | `settleKitOrderOffline`, `refundKitPayment`, `reconcileKitRefund`, `revokeKitAccess` |
+| Onboarding | `runUIKitOnboarding(template, brand)` |
+
+Payment webhooks are not a GraphQL root. They arrive at `POST /api/payment-providers/<providerCode>/webhook`.
+
+## Onboarding
+
+Signed-in users with `canManageOnboarding` see onboarding cards in the dashboard sidebar. The dialog asks for studio name, brand mark, accent hue, email, website, tagline, and description, then calls `runUIKitOnboarding`. It needs both `canManageOnboarding` and `canManageProducts`.
+
+Two templates exist:
+
+- `full`: brand settings, the "Studio Design System" with its tokens, eight products (four free components: Status Badge, Copy Button, Stat Card, Empty State; four paid: Pricing Table, Dusk Launch Kit, Mist Dashboard Kit, Quartz Checkout Kit), and Stripe, PayPal, and Manual payment providers.
+- `minimal`: brand settings, the design system, Status Badge, Pricing Table, Stripe, and Manual.
+
+Each seeded product gets a release that goes through submit, approve, and publish, so it ends `stable`. The run is one serializable transaction. Running it again adds missing records and does not overwrite tokens you edited. Seed data is sample content; replace it before you sell anything.
 
 ## Integrations
 
-The code-owned payment registry contains Stripe, PayPal, and manual adapters plus signed webhook ingress. Adapter source is not settlement proof. Manual capture/refund/status intentionally throws and must remain an operator-recorded offline settlement boundary; it cannot grant public paid access by itself.
+- **Payments**: `features/integrations/payment` registers `stripe` (Stripe Checkout Sessions), `paypal` (PayPal Orders v2, sandbox or live by `NEXT_PUBLIC_PAYPAL_SANDBOX`), and `manual`. Stripe is offered at checkout only when `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set. PayPal needs `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and `PAYPAL_WEBHOOK_ID`. Manual capture, refund, and status calls throw on purpose; operators record them.
+- **Email**: password reset email through SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`). Without `SMTP_HOST`, reset email is unavailable.
+- **AI assistant**: the dashboard chat at `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`) and requires dashboard access. It talks to an MCP endpoint at `/api/mcp-transport/<transport>` that exposes generic tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) over the signed-in user's GraphQL session.
+- **CLI**: `/openfront-ui.js` serves `scripts/openfront-ui.js`. It supports `list`, `search`, `view`, `add`, `update`, and `config`, reads `OPENFRONT_REGISTRY_URL` and `OPENFRONT_TOKEN`, checks file paths and SHA-256 hashes, and never installs packages or runs downloaded code.
 
-External package hosting, artifact signing/provenance, malware scanning, CDN delivery, package-manager publication, and supply-chain attestation are not implemented by registry/file records.
+## Limitations
 
-## Security and deployment
-
-Hash registry keys, restrict them to the entitled user/kit, support revocation and rotation, and avoid exposing private files through predictable URLs. Settlement and entitlement creation need one transaction, verified provider events, and replay protection. Railway builds then migrates at start; the package's `next lint` script is invalid under Next.js 16.
-
-Deploy only after reviewed migrations, current schema/type/tests/build, catalog/release lifecycle, key/access revocation, rate limits, checkout/refund/webhook replay, artifact integrity, retention, backup restoration, and responsive catalog/operator checks. A registry key or hash-checked manifest is not proof of package signing, malware safety, payment settlement, accessibility quality, compatibility, or supply-chain certification.
+- **Draft validation is macOS-only.** The runner uses `/usr/bin/sandbox-exec` and a Playwright Chromium headless shell under `~/Library/Caches/ms-playwright`. On Linux hosts, including Railway, validation fails closed. Drafts created through Studio require passing validation before review, so they cannot be reviewed or published on those hosts. Onboarding seed releases do not require validation.
+- **No outbox worker.** `OutboxEvent` rows are written but nothing in the repository delivers them.
+- **`RequestRateLimit` is defined but not used** by any route in current code.
+- **File storage.** Only `S3_ENDPOINT` is read, to allow that host in `next/image`. There is no Keystone file or image storage configured.
+- **No package hosting.** There is no npm publishing, artifact signing, malware scanning, or CDN delivery. A manifest hash proves the files match the stored release, nothing more.
+- **README drift.** The README lists `npm run test`, `npm run typecheck`, and `npm run check:deployment`; `package.json` does not define these scripts.
+- Tests (`tests/*.test.cjs`) use Node's built-in runner with mocks. They do not exercise a database or real providers.

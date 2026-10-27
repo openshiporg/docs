@@ -1,0 +1,41 @@
+---
+title: Openfront Cannabis
+description: Self-hosted dispensary menu and operator application for licenses, staff authority, package custody, recalls, in-store POS, cash, and reconciliation.
+icon: Leaf
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Openfront Cannabis is a self-hosted dispensary application. It pairs a public, age-gated menu with an operator dashboard for licenses and staff credentials, jurisdiction sales rules, package receiving and custody, holds and recalls, counter ID checks, POS carts and sales, register shifts and cash, refunds, compliance incidents, state-reporting queues, reconciliation, and an audit trail.
+
+<Callout type="warn">
+Openfront Cannabis does not grant a cannabis license, connect to a state traceability system, or certify compliance with any market's rules. Its integration inbox and outbox records are not state-provider certification. Each deployment needs its own legal, regulatory, payment, and operational review.
+</Callout>
+
+## What the codebase contains
+
+- **Architecture:** Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL. Keystone file storage uses S3-compatible object storage.
+- **Schema:** Keystone lists grouped into authority (organization, premises, licenses, staff credentials, rule packs, customers, eligibility evidence), inventory (products, packages, holds, manifests, inventory events, recalls), commerce (registers, shifts, cash events, tenders, carts, sales, refunds), and operations (audit, idempotency, outbox, inbox, integrations, reconciliation, incidents).
+- **Operator surfaces:** `/dashboard/platform/*` pages for the control room, authority, staff, compliance, customers, recalls, inventory, receiving, menu, store settings, POS, sales, cash, reconciliation, incidents, and audit log, mounted in the shared Keystone dashboard shell.
+- **Storefront:** a public menu at `/`, product detail at `/menu/[id]`, and visit details at `/visit`. There is no online ordering; purchase happens in store.
+- **Onboarding:** a setup dialog that installs an owner-supplied authority pack through `runCannabisOnboarding`, with an optional fictional sample store for evaluation.
+
+## Writes go through commands
+
+Every Keystone list uses immutable access: generic GraphQL create, update, and delete operations are denied. All writes go through named mutations. Most of them run through a controlled-operation helper that re-reads the actor and requires a current role permission, a staff credential covering the activity, a current license for the premises, and an idempotency key. Each command writes an `AuditEvent`, and state-reported actions also queue an `OutboxEvent`.
+
+Some commands exist but are switched off in source by a runtime-capability list. In-store selling is on; online intake, pickup carts, generic inventory events, and provider adapters are off. See [Architecture and workflows](/docs/openfront/cannabis/architecture-workflows).
+
+## Ownership and tenancy
+
+`Organization` is the licensed business and `Premises` is the licensed store. Users, roles, staff credentials, and most records carry both relationships. Operator reads are scoped to the signed-in user's organization and premises, and people management is premises-scoped. The public storefront serves exactly one scope: it stays unavailable until exactly one active organization with one active premises exists.
+
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/cannabis/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
+  <Card title="Architecture and workflows" href="/docs/openfront/cannabis/architecture-workflows" description="Data model, lifecycles, GraphQL commands, and access control." />
+  <Card title="External dashboards" href="/docs/openfront/cannabis/external-dashboard" description="Adapt the operator dashboard or build a separate client." />
+  <Card title="External storefronts" href="/docs/openfront/cannabis/external-storefront" description="Adapt the public menu or build a separate client." />
+  <Card title="Integrations and boundaries" href="/docs/openfront/cannabis/integrations-boundaries" description="Traceability, payments, storage, email, AI, and MCP boundaries." />
+  <Card title="Current limitations" href="/docs/openfront/cannabis/limitations" description="Gated commands, missing flows, and work outside the source." />
+</Cards>

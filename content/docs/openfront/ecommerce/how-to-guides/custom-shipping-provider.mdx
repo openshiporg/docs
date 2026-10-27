@@ -5,16 +5,14 @@ description: Connect a local shipping module or an independently deployed HTTP a
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront's shipping adapter dispatcher supports two provider modes:
+The shipping dispatcher supports two modes:
 
-- a local module such as `shippo`, `shipengine`, or `manual` under `features/integrations/shipping`;
-- an external HTTP route app selected by the operation URLs stored on a `ShippingProvider` record.
-
-The route-app mode lets a merchant connect custom shipping logic without adding that implementation to the Openfront repository.
+- a local module such as `shippo`, `shipengine` or `manual` in `features/integrations/shipping`;
+- an external HTTP app chosen by URLs stored in the operation fields of a `ShippingProvider` record.
 
 ## Adapter operations
 
-The configurable fields are:
+The fields are:
 
 - `getRatesFunction`
 - `validateAddressFunction`
@@ -22,51 +20,40 @@ The configurable fields are:
 - `trackShipmentFunction`
 - `cancelLabelFunction`
 
-`features/keystone/utils/shippingProviderAdapter.ts` reads the relevant field. If it starts with `http`, Openfront sends the route a JSON `POST` containing the selected `provider` object and the operation arguments. Otherwise, it imports `features/integrations/shipping/<value>.ts` and calls the corresponding export.
+`features/keystone/utils/shippingProviderAdapter.ts` reads the field. If it starts with `http`, Openfront sends a JSON `POST` with the provider record and the arguments. Otherwise it imports `features/integrations/shipping/<value>.ts` and calls the export named after the field.
 
-Examples of operation arguments include:
+Arguments by operation:
 
-- rates: `order` and `dimensions`;
+- rates: `order`, `dimensions`;
 - address validation: `address`;
-- label creation: `order`, `rateId`, `dimensions`, and `lineItems`;
+- label: `order`, `rateId`, `dimensions`, `lineItems`, `idempotencyKey`;
 - tracking: `trackingNumber`;
 - cancellation: `labelId`.
 
-The external route returns the same provider-neutral JSON shape expected from a local module.
+## Configure a provider
 
-## Configure an external route app
-
-1. Deploy trusted HTTPS endpoints for the operations the app supports.
-2. Create a `ShippingProvider` with its name, active state, access token, from-address, regions, metadata, and operation URLs.
-3. Have the route app translate Openfront's operation payload into the external service's API and normalize the result back into Openfront's rate, validation, label, tracking, or cancellation shape.
-4. Test every enabled operation against synthetic addresses, disposable orders, and sandbox credentials.
-5. Verify duplicate, timeout, provider-failure, and reconciliation behavior before buying real labels.
+1. Deploy HTTPS endpoints for the operations you support, or add a local module.
+2. Create a `ShippingProvider` with a name, `isActive`, an access token, a from-address, regions, and the five operation fields. Use the generic `/dashboard/shipping-providers` editor for URL fields.
+3. Test each operation with test addresses and sandbox credentials.
+4. Retry a label purchase with the same idempotency key and confirm one label.
 
 <Callout type="warn">
-The current bridge sends the selected provider object—including its queried access token—and order, address, parcel, or tracking data to the configured destination. Provider routing is therefore privileged integration configuration. Restrict who can edit it, use trusted HTTPS routes, authenticate requests to the adapter app, minimize the payload, validate responses, add timeouts, and enforce the deployment's outbound-network policy. Preserve external route adapters; harden their trust boundary.
+The bridge sends the provider record, including its access token, plus order, address and parcel data to the configured URL. Only trusted operators should be able to change these fields. Use HTTPS endpoints you control and authenticate requests inside the adapter app.
 </Callout>
 
-## Current source limitations
+## Current source limits
 
-The backend dispatcher and `ShippingProvider` model support operation URLs, but the dashboard paths are inconsistent:
+- The order-level "new provider" form stores an API URL in `metadata.apiUrl` and sets no operation field.
+- The "Custom Provider" option in the provider drawer sets every field to `custom`, but no `custom.ts` module exists.
+- The bridge has no timeout, destination allowlist, request signature or response schema.
+- The POST body does not include the operation name.
 
-- the order-level “new provider” form collects an API URL but stores it only in `metadata.apiUrl` instead of the five operation fields;
-- the general custom-provider drawer stores `custom` as a local module token even though no `features/integrations/shipping/custom.ts` module exists;
-- the HTTP bridge has no built-in timeout, destination validation, adapter authentication, or runtime response schema;
-- separate operations do not include an explicit operation name in the POST body, so a shared endpoint must infer it from the payload unless the protocol is extended.
+## Required checks
 
-Configure the operation fields directly through a trusted administrative path until those UI paths are repaired. Do not treat successful provider-row creation as proof that route dispatch works.
-
-## Required verification
-
-- unauthorized users cannot read the access token or alter adapter destinations;
-- operation URLs cannot be changed through untrusted storefront input;
-- the adapter authenticates the Openfront caller;
-- rate, address, order, and line-item relationships are checked before provider work;
-- label purchase and cancellation are idempotent;
-- malformed, delayed, partial, or oversized responses fail closed;
-- adapter credentials and customer addresses are redacted from logs and client responses;
-- tracking replay is deduplicated;
-- label cost, status, tracking, and cancellation reconcile with the fulfillment record.
+- Unauthorized users cannot read the access token or change the fields.
+- Address, order and line-item relationships are checked before carrier calls.
+- Label purchase is idempotent.
+- Malformed, slow or partial replies fail without writing records.
+- Tokens and addresses do not appear in logs or browser errors.
 
 See [Shipping providers](/docs/openfront/ecommerce/shipping-providers).

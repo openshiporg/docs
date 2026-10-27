@@ -6,3 +6,42 @@ description: Give an LLM the Hospital storefront skill to adapt the built-in exp
 To create a custom Hospital storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Hospital's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Hospital codebase before proposing work.
+
+Skill file: [`/skills/openfront-hospital-custom-storefront/SKILL.md`](/skills/openfront-hospital-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/`. Screens live in `features/storefront/screens`, data loaders in `features/storefront/lib/data`, and server actions in `features/storefront/actions`. There are no patient accounts, carts, or payments.
+
+| Route | Visitor journey |
+|---|---|
+| `/` | Home: practice identity, care services grouped by service line, featured clinicians, and the three steps (choose a visit, request a time, complete intake) |
+| `/care` | Care services: bookable visit types grouped into primary care, behavioral health, and other care |
+| `/providers` | Care team: clinicians accepting online requests and the visits each offers |
+| `/providers/[id]` | Clinician detail: about, visits, and where they practice |
+| `/locations` | Facilities taking online requests, with contact details and visits offered |
+| `/book` | Request a visit: list of bookable visit types |
+| `/book/[slug]` | Pick a clinician, place, and open time, then send the request with name, contact, optional date of birth, reason, and consent. The confirmation shows the appointment reference and an intake link |
+| `/intake#accessCode=…` | One-time pre-visit intake. The code is read from the URL fragment, so it is not sent in the page request. Submits responses, contact updates, and consent |
+
+Unknown paths render the storefront not-found page. When no user exists yet, every route redirects to `/dashboard/init`.
+
+## GraphQL operations used
+
+| Operation | Called from | Notes |
+|---|---|---|
+| `HospitalBranding` (`hospitalBranding`) | All pages | Public profile: name, logo, theme, address, contact, media |
+| `BookableAppointmentTypes` (`bookableAppointmentTypes`) | Home, care, book, locations, provider detail | Only `bookable` visit types with active providers. Price is shown as "Estimate provided by clinic" |
+| `BookableProviders` (`bookableProviders`) | Home, providers, provider detail | Public clinician fields and visit types |
+| `AvailableAppointmentSlots` (`availableAppointmentSlots`) | `/book/[slug]` | Slots for one visit type, provider, facility, and date, in the facility time zone |
+| `RequestAppointment` (`requestAppointment`) | `/book/[slug]` | Anonymous. Rate limited per network and globally. Creates a `requested` appointment, patient match, consent, and intake form, and returns a one-time intake code |
+| `IntakeFormByAccessCode` (`intakeFormByAccessCode`) | `/intake` | Bounded projection of one intake form. Codes are hashed at rest and expire after 7 days |
+| `SubmitIntakeForm` (`submitIntakeForm`) | `/intake` | Saves responses and consent; staff review it in the dashboard |
+
+The consent statements and policy versions sent with booking and intake are defined in `features/storefront/lib/workflowConsent.ts`.
+
+## What is not there
+
+- No patient sign-in, appointment history, rescheduling, or cancellation for patients. `PatientPortalAccess` exists in the schema but nothing issues invites.
+- No online payment or price display.
+- A request is not a confirmed booking. Staff confirm it in the dashboard.

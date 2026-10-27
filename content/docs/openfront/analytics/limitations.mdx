@@ -1,0 +1,56 @@
+---
+title: Analytics current limitations
+description: What the current Openfront Analytics source does not do, including tenancy, data retention, geolocation, collector trust, and missing dashboard actions.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+This page describes source boundaries. It is not legal advice. Cookieless tracking does not by itself settle consent, notice, or data-protection duties for your sites; that is an owner decision.
+</Callout>
+
+## Tenancy and access
+
+- One deployment holds one set of sites. There is no organization, team, or per-site membership. Anyone with `canReadSites` reads every site; anyone with `canManageSites` changes every site.
+- Shared links are bearer URLs. A link without a password can be opened by anyone who has it.
+- `/api/track` has no authentication or rate limiting. The public site id and the domain check are the only gates, and server-side callers can send any URL on the site's domain.
+
+## Data collection
+
+- The client IP is taken from `X-Forwarded-For` or `X-Real-IP` with no trusted-proxy list. Behind a proxy that passes client values through, visitor hashes can be spoofed.
+- Country depends on an edge header or a timezone guess. No GeoIP database is bundled, and region and city are never filled in by the collector, so those breakdowns stay "Unknown" for live traffic (only imported visits can carry them).
+- The same person gets a new visitor hash each UTC day and on each device or browser, so multi-day unique visitors are not tracked.
+- Bot detection is a User-Agent pattern match only.
+- Visits only stay open for 30 minutes of inactivity; there is no way to change the window.
+
+## Data retention and deletion
+
+- Nothing deletes old visits or events on a schedule. Data grows until you delete it.
+- `deleteVisitorData` finds only visits tagged with a `distinctId` from `identify()`. Anonymous visits cannot be looked up for a person.
+- Deleting a site deletes all of its data at once. There is no archive export first.
+
+## Dashboard gaps
+
+- Goals, funnels, and segments can be created and deleted on the platform pages, but not edited. Edit them on the generic `/dashboard/<list-key>` pages.
+- Shared links have no expiry field in the platform form. Set `expiresAt` on the generic `SharedLink` page or through GraphQL.
+- The API Keys page creates and lists keys. Revoking or deactivating a key is done on the generic `ApiKey` page. The `usageCount` field exists but nothing updates it.
+- Users and roles are managed only on the generic list pages.
+- There is no CSV or data export, no scheduled email reports, no alerts, no annotations, and no comparison between sites.
+- Funnels count steps only within one visit.
+
+## APIs
+
+- Report queries return untyped `JSON`. Clients must validate the shape.
+- The MCP tool list includes commerce tools (`searchProducts`, `createCart`, `placeOrder`, and others) carried over from Openfront E-commerce. This schema has no such lists, so those tools fail. Only the generic schema tools are meaningful here.
+- The MCP endpoint forwards the session cookie only, so API keys cannot be used with it.
+- There is no importer for other analytics tools' export formats; `importSiteSessions` needs data already in its own shape.
+
+## Deployment
+
+- The repository does not ship a `.env.example`.
+- The S3 settings are required in production even though no list stores files today.
+- There is no background worker. Nothing runs on a schedule.
+- `npm test` covers analytics helpers and dashboard security checks; it is not a full end-to-end suite. There is no separate typecheck script.
+
+Before a real deployment, the operator must supply a correctly configured reverse proxy, backups, monitoring, secret management, a retention policy, and any privacy notice their sites need.

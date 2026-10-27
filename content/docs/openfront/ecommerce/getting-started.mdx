@@ -1,19 +1,23 @@
 ---
 title: Getting started
-description: Install Openfront Ecommerce and create an isolated local store.
+description: Clone Openfront Ecommerce, configure PostgreSQL, sessions and S3 storage, apply migrations, create the first user, run onboarding, and deploy.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-This guide follows the current repository scripts and `.env.example`. It sets up a local evaluation, not a production store.
+This guide follows the current `package.json` scripts, `.env.example` and the environment reads in the source. It sets up a local evaluation store.
 
-## Prerequisites
+## Live demo
 
-- Node.js 20 or newer
-- PostgreSQL
-- Git and npm
-- an empty, isolated database
+A hosted demo runs at [e-commerce.openship.org](https://e-commerce.openship.org). The dashboard is at `/dashboard` on the same origin. It holds demo data only.
+
+## Requirements
+
+- Node.js 20 or newer (`package.json` declares `"node": ">=20.0.0"`).
+- npm. The repository ships a `package-lock.json`.
+- A PostgreSQL database you are allowed to migrate. Use an empty one for a first run.
+- S3-compatible object storage. It is required when `NODE_ENV=production`.
 
 <Steps>
 <Step>
@@ -23,61 +27,102 @@ This guide follows the current repository scripts and `.env.example`. It sets up
 git clone https://github.com/openshiporg/openfront.git
 cd openfront
 npm install
-```
-</Step>
-<Step>
-### Create `.env`
-
-Copy the checked-in example and replace its placeholders:
-
-```bash
 cp .env.example .env
 ```
-
-The required core values are:
-
-```bash
-DATABASE_URL="postgresql://username:password@localhost:5432/openfront"
-SESSION_SECRET="replace-with-a-random-string-at-least-32-characters"
-```
-
-The example also lists SMTP, S3-compatible storage, Stripe, PayPal, OpenRouter, default-region, branding and marketplace-token variables. Configure only the integrations you will test, and keep every real secret out of source control.
 </Step>
 <Step>
-### Review migrations and start development
+### Fill in `.env`
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL` and `SESSION_SECRET`, and rejects a session secret shorter than 32 characters. The five S3 values fall back to development placeholders outside production and throw an error when they are missing in production.
+
+```bash
+DATABASE_URL="postgresql://user:password@localhost:5432/openfront"
+SESSION_SECRET="replace-with-at-least-32-random-characters"
+
+S3_BUCKET_NAME="your-bucket"
+S3_REGION="your-region"
+S3_ACCESS_KEY_ID="your-access-key-id"
+S3_SECRET_ACCESS_KEY="your-secret-access-key"
+S3_ENDPOINT="https://your-s3-compatible-endpoint"
+```
+
+Optional variables the code reads:
+
+| Variable | Used for |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Email (password reset, order emails). Without `SMTP_HOST`, password-reset links cannot be sent. |
+| `NEXT_PUBLIC_STRIPE_KEY` (or `STRIPE_PUBLISHABLE_KEY`), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe adapter. A Stripe provider counts as configured only when the public and secret keys are set. |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal adapter |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared keys for the dashboard AI assistant |
+| `NEXT_PUBLIC_DEFAULT_REGION` | Fallback storefront country code (default `us`) |
+| `NEXT_PUBLIC_BACKEND_URL` | Absolute origin used for GraphQL calls and OAuth redirects when set |
+| `HIDE_OPENFRONT_BRANDING` | `true` hides Openfront branding in the storefront |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` enables `/dashboard/signup` |
+| `TRUSTED_PROXY_IPS` | Comma-separated proxies whose forwarded client IP is trusted (used by API-key IP restrictions) |
+| `CUSTOMER_TOKEN_MAX_AGE_DAYS` | Lifetime of `ctok_` customer tokens (default 90) |
+| `CREDENTIAL_PEPPER` | Secret for hashing tokens and cart proofs; falls back to `SESSION_SECRET` |
+| `NEXT_PUBLIC_VIEW_ORDER` | Fallback dashboard field order when the generated view-order file is unavailable |
+
+`.env.example` also lists `MARKETPLACE_TOKEN_SECRET`. The current application code does not read it. Keep `.env` out of source control.
+</Step>
+<Step>
+### Apply migrations and start
 
 ```bash
 npm run dev
 ```
 
-The current script runs Keystone schema generation, `prisma migrate deploy`, and the Next.js development server. Review the target `DATABASE_URL` and migration history before running it.
+`npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy`, and starts `next dev`. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`.
+
+<Callout type="warn">
+`npm run dev` migrates whatever database `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+Once running:
+
+- Storefront: `/` redirects to a country path such as `/us`.
+- Dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
 </Step>
 <Step>
-### Create the initial dashboard user
+### Create the first user
 
-Open `/dashboard/init` on the local origin if the database has no user, then sign in at `/dashboard`.
+While the database has no users, every page redirects to `/dashboard/init`. The form there creates the first user with a role that has every permission. Then sign in at `/dashboard/signin`.
 </Step>
 <Step>
-### Apply the demo setup
+### Run onboarding
 
-Use the dashboard onboarding flow or the repository's guarded seed command for its intended local runtime. The checked-in seed describes the Impossible Tees store, three regions, products, variants, regional prices, categories, collections and provider records.
+Open the onboarding dialog from the dashboard sidebar. It offers three templates:
 
-Run onboarding twice only on an isolated evaluation database and confirm it reuses stable business keys.
+| Template | What it creates |
+|---|---|
+| Complete Setup | The Impossible Tees store, three regions (North America in USD, Europe in EUR, United Kingdom in GBP) with nine countries, Stripe, PayPal and a Manual (`pp_system_default`) payment provider, a manual fulfillment provider, Standard, Express and Return shipping, four categories, three collections and ten published products with variants, regional prices and stock |
+| Basic Setup | The store, the North America region, the Manual provider, Standard shipping, one category, one collection and one product |
+| Custom Setup | Same as Basic, but you can edit the JSON for each section before running |
+
+Onboarding runs GraphQL `create` mutations in your browser session, so your role needs permission for each list. It sets your user's `onboardingStatus` to `in_progress`, then `completed`. It does not check for existing records. A second run on the same database fails on unique values such as currency codes and product handles, so run it once on an empty database.
+
+The seeded Stripe and PayPal providers only work after you set their environment variables. The seeded Manual provider cannot complete storefront checkout (see [Payment providers](/docs/openfront/ecommerce/payment-providers)).
 </Step>
 </Steps>
 
-## What to check
+## Deploy
 
-- `/` redirects or resolves to the configured default country/region storefront.
-- `/dashboard` requires the expected session and shows the configured store.
-- `/api/graphql` reflects the generated schema from this exact source.
-- published products have variants and prices for the region you are browsing.
-- cart and order operations reject guessed or mismatched ownership.
-- disabled or unconfigured providers fail closed.
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`. It does not migrate. |
+| `npm run migrate`, `npm run release:migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
 
-<Callout type="warn">
-Do not use a root HTTP 200 or seeded products as proof that checkout, provider webhooks, refunds, shipping, API-key scopes or OAuth are safe. Test the exact workflow and negative cases you intend to deploy.
-</Callout>
+A release builds, applies migrations once against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel import button. See [Deployment](/docs/openfront/ecommerce/deployment).
 
 ## Next
 

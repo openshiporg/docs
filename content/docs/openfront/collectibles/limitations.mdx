@@ -1,0 +1,52 @@
+---
+title: Collectibles current limitations
+description: Card-shop flows, providers, and operational work that the current source does not provide.
+icon: ShieldAlert
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+This page lists gaps found in the current source. It is not a complete readiness checklist for running a card shop.
+</Callout>
+
+## Catalog and pricing
+
+- **Pokémon English only.** The bundled checklists cover 19 English sets plus one upcoming pre-order set. Other games and Japanese or other-language catalogs are not bundled. The `cardLanguage` field exists, but there is no import for other languages.
+- **New sets need a code change.** `importCardCatalog` reads checklists bundled in the repository. Adding a set means adding its JSON file to `features/keystone/lib/pokemon/checklists`.
+- **No condition-level market prices.** TCGCSV provides prices per card and finish. Conditions are priced as a percentage of the NM reading through `PricingRule`.
+- **No graded market comps.** Slab prices are set by the shop; there is no graded-price source.
+- **No scheduled refresh.** Market prices refresh and repricing happen only when staff run them on **Market & Repricing**. There is no cron job or worker.
+- **Manual review for big moves.** Rule prices that exceed a rule's maximum change are listed for review and are not applied automatically; staff change those prices by hand.
+
+## Buying, consignment, and payouts
+
+- **Trade-in payouts are status changes.** Marking a trade-in `paid` records status only. There is no cash payout integration and no store-credit balance or ledger; the cash or store credit choice is stored as `disposition`.
+- **Consignment settlements are not generated.** `ConsignmentSettlement` and `SettlementLine` can be read but no code creates them, and generic GraphQL create and update are denied. Consignor payouts must be handled outside the application.
+- **Transition rules are enforced in the dashboard.** Trade-in, consignment, dispute, and seller status maps are checked in server actions. A direct GraphQL client with the list's manage permission can write other status values.
+
+## Selling
+
+- **Auctions and offers are disabled.** `placeCollectibleBid` and `submitCollectibleOffer` throw while `AUCTION_LIFECYCLE_RELEASED` and `OFFER_LIFECYCLE_RELEASED` are `false`. Auction, Bid, Offer, and OfferRevision lists are read-only desks.
+- **No pre-order deposits.** Pre-orders are paid in full at checkout. Guest pre-order limits apply per cart only, because guests have no order history to count.
+- **No alerts.** The want list shows which wants the shop can fill when the customer visits. There are no restock, price-drop, or saved-search emails.
+- **No POS, events, or tournaments.** The product is an online storefront and back office.
+- **No marketplace channel sync.** Stock is not pushed to TCGplayer, eBay, or other channels.
+
+## Tenancy and access
+
+- **One shop per deployment.** Collectibles commands require exactly one `Store` record. There is no multi-store isolation in one database.
+- **Store memberships are not enforced.** `StoreMembership` records staff roles, but access checks use role permissions.
+- **No identity, grading, or risk provider.** `SellerProfile` identity state, `GradeObservation` verification state, and `RiskAssessment` are set by staff or left unset. No external service verifies them.
+
+## Provenance and compliance
+
+- Grades, certificates, provenance, and valuations are recorded observations with disclaimers. The software does not authenticate cards or slabs.
+- The demo seed uses labelled sample slab certificates and a fictional shop. Replace seed data before real use.
+- The application does not provide PCI DSS or any other certification. Payment card handling is delegated to Stripe or PayPal when configured.
+
+## Deployment
+
+- `npm run dev` applies migrations to the configured database. `npm run build` does not; run `npm run migrate` as a separate release step.
+- Background delivery (webhook retries, notification intents) runs only when triggered. A serverless deployment gets no persistent worker from the source.
+- Empty route folders exist for `/api/ucp/*`, `/api/lifecycle-outbox/dispatch`, and `/api/webhooks/payment/[provider]` without route handlers; payment webhooks use `/api/payment-webhooks/[providerId]`.

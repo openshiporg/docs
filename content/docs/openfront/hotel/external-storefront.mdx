@@ -6,3 +6,38 @@ description: Give an LLM the Hotel storefront skill to adapt the built-in experi
 To create a custom Hotel storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Hotel's current experience.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Hotel codebase before proposing work.
+
+Skill file: [`/skills/openfront-hotel-custom-storefront/SKILL.md`](/skills/openfront-hotel-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/`. There is no country or region segment. Screens live in `features/storefront/screens`, server actions in `features/storefront/actions`, and shared GraphQL documents in `lib/queries.ts`.
+
+| Route | Guest journey | Operations called |
+|---|---|---|
+| `/` | Home with stay planner and room cards | `storefrontRoomTypes`, `publicHotelSettings` |
+| `/rooms` | Room list; with dates, shows availability and quotes | `storefrontRoomTypes`, `storefrontAvailability`, `storefrontQuote` |
+| `/rooms/[slug]` | Room detail, availability calendar, quote | `storefrontRoomType`, `storefrontStayCalendar`, `storefrontQuote` |
+| `/book` | Guest details, booking hold, payment provider choice, Stripe or PayPal handoff; can resume a held booking | `storefrontQuote`, `createStorefrontBooking`, `bookingPaymentProviders`, `initiateBookingPaymentSession`, `guestBooking` |
+| `/stripe/return`, `/paypal/return` | Payment return; settles the session | `activeBookingPaymentSession`, `completeBookingPayment`, `guestBooking` |
+| `/booking/[id]` | Owned booking: details, folio statement, deposit hold, cancellation quote, cancel, modification request | `guestBooking`, `guestFolio`, `hotelSecurityAuthorization`, `guestCancellationQuote`, `cancelBooking`, `requestBookingModification` |
+| `/bookings/lookup` | Find a booking by confirmation number and email, or list bookings by email for a verified guest | `verifyGuestBooking`, `guestBookings` |
+| `/account` | Guest sign-in, registration, profile, password change, booking list, claim past stays, sign out | `authenticateUserWithPassword`, `registerGuestAccount`, `guestAccountStatus`, `guestAccountBookings`, `guestAccountBookingsCount`, `claimGuestAccountStays`, `updateGuestAccount`, `changeGuestAccountPassword`, `sendUserPasswordResetLink`, `endSession` |
+| `/account/reset` | Set a new password from an emailed token | `redeemHotelPasswordResetToken` |
+| `/amenities`, `/gallery` | Property and room amenities and photos | `storefrontRoomTypes`, `publicHotelSettings` |
+| `/location`, `/policies` | Address, stay times, and policies from settings | `publicHotelSettings` |
+| `/contact` | Contact form; queues a message for staff | `submitHotelContactMessage` |
+| `/[...missing]` | Not found | none |
+
+Named documents in `lib/queries.ts`: `GetRoomTypes`, `GetAvailableRooms`, `GetStayCalendar`, `GetStorefrontQuote`, `GetRoomType`, `GetRatePlans`, `CreateStorefrontBooking`, `GetBookingPaymentProviders`, `InitiateBookingPaymentSession`, `GetActiveBookingPaymentSession`, `CompleteBookingPayment`, `CancelBooking`, `VerifyGuestBooking`, `GetGuestBooking`, `GetBookingsByEmail`. Other screens use inline documents such as `PublicHotelSettings`, `GuestCancellationQuote`, `RequestBookingModification`, `SubmitHotelContactMessage`, `GuestAccountStatus`, and `GuestAccountBookings`.
+
+## Journey boundaries
+
+- Every booking needs a signed quote token from `storefrontQuote`. Do not compute prices in the client.
+- `createStorefrontBooking` creates a `pending` hold that a worker cancels after 30 minutes if it is not paid or confirmed.
+- Guest access is an HMAC-signed `hotel-guest-access` cookie set by the API after `verifyGuestBooking`, booking creation, or account sign-in. A separate client must forward that cookie to `/api/graphql`; guest queries fail without it.
+- Only Stripe (`pp_stripe_stripe`) and PayPal (`pp_paypal_paypal`) are offered at checkout, and only when enabled with complete credentials. If neither is enabled, the built-in page tells the guest that online payment is unavailable.
+- Return URLs passed to `initiateBookingPaymentSession` point back to `/stripe/return` or `/paypal/return` on the storefront origin.
+- Contact messages and booking emails are queued in the outbox. They are only sent when SMTP or an HTTP dispatcher is configured.
+- Guests request modifications. Staff resolve them; the guest cannot change dates directly.
+- The storefront middleware passes all requests through. Access is enforced by the GraphQL API, not by route guards.

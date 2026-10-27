@@ -11,15 +11,19 @@ Use this skill to adapt the built-in UIKit storefront or create a separately dep
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- No public source URL is advertised for this product. Ask for the current checkout path and do not substitute a guessed repository.
+- Source repository: https://github.com/openshiporg/openfront-uikit. Ask which revision or local checkout is the target, and inspect that exact code.
 - Built-in UIKit customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Thin customer-facing route entry points: `app/(storefront)/**`. Current pages: `/`, `/components`, `/components/[slug]`, `/components/[slug]/checkout`, `/docs/registry`, `/account`, `/account/signin`, `/account/signup`, `/account/reset`, `/account/token`. `/kits/**` redirects to `/components/**`. Non-page routes: `/r/registry.json`, `/r/[name]` (stable release manifest), `/openfront-ui.js` (CLI download).
+- Other public endpoints: `app/api/registry/[code]` (same manifest service as `/r/[name]`, in `features/storefront/lib/registryManifestService.ts`), `app/api/payment-providers/[providerCode]/webhook`, `app/api/validation-artifacts/[validationId]/screenshots/[name]`.
+- Storefront slice: `features/storefront/screens`, `components`, `lib` (catalog, checkout, registry keys, brand), and `auth` (customer sign-in, sign-up, reset).
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (custom roots are declared in `mutations/index.ts`), `features/keystone/lib/**`, and `schema.graphql`.
+- Customer-facing models: `KitProduct`, `ComponentRelease`, `ComponentFile`, `BrandSettings`, `Order`, `OrderItem`, `Payment`, `PaymentSession`, `KitAccess`, `RegistryApiKey`, `User`. One studio per deployment; there is no organization or store tenant.
+- Public and customer operations: `publicBrand`, `publicCatalog`, `viewerAccessSummary`, `createKitCheckoutSession`, `completeKitOrder`, `createStorefrontRegistryApiKey`, `revokeStorefrontRegistryApiKey`, plus Keystone `authenticateUserWithPassword`, `createUser`, and password reset.
+- Provider boundaries: `features/integrations/payment` (`stripe`, `paypal`, `manual`; `deployment.ts` decides which providers are offered from env). Manual payment is never offered to customers.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is kit catalog/detail, checkout, account tokens, registry documentation, entitlement, and package delivery. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is component catalog/detail, single-product checkout (free unlock, Stripe, PayPal), account and registry API keys, registry documentation, entitlement, and manifest delivery to the `openfront-ui` CLI. There is no cart. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +71,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around kit catalog/detail, checkout, account tokens, registry documentation, entitlement, and package delivery. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around component catalog/detail, single-product checkout, account and registry API keys, registry documentation, entitlement, and manifest delivery. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

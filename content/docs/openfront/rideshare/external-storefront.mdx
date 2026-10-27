@@ -1,0 +1,37 @@
+---
+title: External storefronts
+description: Give an LLM the Rideshare storefront skill to adapt the built-in rider experience or create a separate client.
+---
+
+To create a custom Rideshare storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the rider-facing app routes implement Rideshare's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Rideshare codebase before proposing work.
+
+Skill file: [`/skills/openfront-rideshare-custom-storefront/SKILL.md`](/skills/openfront-rideshare-custom-storefront/SKILL.md)
+
+The storefront is not under `app/(storefront)`. Its routes are thin files at the app root (`app/page.tsx`, `app/book`, `app/rides`, `app/account`) that render screens from `features/storefront/screens`.
+
+## Current rider routes
+
+| Route | Screen | Purpose |
+|---|---|---|
+| `/` | `RiderHomePage` | Browse active ride services, get a quote, and request a ride. |
+| `/book?service=ID` | `RiderHomePage` | Same booking flow with a service preselected. |
+| `/rides/[confirmationCode]` | `TripStatusPage` | Trip status, timeline, fare, payments, and reviews. Signed-in riders can rate the ride, get help, report a safety issue, or message the driver. |
+| `/account`, `/account/signin` | `RiderSignInPage` | Rider sign-in. |
+| `/account/signup` | `RiderSignInPage` | Rider signup. Open when `riderAccountOptions.registrationEnabled` is true: any active fleet has rider accounts `open`, or `PUBLIC_SIGNUPS_ALLOWED` is `true`. Signup calls the generic `createUser` mutation. |
+| `/account/rides` | `RiderAccountPage` | Request status and trip history for the signed-in rider. |
+
+## Rider journey and GraphQL calls
+
+1. **Discover:** `marketplaceRideshareServices`, `marketplaceRideshareService`, `marketplaceRideshareServiceAreas`.
+2. **Quote:** `marketplaceRideshareQuote` returns a fare breakdown, cancellation and no-show fees, an estimate disclosure, and a `quoteProof` valid for 10 minutes.
+3. **Request:** `requestRide` or `resolveRideRequestIntent` returns a receipt with `requestNumber` and `requestProof`. The built-in client stores the receipt in the browser (`features/storefront/domain/riderReceiptStorage.ts`).
+4. **Track:** `publicRideshareRequest`, `riderRequestStatus`, and `publicRideshareTrip` return rider-safe projections. They need account ownership, the request proof, or the trip token. `riderTripHistory` pages through trip events, payments, and reviews with the same checks.
+5. **Account:** `authenticateUserWithPassword`, `endSession`, `riderAccountOptions`, and `myRideshareRequests` back sign-in, sign-out, and the ride list.
+6. **Cancel:** `riderRequestCancellationPreview` then `cancelRideRequest`.
+7. **After the ride (signed-in riders only):** `submitTripReview`, `openSupportCase`, `reportSafetyIncident`, `sendTripMessage`.
+
+A separate client calls the same `/api/graphql` endpoint. It must keep quote proofs, request proofs, and trip tokens private to the rider, and send a stable `idempotencyKey` with every command so retries do not create duplicates.
+
+There is no payment step in the storefront. Riders do not enter a card; operators record payment on the trip in the dashboard. The store logo and colour come from the fleet branding returned with `marketplaceRideshareServices`.

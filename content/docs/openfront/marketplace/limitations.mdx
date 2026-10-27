@@ -1,39 +1,51 @@
 ---
 title: Marketplace current limitations
-description: Adapter, conformance, privacy, browser-state, AI, reliability, and checkout boundaries in current source.
+description: What current Marketplace source does not do, and what to check before relying on it.
 icon: ShieldAlert
 ---
 
-## Adapter coverage
+## Adapters
 
-Current source supports curated Openfront ecommerce stores. Shopify, WooCommerce, BigCommerce, Restaurant, Hotel, Rental, Pharmacy, and other platform or vertical names are not working Marketplace adapters without separate source and conformance evidence.
+- Only Openfront E-commerce (`openfront`) and Openfront Restaurant (`openfront-restaurant`) stores work.
+- `shopify`, `bigcommerce`, and `woocommerce` are listed as platform names but have no adapter. The README mentions them as future work.
+- Other Openfront products (grocery, hotel, salon, gym, pharmacy, and so on) are not supported. The prompt suggestions list them, but only E-commerce and Restaurant are marked available.
+- There is no shared adapter test suite. Store health, version checks, and a per-store disable switch do not exist.
 
-There is no public multi-vertical capability protocol or complete adapter conformance suite yet. Store health, capability freshness, version compatibility, and operator disable metadata also need a stronger contract.
+## No operator dashboard or database
 
-## Commerce ownership
+- There is no admin UI, sign-in, user model, or role system. The store registry is a JSON file edited by hand and redeployed.
+- The `app/dashboard`, `features/keystone`, `features/platform`, and `migrations` folders in a local checkout are empty. No models, platform pages, or migrations are in use.
+- Nothing is stored server-side: no order history, analytics, audit log, or buyer accounts.
 
-The marketplace does not own a product database, inventory, merchant customer account, order, payment, refund, or fulfillment record. It can prepare a merchant cart and generate an exact-origin handoff. It cannot prove payment or order completion, and it has no general reconciliation feed back from merchants.
+## Discovery
 
-This is a deliberate interoperability boundary, not a promise that every merchant flow works. Connected stores remain responsible for identity, cart ownership, price, inventory, tax, shipping, payment, fraud, order, cancellation, refund, customer service, legal terms, and fulfillment.
+- Product search does not send the query to the store. The adapter fetches up to 50 public products or menu items per store, then matches keywords locally. Items beyond that first page are never searched.
+- Location filtering only matches stores that publish address or country data. Stores without it are left out of location searches.
+- The route picks a discovery tool from fixed keyword lists. Unusual wording may not force discovery.
+- `/api/marketplace/catalog` returns bundled mock data, not live stores.
 
-## Browser and privacy boundary
+## Browser state
 
-The intended client boundary stores cart IDs, signed capabilities, encrypted store-session envelopes, and optional buyer OpenRouter settings in browser storage. Browser compromise, shared devices, extension access, XSS, stale sessions, and storage persistence therefore matter. Current source does not provide a centralized account that synchronizes or remotely revokes all browser-held state.
+- Chat threads, cart IDs, cart proofs, store session tokens, store selection, AI settings, and local API keys are kept in `localStorage`. Anyone with access to the browser profile, an extension, or a script injection could read them.
+- There is no sync across devices and no remote sign-out.
+- Store session tokens are stored as issued by the store. The marketplace does not encrypt or expire them itself.
+- MCP UI cards are HTML from the adapters, rendered in iframes. The browser limits which tools each card can call, but card content still includes store data.
 
-The checked-in browser handoff is currently inconsistent: cart tools emit a `saveStoreSession` action with `sessionEnvelope`, while the browser MCP client consumes `saveSessionToken`/`sessionToken` and sends raw session headers that the server rejects in favor of `x-store-session-envelope`. The encryption/capability primitives exist, but do not describe authenticated browser cart/session handoff as functioning until the client/server action contract and focused browser test are corrected.
+## AI
 
-A deployment needs a clear retention and cleanup policy, content-security policy, dependency review, XSS testing for store/model content rendered through MCP UI, session and capability expiry/rotation, privacy disclosure, and a decision about whether buyer-supplied key storage is permitted.
+- Model answers can be wrong. Prices, stock, and shipping should be read from the store cards, not from model text.
+- In local mode, the buyer's API key is sent to `/api/completion` on every request.
+- A custom AI endpoint can be any public HTTPS origin unless `MARKETPLACE_CUSTOM_AI_ORIGINS` is set.
+- External MCP clients get the full tool list, including cart and payment tools. They are responsible for storing per-store credentials safely.
 
-## AI limitations
+## Checkout and payment
 
-Model output can be incomplete, biased, unsafe, or wrong. Ranking logic and prompts do not guarantee neutral discovery, complete catalog coverage, current merchant facts, or accessibility. The built-in model receives discovery tools only, but external MCP clients may have different behavior and must preserve equivalent credential and capability separation.
+- In-chat payment supports Stripe and PayPal only, and only when the store has them configured with publishable keys.
+- The marketplace trusts the store to validate cart ownership, price, stock, tax, and payment. It does not reconcile orders afterward.
+- `createCart` is deprecated but still listed in `tools/list`.
 
-Do not treat a model statement as a price, availability, policy, medical/legal recommendation, merchant commitment, or completed transaction. Read authoritative facts from the connected store and hand consequential work to the proper owner.
+## Operations
 
-## Security and reliability work
-
-Current source includes registry validation, public-network egress checks, DNS pinning, redirect refusal, credential-isolation primitives, store-bound envelope code, signed cart capabilities, request-local MCP handling, and bounded merchant requests. A deployed service still needs infrastructure egress policy, rate/body/concurrency limits, bot and abuse controls, logs/metrics/alerts, store health, retries that do not duplicate mutations, incident response, secret rotation, disaster recovery, and an operator store-disable path.
-
-Full browser end-to-end coverage against dedicated disposable merchant fixtures remains incomplete. Verify all enabled tools and stores under success, timeout, malformed response, stale cart, wrong account, wrong store, cross-cart, redirect, DNS/IP, rate limit, merchant outage, AI outage, and checkout-return conditions.
-
-A repository, product page, or hosted Marketplace response establishes URL availability only. It does not establish adapter coverage, store authenticity, transaction success, privacy compliance, security certification, uptime, or merchant settlement.
+- No rate limiting, bot protection, or abuse controls are built in. Request size limits exist (128 KiB for MCP requests, 256 KiB for completion requests), and store calls time out after 8 seconds.
+- Logs record tool names, store IDs, operation names, and error names only. There are no metrics or alerts.
+- Tests are Node unit tests. There are no browser end-to-end tests against real stores.

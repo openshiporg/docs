@@ -13,9 +13,19 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Repository: <https://github.com/openshiporg/openfront-hospital>
 - Built-in Hospital customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
+- Thin customer-facing route entry points: `app/(storefront)/**`. Screens are in `features/storefront/screens`, GraphQL loaders in `features/storefront/lib/data`, and server actions in `features/storefront/actions`.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Provider boundaries: there is no `features/integrations` folder and no storefront payment or provider handoff. Inspect the server actions called by the built-in client.
+
+Current public routes:
+
+- `/` home, `/care` care services, `/providers` and `/providers/[id]` clinicians, `/locations` facilities.
+- `/book` visit types and `/book/[slug]` slot selection and appointment request.
+- `/intake#accessCode=…` one-time intake; the code is read from the URL fragment.
+
+Named public operations: `HospitalBranding`, `BookableAppointmentTypes`, `BookableProviders`, `AvailableAppointmentSlots`, `RequestAppointment`, `IntakeFormByAccessCode`, `SubmitIntakeForm` (roots `hospitalBranding`, `bookableAppointmentTypes`, `bookableProviders`, `availableAppointmentSlots`, `requestAppointment`, `intakeFormByAccessCode`, `submitIntakeForm`). Models behind them: `HospitalProfile`, `Facility`, `Provider`, `Clinician`, `AppointmentType`, `ProviderScheduleBlock`, `Patient`, `Appointment`, `IntakeForm`, `PatientConsent`. Consent statement keys and policy versions live in `features/storefront/lib/workflowConsent.ts`.
+
+There are no patient accounts, carts, or payments. `PatientPortalAccess` exists but has no invite or sign-in workflow. Prices display as "Estimate provided by clinic". `requestAppointment` is anonymous and rate limited; intake codes are hashed at rest and expire after 7 days.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 

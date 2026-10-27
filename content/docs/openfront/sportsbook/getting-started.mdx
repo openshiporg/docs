@@ -1,0 +1,127 @@
+---
+title: Getting started with Sportsbook
+description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first operator, enrol two-factor, run onboarding, start the worker, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js matching `package.json` `engines` (`>=20.0.0`); the README recommends Node.js 22 for Next.js 16.
+- npm (the repository ships a `package-lock.json`).
+- A PostgreSQL database you are allowed to migrate. The migrations create row-level security policies, so use a role you control.
+- An authenticator app for operator two-factor (TOTP). Onboarding and every custom operator operation require it.
+
+## Live demo
+
+A hosted demo runs at [sportsbook.openship.org](https://sportsbook.openship.org). It is a demonstration instance. It is not a licensed sportsbook and does not take real-money wagers.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-sportsbook.git
+cd openfront-sportsbook
+npm ci
+```
+
+The repository has no `.env.example`. Create `.env` yourself.
+
+## Environment
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL` and a `SESSION_SECRET` of at least 32 characters. `npm run validate:env` (`features/sportsbook/operations/validate-env.ts`) checks the same values, requires `CUSTOMER_IDENTITY_SECRET` (32+ characters) when `NODE_ENV=production`, and enforces the sandbox isolation rules below.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_sportsbook
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+CUSTOMER_IDENTITY_SECRET=replace-with-at-least-32-random-characters
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+<Callout>
+The five `S3_*` variables follow the shared Openfront convention, but the current Sportsbook source does not read them. No Sportsbook list has an image or file field, and the store logo is an icon and color, not an upload. Setting them is harmless and keeps the environment consistent with other Openfront products.
+</Callout>
+
+Other settings read by the code:
+
+| Variable | Used for |
+|---|---|
+| `SPORTSBOOK_SANDBOX` | `true` opens the customer API (`/api/sandbox/sportsbook/*`) and sandbox webhooks; otherwise they return `SANDBOX_DISABLED` |
+| `SPORTSBOOK_DEPLOYMENT_MODE` | Must be `sandbox` for sandbox mode in production; also makes outbound webhooks local-only |
+| `SANDBOX_PUBLIC_ORIGIN` | Storefront origin for sandbox mode; in production it must be an `https://*.local` origin |
+| `SANDBOX_TENANT_SLUG` | Pins the storefront to one tenant instead of matching the brand domain |
+| `SANDBOX_WEBHOOK_SECRET`, `ENABLE_SANDBOX_WEBHOOKS` | HMAC secret for `/api/sandbox/webhooks/[kind]`; production requires sandbox mode for these |
+| `SANDBOX_MAX_LIABILITY_MINOR`, `MAX_PRICE_AGE_MS` | Liability cap and maximum price age (default 30 seconds) used by wager acceptance |
+| `CUSTOMER_IDENTITY_SECRET` | Customer credential and identity hashing; a local fallback is used outside production |
+| `PII_ENCRYPTION_KEY`, `PII_ENCRYPTION_KEY_REFERENCE` | Encrypting customer identity payloads and operator TOTP secrets (falls back to other secrets) |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens the operator sign-up page; off by default |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Operator password reset and customer recovery email |
+| `OUTBOUND_WEBHOOK_SECRET`, `WEBHOOK_EGRESS_HOSTS` | Signing outbound webhooks (32+ characters) and the host allowlist they may reach |
+| `AUDIT_ANCHOR_DIR`, `AUDIT_ANCHOR_SECRET` | Worker audit-chain anchoring; `/api/ready` reports when it is not configured |
+| `METRICS_BEARER_TOKEN` | Bearer token for `/api/metrics` and detailed `/api/ready` output in production |
+| `WORKER_POLL_MS`, `WORKER_LEASE_MS`, `WORKER_BATCH_SIZE` | Worker loop tuning |
+| `TRUSTED_PROXY_HOPS` | Number of trusted `x-forwarded-for` hops (0 to 5) for rate limiting |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OpenTelemetry export for the app and worker |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
+| `MIGRATION_SHADOW_DATABASE_URL` | Shadow database for `npm run verify:migrations` |
+
+Keep `.env` out of source control.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database; it rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+Once running:
+
+- Storefront: `/`
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+
+To try customer flows locally, set `SPORTSBOOK_SANDBOX=true`. Without it the storefront renders but shows "Betting closed".
+
+## First operator, two-factor, and onboarding
+
+1. Visit `/dashboard/init` on an empty database. `createInitialUser` delegates to `bootstrapOperatorAdmin`, which requires a password of at least 12 characters and creates an `Admin` role with every operator flag except `canApproveSensitiveActions`.
+2. Enrol two-factor at `/dashboard/platform/security` and verify a code. Operator sessions are treated as assured for 12 hours after verification.
+3. Open `/dashboard/platform/onboarding`. It previews and then applies a sandbox setup (`previewSportsbookOnboarding`, `applySportsbookOnboarding`). The bundled seed uses an operator called Northline Gaming with USD, a `SANDBOX` jurisdiction, and the `America/New_York` timezone; the form lets you change these values.
+4. Onboarding creates the tenant, brand, `en-US` brand locale, a pending legal entity, a pending operator jurisdiction and draft policy, a `sandbox-web` channel, tenant currency, config values (maximum stake and payout, live delay 3 seconds, minimum age 18, price-change consent options), house rules, three feature flags, sandbox provider connections, market definitions (match result, moneyline, spread, total), a default limit profile, a sandbox safeguarding account, retention policies, scheduled jobs, sandbox promotions, and a demo catalog: four sports (Football, Soccer, Basketball, Tennis), one competition each, and three events per competition with opening prices.
+5. Stages `OPERATOR` through `OPERATIONS` are marked complete. `LICENSING` and `CERTIFICATION` are always recorded as `BLOCKED` external gates.
+6. Create the independent approver from `/dashboard/platform/roles` (`bootstrapIndependentApprover`). The first admin cannot approve its own requests.
+
+## Deployment
+
+Scripts in `package.json`:
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run worker` | Runs `validate:env`, then the background worker |
+| `npm run validate:env` | Checks required and sandbox environment rules |
+| `npm run verify:audit`, `verify:migrations`, `verify:retained-upgrade` | Audit-chain and migration checks; the migration checks need disposable databases |
+| `npm run lint`, `npm run typecheck`, `npm test` | ESLint, TypeScript, and the Node test runner over `features/sportsbook/**/*.test.ts` |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts the web process and the worker:
+
+```bash
+npm run build
+npm run migrate
+npm start
+npm run worker   # separate long-running process
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. `railway.worker.toml` defines a separate worker service that starts `npm run worker` and restarts on failure. The README also includes a Vercel import button. Provision PostgreSQL, secrets, SMTP, and any provider configuration yourself, and share the same database and secrets across the web and worker processes. Use `/api/health` for liveness and `/api/ready` for readiness.

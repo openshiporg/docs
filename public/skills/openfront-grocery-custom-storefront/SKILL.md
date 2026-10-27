@@ -12,14 +12,19 @@ Use this skill to adapt the built-in Grocery storefront or create a separately d
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-grocery>
-- Built-in Grocery customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront`.
-- Thin customer-facing route entry points: `app/**`; identify the route group actually used by this product rather than assuming Ecommerce's folder names.
-- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
+- Built-in Grocery customer experience: `features/storefront` — `screens/` (one per page), `modules/` (account, contact, lists, market, notifications, order-access, order-adjustment, order-substitution, products, subscriptions, urban UI primitives), and `lib/data/` (GraphQL loaders and server actions for cart, checkout, payment, orders, guest orders, delivery, deals, departments, products, lists, subscriptions, addresses, store, user).
+- Thin customer-facing route entry points: `app/(storefront)/**`. There is no country or region segment.
+- Current routes: `/`, `/products`, `/products/[slug]`, `/departments`, `/departments/[handle]`, `/deals`, `/fulfillment`, `/cart`, `/checkout`, `/order/[id]`, `/order-access`, `/account`, `/account/sign-in`, `/account/register`, `/account/reset`, `/account/orders`, `/account/addresses`, `/account/profile`, `/account/privacy`, `/lists`, `/favorites`, `/subscriptions`, `/support`, `/policies`, `/staff/accept`.
+- Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/lib/storeAccess.ts`, `features/keystone/mutations/**` (custom roots registered in `mutations/index.ts`), and `schema.graphql`.
+- Provider boundaries: `features/integrations/payment` (Stripe `pp_stripe_default` is the only public checkout adapter; a local test adapter is refused in production), `features/integrations/communications` (SMTP), `features/integrations/events`, and the webhook route `app/api/payments/webhooks/[providerCode]`.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 
-The current product focus is departments/products, cart, deals/coupons, lists, subscriptions, substitutions, pickup/delivery, checkout, and order access. This list is orientation, not proof that every flow is safe or complete.
+Public reads are scoped to one Store through `PUBLIC_STORE_ID` (`store_juniper`). Carts and guest orders use HttpOnly cookies set by server actions; guest orders use a signed token.
+
+Key storefront operations: `publicGroceryStorefrontSettings`, `publicGroceryProducts`, `publicGroceryProduct`, `publicGroceryCoupons`, `publicGroceryAvailability`, `groceryCart`, `addItemToGroceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `mergeGuestGroceryCart`, `updateGrocerySubstitutionPreference`, `activeCartPaymentProviders`, `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `guestGroceryOrder`, `requestGuestOrderAccess`, `customerOrderSubstitutions`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `reorderGroceryOrder`, shopping-list commands (`createCustomerShoppingList`, `addToShoppingList`, `toggleShoppingListItemChecked`, `addShoppingListToCart`, and others), `saveFavoriteProduct`, `requestGroceryBackInStockAlert`, `requestGroceryPriceAlert`, `manageGrocerySubscription`, `getGroceryLoyalty`, `redeemGroceryLoyalty`, `registerGroceryCustomer`, `updateActiveUser`, `updateGroceryNotificationPreferences`, `groceryCustomerPrivacy`, `exportGroceryCustomerData`, `requestGroceryCustomerPrivacy`, `submitGroceryContactMessage`, `acceptGroceryStaffInvitation`. Some pages also use generated queries (`departments`, `orders`, `addresses`, `favoriteProducts`, `shoppingLists`, `subscriptions`). Verify each against the inspected revision.
+
+The current product focus is departments and products, basket with substitution preferences, specials with coupon codes at checkout, delivery and pickup times, Stripe checkout with authorize-then-capture on picked goods, order tracking with substitution decisions and curbside check-in, guest order access, lists, favorites, recurring baskets and rewards, account and privacy, and help. There is no recipe page and no clip-a-coupon command. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -67,7 +72,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around departments/products, cart, deals/coupons, lists, subscriptions, substitutions, pickup/delivery, checkout, and order access. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around departments/products, basket, specials and coupon codes, lists, favorites, recurring baskets, substitutions, pickup/delivery, checkout, and order access. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

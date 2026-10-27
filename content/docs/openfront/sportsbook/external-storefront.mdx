@@ -1,0 +1,54 @@
+---
+title: External storefronts
+description: Give an LLM the Sportsbook storefront skill to adapt the built-in customer experience or create a separate client.
+---
+
+To create a custom Sportsbook storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Sportsbook's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, customer API calls, schema, access rules, sessions, and provider boundaries in the supplied Sportsbook codebase before proposing work.
+
+Skill file: [`/skills/openfront-sportsbook-custom-storefront/SKILL.md`](/skills/openfront-sportsbook-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live at the app root; logic lives in `features/storefront` (`sportsbook/screens`, `customer/*/screens`, `lib/data`). Pages render server-side, then call the customer API under `/api/sandbox/sportsbook/*`. Outside sandbox mode those calls return `SANDBOX_DISABLED` and pages show "Betting closed".
+
+| Route | Customer journey |
+|---|---|
+| `/` | Board: sports filter, live and favourites views, search, markets and prices, bet slip |
+| `/sports` | Index of published sports |
+| `/sports/[sport]`, `/sports/[sport]/[competition]` | Sport and competition listings (competition matches by key, id, or name) |
+| `/events/[event]` | Board focused on one published event (status `SCHEDULED`, `LIVE`, or `SUSPENDED`) |
+| `/betslip` | Bet slip: structure, stake, price-change consent, quote with countdown, place, receipt |
+| `/promotions` | Available promotions and claim (same screen as `/account/promotions`) |
+| `/account/auth` | Create account (with terms), sign in, recover password |
+| `/account/bets` | Tickets, cash-out offers and acceptance |
+| `/account/wallet` | Balance, deposit, withdraw, holds, bonuses, statements, payments |
+| `/account/limits` | Deposit, stake, loss, and session limits |
+| `/account/responsible-play` | Breaks and self-exclusion |
+| `/account/promotions` | Same promotions screen inside the account layout |
+| `/account/disputes` | Support requests, dispute a bet, reply |
+| `/account/profile` | Profile, odds format and timezone, marketing consent, identity verification, privacy requests and data export |
+| `/account/security` | Devices and sessions, account closure |
+
+## Customer API
+
+| Route | Methods |
+|---|---|
+| `/api/sandbox/sportsbook/session` | `GET`, `DELETE` |
+| `/auth/register`, `/auth/login`, `/auth/recovery`, `/auth/devices` | `GET`/`POST`, `POST`, `POST`/`PUT`, `GET`/`DELETE` |
+| `/catalog`, `/favorites` | `GET`; `GET`/`PUT` |
+| `/quote`, `/quote-combination`, `/wager`, `/wager-combination` | `POST` |
+| `/bets`, `/cashout` | `GET`; `GET`/`POST`/`PUT` |
+| `/wallet`, `/statements` | `GET`/`PUT`/`POST`; `GET`/`POST` |
+| `/limits`, `/responsible-play`, `/closure` | `GET`/`POST` |
+| `/profile`, `/verification`, `/privacy`, `/privacy/export` | `GET`/`PUT`, `POST`, `GET`/`POST`, `GET` |
+| `/promotions`, `/disputes` | `GET`/`POST`; `GET`/`POST`/`PUT` |
+| `/register` | `POST` |
+
+## Journey boundaries
+
+- The customer session is an `openfront_customer` cookie. Commands take an idempotency key and are recorded in `CustomerCommand`.
+- Quotes expire. A client must re-quote rather than reuse an old price, and show the server's rejection code when placement is refused.
+- Verification, location, and payments all use sandbox adapters. There is no real identity, geolocation, or payment provider behind these screens.
+- Customers cannot create raw GraphQL records; the GraphQL API serves operator sessions.

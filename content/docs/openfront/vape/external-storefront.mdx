@@ -1,0 +1,36 @@
+---
+title: External storefronts
+description: Give an LLM the Vape storefront skill to adapt the built-in age-gated experience or create a separate client.
+---
+
+To create a custom Vape storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the customer-facing app routes implement Vape's current experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Vape codebase before proposing work.
+
+Skill file: [`/skills/openfront-vape-custom-storefront/SKILL.md`](/skills/openfront-vape-custom-storefront/SKILL.md)
+
+## Current storefront routes
+
+Routes live under `app/(storefront)/[countryCode]/`; logic lives in `features/storefront` (`modules`, `screens`, `lib/data`).
+
+| Route | Customer journey |
+|---|---|
+| Layout age gate | 21+ self-attestation stored in a cookie for 30 days; not age-verification evidence |
+| `/` | Home |
+| `/store` | Browse all published products, sorted by price (`getProductsSortedByPrice`) |
+| `/categories/[...category]`, `/collections/[handle]` | Category and collection listings |
+| `/products/[handle]` | Product detail; only published products are readable |
+| `/cart` | Bag |
+| `/checkout` | Address, shipping, payment, review, with a compliance panel driven by `evaluateActiveCartCompliance`; Place order stays disabled unless the decision allows |
+| `/order/confirmed/[id]` | Confirmation (guests use the order `secretKey`) |
+| `/account` (login slot) | Sign in, sign up with a 21+ box (records an `AGE_ATTESTED_21` event), reset password, checkout link |
+| `/account` (dashboard slot) | Overview, profile, addresses, orders and order detail, paid invoices, business invoicing, checkout link, privacy (preferences, data download, deletion request) |
+| `/policies/[slug]` | The five store policies read from store settings |
+| `/[...rest]` | Not found |
+
+## Journey boundaries
+
+- Every cart change revokes prior compliance evidence. A custom client must re-evaluate rather than cache a decision.
+- Regulated carts end in a deny at checkout in current source, because no adapter records identity, tax, or carrier evidence. Show the returned reason codes; do not imply that sales are open.
+- Customers cannot create returns or claims from the storefront; those are staff-only.
+- Required regulatory warning copy is an owner decision; the source does not supply it.

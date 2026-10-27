@@ -1,42 +1,42 @@
 ---
 title: Returns & Claims
-description: Post-purchase workflows for unwanted items, damaged goods, incorrect orders, and related resolutions.
+description: Staff-created returns, return refunds, and claims for damaged or wrong items.
 ---
 
-Returns and claims cover the messy part of commerce that happens after the checkout is over.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-Openfront treats those as structured workflows, not just support notes in an inbox.
+Returns and claims are created by staff on the order detail page at `/dashboard/platform/orders/[id]`. Customers cannot start either from the storefront.
 
 ## Returns
 
-Returns are for the normal post-purchase case: the customer does not want the item anymore, sent the wrong size back, or needs a standard refund path.
+A `Return` links to an order and has `status` (`requested`, `received`, `requires_action`, `canceled`), `refundAmount`, `receivedAt`, `shippingData`, `idempotencyKey`, `noNotification` and `metadata`. Each `ReturnItem` links an order line with `quantity`, `requestedQuantity`, `receivedQuantity`, a `ReturnReason` and a note. Creating returns requires `canManageReturns`.
 
-That flow can include:
-- return reasons
-- inspection status
-- restock decisions
-- refund handling tied to payment providers
+The Returns section on the order page can:
+
+- create a return in `requested` status with items and reasons;
+- change the return status;
+- refund it with `processReturnRefund(returnId, paymentId, idempotencyKey)`.
+
+`processReturnRefund` requires both `canManageReturns` and `canManagePayments`. It needs a positive `refundAmount` and a payment that belongs to the order. It refuses refunds that would exceed the captured amount and refuses manual-tender payments. It calls the provider's refund operation and records a `Refund`. A retry with the same key returns the first result.
+
+<Callout type="warn">
+- Marking a return `received` does not put stock back. Nothing in the return flow changes `inventoryQuantity` or writes a stock movement.
+- Return shipping labels are not generated from the return.
+- Manual-tender orders cannot be refunded through this path.
+</Callout>
 
 ## Claims
 
-Claims are for cases where something actually went wrong:
-- damaged products
-- defective products
-- incorrect items
-- shipping-related issues
+A `ClaimOrder` has `type` (`refund` or `replace`), `paymentStatus` (`na`, `not_refunded`, `refunded`), `fulfillmentStatus`, `refundAmount`, `canceledAt` and links to the order, claim items, fulfillments, line items, a return and shipping methods. A `ClaimItem` has a `reason`, `quantity`, note, the line item and variant, plus `ClaimImage` and `ClaimTag` records. Creating claims requires `canManageOrders`.
 
-Claims can include:
-- uploaded images
-- resolution tracking
-- refund or replacement actions
-- lifecycle status from opening to resolution
+The Claims section on the order page creates a claim and its items, and updates the claim's payment and fulfillment status. `/dashboard/platform/claims` lists claims and their status.
 
-## Why the distinction matters
+<Callout type="warn">
+- Changing a claim's status does not move money or goods. No refund is issued and no replacement order is created.
+- Claim items are created one by one after the claim. If one fails, the claim is left with some items.
+- `ClaimImage` records are created from image URLs. There is no upload step in the claim form.
+</Callout>
 
-Not every return is a claim, and not every claim is just a refund.
+## Swaps
 
-Keeping those separate helps operations, reporting, and customer support stay clearer. It also makes it easier to automate the right next step instead of pushing everything through one generic after-purchase bucket.
-
-## In the dashboard
-
-Store staff can review active returns and claims from the order-management side of the dashboard and work through the records that need attention.
+A `Swap` model exists with payment and fulfillment status fields. No dashboard screen or mutation creates or processes swaps.

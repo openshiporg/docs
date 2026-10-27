@@ -1,0 +1,106 @@
+---
+title: Getting started with Vape
+description: Clone the source, configure PostgreSQL, sessions, and S3 storage, apply migrations, create the first operator, run onboarding, and deploy.
+icon: Terminal
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Requirements
+
+- Node.js matching `package.json` `engines` (`>=20.9.0`); the README recommends Node.js 22 for Next.js 16.
+- npm (the repository ships a `package-lock.json`).
+- A PostgreSQL database you are allowed to migrate.
+- S3-compatible object storage for product and claim images in production.
+
+## Live demo
+
+A hosted demo runs at [vape.openship.org](https://vape.openship.org). It is a demonstration instance with demo data; it does not represent a licensed retailer, and regulated checkout is gated there as it is in source.
+
+## Install
+
+```bash
+git clone https://github.com/openshiporg/openfront-vape.git
+cd openfront-vape
+npm ci
+cp .env.example .env
+```
+
+## Environment
+
+`features/keystone/index.ts` refuses to start without `DATABASE_URL` and `SESSION_SECRET`, and rejects a session secret shorter than 32 characters. The S3 values fall back to development placeholders outside production and are required when `NODE_ENV=production`.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_vape
+SESSION_SECRET=replace-with-at-least-32-random-characters   # openssl rand -hex 32
+
+S3_BUCKET_NAME=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key-id
+S3_SECRET_ACCESS_KEY=your-secret-access-key
+S3_ENDPOINT=https://your-s3-compatible-endpoint
+```
+
+Optional settings read by the code:
+
+| Variable | Used for |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Transactional email and links in emails |
+| `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment adapter |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment adapter |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
+| `NEXT_PUBLIC_DEFAULT_REGION` | Default storefront country code |
+| `HIDE_OPENFRONT_BRANDING` | Hide Openfront branding in the storefront |
+| `TRUSTED_PROXY_IPS` | Comma-separated proxies whose `x-forwarded-for` is trusted for client IP |
+| `CUSTOMER_TOKEN_MAX_AGE_DAYS` | Customer token lifetime (default 90) |
+| `CREDENTIAL_PEPPER` | Pepper for hashed credentials (falls back to `SESSION_SECRET`) |
+
+Keep `.env` out of source control.
+
+## Migrations and local run
+
+```bash
+npm run dev
+```
+
+`npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database; it rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
+
+<Callout type="warn">
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
+</Callout>
+
+Once running:
+
+- Storefront: `/[countryCode]` (for example `/us`)
+- Operator dashboard: `/dashboard`
+- GraphQL API: `/api/graphql`
+
+## First operator and onboarding
+
+1. Visit `/dashboard/init` on an empty database to create the first administrator, then sign in.
+2. Open the onboarding dialog from the dashboard. Setup seeds a store, a `us` region (tax rate 0), currency, country, three shipping options, four categories, three collections, ten draft products, a Manual payment provider, a manual fulfillment provider, and, if your role has `canManageCompliance`, a draft `RegulatedMerchantProfile` with the kill switch on.
+3. Fill in store business details and the five required policies (shipping, returns, age verification, privacy, terms) at `/dashboard/platform/store`.
+4. Work through the blockers listed on `/dashboard/platform/overview` and `/dashboard/platform/compliance`: activate a merchant profile, add launch jurisdictions and an active signed rule set, classify and authorize variants, and record provider approvals.
+
+Onboarding does not enable regulated transactions, and the seeded Manual provider is refused by storefront checkout. See [Architecture and workflows](/docs/openfront/vape/architecture-workflows) for the full go-live sequence.
+
+## Deployment
+
+Scripts in `package.json`:
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
+| `npm run migrate` / `npm run release:migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run lint` | ESLint |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also includes a Vercel import button. Either way, provision PostgreSQL, S3-compatible storage, SMTP, and any payment or shipping credentials yourself, and share the same database, `SESSION_SECRET`, and storage across all application processes. There is no persistent background worker in the source; webhook redelivery is triggered through the `retryWebhookDeliveries` mutation.

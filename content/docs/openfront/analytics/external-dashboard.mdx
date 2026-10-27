@@ -1,0 +1,32 @@
+---
+title: External dashboards
+description: Give an LLM the Analytics dashboard skill to adapt the built-in operator experience or create a separate client.
+---
+
+To create a custom Analytics dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains Analytics' product-specific operator experience.
+
+After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Analytics codebase before proposing work.
+
+Skill file: [`/skills/openfront-analytics-custom-dashboard/SKILL.md`](/skills/openfront-analytics-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `features/platform/<slice>`. Site pages share one shell (`features/platform/sites/components/SiteShell.tsx`) with a tab bar, a period picker, and a filter bar.
+
+| Page | What operators do there |
+|---|---|
+| `/dashboard/platform/sites` | List every readable site with 30-day visitors, a sparkline, and live visitors (`siteSummaries`); create a site |
+| `/dashboard/platform/sites/[siteId]` | Overview: headline totals against the previous period, traffic chart, and panels for pages, sources, locations, devices, goals, and events; click a row to filter; save filters as a segment |
+| `/dashboard/platform/sites/[siteId]/realtime` | Live visitors and pageviews per minute; refreshes every 15 seconds |
+| `/dashboard/platform/sites/[siteId]/sessions` | Paged list of visits for the period |
+| `/dashboard/platform/sites/[siteId]/sessions/[sessionId]` | One visit's details and event timeline |
+| `/dashboard/platform/sites/[siteId]/goals` | Goal conversions, conversion rate, and revenue; create and delete goals |
+| `/dashboard/platform/sites/[siteId]/funnels` | Funnel step counts and drop-off; build and delete funnels |
+| `/dashboard/platform/sites/[siteId]/events` | Custom events and the values of a selected event's properties |
+| `/dashboard/platform/sites/[siteId]/performance` | p75 Core Web Vitals overall and by page |
+| `/dashboard/platform/sites/[siteId]/settings` | Install snippet, custom event and server examples, site details, public dashboard toggle, shared links for this site, delete an identified visitor's data, delete the site |
+| `/dashboard/platform/shared-links` | Every shared link across sites, with status, password marker, views, and last viewed; turn on or off, delete |
+| `/dashboard/platform/store-settings` | Name, tagline, description, website, contact email, and logo for the public site |
+| `/dashboard/platform/api-keys` | Create API keys with scopes, see previews, status, and last use |
+
+Lists without a dedicated page (`User`, `Role`, `Goal`, `Funnel`, `Segment`, `AnalyticsSession`, `AnalyticsEvent`, and others) are also available on the generic `/dashboard/<list-key>` pages. `FunnelStep` is hidden from navigation. The dashboard home (`/dashboard`) is the shared Openfront home screen.

@@ -3,49 +3,46 @@ title: Implement a payment adapter
 description: Implement the current payment contract in a local module or external route app.
 ---
 
-Use `features/keystone/utils/paymentProviderAdapter.ts` as the dispatch contract and the built-in `manual`, `paypal`, and `stripe` modules as local examples. A payment app can live outside Openfront: store its HTTPS operation routes on the `PaymentProvider` record instead of importing its code into the Openfront repository.
+Use `features/keystone/utils/paymentProviderAdapter.ts` as the dispatch contract and the built-in `stripe.ts`, `paypal.ts` and `manual.ts` modules in `features/integrations/payment` as examples. A payment app can also live outside Openfront: store its HTTPS URLs in the operation fields of the `PaymentProvider` record.
 
 ## Operations
 
-Current dispatch covers:
-
 ```ts
 createPaymentFunction({ provider, cart, amount, currency })
-capturePaymentFunction({ provider, paymentId, amount })
-refundPaymentFunction({ provider, paymentId, amount })
+capturePaymentFunction({ provider, paymentId, amount, currency, idempotencyKey })
+refundPaymentFunction({ provider, paymentId, amount, currency, idempotencyKey })
 getPaymentStatusFunction({ provider, paymentId })
 generatePaymentLinkFunction({ provider, paymentId })
 handleWebhookFunction({ provider, event, headers })
 ```
 
-A local module exports these functions. An HTTP adapter route receives `POST` JSON containing `provider` plus the listed operation arguments and returns the corresponding result as JSON.
+A local module exports these functions. An HTTP route receives `POST` JSON with `provider` plus the same arguments and returns JSON. Amounts are integers in minor units.
 
-An adapter may omit an operation it cannot support, but every caller and UI must fail explicitly rather than fabricate success.
+## What the callers expect back
 
-## Implementation rules
+- create: an object stored as the payment session's `data`. Include `paymentIntentId`, `clientSecret` or `orderId`. Checkout reads the provider reference from those keys.
+- status and capture: `status`, `amount` and `currency`. Checkout captures when status is `requires_capture`, `approved` or `authorized`, and treats `succeeded`, `completed` or `captured` as paid. The amount must equal the cart or invoice total exactly.
+- refund: the provider result; Openfront writes the `Refund` record.
+- webhook: verify the signature using `headers.__rawBody`, then return `type`, `resource` and `event` (with `event.id`). Event handling matches Stripe (`payment_intent.*`) and PayPal (`PAYMENT.CAPTURE.*`, `PAYMENT.AUTHORIZATION.*`) event types only.
 
-- derive amount, currency, cart/order identity, and allowed transition from persisted Openfront state;
-- use integer minor-unit amounts while honoring currencies without fractional units;
-- give every create, capture, and refund intent an idempotency key and reconciliation path;
-- return provider-neutral IDs, status, amount, and only the browser handoff fields required by the caller;
-- never return raw credentials or unrestricted provider payloads to the browser;
-- authenticate Openfront-to-adapter HTTP requests and protect against replay;
-- verify webhook authenticity using the exact raw-body protocol required by the provider;
-- validate the adapter's runtime JSON before changing Openfront state;
-- separate authorization, capture, refund, cancellation, and unknown outcomes.
+## Rules
 
-## End-to-end boundary
+- Never trust an amount from the browser. Use the `amount` and `currency` Openfront passes.
+- Pass `idempotencyKey` to the provider for capture and refund.
+- Return only the fields the browser needs in create's result. It is readable on the cart's payment session.
+- Fail with an error for operations you do not support. Do not return a fake success.
+- For HTTP adapters, authenticate requests from Openfront yourself. The bridge sends no signature.
 
-Generic route dispatch does not by itself make checkout provider-neutral. In the current source, `completeActiveCart.ts` and invoice completion contain hard-coded provider-code switches. Before calling a custom adapter complete, replace those switches with a bounded completion contract that invokes the configured adapter operation, verifies the current amount/currency and selected session, handles idempotency, and reconciles uncertain provider outcomes.
+## Make checkout accept it
 
-## Verification
+Use a provider `code` that starts with `pp_stripe`, `pp_paypal` or `pp_manual`. Other codes are treated as not configured and are hidden from checkout. Codes containing `manual` are refused at completion and refund. In practice a new external provider must reuse the Stripe or PayPal code prefix and their environment variables, or you must extend `features/keystone/utils/paymentProviderConfig.ts`.
 
-- unit-test every request/response mapping;
-- contract-test each HTTP operation route with malformed and delayed responses;
-- run provider sandbox initiation, capture, refund, status, link, and webhook scenarios;
-- prove duplicate calls have one provider effect;
-- prove wrong-cart, wrong-user, stale-session, and altered-amount calls fail;
-- verify endpoint and credential changes require privileged operator authority;
-- run complete checkout and invoice workflows against isolated PostgreSQL.
+## Verify
 
-See [Add a payment adapter](/docs/openfront/ecommerce/how-to-guides/custom-payment-provider) for provider configuration and current limitations.
+- Run create, status, capture, refund and webhook in the provider sandbox.
+- Retry capture and refund with the same key and confirm one provider effect.
+- Send a webhook twice and confirm it is acknowledged as a duplicate.
+- Send a webhook with a bad signature and confirm it is rejected.
+- Change the cart after creating a session and confirm completion fails on the amount check.
+
+See [Add a payment adapter](/docs/openfront/ecommerce/how-to-guides/custom-payment-provider) for provider configuration.
