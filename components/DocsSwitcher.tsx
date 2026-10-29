@@ -86,7 +86,7 @@ export function DocsSwitcher() {
           e.stopPropagation();
           setOpen(!open);
         }}
-        className="flex min-h-10 items-center gap-2 hover:opacity-80 transition-opacity outline-none rounded-lg md:min-h-0"
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity outline-none rounded-lg"
         type="button"
         aria-label="Switch documentation product"
       >

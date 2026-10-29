@@ -2,19 +2,20 @@
 
 import { DocsHomeButton } from '@/components/DocsHomeButton';
 import { DocsSwitcher } from '@/components/DocsSwitcher';
+import { MobileVerticalSwitcher } from '@/components/MobileVerticalSwitcher';
 
-export function DocsNavTitle(_props: { product: 'openfront' | 'openship' }) {
+export function DocsNavTitle({ product }: { product: 'openfront' | 'openship' }) {
   return (
-    <div className="flex items-center min-w-0 w-full">
-      <div className="flex items-center gap-2 min-w-0 ml-2 md:ml-0">
-        <div className="flex items-center gap-2 md:ml-auto">
-          <div className="md:hidden flex items-center gap-2 shrink-0">
-            <DocsHomeButton />
-          </div>
-          <DocsSwitcher />
-        </div>
+    <div className="flex min-w-0 w-full items-center">
+      {/* Phone: Home | vertical switcher. -ml-3 puts the 16px icon (not the 40px tap box) on the page gutter. */}
+      <div className="-ml-3 flex min-w-0 flex-1 items-center md:hidden">
+        <DocsHomeButton />
+        <MobileVerticalSwitcher product={product} />
       </div>
-      <div className="hidden md:block ml-auto">
+      <div className="hidden min-w-0 items-center gap-2 md:flex">
+        <DocsSwitcher />
+      </div>
+      <div className="ml-auto hidden md:block">
         <DocsHomeButton />
       </div>
     </div>
