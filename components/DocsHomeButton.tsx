@@ -10,7 +10,7 @@ export function DocsHomeButton() {
     <button
       type="button"
       aria-label="Go to homepage"
-      className="inline-flex items-center justify-center rounded-lg p-2 text-fd-muted-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
+      className="inline-flex size-10 items-center justify-center rounded-lg md:size-auto md:p-2 text-fd-muted-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground"
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
