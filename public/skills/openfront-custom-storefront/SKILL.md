@@ -1,19 +1,90 @@
 ---
 name: openfront-custom-storefront
-description: Discover, plan, and build a custom Openfront storefront by interviewing the user, inspecting the target product's built-in storefront and GraphQL contract, then adapting the built-in client or creating an independent client while keeping business truth in Openfront.
+description: Build or redesign an Openfront E-commerce external Next.js storefront by copying and adapting the canonical built-in routes, feature slices, components, GraphQL operations, and customer flows first. Preserve backend contracts and safety gates; reserve schema-first discovery for unknown verticals or evidenced incompatibilities.
 ---
 
 # Openfront custom storefront
 
-Help the user adapt an Openfront product's built-in storefront or create a separately deployed customer client. Presentation, content, information architecture, and interaction can be completely custom. Product, price, availability, cart, booking, payment, order, and fulfillment authority remain with the target Openfront product.
+## QUICKSTART — copy/adapt the working E-commerce storefront, then redesign
 
-The target product's current source, deployed GraphQL schema, and observed access behavior are authoritative. Never assume Ecommerce operations apply to Restaurant, Hotel, or another vertical.
+**Existing Openfront E-commerce + external Next.js is COPY/ADAPT-FIRST by default.** Do not spend hours reverse-engineering GraphQL, inventing a client architecture, or rewriting working operations to change a storefront's appearance. Copy the existing customer experience, preserve its data contracts and backend business authority, and redesign JSX/CSS/classes/layout/branding. Copy-first is not permission to copy unsafe behavior.
 
-## Scope of this skill
+1. **Confirm the target, not a new research project.** Use the known merchant/product, target app path, backend revision/origin, visual brief, and demo-versus-production scope. Ask only missing questions once. Existing implementation authorization means proceed; do not request approval again for every UI batch.
+2. **Read the donors; write only to the authorized target app.** Canonical built-in: `/Users/junaid/Code/openfronts/openfront` (read-only). Existing external clients: `/Users/junaid/Code/external-storefront` (read-only), specifically `e-commerce/storefront/emil-storefront/app` for a Next.js App Router/server-only public client. Reuse the target's existing external transport/session boundary when present; do not replace it merely to match a directory diagram.
 
-This is a **discovery, implementation-planning, and safety-gating skill**, not a complete implementation specification for every Openfront deployment. It is sufficient to build a verified read-only Ecommerce catalog and to plan built-in presentation changes. At canonical Ecommerce commit `6662469`, the current cart and checkout roots are not safe enough for an independently deployed full-commerce storefront. Keep those capabilities unavailable until the ownership, parent-binding, idempotency, amount, and transaction blockers documented below are repaired and tested on the target host.
+   ```bash
+   CANON=/Users/junaid/Code/openfronts/openfront
+   EXTERNAL=/Users/junaid/Code/external-storefront/e-commerce/storefront/emil-storefront/app
+   TARGET=/absolute/path/to/owner-authorized-next-app  # replace; NOT either donor
+   # Resolve symlinks and verify TARGET is outside both read-only donor roots.
+   # Do not execute copy commands until this placeholder is replaced/approved.
+   git -C "$CANON" rev-parse HEAD
+   git -C "$CANON" status --short -- features/storefront 'app/(storefront)' lib/graphql schema.graphql
+   git -C "$TARGET" status --short  # if the target is a Git worktree
+   find "$CANON/app/(storefront)" -type f ! -name .DS_Store | sort
+   find "$CANON/features/storefront" -type f ! -name .DS_Store | sort
+   shasum -a 256 "$CANON/features/storefront/lib/data/products.ts" \
+     "$CANON/lib/graphql/product-projection.ts" "$EXTERNAL/lib/openfront/client.ts"
+   ```
 
-A capable agent must still inspect the exact target revision. Do not advertise a complete storefront merely because catalog pages render or the canonical operations validate against a schema.
+   Read file contents with your file-reading tool. Record HEAD **and working-tree hashes**: the verified donor at this skill update had HEAD `2b7181aa50ff6f27dadacc2ded2b145a2de68c1f` plus modified/untracked storefront code. HEAD alone does not describe it. Source-stage routes/roots are not proof of deployed support. See [verified source map, provenance, and parity checklist](SOURCE_MAP.md).
+3. **Follow this exact file map; copy behavior, not screenshots.** In the table, `F = features/storefront`, `R = app/(storefront)/[countryCode]`; all source paths are relative to `CANON`.
+
+   | Flow | Route → screen | Copy/adapt implementation and operations |
+   | --- | --- | --- |
+   | Shell/home | `R/(main)/layout.tsx`, `page.tsx` → `F/screens/MainLayout.tsx`, `HomePage.tsx` | `F/modules/layout`, `modules/home`, `modules/common`, `modules/skeletons`; `lib/data/store.ts`, `regions.ts`, `categories.ts`, `collections.ts` |
+   | Catalog/taxonomy/search | `R/(main)/store/page.tsx`, `categories/[...category]/page.tsx`, `collections/[handle]/page.tsx` → `StorePage.tsx`, `CategoryPage.tsx`, `CollectionPage.tsx` | `F/modules/store`, `modules/categories`, `modules/collections`, **`F/search/SearchResults.tsx`, `SearchFilters.tsx`**; `F/lib/data/products.ts` plus **`lib/graphql/product-projection.ts`, `bounded-projection.ts`** |
+   | Product/variants/gallery | `R/(main)/products/[handle]/page.tsx` → `F/screens/ProductPage.tsx` | `F/modules/products` (gallery, option-select, desktop/mobile actions, pricing, tabs, related products); `F/lib/util`, `types`, existing product projection operations |
+   | Cart | `R/(main)/cart/page.tsx` → `F/screens/CartPage.tsx` | `F/modules/cart`, layout cart-button/dropdown/mismatch; `F/lib/data/cart.ts`, `cart-client.ts`, `cart-read-state.ts`, `cookies.ts`, `lib/hooks/use-cart.tsx` |
+   | Safe checkout | `R/(checkout)/checkout/page.tsx`, `R/(checkout)/layout.tsx` → `F/screens/CheckoutPage.tsx` | `F/modules/checkout`; `F/lib/data/cart.ts` actions, `payment.ts`, `shipping.ts`, `fulfillment.ts`; preserve addresses → shipping quote/selection → payment selection/confirmation → completion/reconciliation |
+   | Account/orders | `R/(main)/account/layout.tsx`, `account/@login`, `account/@dashboard`, `order/confirmed/[id]/page.tsx` → account/login/order screens | `F/modules/account`, `modules/order`; `F/lib/data/user.ts`, `orders.ts`, `business-accounts.ts`, cookie/session forwarding, owner-checked reads |
+   | Client state/dependencies | `F/screens/StorefrontServer.tsx` | `F/lib/data.ts`, `lib/hooks`, `lib/providers/query-client-provider.tsx`, `lib/query-keys.ts`, `lib/config.ts`, `lib/getBaseUrl.ts`; imported `components/ui`, `lib/utils.ts`, `lib/currency.ts`, styles as needed |
+
+4. **Extract once, adapt deliberately.** These are examples for a later authorized app build, NOT commands to run against a donor or a concurrent implementation. Refuse a target inside either read-only donor. Inspect the import graph and destination before copying. A local extraction directory is not runtime wiring and must stay out of deployment/public assets.
+
+   ```bash
+   # Staging inside the authorized app; no source writes, deletes, secrets, or dependencies.
+   DONOR="$TARGET/.openfront-donor"
+   mkdir -p "$DONOR/features" "$DONOR/app" "$DONOR/lib/graphql"
+   rsync -a --ignore-existing --exclude=.DS_Store \
+     "$CANON/features/storefront/" "$DONOR/features/storefront/"
+   rsync -a --ignore-existing --exclude=.DS_Store \
+     "$CANON/app/(storefront)/" "$DONOR/app/(storefront)/"
+   cp -n "$CANON/lib/graphql/product-projection.ts" \
+     "$CANON/lib/graphql/bounded-projection.ts" "$DONOR/lib/graphql/"
+
+   # Example: adopt one canonical UI component into an EXISTING app's chosen path.
+   mkdir -p "$TARGET/components/product"
+   cp -n "$DONOR/features/storefront/modules/products/components/image-gallery/index.tsx" \
+     "$TARGET/components/product/openfront-image-gallery.tsx"
+   # Adapt its UI imports/JSX/classes to the existing app; keep gallery behavior.
+   ```
+
+   For a target without these slices, copy the reviewed `features/storefront` slice and thin routes from staging into the equivalent app paths, preserving imports initially. For an existing target, transplant the relevant components/actions into its established paths and keep its proven transport. Never blindly overlay duplicate `/` or country/account routes. If a standalone scaffold is genuinely missing, the existing `EXTERNAL` app can be copied into an **empty** authorized destination with `rsync -a` excluding `node_modules`, `.next`, `.git`, `.env*`, `*.tsbuildinfo`, and local logs; separately copy only `.env.example`. This is a public-client scaffold, **not full cart/account parity**.
+5. **Adapt only the external seam, then ship UI batches.** Keep operation names, documents/selections, variables, return shapes, country/pricing semantics, and invalidation until a concrete incompatibility is recorded. Operations live inline in `lib/data/*.ts`, `search/SearchResults.tsx`, and `lib/graphql/product-projection.ts`, not an invented `.graphql` directory. Resolve aliases, imported UI primitives, provider dependencies, Next version differences, media hosts, and endpoint/cookie boundaries locally. **Do not import `features/keystone`, mint backend cart proofs, or copy signing/provider secrets.** Current `cookies.ts`, `getBaseUrl.ts`, `cart.ts`, and payment-link handler have backend-only imports; they require a narrow external adapter. Use backend-issued proof/session material request-locally or keep the affected flow disabled. See the source-map seam checklist.
+6. **Verify once at the end of coherent batches.** Batch shell/home/catalog; product/variants/gallery; cart/checkout/account states. Do not take Playwright screenshots after every edit, run repetitive lint/tests, or enumerate the entire GraphQL schema. Run one bounded target-only build/typecheck pass, fix its concrete errors, and do one final live smoke check (desktop/mobile, real read-only data, enabled flows only). Essential negative security checks remain release gates for private/write flows. Give an independent Pi parity auditor the source/target file map and safety evidence to compare and fix accidental gaps when authorized; do not create a new session automatically. A blocked checkout must not delay shipping safe catalog/UI parity.
+
+## Decision tree — choose once, revisit only with evidence
+
+```text
+Same Openfront E-commerce product + existing/known Next.js client?
+  YES → copy/adapt built-in routes, slices, operations and flows; redesign UI.
+        Existing external transport works? Keep it; adapt only missing seams.
+        Specific incompatibility? Record file/operation + error/revision;
+        inspect ONLY that contract and make the smallest adapter/change.
+  NO  → new/unknown vertical or no compatible donor contract?
+        Use bounded schema-first discovery for that vertical, then reuse its
+        built-in/sibling patterns. Never apply E-commerce mutations by analogy.
+For BOTH → unsafe/unproven ownership/session/payment flow stays unavailable.
+```
+
+Different branding, layout, an external hostname, or preference for a cleaner client is **not** an incompatibility. Do not replace working GraphQL operations wholesale or invent a new client architecture for a redesign.
+
+## Scope and authority
+
+This is an **implementation skill**, with a copy/adapt default and capability-specific safety gates. Presentation may change completely; product, price, inventory, totals, tax, shipping, payment, order and fulfillment truth remain in Openfront. A complete customer-facing inventory is mandatory, even when unsafe capabilities are explicitly disabled. Use [SOURCE_MAP.md](SOURCE_MAP.md) to account for every built-in page/component family, including current source-stage extensions.
+
+The old `6662469` security findings below are a historical warning, not the current checkout specification. Newer local source contains ownership/proof and checkout work, but dirty source, generated schema and deployed host can differ. Never declare the host safe from a source file, schema-valid operation, or HTTP 200. Enable private/write flows only with evidence for the exact target host; otherwise retain clearly labeled unavailable/demo states.
 
 ## Source orientation to explain first
 
@@ -24,7 +95,7 @@ Before asking implementation questions, briefly orient the user to the source:
 - Thin storefront route entry points: [`app/(storefront)`](https://github.com/openshiporg/openfront/tree/master/app/%28storefront%29)
 - GraphQL schema, models, access, and named operations used by the storefront: [`features/keystone`](https://github.com/openshiporg/openfront/tree/master/features/keystone) and [`schema.graphql`](https://github.com/openshiporg/openfront/blob/master/schema.graphql)
 
-Explain that `features/storefront` is where the built-in customer experience and most of its data-call composition live. If the user is uncertain how a custom storefront should behave, inspect this code to understand the existing routes, states, GraphQL calls, session/cart handling, and provider handoffs before deciding what to preserve or replace.
+Explain briefly that the external storefront is a copy/adaptation of the customer feature slice with new presentation, not a backend reconstruction. These GitHub links are navigational; prefer the exact local target/donor revision and the linked source map. Read `features/keystone` or the schema only for an evidenced incompatibility or an enabled capability's safety gate, not as a mandatory whole-backend tour.
 
 ## Then interview the user
 
@@ -38,22 +109,16 @@ After that orientation, ask one concise set of questions, skipping anything the 
 6. Which countries, currencies, customer/guest modes, payments, shipping/fulfillment or booking flows are required?
 7. Which non-production host, GraphQL endpoint, schema export, test catalog, and test identities are available?
 
-After the answers:
+After the answers, restate a short brief and use the QUICKSTART. Trace route → screen → component → existing action/operation for the batch being implemented. Record source-to-target paths, external seams and disabled capabilities; begin the approved work. Ask before expanding scope or changing backend contracts, not before every already-authorized UI change.
 
-1. restate the desired changes as a short brief;
-2. inspect the **specified product codebase** read-only before proposing implementation;
-3. trace its built-in storefront routes, screens/modules, GraphQL call sites, schema, resolvers, access rules, cookies/sessions, media, and provider boundaries;
-4. identify reusable presentation code, backend-owned behavior, missing contracts, and unsafe assumptions;
-5. propose the smallest implementation plan and ask for confirmation before broad changes.
-
-If the user wants to adapt the built-in storefront, work in that product's existing storefront routes and feature slices. If they want a separate storefront, inspect the built-in storefront as the behavioral reference and use only verified external contracts.
+For built-in customization, edit only the authorized product checkout. For a separate client, copy/adapt the customer slice into the authorized external app; canonical source stays read-only. Preserve the client workflow and GraphQL contract without importing backend authority.
 
 ## Non-negotiable rules
 
 1. **Respect the chosen boundary.** A built-in customization may use that product's intended storefront modules and server data layer, but must not move backend authority into browser code. A separate client uses the configured GraphQL endpoint and must not import Keystone models, Prisma, migrations, `features/keystone`, generated admin clients, or backend environment variables.
 2. **Openfront owns commerce truth.** Prices, currency, discounts, tax, shipping, inventory, totals, payment state, order state, fulfillment, and eligibility come from server responses.
 3. **Never fabricate records.** Loading and empty states must not contain fake products, prices, reviews, availability, orders, or success.
-4. **Schema first.** Export or introspect the exact target schema, pin it in the client repository, generate types, and validate every checked operation in CI.
+4. **Copy contracts first.** Preserve the existing named operations and result/variable types. Use a supplied/exported target schema to validate the operations actually used; reuse existing codegen if present. Schema-first root discovery is only for unknown/new verticals or evidenced incompatibilities. Do not make a new schema/codegen architecture a prerequisite for presentation work.
 5. **Access tests are part of the contract.** GraphQL validation proves shape only. Prove anonymous, Customer A, Customer B, expired-session, wrong-cart, wrong-line, and wrong-order behavior against a disposable host.
 6. **Keep credentials out of browser JavaScript.** Prefer a same-origin backend-for-frontend (BFF) with host-only `httpOnly` cookies. Never put a Keystone session, customer token, provider secret, API key, or guest order secret in `localStorage`.
 7. **No arbitrary GraphQL proxy.** Browser routes call compiled, named operations with allowlisted variables. They do not submit arbitrary documents, fields, filters, or endpoint URLs.
@@ -63,7 +128,7 @@ If the user wants to adapt the built-in storefront, work in that product's exist
 
 ## Required inputs for an external client
 
-Obtain these before building an independently deployed UI:
+Use the target's existing configuration names (the verified external client uses server-only `OPENFRONT_BASE_URL`); do not rename a working boundary. For a new external adapter, equivalent inputs are:
 
 ```dotenv
 OPENFRONT_ORIGIN=https://merchant.example
@@ -75,7 +140,7 @@ Also ask for:
 
 - a non-production host and safe test catalog;
 - the exact Openfront/vertical revision;
-- a schema export or permission to introspect;
+- existing contract evidence/schema export; permission for a bounded compatibility check if necessary (not exhaustive introspection);
 - supported countries, payment providers, shipping providers, and customer-auth mode;
 - CORS policy and allowed storefront origin;
 - test identities supplied through a secret manager, not source or prompts;
@@ -83,7 +148,7 @@ Also ask for:
 
 Reject production endpoint URLs that are not trusted HTTPS, contain credentials or fragments, or can be overridden by request input. Permit plain HTTP only for explicit loopback development.
 
-## Inspect the built-in client without coupling to it
+## Copy/adapt the customer client without coupling to the backend
 
 Inspect the target product's current built-in client read-only:
 
@@ -98,7 +163,7 @@ Inspect the target product's current built-in client read-only:
 - access rules: `features/keystone/models/**` and `features/keystone/access.ts`;
 - provider adapters: `features/integrations/payment/**` and `features/integrations/shipping/**`.
 
-Use source call sites as workflow evidence only. Built-in helpers can drift from the generated schema or rely on same-origin/server privileges that an external client does not have.
+Source call sites are the implementation donor: copy/adapt their customer workflow, documents, hooks and cache behavior rather than merely using them as research inspiration. Validate the active call chain, not every unused export. Same-origin privileges and backend-only imports are external seams, not permission to copy backend code; adapt narrowly and disable anything not safe.
 
 ### Built-in Ecommerce route and source map
 
@@ -113,25 +178,25 @@ Use this map before editing or reproducing a flow:
 | Account and addresses | account parallel routes under `@dashboard` and `@login` | account screens, `modules/account/**` | `lib/data/user.ts`, `cookies.ts`, user/address custom roots |
 | Orders and invoices | account order/invoice routes and `order/confirmed/[id]` | order/invoice screens and modules | `lib/data/orders.ts`, `business-accounts.ts`, order/invoice custom roots |
 
-Also inspect `features/storefront/middleware.ts`, `lib/hooks/**`, and `lib/query-keys.ts` for country routing, client state, cache keys, and invalidation. Preserve the parallel account-route structure when adapting the built-in client. Do not assume every exported helper is current workflow authority: `lib/data/cart.ts` contains stale or alternate helpers, and `lib/data/orders.ts` contains placeholder transfer functions that log and return success without performing a mutation.
+This compact map is not exhaustive; the QUICKSTART and [SOURCE_MAP.md](SOURCE_MAP.md) include current search/projection helpers and all account/content extensions. Also inspect `features/storefront/middleware.ts`, `lib/hooks/**`, and `lib/query-keys.ts` for country routing, client state, cache keys, and invalidation. Preserve the parallel account-route structure when adapting the built-in client. Do not assume every exported helper is current workflow authority: `lib/data/cart.ts` contains stale or alternate helpers, and `lib/data/orders.ts` contains placeholder transfer functions that log and return success without performing a mutation.
 
-### Current repository verification reality
+### Bounded verification, not a test/research loop
 
-At canonical commit `6662469` the Ecommerce repository has no Jest/Vitest, Playwright, Cypress, contract-test, or meaningful application-test suite; no `test`, `typecheck`, `codegen`, `test:contract`, or `test:e2e` package scripts; and `next.config.ts` sets `typescript.ignoreBuildErrors: true`. Both `dev` and `build` apply database migrations. Before broad built-in customization, add an independent non-migrating typecheck plus focused unit, access/contract, and browser tests. Never report the existing production build alone as type or workflow proof.
+Inspect the **target app's** scripts once. The verified canonical working tree now has focused `.test.ts` files; its package scripts still have no dedicated `test`, `typecheck`, or `codegen`. Its `dev` builds Keystone and migrates; its current `build` builds Keystone then Next. Do not run either in the read-only donor. An external UI build must not install/start Keystone, touch its database, or migrate it. The inspected external Emil client has `typecheck: tsc --noEmit` and `build: next build --webpack`; use the target's equivalent safe scripts once after implementation batches. A build alone is not ownership/payment proof, and disabling TypeScript errors is not acceptable verification.
 
-## Phase 0: contract discovery
+## Exception path: bounded contract discovery
 
-Do this before choosing components or layouts.
+**Skip this as a default redesign phase.** Use only for a new/unknown vertical or a specific evidenced operation incompatibility. Existing E-commerce copy-first work validates used operations against existing contract evidence and proceeds with safe UI batches.
 
-1. Save the target schema as `graphql/openfront.schema.graphql`.
-2. Record the schema hash, host revision, endpoint origin, introspection mode, and verification date.
-3. Inventory query and mutation root fields.
-4. Validate anonymous catalog reads.
-5. Validate customer authentication and session forwarding.
-6. Run cross-customer/cart/order negative probes.
-7. Produce a capability matrix for every intended route.
+1. Obtain the target schema/export without changing the host; reuse the existing pinned schema path.
+2. Record hash, host revision/origin, verification date, and the concrete incompatibility.
+3. Inspect only needed root fields and the failing source operation/selection.
+4. Validate anonymous catalog reads for intended publication/region scope.
+5. Verify session forwarding only before enabling private capabilities.
+6. Run the relevant cross-customer/cart/order negative probes on an authorized disposable host.
+7. Record the smallest adapter or missing capability in the parity matrix; continue unaffected UI work.
 
-A minimal root probe is:
+For an unknown vertical only, a minimal root probe is (not a routine E-commerce task):
 
 ```graphql
 query OpenfrontCapabilityProbe {
@@ -157,9 +222,11 @@ Use this matrix:
 
 Every planned page must map to a verified row. “The operation exists” is not evidence of ownership, publication filtering, transactional behavior, or provider readiness.
 
-## Required client structure
+## Client structure — keep the existing one
 
-A finished client must contain equivalents of:
+Default: retain the target Next.js app structure, existing external transport, and copied customer feature slices/hooks/inline operation documents. Thin routes still compose features. Do not introduce the tree or scripts below into a working app merely for uniformity.
+
+For a genuinely new client on the exception path, an optional structure is:
 
 ```text
 .env.example
@@ -181,7 +248,7 @@ e2e/*
 
 Routes stay thin. Feature slices own presentation-specific orchestration. Openfront owns business invariants.
 
-Provide scripts equivalent to:
+For that new contract architecture, optional CI scripts include (not a per-edit checklist):
 
 ```text
 schema:check
@@ -195,9 +262,9 @@ build
 
 ## Transport and code generation
 
-Use named operations and generated result/variable types. Configure strict scalar handling so unknown custom scalars do not silently become `any`.
+Reuse existing named operation documents and result/variable types first. If the active donor uses unnamed inline operations, assign stable local names without changing the root, selection, variables or behavior. Validate runtime JSON even when TypeScript types exist. Preserve working codegen; do not replace inline source documents with a new generated-client architecture for a redesign.
 
-A typical GraphQL Code Generator configuration:
+Only if codegen is actually needed on the exception path, a typical GraphQL Code Generator configuration is:
 
 ```ts
 import type { CodegenConfig } from "@graphql-codegen/cli";
@@ -235,7 +302,7 @@ The transport must:
 
 ## Authentication and BFF boundary
 
-For a browser storefront, expose task routes rather than a generic proxy:
+Reuse the existing server-action/BFF boundary when it satisfies these controls. External adaptation may preserve server actions; it does not require a new REST layer. If route handlers are needed, these are illustrative task routes, not existing canonical files or mandatory new architecture:
 
 ```text
 POST /api/openfront/session/login
@@ -261,11 +328,13 @@ On login, store the returned session token server-side or in a secure host-only 
 
 A cart ID and guest order secret are credentials. Keep cart bindings server-side when possible; never put either value in analytics, public cache tags, or durable URLs. If an emailed link must carry a capability, exchange it server-side and redirect to a clean URL.
 
-## Current Ecommerce blocker register
+## Historical E-commerce blocker register — `6662469`, not the latest specification
 
-At canonical commit `6662469`, treat these roots as implementation evidence—not approved external contracts:
+These findings describe the old snapshot only. The verified local source now includes `features/keystone/security/cart-access.ts`, proof handling and checkout recovery/commit work. Do not assume either that every old defect persists or that the deployed host has every repair. Use the current source/host seam checklist in [SOURCE_MAP.md](SOURCE_MAP.md). Unknown or unsafe external cart/checkout remains disabled until the target passes ownership, parent-binding, idempotency, amount/currency, inventory and reconciliation checks.
 
-| Root/path | Current blocker |
+At canonical commit `6662469`, the recorded blockers were:
+
+| Root/path | Historical blocker at `6662469` |
 | --- | --- |
 | `activeCart` / `mutations/activeCart.ts` | Reads an arbitrary cart by caller-supplied ID under `sudo()` |
 | `updateActiveCart` / `mutations/updateActiveCart.ts` | Writes an arbitrary cart with broad `CartUpdateInput`, including sensitive relationships |
@@ -276,13 +345,13 @@ At canonical commit `6662469`, treat these roots as implementation evidence—no
 | `completeActiveCart` | Lacks a complete caller-binding, durable idempotency, amount/currency binding, and atomic order/payment/inventory boundary |
 | Checkout address update in `features/storefront/lib/data/cart.ts` | Can connect broad user/address/region relationships through the unsafe cart update root |
 
-The current completion implementation can select the first payment session rather than necessarily the completed session, and order construction spans multiple writes. A safe external checkout needs bounded server roots that bind actor/cart capability, constrain fields and related records, check line parents and shipping eligibility, preserve one idempotency intent, verify provider amount/currency, transact or durably reconcile effects, and return a runtime-validated projection.
+That historical completion implementation could select the first payment session rather than necessarily the completed session, and order construction spanned multiple writes. A safe external checkout needs bounded server roots that bind actor/cart capability, constrain fields and related records, check line parents and shipping eligibility, preserve one idempotency intent, verify provider amount/currency, transact or durably reconcile effects, and return a runtime-validated projection.
 
-Request purpose-built equivalents of `storefrontCart`, `storefrontCreateCart`, `storefrontAddCartLine`, `storefrontSetCartLineQuantity`, `storefrontSetCheckoutAddresses`, `storefrontSelectShippingOption`, `storefrontInitiatePayment`, `storefrontCompleteCheckout`, and `storefrontCheckoutStatus` rather than exposing broad CRUD.
+Prefer the current bounded host commands already used by the built-in slice. The former suggested `storefront*` root names are not existing API requirements: do not invent/rename operations to satisfy a naming convention. If a necessary safety capability is truly absent, record it, disable that UI action, and request a narrowly scoped backend repair through separate authorization; never expose broad CRUD.
 
-## Canonical Ecommerce snapshot: schema-compatible examples
+## Legacy schema-compatible examples — reference only, do not replace donor operations
 
-The examples below validate against canonical Ecommerce `schema.graphql` at commit `6662469`. They are **orientation only for that Ecommerce contract**, not a promise that another deployment has the same schema or safe access policy. For Restaurant, Hotel, or another product, derive every operation from that product's current schema, resolvers, access rules, and built-in call sites; never reuse Ecommerce roots by analogy. Validate all operations against the target schema and run negative access tests before use.
+The following examples were validated by the prior skill against `schema.graphql` at commit `6662469`; they were **not revalidated as current host contracts** in this documentation update. For current E-commerce builds, copy the active built-in operation documents from the QUICKSTART source paths instead. These old examples are not starter code and must not override current proof/address/shipping/completion flows. For an unknown vertical, use its own source and bounded discovery, never E-commerce roots by analogy.
 
 ### Bootstrap and catalog
 
@@ -417,7 +486,7 @@ mutation ExternalSetCartLineQuantity($cartId: ID!, $lineId: ID!, $quantity: Int!
 
 ### Shipping, payment, and completion
 
-The built-in flow currently traces through this sequence; do not skip a step when auditing a target revision:
+The historical flow traces through this sequence. Preserve its essential authority boundaries, but copy the current built-in sequence (including shipping quotes and backend-issued proofs) instead of implementing from this old example:
 
 1. resolve country, region, currency, and catalog;
 2. create or recover the caller-bound cart;
@@ -526,9 +595,9 @@ query ExternalCustomerOrder($orderId: ID!, $secretKey: String) {
 
 Keep login, registration, password reset, and order lookups behind rate-limited BFF routes. Return generic auth/reset errors where enumeration is possible. Do not expose broad `users` or `orders` to customer sessions.
 
-Before implementing accounts, inventory and verify the exact current roots and call sites for `createUser`, `authenticateUserWithPassword`, `endSession`, `updateActiveUser`, `updateActiveUserPassword`, `createActiveUserAddress`, `updateActiveUserAddress`, `deleteActiveUserAddress`, `getCustomerOrders`, and `getCustomerOrder`. Password reset is unavailable unless a target-revision contract and delivery path are verified.
+Before enabling private account actions, follow the current `lib/data/user.ts`/`orders.ts` call chain and verify only its used authentication, profile/address and order roots. Copy/adapt those actions, not a newly researched account architecture. Password reset is unavailable unless a target-revision contract and delivery path are verified.
 
-The built-in guest path is not a clean anonymous capability contract: current source can create a password-backed `User` with a random password, sign it in, and associate addresses/cart with it. Treat that as behavioral evidence only. An external guest flow needs an explicit caller/cart/order capability model and must not silently manufacture customer accounts by analogy.
+The old built-in guest path could create a password-backed `User` with a random password, sign it in, and associate addresses/cart with it. Do not recreate that historical behavior. Current `setAddresses` uses `setActiveCartAddresses`; preserve that command when the deployed contract supports it. External guest/cart proof must be backend-issued and caller-bound; never silently manufacture customer accounts or copy backend signing code.
 
 ### Runtime JSON contracts
 
@@ -559,37 +628,16 @@ A custom design can change information architecture and visual language, but it 
 - Clear customer/cart caches on login, logout, region change, ownership failure, and checkout completion.
 - Never cache a stronger credential's response for a weaker actor.
 
-## Implementation sequence
+## Implementation sequence — coherent UI batches
 
-### 1. Read-only storefront
+1. **Copy/adapt shell and discovery:** existing transport + home/nav/footer/country selection, catalog, nested categories, collections, search/filter/sort and count-backed pagination. Preserve publication/region scope, metadata, loading and failure states.
+2. **Copy/adapt product experience:** ordered multi-image gallery, description/tabs, option-combination selection, selected regional price/availability, mobile actions and related products. Redesign presentation, not pricing/variant authority.
+3. **Copy/adapt private/commerce presentation:** account/login/register/profile/addresses/orders and cart/checkout components with explicit safe-disabled states first. Reuse proven session/operation wiring; enable each capability only after its relevant safety checks. Refetch server totals; preserve backend-issued cart proof, shipping quote, provider handoff, selected payment session, duplicate-submit prevention and unknown-outcome reconciliation.
+4. **One bounded final verification pass:** run the target's non-migrating build and independent typecheck once; run existing focused tests only for changed logic/controls. Fix concrete failures and rerun only the affected gate. No per-edit lint/test/screenshot treadmill or blanket canonical/fleet build.
+5. **One final live smoke check:** home → catalog/taxonomy/search/sort/page → product/gallery/variants, mobile/nav/country, empty/not-found/outage and disabled states. Check keyboard/focus, image failures and console/network errors. For approved enabled private flows, check login/logout and ownership; never charge/place orders or mutate real accounts merely for a UI smoke test. Missing runtime access is reported as unverified, not silently passed.
+6. **Independent Pi parity audit/fixes:** hand off the source/target revisions, full file inventory, parity matrix, bounded check results and safety blockers. The auditor compares actual source/components and fixes authorized accidental omissions; it cannot waive security gates. Do not launch sessions/schedules without explicit authorization.
 
-- Validate environment and schema.
-- Build typed transport and runtime scalar parsing.
-- Implement identity, supported country/region, catalog, product detail, media, empty/error/not-found states.
-- Add contract tests for unpublished and region-mismatched products.
-
-### 2. Customer session
-
-- Add BFF login/logout and secure cookies.
-- Add current-customer/account states.
-- Prove Customer A cannot read Customer B data by changing IDs.
-
-### 3. Cart
-
-- Proceed only after the host has an ownership-checked cart projection and commands.
-- Bind one opaque cart capability to the BFF session/cookie and country.
-- Refetch server totals after every write; do not calculate authoritative totals locally.
-
-### 4. Checkout
-
-- Proceed only after bounded address, shipping, payment-session, completion, and order commands pass negative tests.
-- Disable duplicate submit, preserve a single intent/idempotency key, and reconcile timeout by reading server state.
-- Verify provider callbacks at the Openfront host, not in the storefront browser.
-
-### 5. Production proof
-
-- Run schema validation, codegen, typecheck, unit, contract, browser, and build gates.
-- Verify responsive and keyboard behavior, metadata, image failures, console/network errors, CSP, CORS/BFF behavior, redaction, health, alerts, and rollback.
+A read-only/demo completion may ship catalog parity with clearly unavailable private/commerce routes. It must not be called a fully operational commerce storefront. Production proof additionally requires the relevant security/provider, deployment, cache, observability and rollback evidence; reuse existing evidence for unchanged contracts rather than rerunning every suite for CSS.
 
 ## Minimum contract tests
 
@@ -611,17 +659,23 @@ Mutating tests run only against an explicitly disposable host with unique fixtur
 
 Do not call the storefront ready until:
 
-1. The target schema is pinned and every checked document validates against it.
+1. Source-to-target routes/components/operations are recorded; used documents validate against the supplied target contract. Existing schema/codegen evidence is reused, not rebuilt solely for a redesign.
 2. Every route has a capability row and explicit unavailable behavior for gaps.
 3. Runtime validators cover every `JSON` or unknown-scalar boundary.
 4. Cart and checkout ownership/idempotency blockers are repaired on the target host or those flows are disabled.
-5. Customer/cart/order cross-owner negative tests pass.
+5. Customer/cart/order cross-owner negative tests pass for enabled private/write capabilities; otherwise those capabilities remain disabled and the handoff explicitly limits readiness to read-only/demo.
 6. No browser-visible operator/provider/server credential exists.
 7. Prices, totals, availability, status, payment, and fulfillment are server-derived.
-8. BFF origin/CSRF/body/rate-limit/redaction policies are tested.
+8. Applicable external origin/CSRF/body/rate-limit/redaction policies are tested before enabling the affected server routes/actions.
 9. Empty, not-found, denied, provider-down, schema-drift, timeout, and unknown-outcome states are real and accessible.
-10. Typecheck, tests, contract tests, browser tests, and production build pass against the recorded schema/host.
+10. One bounded target build/typecheck and final live smoke check are reported; relevant logic/security tests pass for enabled capabilities. Disabled/unverified flows are explicit. Full-commerce production release requires the negative/provider gates, not just a visual smoke check.
 11. Deployment, readiness, observability, incident, and rollback notes are complete.
+
+## Improve the skill when recurring friction is found
+
+Claude/Pi sessions should make small, evidence-backed improvements to this canonical skill when authorized: record the exact failing donor/target path, revision, operation/seam, correction and changed instructions in the skill or its linked source map. Fix stale paths and repeatable extraction friction; do not create competing unlinked proposals or turn app shipping into documentation loops. Batch notes during implementation, ship the authorized app, then apply the smallest documentation correction. If canonical Docs write access is absent, report a concise patch for owner review rather than modifying installed copies.
+
+Do not silently synchronize `~/.codex/skills/e-commerce-external-storefront/SKILL.md`, Reach Out's copied skill, or other installed copies. Report canonical Docs HEAD, working-tree file SHA-256/Git blob hash, changed companion paths and diff; request explicit controlled synchronization after owner/supervisor review. Include linked companions in any approved sync. Never imply an uncommitted update has a new commit revision.
 
 ## Final handoff
 
