@@ -25,7 +25,7 @@ export default function EthosPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         <div className="max-w-2xl space-y-8">
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">The Office Chair Empire That Wasn't</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">The Office Chair Empire That Wasn't</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               In the early 2010s, a friend of mine built a thriving business selling office chairs on Amazon. 
               He became one of the platform's largest sellers, with thousands of happy customers and steady growth.
@@ -43,7 +43,7 @@ export default function EthosPage() {
           </div>
 
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Marketplace Feudalism</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">Marketplace Feudalism</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               Modern marketplaces create a kind of digital feudalism. Independent businesses compete 
               desperately against one another while the platforms they depend on face no real competition 
@@ -59,7 +59,7 @@ export default function EthosPage() {
           </div>
 
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Building a Decentralized Marketplace</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">Building a Decentralized Marketplace</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               At <a href="https://openship.org" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">Openship</a>, we are creating <a href="https://github.com/openshiporg/openfront" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">open source software as a service platforms</a> for every vertical,
               from hotels to grocery stores to barbershops. Together, these vertical platforms form the
@@ -77,7 +77,7 @@ export default function EthosPage() {
           </div>
 
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Software That Fits Your Business</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">Software That Fits Your Business</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               For too long, businesses shaped themselves around rigid, one size fits all software. They 
               spent countless hours configuring dashboards and workarounds, trying to fit unique needs 
@@ -94,7 +94,7 @@ export default function EthosPage() {
           </div>
 
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">Built for Independence</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">Built for Independence</h2>
             <p className="text-fd-muted-foreground leading-relaxed mb-4">
               This is why we built infrastructure that you can truly own. With Openship and <a href="https://github.com/openshiporg/openfront" target="_blank" rel="noopener noreferrer" className="text-fd-foreground underline hover:text-fd-muted-foreground transition-colors">Openfront</a>, 
               your store is your system, your code, your data. If we disappear tomorrow, your business 
@@ -110,7 +110,7 @@ export default function EthosPage() {
           </div>
 
           <div>
-            <h2 className="text-4xl font-semibold mb-4 font-instrument-serif">The Path Forward</h2>
+            <h2 className="text-4xl font-normal mb-4 font-geist-serif">The Path Forward</h2>
             <p className="text-fd-muted-foreground leading-relaxed">
               The office chair story doesn't have to be yours. Deploy our platforms and flip the script: 
               instead of adapting your business to fit marketplace requirements, make marketplaces adapt 
