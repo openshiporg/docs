@@ -4,7 +4,6 @@ description: Country-aware catalog, cart, checkout, confirmation, and account ro
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 
 The built-in storefront lives under `app/(storefront)/[countryCode]`. Screens are in `features/storefront/screens`, UI in `features/storefront/modules`, and GraphQL calls in `features/storefront/lib/data`.
 
@@ -48,13 +47,11 @@ The built-in storefront lives under `app/(storefront)/[countryCode]`. Screens ar
 
 ## Limitations
 
-<Callout type="warn">
 - The Manual provider (`pp_system_default`, shown as Cash on Delivery) is refused by `completeActiveCart`. The storefront still shows a "Place order" button for it, and that order fails.
 - Gift cards cannot be applied. `updateActiveCart` rejects `giftCards`, even though the cart UI has gift-card display code.
 - The account checkout-link pages read a bare `cartId` and try to set the cart's user. Cart access rules reject a cart ID without a proof for anyone who does not own the cart, and `updateActiveCart` drops user changes. Treat that route as not working. The MCP `getCheckoutLink` tool builds the same kind of URL.
 - Customers cannot start returns or claims from the storefront. Staff create them in the dashboard.
 - `getMyPrivacyData`, `updatePrivacyPreferences` and `requestPrivacyAction` exist in the API, but no storefront page calls them.
-</Callout>
 
 ## Custom storefronts
 

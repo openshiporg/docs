@@ -3,7 +3,6 @@ title: Kitchen display system
 description: Station-based ticket management for prep, expo, and timing control.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 The KDS at `/dashboard/platform/kds` shows kitchen tickets by station. It tracks ticket age, has an all-day view, and lets cooks complete items one at a time. It refreshes every 10 seconds.
@@ -67,6 +66,4 @@ Cards per station with active, ready, and overdue counts and average ticket age.
 
 Ticket sync lives in `features/keystone/utils/kitchenTicketSync.ts` and runs after order changes. The `syncKitchenTickets` mutation re-syncs all active orders and needs kitchen management permission. KDS mutations need `canManageKitchen`.
 
-<Callout type="info">
 There is no device provisioning, printer fallback, or bump-bar support. The KDS is a web page that polls.
-</Callout>

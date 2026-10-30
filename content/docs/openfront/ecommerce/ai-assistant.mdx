@@ -3,7 +3,6 @@ title: AI assistant
 description: The dashboard chat assistant and the MCP endpoint it uses to read and change store data.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Openfront has a chat assistant in the dashboard's right sidebar. It sends your messages to a model on OpenRouter. The model can call tools on the app's MCP endpoint, which run GraphQL as you.
@@ -46,9 +45,7 @@ An MCP token acts as the user who approved it. Without `mcp:write`, mutations ar
 - `features/dashboard/hooks/use-chat-submission.tsx`, `use-ai-config.tsx`
 - `features/dashboard/components/dual-sidebar/ai-chat-sidebar.tsx`
 
-<Callout type="warn">
 - The assistant is only as safe as your roles. It can do anything your user can do, including deletes.
 - Local-mode keys are stored in the browser's `localStorage`.
 - Messages and tool results go to OpenRouter and the model provider you choose. Do not use it with data you cannot send to them.
 - `getCheckoutLink` builds a legacy `/account/checkout-link?cartId=` URL that the current storefront does not accept.
-</Callout>

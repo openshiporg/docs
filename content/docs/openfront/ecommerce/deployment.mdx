@@ -3,8 +3,6 @@ title: Deployment
 description: Deploy Openfront Ecommerce with explicit migration, secret, provider, and rollback ownership.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Openfront Ecommerce needs a Node.js 20+ runtime, persistent PostgreSQL and S3-compatible storage. Email, payment, shipping and AI settings depend on the features you enable. See [Getting started](/docs/openfront/ecommerce/getting-started) for the full variable list.
 
 ## Scripts
@@ -16,9 +14,7 @@ Openfront Ecommerce needs a Node.js 20+ runtime, persistent PostgreSQL and S3-co
 | `npm start` | `next start` |
 | `npm run dev` | Builds the schema, migrates, and starts the dev server. Do not use it against production. |
 
-<Callout type="warn">
-Run `npm run migrate` once per release, from one process. Do not let several instances migrate on start at the same time.
-</Callout>
+Run `npm run migrate` once per release, from one process, rather than letting several instances migrate on start at the same time.
 
 The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because Railway's build step cannot reach an internal database. If you scale to several instances, move the migration into a single release step. The README also has a Vercel import button. There is no Dockerfile in the repository.
 
@@ -40,8 +36,7 @@ There is no background worker. Outgoing webhooks are delivered when the triggeri
 2. Back up production. Test pending migrations on a copy.
 3. Build, migrate once, then start.
 4. Check `/dashboard` sign-in, the storefront country redirect, and `/api/graphql`.
-5. Run a checkout with each enabled payment provider in its sandbox, including the webhook at `/api/payment-webhooks/<providerId>`.
+5. Run a checkout with each enabled payment provider with its test credentials, including the webhook at `/api/payment-webhooks/<providerId>`.
 6. Check fulfillment, label, return and refund paths you plan to use.
 7. Keep an application rollback and a database recovery plan.
 
-A successful deploy only shows that the app started. It does not show that checkout, webhooks or refunds work in your environment.

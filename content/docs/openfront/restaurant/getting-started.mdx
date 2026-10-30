@@ -4,13 +4,11 @@ description: Clone Openfront Restaurant, configure PostgreSQL, sessions, and S3 
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 This guide sets up one restaurant on your own machine or server. Onboarding creates sample setup records: store settings, menu, modifiers, kitchen stations, floors, sections, tables, and payment provider records. It does not create provider accounts or prove that payments, delivery zones, or staff permissions are ready for service.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [restaurant.openship.org](https://restaurant.openship.org). The operator dashboard is at `/dashboard` on the same host. It uses demo data.
+The hosted app is at [restaurant.openship.org](https://restaurant.openship.org). The operator dashboard is at `/dashboard` on the same host.
 
 ## Requirements
 
@@ -72,9 +70,7 @@ npm run dev
 
 To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds Keystone, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and migrations together.
 
-<Callout type="warn">
-`npm run dev` and `npm run build` both apply migrations to whatever `DATABASE_URL` points at. Do not point them at a shared database by accident.
-</Callout>
+`npm run dev` and `npm run build` both apply migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 

@@ -3,7 +3,6 @@ title: AI assistant
 description: Use natural language inside the dashboard to read and change restaurant data.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 The AI assistant is a chat panel in the dashboard sidebar. It works on top of the same Keystone GraphQL API the rest of the app uses. It finds the schema through MCP tools before it makes changes, so its changes are real changes to your data.
@@ -79,6 +78,4 @@ The route checks the key against OpenRouter before each chat.
 - "List menu items tagged for dinner, sorted by name."
 - "Add a modifier called Extra Pickles to the Classic Burger."
 
-<Callout type="info">
 It is not a customer-facing chat. It runs only inside the dashboard.
-</Callout>

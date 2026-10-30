@@ -3,7 +3,6 @@ title: Point of sale
 description: Staff-facing order entry for dine-in and takeout.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 The POS screen at `/dashboard/platform/pos` is for opening orders quickly. A server, cashier, or counter staff member can start a dine-in or takeout order and send it straight to the kitchen.
@@ -64,9 +63,7 @@ The screen also shows how the check is allocated across split checks, refund act
 
 The POS has a collapsed "Checkout recovery" section. It shows online checkouts that were paid but not placed, refunds and refund webhooks that need reconciling, and the queued notification list.
 
-<Callout type="info">
 The POS opens orders. The service floor runs them once they are live: adding items, firing courses, splitting checks, and closing.
-</Callout>
 
 ## Current limitations
 

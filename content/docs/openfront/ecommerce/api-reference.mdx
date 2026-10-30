@@ -3,13 +3,7 @@ title: GraphQL API
 description: Authentication, generated CRUD, and the named custom GraphQL operations in Openfront Ecommerce.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Openfront serves GraphQL at `/api/graphql` (`pages/api/graphql.ts`, using GraphQL Yoga over the Keystone context). The schema is generated from `features/keystone/models` plus the custom operations registered in `features/keystone/mutations/index.ts`. The checked-in `schema.graphql` in the [source repository](https://github.com/openshiporg/openfront) is the reference for a given revision.
-
-<Callout type="warn">
-Do not send production credentials to a public demo. Run introspection or GraphiQL against your own non-production instance.
-</Callout>
 
 ## Authentication
 

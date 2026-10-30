@@ -3,8 +3,6 @@ title: Price Lists
 description: Alternate variant prices with a status and an optional date window.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 A `PriceList` groups alternate prices. Operators manage them at `/dashboard/platform/price-lists`.
 
 ## Model
@@ -30,12 +28,10 @@ A `PriceList` groups alternate prices. Operators manage them at `/dashboard/plat
 
 The result includes `calculatedAmount`, `originalAmount`, `priceListId` and `priceListType`. The storefront product queries read these fields.
 
-<Callout type="warn">
 - `calculatedPrice` does not check the shopper's customer group, so linking a list to customer groups does not limit who sees the price.
 - `PriceRule.ruleAttribute` and `ruleValue` are stored but not evaluated.
 - `minQuantity` and `maxQuantity` are read but not compared with the cart quantity.
 - Cart lines pick the first money amount for the variant in the cart's region. Test which price a cart actually uses before relying on a list.
-</Callout>
 
 ## When to use it
 

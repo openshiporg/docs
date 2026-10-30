@@ -3,7 +3,6 @@ title: B2B & Credit Accounts
 description: Business account requests, account credit checkout, invoices, and customer tokens for API ordering.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Openfront lets a signed-in customer apply for a business account. Once approved, the customer can check out on credit, group unpaid orders into invoices, pay them, and use a customer token to order through the API.
@@ -42,8 +41,6 @@ A customer with an active business account creates a token from the invoicing pa
 
 Staff see business accounts and their invoices at `/dashboard/platform/invoices`.
 
-<Callout type="warn">
 - Accounts only support one currency. Cross-currency account orders and invoices are refused.
 - Manual invoice tender is refused. No screen records an offline invoice payment.
 - A customer token can register a webhook with `registerWebhookEndpoint` only for the `fulfillment.created` event. Other events are refused for customer tokens.
-</Callout>

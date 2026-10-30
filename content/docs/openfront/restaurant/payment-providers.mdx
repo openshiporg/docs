@@ -3,7 +3,6 @@ title: Payment providers
 description: How restaurant payments are wired through Stripe, PayPal, and manual adapters.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Openfront Restaurant uses adapter-based payment providers. Each `PaymentProvider` record names the adapter for create, capture, refund, status, payment link, and webhook work. The adapters live in:
@@ -75,6 +74,4 @@ The refund and webhook recovery panels are in the POS "Checkout recovery" sectio
 - `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction`, `handleWebhookFunction`
 - `credentials` and `metadata`
 
-<Callout type="warn">
-The only webhook route is `/api/integrations/payment/[providerCode]/webhook`. Test signatures, duplicates, refunds, and failures with test credentials before going live.
-</Callout>
+The only webhook route is `/api/integrations/payment/[providerCode]/webhook`.

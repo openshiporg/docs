@@ -3,8 +3,6 @@ title: Payment providers
 description: Local and external payment adapter dispatch, provider state, webhooks, and current workflow limits.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Openfront stores payment-provider configuration in `PaymentProvider` records and runs provider operations through `features/keystone/utils/paymentProviderAdapter.ts`.
 
 Each provider has six operation fields: `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction` and `handleWebhookFunction`. Each field holds either:
@@ -43,14 +41,12 @@ A provider can start a session only when it is installed (`isInstalled`), linked
 
 ## Current limits
 
-<Callout type="warn">
 - A custom provider must use a code starting with `pp_stripe`, `pp_paypal` or `pp_manual`, or it is filtered out of checkout. There is no generic "custom" code.
 - Webhook amount checks and event-type matching only understand Stripe and PayPal events. A custom adapter must return events in one of those shapes.
 - The checkout reads the provider reference from session data keys `paymentIntentId`, `clientSecret` or `orderId`. A custom adapter must return one of them from create.
 - Manual tender (`pp_system_default`) is refused by `completeActiveCart`, by `completeInvoicePayment`, and by `processReturnRefund`. There is no operator screen that records a manual payment as received.
 - The HTTP bridge sends only a JSON content-type header. It has no timeout, request signature, destination allowlist or response schema. Anyone who can edit a provider's operation URLs decides where provider credentials and payment data go.
 - The dashboard "add provider" drawer offers only Stripe, PayPal and Manual presets. Set URL operation fields on the generic `/dashboard/payment-providers` editor.
-</Callout>
 
 ## Enabling a provider
 

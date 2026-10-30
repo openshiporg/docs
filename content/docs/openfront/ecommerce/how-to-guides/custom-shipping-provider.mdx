@@ -3,8 +3,6 @@ title: Add a shipping adapter
 description: Connect a local shipping module or an independently deployed HTTP adapter.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 The shipping dispatcher supports two modes:
 
 - a local module such as `shippo`, `shipengine` or `manual` in `features/integrations/shipping`;
@@ -37,9 +35,7 @@ Arguments by operation:
 3. Test each operation with test addresses and sandbox credentials.
 4. Retry a label purchase with the same idempotency key and confirm one label.
 
-<Callout type="warn">
 The bridge sends the provider record, including its access token, plus order, address and parcel data to the configured URL. Only trusted operators should be able to change these fields. Use HTTPS endpoints you control and authenticate requests inside the adapter app.
-</Callout>
 
 ## Current source limits
 

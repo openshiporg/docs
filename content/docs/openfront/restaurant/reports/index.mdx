@@ -3,7 +3,6 @@ title: Reporting
 description: Operations, sales, menu, labor, receipts, and cash close in the current restaurant build.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Restaurant has a reports hub, an operations dashboard, and money screens for receipts and the daily cash close. They answer the questions an operator asks after a shift. They are not a data warehouse.
@@ -71,6 +70,4 @@ Business days are stored as `AuditEvent` rows, not their own list. Payments proc
 - There is no forecasting, scheduled report, or accounting export.
 - Recipe-based food cost only appears on the recipes page, not in reports.
 
-<Callout type="info">
 Sales figures come from completed orders. Open checks do not show up in sales until they are closed.
-</Callout>

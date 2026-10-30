@@ -3,8 +3,6 @@ title: Products
 description: The current catalog, variant, option, price, image, category, collection, and inventory relationships.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 A `Product` is the catalog record. It has `title`, `description` (document field), `handle`, `subtitle`, `isGiftcard`, `discountable`, `status`, `externalId` and `metadata`, plus computed `thumbnail`, `dimensionsRange` and `defaultDimensions`. It links to variants, options, images, categories, collections, tags, type, shipping profile, tax rates and discount conditions and rules.
 
 `status` is one of `draft`, `proposed`, `published` or `rejected`. Callers without `canManageProducts` only see `published` products.
@@ -30,12 +28,10 @@ When an order is created, `OrderLineItem` and `OrderMoneyAmount` store the accep
 
 Stock is the `inventoryQuantity` integer on each variant. When `manageInventory` is on and `allowBackorder` is off, checkout decrements stock only if enough is available, and writes a `StockMovement`. `adjustInventory(variantId, delta, reason, note)` changes stock for users with `canManageProducts`, refuses to go negative unless backorders are allowed, and records a `RECEIVE` or `REMOVE` movement.
 
-<Callout type="warn">
 - `/dashboard/platform/inventory` queries an `inventoryItems` list that is not in the schema, so it does not load. No platform screen calls `adjustInventory`. The product create page sets the starting `inventoryQuantity`, and the product page only displays it. Change stock through `adjustInventory` or the generic variant editor; the generic editor does not write a stock movement.
 - `importInventory` only creates a `BatchJob` record. Nothing processes it.
 - Each variant has one stock count. `Location` exists as a model, but stock is not split across locations.
 - There is no CSV product import or export, forecasting, or low-stock alert in the source.
-</Callout>
 
 ## Operator path
 

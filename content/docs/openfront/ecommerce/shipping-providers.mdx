@@ -3,8 +3,6 @@ title: Shipping providers
 description: Local and external shipping adapter dispatch for rates, labels, validation, tracking, and cancellation.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 The `ShippingProvider` model and `features/keystone/utils/shippingProviderAdapter.ts` support:
 
 - local modules `shippo`, `shipengine` and `manual` in `features/integrations/shipping`;
@@ -28,16 +26,14 @@ There are five operation fields: `getRatesFunction`, `validateAddressFunction`, 
 
 Shipping options define what customers can choose at checkout. Shipping providers, labels, fulfillments and fulfillment items record what was actually shipped. The callers read the provider's `accessToken` and send the provider record to the adapter. For an HTTP adapter, that app receives the access token and the order's address and line items.
 
-<Callout type="warn">
 The HTTP bridge sends a plain JSON `POST`. It has no timeout, request signature, destination allowlist or response schema. Restrict who can edit provider records, use HTTPS endpoints you control, and validate requests inside the adapter app.
-</Callout>
 
 ## Current gaps
 
 - The order-level "new provider" form stores an API URL in `metadata.apiUrl` and does not set any operation field.
 - The provider drawer's "Custom Provider" option sets every operation to the local name `custom`, but there is no `custom.ts` module, so calls fail.
 - Set URL operation fields on the generic `/dashboard/shipping-providers` editor instead.
-- The `manual` module is a mock. Its label function reads a `rate` argument while the dispatcher passes `rateId`, and it returns made-up tracking numbers and `example.com` label URLs. Do not use it for real shipments.
+- The `manual` module is a placeholder. Its label function reads a `rate` argument while the dispatcher passes `rateId`, and it returns made-up tracking numbers and `example.com` label URLs.
 
 A provider record existing does not mean its calls work. Run each operation you need.
 

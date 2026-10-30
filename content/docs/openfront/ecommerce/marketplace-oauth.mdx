@@ -3,7 +3,6 @@ title: Marketplace & OAuth
 description: Connect external apps to an Openfront store with OAuth apps, API keys, customer tokens and webhooks.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 External systems, such as an order management system or a marketplace, can reach store data without a dashboard session. The current source has four credential types and an outgoing webhook system.
@@ -42,8 +41,6 @@ The app posts to `/api/oauth/token` with `grant_type=authorization_code` (or `re
 
 Deliveries are signed with HMAC-SHA256 using the endpoint secret, in the `X-OpenFront-Webhook-Signature: sha256=...` header. Events include `order.canceled`, `order.archived`, `fulfillment.created` and `payment.captured`, among others raised by the webhook plugin. Failed deliveries are retried only when someone with `canManageWebhooks` calls `retryWebhookDeliveries`.
 
-<Callout type="warn">
 - Scopes only add permissions. They do not narrow a token below its owner's role; test each operation you expose with the exact key.
 - There is no scheduled retry for webhooks.
 - The `MARKETPLACE_TOKEN_SECRET` entry in `.env.example` is not read by the current code.
-</Callout>

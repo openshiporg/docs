@@ -3,8 +3,6 @@ title: Add a payment adapter
 description: Connect a local payment module or an independently deployed HTTP adapter.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 The payment dispatcher supports two modes:
 
 - a local module such as `stripe`, `paypal` or `manual` in `features/integrations/payment`;
@@ -44,9 +42,7 @@ Other operations send `provider` plus `paymentId`, `amount`, `currency`, `idempo
 4. Point the provider's webhook at `/api/payment-webhooks/<providerId>`.
 5. Test in a sandbox before taking real payments.
 
-<Callout type="warn">
 The `code` decides whether checkout will show the provider. Only codes starting with `pp_stripe` (needs Stripe env vars), `pp_paypal` (needs PayPal env vars), `pp_manual` or `pp_system_default` pass the configuration check. Codes containing `manual` cannot complete checkout or refunds. Any other code is hidden from checkout until you extend `features/keystone/utils/paymentProviderConfig.ts`.
-</Callout>
 
 ## Current source limits
 

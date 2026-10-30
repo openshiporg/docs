@@ -3,8 +3,6 @@ title: Returns & Claims
 description: Staff-created returns, return refunds, and claims for damaged or wrong items.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Returns and claims are created by staff on the order detail page at `/dashboard/platform/orders/[id]`. Customers cannot start either from the storefront.
 
 ## Returns
@@ -19,11 +17,9 @@ The Returns section on the order page can:
 
 `processReturnRefund` requires both `canManageReturns` and `canManagePayments`. It needs a positive `refundAmount` and a payment that belongs to the order. It refuses refunds that would exceed the captured amount and refuses manual-tender payments. It calls the provider's refund operation and records a `Refund`. A retry with the same key returns the first result.
 
-<Callout type="warn">
 - Marking a return `received` does not put stock back. Nothing in the return flow changes `inventoryQuantity` or writes a stock movement.
 - Return shipping labels are not generated from the return.
 - Manual-tender orders cannot be refunded through this path.
-</Callout>
 
 ## Claims
 
@@ -31,11 +27,9 @@ A `ClaimOrder` has `type` (`refund` or `replace`), `paymentStatus` (`na`, `not_r
 
 The Claims section on the order page creates a claim and its items, and updates the claim's payment and fulfillment status. `/dashboard/platform/claims` lists claims and their status.
 
-<Callout type="warn">
 - Changing a claim's status does not move money or goods. No refund is issued and no replacement order is created.
 - Claim items are created one by one after the claim. If one fails, the claim is left with some items.
 - `ClaimImage` records are created from image URLs. There is no upload step in the claim form.
-</Callout>
 
 ## Swaps
 

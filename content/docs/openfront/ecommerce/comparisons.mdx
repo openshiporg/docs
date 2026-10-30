@@ -3,8 +3,6 @@ title: Comparisons
 description: Compare Openfront's self-hosted operating model with common commerce approaches.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Openfront is an open-source commerce application that combines a Next.js storefront and operator dashboard with a Keystone GraphQL backend and PostgreSQL. Its main difference from a hosted commerce service is operational ownership: you run the application, database, migrations, credentials, and integrations.
 
 ## Compare operating models
@@ -17,7 +15,7 @@ Openfront is an open-source commerce application that combines a Next.js storefr
 | Enterprise commerce suite | Vendor platform plus an implementation and integration layer | Vendor extension points and contracted APIs | Broader packaged programs, with higher implementation and operational complexity |
 | Custom build | Every selected application and backend component | Whatever the team designs | Maximum design freedom, with no prebuilt Openfront domain model or workflow baseline |
 
-These categories are not feature-for-feature equivalents. Compare the exact source revision, provider contracts, hosting model, support arrangement, and workflows required by your operation.
+These categories are not feature-for-feature equivalents.
 
 ## What current Openfront source includes
 
@@ -32,8 +30,6 @@ The Ecommerce source currently contains:
 - a dashboard AI assistant and an OAuth-protected MCP endpoint;
 - one Store configuration consumed by the current dashboard and storefront.
 
-This inventory describes source code; it is not evidence that every workflow has completed the testing required by a deployment.
-
 ## Where Openfront offers control
 
 Because the application source is available to the operator, a team can change its storefront, dashboard, models, GraphQL operations, and integration adapters. The operator also chooses the hosting and database environment.
@@ -44,13 +40,9 @@ That control does not make integration work automatic or unconstrained. A new pr
 
 Openfront does not establish the fees charged by payment providers, shipping services, infrastructure vendors, marketplaces, or implementation partners. Self-hosting also carries database, compute, storage, monitoring, maintenance, and engineering costs. Evaluate those costs against the fees and operating work of an alternative platform rather than assuming that access to the source removes operating costs.
 
-## Security, privacy, and compliance
+## Security
 
-<Callout type="warn">
-Open source and self-hosting do not establish security, privacy, tax, accessibility, or regulatory compliance. Those outcomes depend on the deployed source revision, configuration, hosting, data flows, contracts, operational controls, and independent review.
-</Callout>
-
-Current source contains access-control, session, API-key, OAuth, and provider-integration mechanisms, but each deployment must test ownership boundaries, secret storage, outbound HTTP policy, webhook verification, retries, reconciliation, backups, and incident response.
+Current source contains access-control, session, API-key, OAuth, and provider-integration mechanisms.
 
 ## When Openfront may fit
 
@@ -59,9 +51,7 @@ Consider Openfront when a team:
 - wants to own and modify the commerce application source;
 - can operate a Next.js, Keystone, PostgreSQL, and Prisma stack;
 - needs workflows that justify source-level customization;
-- is prepared to test and maintain its payment, shipping, tax, identity, and deployment boundaries.
-
-A hosted or packaged alternative may fit better when rapid vendor-managed setup, an existing certified connector, contracted support, or an established compliance program matters more than source-level control.
+- will maintain its own payment, shipping, tax, identity, and deployment integrations.
 
 ## Migration expectations
 

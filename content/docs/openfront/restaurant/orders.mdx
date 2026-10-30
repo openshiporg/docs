@@ -3,7 +3,6 @@ title: Orders and service states
 description: How restaurant orders are modeled, filtered, and moved through service.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 `RestaurantOrder` is the center of Openfront Restaurant. Storefront checkout, POS, service floor, KDS, payments, reporting, and inventory all read or write it.
@@ -102,6 +101,4 @@ query KitchenOrders {
 
 Status changes, POS creation, checkout completion, voids, and many other actions write `AuditEvent` rows with the actor, before and after values, and a reason. Voids, comps, splits, and corrections also write `OrderAdjustment` rows.
 
-<Callout type="info">
 When debugging, start with the order record and its audit events. They tie together guest ordering, staff service, kitchen work, and payment.
-</Callout>

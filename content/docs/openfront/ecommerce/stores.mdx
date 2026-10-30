@@ -3,13 +3,9 @@ title: Store configuration
 description: Configure the identity and shared settings used by the current Openfront Ecommerce application.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 The dashboard and storefront read the first `Store` record (`stores(take: 1)`) as shared application settings. The operator page is `/dashboard/platform/store`.
 
-<Callout type="info">
 One deployment is one store. Products, carts, orders and regions are not linked to a `Store` record, so extra Store rows do not create separate shops.
-</Callout>
 
 ## Dashboard-managed settings
 

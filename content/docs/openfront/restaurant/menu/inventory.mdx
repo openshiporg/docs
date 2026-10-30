@@ -3,7 +3,6 @@ title: Inventory and food costing
 description: Ingredients, recipes, purchase orders, receiving, lots, counts, transfers, waste, and stock depletion.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Openfront Restaurant links menu sales to ingredient cost and stock. Every stock change is written as a `StockMovement`.
@@ -88,6 +87,4 @@ If stock depletion fails after an order closes, it is logged as needing recovery
 - Recipe food cost does not feed the reports.
 - There is no automatic reorder based on par levels.
 
-<Callout type="info">
 Very small recipe quantities can round to zero. Use grams or milliliters as stocking units when recipes use small amounts.
-</Callout>

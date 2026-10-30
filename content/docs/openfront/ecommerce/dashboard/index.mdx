@@ -4,7 +4,6 @@ description: The current operator routes and the boundary between dashboard UI a
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 
 The dashboard is the signed-in operator surface at `/dashboard`. Route files in `app/dashboard/(admin)/platform/<route>/page.tsx` import a screen from `features/platform/<slice>`. Models and custom mutations stay in `features/keystone`. The sidebar groups come from `features/platform/lib/navigation.ts`.
 
@@ -40,11 +39,9 @@ Lists without a dedicated page (for example `Role`, `Team`, `TaxRate`, `WebhookE
 
 ## Current limitations
 
-<Callout type="warn">
 - `/dashboard/platform/inventory` queries an `inventoryItems` list that does not exist in the current schema, so it shows a load error. Stock is stored on `ProductVariant.inventoryQuantity`. The `adjustInventory` mutation writes a `StockMovement`, but no platform screen calls it.
 - The "Create draft order" button on `/orders/create` is a placeholder. It waits two seconds and shows a success message without saving anything.
 - The order-level "new shipping provider" form and the "Custom Provider" option in the provider drawer do not set working adapter fields. See [Shipping providers](/docs/openfront/ecommerce/shipping-providers).
-</Callout>
 
 ## Setup order
 
@@ -53,7 +50,7 @@ Lists without a dedicated page (for example `Role`, `Team`, `TaxRate`, `WebhookE
 3. Check store, region, currency, country and price relationships.
 4. Review products and stock.
 5. Configure only the providers you can test end to end.
-6. Run cart, checkout, order, fulfillment and refund with test data.
+6. Run cart, checkout, order, fulfillment and refund once end to end.
 
 ## Customization
 

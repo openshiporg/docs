@@ -3,7 +3,6 @@ title: Waitlist and reservations
 description: Host-stand workflows for walk-ins, quoted waits, reservations, and table matching.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Hosts can add walk-in parties, track quoted waits, record that a guest was contacted, and seat them at a table that fits. Reservations have their own page with a status lifecycle and table checks.
@@ -55,9 +54,7 @@ The reservations page is at `/dashboard/platform/reservations` and is in the sid
 
 `updateReservationStatus` moves a reservation with an action: `pending`, `confirm`, `seat`, `complete`, `cancel`, or `no_show`. Seating needs an assigned table that is free and large enough, and marks it `occupied`. Reservation mutations check `canManageTables`.
 
-<Callout type="info">
 Guests cannot book or join the waitlist from the storefront. Hosts enter everything in the dashboard.
-</Callout>
 
 ## What is not wired
 

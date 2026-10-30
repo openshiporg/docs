@@ -4,7 +4,6 @@ description: The guest-facing menu, cart, checkout, and order-confirmation flow 
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Openfront Restaurant includes a customer-facing menu and ordering app. Current routes cover the menu, item pages, checkout, order confirmation, sign-in, profile, addresses, and order history.
@@ -95,9 +94,7 @@ If payment succeeded but no order was placed, staff can see the attempt in the P
 
 ## Current limitations
 
-<Callout type="warn">
-Provider capture happens before the order transaction. If the order write fails after capture, the attempt shows up in checkout recovery and needs staff action. Test duplicate submits, retries, and provider failures before taking live orders.
-</Callout>
+Provider capture happens before the order transaction. If the order write fails after capture, the attempt shows up in checkout recovery and needs staff action.
 
 - There are no `/api/categories`, `/api/menu-items`, or `/api/orders/*` REST routes. External clients use GraphQL.
 - The storefront has no reservations, waitlist, or gift-card purchase flow.

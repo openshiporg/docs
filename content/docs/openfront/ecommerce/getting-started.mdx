@@ -3,14 +3,13 @@ title: Getting started
 description: Clone Openfront Ecommerce, configure PostgreSQL, sessions and S3 storage, apply migrations, create the first user, run onboarding, and deploy.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-This guide follows the current `package.json` scripts, `.env.example` and the environment reads in the source. It sets up a local evaluation store.
+This guide follows the current `package.json` scripts, `.env.example` and the environment reads in the source. It sets up a local store.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [e-commerce.openship.org](https://e-commerce.openship.org). The dashboard is at `/dashboard` on the same origin. It holds demo data only.
+The hosted app is at [e-commerce.openship.org](https://e-commerce.openship.org). The dashboard is at `/dashboard` on the same origin.
 
 ## Requirements
 
@@ -74,9 +73,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy`, and starts `next dev`. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`.
 
-<Callout type="warn">
-`npm run dev` migrates whatever database `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` migrates whatever database `DATABASE_URL` points at.
 
 Once running:
 

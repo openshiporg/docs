@@ -3,7 +3,6 @@ title: Service floor
 description: Live table-service workflow for running the dining room.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 The POS opens checks. The service floor at `/dashboard/platform/service-floor` runs them. It shows table states and active checks, and handles items, courses, splits, voids, and closing in one place. It refreshes every 10 seconds.
@@ -69,6 +68,4 @@ Voids and refunds need a `ManagerApproval`. A staff member requests approval wit
 - There is no visual floor-plan editor here. Table positions are dragged on the floor map, and tables are created on Tables & Sections.
 - Updates come from polling every 10 seconds, not live push.
 
-<Callout type="info">
 The screen reads its data with the `GetServiceFloor` GraphQL query. There is no separate REST route for it.
-</Callout>
