@@ -1,0 +1,46 @@
+---
+title: Fulfillment
+description: Pick and pack board, actual weights, substitutions, and the final sale.
+icon: PackageCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/fulfillment` needs `canManageOrders`. Data comes from `groceryPlatformFulfillment`.
+
+## Record what was picked
+
+For each line, `resolveOrderLineFulfillment` stores an `OrderLineFulfillment` with a `resolution`:
+
+- `picked`: the product was found. Weighed products (`pricingMethod` `weight` or `volume`) take `quantity`, optional `tare`, and `unitOfMeasure`. A unit product picked at a smaller count must use `short` instead.
+- `short`: fewer or none picked. A reason is required.
+- `substituted`: a different product replaces it. A reason is required, plus consent fields (`consentChannel`, `consentCustomer`, `consentEvidence`) when staff record the customer's approval.
+
+Quantities are stored in thousandths (`quantityMilli`). The price is recomputed from the product price and the picked amount.
+
+## Substitutions
+
+- **Customer pre-set**: each basket item has a substitution preference (`call_me`, `best_match`, `refund`).
+- **Propose**: `proposeOrderLineSubstitution` sends the shopper a proposed product, quantity, and reason. They answer on `/order/[id]` with `respondToOrderLineSubstitution`.
+- **Record**: `recordOrderItemSubstitution` logs one already agreed, which creates an `OrderItemSubstitution` with `customerApproved` and `approvedAt`.
+
+## Finalize the sale
+
+<Steps>
+<Step>
+### Resolve every line
+Each line needs a recorded actual and no unanswered proposal.
+</Step>
+<Step>
+### Finalize
+`finalizeGroceryOrderActuals(orderId)` totals the picked goods, tax, and fees, and captures payment.
+</Step>
+<Step>
+### If the total went up
+The capture needs a new authorization from the shopper (`authorizeOrderAdjustment`). Staff recover a stuck one with `recoverRevisedAuthorization`.
+</Step>
+<Step>
+### Mark packed
+Move the order to `packed` or `ready_for_pickup` from the order queue.
+</Step>
+</Steps>

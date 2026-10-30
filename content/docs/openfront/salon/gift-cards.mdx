@@ -1,0 +1,26 @@
+---
+title: Gift cards
+description: Sell at the desk, redeem, return value, and read balance history.
+icon: CreditCard
+---
+
+`/dashboard/platform/gift-cards` needs `canManagePayments`.
+
+## Gift card fields
+
+`code`, `initialValue`, `currentBalance`, `recipientName`, `recipientEmail`, `message`, `expiresAt`, `isActive`, `purchasedBy`, and `GiftCardTransaction` rows (`purchase`, `redemption`, `refund`).
+
+## Sell a card
+
+Fill in purchaser (an existing client account), amount, optional recipient name and email, and message. `purchaseGiftCard` creates the card with the full balance and a purchase transaction through the installed manual provider. Confirm with `confirmGiftCardPurchase`. A recipient email triggers the gift-card email when SMTP is set.
+
+## Change a balance
+
+Use the Action menu on a card. `applyGiftCardBalance` takes `giftCardId`, `action` (`redemption` or `refund`), `amount`, optional `appointmentId`, reason, and idempotency key.
+
+- Redemption fails when the balance is too low or the card is expired.
+- A refund cannot push the balance above `initialValue`.
+
+## Client lookup
+
+Clients and guests check a balance at `/gift-cards` with `giftCardBalance(code)`.

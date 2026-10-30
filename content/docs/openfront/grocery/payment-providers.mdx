@@ -1,0 +1,41 @@
+---
+title: Payment providers
+description: Stripe configuration, webhooks, and provider records.
+icon: Plug
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The adapter registry is in `features/integrations/payment`.
+
+| Adapter | Code | Use |
+| --- | --- | --- |
+| Stripe | `pp_stripe_default` | Public checkout |
+| Local adapter | `pp_test_default` | Local development only. Not public and refused in production |
+
+## Set up Stripe
+
+<Steps>
+<Step>
+### Set variables
+`STRIPE_ENABLED=true`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. Production needs live keys.
+</Step>
+<Step>
+### Register the webhook
+Point Stripe at `/api/payments/webhooks/pp_stripe_default`.
+</Step>
+<Step>
+### Run onboarding
+The provider record is created installed once all three Stripe variables are present.
+</Step>
+</Steps>
+
+Payment is authorized at checkout with manual capture and captured when staff finalize the sale.
+
+## Webhooks
+
+`POST /api/payments/webhooks/[providerCode]` reads a size-limited raw body, verifies the signature, throttles invalid signatures per sender, and stores a `PaymentWebhookEvent`. Replay stored events from [Payments](/docs/openfront/grocery/payments).
+
+## Custom remote adapters
+
+A remote adapter must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.

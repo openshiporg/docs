@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Build, migrate, and run in production.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. `npm run build` does not migrate by itself.
+
+<Steps>
+<Step>
+
+### Provision
+
+PostgreSQL. SMTP if you want password reset email.
+
+</Step>
+<Step>
+
+### Configure
+
+Set `DATABASE_URL` and `SESSION_SECRET` (32+ characters). Optional: `PUBLIC_SIGNUPS_ALLOWED`, `SMTP_*`, `SMTP_STORE_LINK`, `OPENROUTER_*`.
+
+</Step>
+<Step>
+
+### Migrate and start
+
+`npm run migrate` (or `npm run release:migrate`), then `next start`.
+
+</Step>
+<Step>
+
+### First user
+
+Open `/dashboard/init` to create the owner, the starting brokerage, and the `Admin` role.
+
+</Step>
+<Step>
+
+### Dispatch the outbox
+
+Source-import and saved-search alert commands write `DomainOutboxEvent` rows. Process them from your own job and use `replayDomainOutboxEvent` to retry a failed one.
+
+</Step>
+</Steps>
+
+See [Getting started](/docs/openfront/real-estate/getting-started) for each variable.

@@ -1,0 +1,30 @@
+---
+title: Clinical orders and results
+description: Orders, specimens, lab results, prescriptions, procedures, care plans, documents, and vitals.
+icon: FlaskConical
+---
+
+Route: `/dashboard/platform/clinical-fulfillment`. `/dashboard/platform/clinical-operations` gives a read-only overview.
+
+| Record | Create | States |
+| --- | --- | --- |
+| `VitalSign` | `recordVitalSign` (at least one value) | append-only |
+| `MedicalOrder` | `placeMedicalOrder` | `draft` → `ordered` → `in_progress` → `completed`, `cancelled` |
+| `Specimen` | `collectSpecimen` | `collected` → `received` → `processing` → `disposed`, `rejected` |
+| `LabResult` | `recordLabResult` | `preliminary` → `final` → `acknowledged`, `corrected`, `cancelled` |
+| `Prescription` | `recordPrescription` | `draft` or `recorded_manual` → `active` → `held` → `completed`, `cancelled` |
+| `Procedure` | `scheduleProcedure` | `scheduled` → `in_progress` → `completed`, `cancelled` |
+| `CarePlan` | `establishCarePlan` | `draft` → `active` → `completed`, `cancelled` |
+| `ClinicalDocument` | `draftClinicalDocument` | `draft` → `signed` → `amended`, `entered_in_error` |
+
+Each has a `transition…` mutation taking `operationKey`, `expectedVersion`, and `toStatus`.
+
+## Corrections
+
+Results are never edited. `correctLabResult` creates a new version that supersedes the old one, and `labResultReadback` shows the chain. `amendClinicalDocument` does the same for signed notes.
+
+## Lab test catalog
+
+`/dashboard/platform/lab-tests` holds `code`, `name`, `category`, `specimenType`, `turnaroundHours`, and `active`.
+
+The records show what staff entered. Clinicians remain responsible for clinical decisions.

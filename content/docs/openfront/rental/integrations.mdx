@@ -1,0 +1,14 @@
+---
+title: Mail, outbox, and AI
+description: SMTP, the outbox worker, and the assistant.
+icon: PlugZap
+---
+
+| Area | Details |
+| --- | --- |
+| Mail | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`. Guest password reset is offered when host, sender, and store link are set |
+| Outbox | `OutboxEvent` rows are written for later delivery. `deliverOutboxEvents` and `npm run outbox:deliver` run the worker with dispatchers from `features/keystone/workers/outboxDispatchers.ts` |
+| AI assistant | `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`) |
+| MCP | `/api/mcp-transport/[transport]` exposes `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData` with the caller's session |
+
+Calendar exchange is covered in [Channels](/docs/openfront/rental/channels-calendar).

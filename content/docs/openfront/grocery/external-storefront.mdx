@@ -44,5 +44,5 @@ Routes live under `app/(storefront)/` with no country or region segment. Each ro
 - Prices in the basket are estimates. Weighed items are charged on the picked weight. Payment is authorized at checkout and captured after staff finalize the picked goods. If the final total is higher than the authorization, the customer must approve again on the order page.
 - Coupons are entered as a code at checkout and checked against the basket. There is no clip-a-coupon command and no recipe page.
 - Checkout needs a delivery or pickup time. Delivery also needs a postal code inside the store's delivery prefixes and the delivery minimum.
-- Stripe is the only public payment adapter. If Stripe is not enabled and configured, checkout cannot take payment.
-- Public reads are scoped to `PUBLIC_STORE_ID`. Only published products and active departments are returned. Placeholder store details from onboarding are not shown to shoppers.
+- Checkout takes payment through the Stripe adapter once `STRIPE_ENABLED=true` and the three Stripe keys are set.
+- Public reads are scoped to `PUBLIC_STORE_ID`. Only published products and active departments are returned. Store details still set to the onboarding placeholders are not shown to shoppers.

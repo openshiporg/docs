@@ -1,0 +1,34 @@
+---
+title: Take a direct booking
+description: Quote, reserve, and confirm.
+icon: CalendarCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Quote
+The guest picks dates on `/stays/[slug]` and asks for a quote.
+
+</Step>
+<Step>
+
+### Reserve
+They complete `/checkout/[quoteToken]` with guest details and accept terms.
+
+</Step>
+<Step>
+
+### Agreement
+They sign at `/agreements/[token]`.
+
+</Step>
+<Step>
+
+### Confirm
+Confirm on the reservation page and record or collect payment.
+
+</Step>
+</Steps>

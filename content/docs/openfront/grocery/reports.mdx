@@ -1,0 +1,28 @@
+---
+title: Reports and financial close
+description: Close a trading period, import settlement statements, and review matches.
+icon: ChartColumn
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/reports` needs `canManagePayments`. Data comes from `groceryFinancialCloses`.
+
+<Steps>
+<Step>
+### Close a period
+`createGroceryFinancialClose(startDate, endDate, timezone, idempotencyKey, note)` creates a `FinancialClose` for the period and timezone, with an optional note.
+</Step>
+<Step>
+### Import a statement
+`importGrocerySettlementStatement(providerCode, statementReference, csv, idempotencyKey)` loads the provider's settlement CSV. Each entry becomes a `SettlementMatch`. Reusing an entry reference with changed amounts fails.
+</Step>
+<Step>
+### Resolve matches
+`resolveGrocerySettlementMatch(matchId, reason, idempotencyKey)` records a review of an entry that did not match a payment. The reason must be 8 to 1000 characters.
+</Step>
+<Step>
+### Export
+`groceryFinancialCloseExport` returns the close as an export.
+</Step>
+</Steps>

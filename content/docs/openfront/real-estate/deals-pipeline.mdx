@@ -1,0 +1,58 @@
+---
+title: Deals and pipeline
+description: Deal stages, offers, checklists, and closing records.
+icon: Handshake
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/pipeline`, `/pipeline/[id]`. Needs `canManageDeals`.
+
+## Stages
+
+`prospecting` → `active_search` → `offer_drafted` → `under_contract` → `inspection` / `financing` → `closed_won`. Open deals can go to `closed_lost`. Use `transitionDealStage`. `transactionType` is `buyer`, `seller`, `tenant`, or `landlord`.
+
+The board shows counts and projected commission by stage.
+
+## Deal detail
+
+| Section | Commands |
+| --- | --- |
+| Next step and terms | `updateDealNextStepCommand`, `updateDealFinancialTermsCommand` |
+| Offers | `createOfferCommand`, `createCounterOfferCommand`, `transitionOfferStatus` |
+| Checklist | `createChecklistItemCommand`, `transitionTransactionMilestoneStatus` |
+| Documents | `transitionDocumentCommand`, `appendDocumentEvidenceEventCommand` |
+| Disclosures | `transitionDisclosureStatus` |
+| Inspections | `transitionInspectionCommand` |
+| Mortgage, title, escrow | Added on the detail page |
+
+Offers go `draft` → `submitted` → `countered`, `accepted`, `rejected`, or `withdrawn`, with `financingType` of `cash`, `conventional`, `fha`, `va`, or `other`.
+
+<Steps>
+<Step>
+
+### Create the deal
+Choose the lead and listing on the pipeline page.
+
+</Step>
+<Step>
+
+### Exchange offers
+Record each offer and counter. Accepting stores a snapshot.
+
+</Step>
+<Step>
+
+### Work the checklist
+Move milestones `not_started` → `in_progress` → `complete`, or `blocked`.
+
+</Step>
+<Step>
+
+### Close
+Move the stage to `closed_won` or `closed_lost`. The close stores a snapshot.
+
+</Step>
+</Steps>
+
+Escrow, title, and mortgage records hold what staff enter. They do not move funds.

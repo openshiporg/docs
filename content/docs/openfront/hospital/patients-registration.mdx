@@ -1,0 +1,31 @@
+---
+title: Patients, registration, and consent
+description: Register patients, resolve duplicates, and record consent.
+icon: UserPlus
+---
+
+## Registration
+
+`/dashboard/platform/registration` (needs `canManagePatients`) calls `registerPatient`. It creates the `Patient`, a masked MRN `PatientIdentifier`, a `PatientRegistration` with provenance, and a `PatientConsent`.
+
+Duplicate handling is explicit:
+
+| `duplicateResolution` | Use |
+| --- | --- |
+| `no_candidate` | No match was found |
+| `create_new` | A match was reviewed and this is a new person |
+| `link_existing` | Link to the duplicate patient you name |
+
+Supplying a resolution when no deterministic candidate exists is rejected, and `link_existing` requires the duplicate patient.
+
+## Patient chart
+
+`/dashboard/platform/patients` and `/[id]` show personal details, identifiers, facilities, appointments, encounters, intake, messages, consents, registrations, coverage, and payments. The chart is read-only. `dateOfBirth` is immutable, and `Patient` has no GraphQL update.
+
+Patient status is `active`, `inactive`, or `archived`. `preferredContactMethod` is `phone`, `sms`, `email`, or `portal`.
+
+## Consent
+
+`PatientConsent` is versioned. Decisions are `granted`, `declined`, or `withdrawn`, and a new decision supersedes the current one through `recordConsentDecision`. Each record keeps `policyVersion`, `statementKey`, `captureMethod`, and evidence. Consent statements for booking and intake live in `features/storefront/lib/workflowConsent.ts`.
+
+Reads of PHI fields write `PhiReadAudit` rows with the operation name, purpose, and result count.

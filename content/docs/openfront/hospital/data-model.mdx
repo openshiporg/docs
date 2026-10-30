@@ -1,0 +1,47 @@
+---
+title: Data model
+description: The 63 lists, grouped, with state machines.
+icon: Database
+---
+
+The repository's `docs/schema-map.md` documents every field. Summary:
+
+| Area | Lists |
+| --- | --- |
+| Practice | `HospitalProfile`, `Facility`, `FacilityImage`, `Department`, `DepartmentImage`, `Ward`, `Room`, `Bed` |
+| Care team | `Provider`, `Clinician`, `ClinicianImage`, `AppointmentType`, `ProviderScheduleBlock`, `LabTest` |
+| Patients | `Patient`, `PatientIdentifier`, `PatientRegistration`, `PatientConsent`, `PatientPortalAccess` |
+| Visits | `Appointment`, `IntakeForm`, `CareQueueTicket`, `Encounter`, `EpisodeClosurePolicy` |
+| Clinical | `VitalSign`, `MedicalOrder`, `Specimen`, `LabResult`, `Prescription`, `Procedure`, `CarePlan`, `ClinicalDocument` |
+| Inpatient | `Admission`, `BedReservation`, `BedOccupancyEvent` |
+| Revenue | `PatientCoverage`, `InsuranceClaim`, `ClaimVersion`, `PatientPayment`, `PatientRefund` |
+| Communications | `PatientMessage`, `CommunicationTemplate`, `CommunicationPreference` |
+| Supplies | `InventoryItem`, `InventoryMovement`, `ImportBatch` |
+| Platform | `IntegrationInstallation`, `MachineCredential`, `IntegrationDeliveryAttempt`, `IntegrationWebhookReceipt`, `ClinicalOutboxEvent`, `ExternalIdentityLink`, `RetentionPolicy`, `RecordHold`, `RetentionDisposition`, `ExportJob` |
+| Evidence | `WorkflowTransition`, `ClinicalAuditLog`, `PhiReadAudit`, `PasswordResetRequest`, `RequestRateLimitBucket` |
+| Staff | `User`, `Role` |
+
+## Key relationships
+
+| From | To |
+| --- | --- |
+| `Facility` | departments, providers, staff, patients, appointments, encounters |
+| `Appointment` | `Patient`, `Provider`, `AppointmentType`, `Facility`, intake forms, queue tickets |
+| `Encounter` | patient, provider, department, appointment; orders, results, claims |
+| `Admission` | patient, encounter, bed, attending provider |
+| `InsuranceClaim` | patient, encounter, coverage, `ClaimVersion` |
+
+## Controlled records
+
+Controlled lists omit GraphQL create, update, and delete. Each row carries a `transitionVersion`, an `operationKeyHash`, and a `requestHash`, so repeated calls are idempotent and stale ones are rejected.
+
+## Statuses
+
+| List | Values |
+| --- | --- |
+| `Appointment` | `requested`, `confirmed`, `checked_in`, `in_visit`, `completed`, `cancelled`, `no_show` |
+| `Encounter` | `open`, `in_progress`, `closed`, `cancelled` |
+| `CareQueueTicket` | `waiting`, `called`, `in_care`, `completed`, `cancelled` |
+| `Admission` | `admitted`, `transferred`, `discharged` |
+| `InsuranceClaim` | `draft`, `prepared`, `submitted`, `external_acknowledged`, `external_rejected`, `corrected`, `cancelled` |
+| `IntakeForm` | `not_sent`, `sent`, `in_progress`, `submitted`, `needs_review`, `reviewed` |

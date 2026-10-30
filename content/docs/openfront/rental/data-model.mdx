@@ -1,0 +1,42 @@
+---
+title: Data model
+description: Lists, relationships, and status values.
+icon: Database
+---
+
+| Area | Models |
+| --- | --- |
+| People and tenancy | `User`, `Role`, `HostOrganization`, `HostMembership`, `MarketplaceSettings` |
+| Properties | `Property`, `PropertyAddress`, `PropertyOwner`, `PropertyOwnerAssignment`, `AccommodationUnit`, `Bedroom`, `Bed`, `Amenity` |
+| Listings | `Listing`, `ListingMedia`, `StayCollection`, `HouseRule`, `CalendarBlock` |
+| Pricing and policy | `RatePlan`, `SeasonalRate`, `FeeDefinition`, `TaxRule`, `CancellationPolicy` |
+| Booking | `StayQuote`, `GuestProfile`, `GuestParty`, `Reservation`, `ReservationAmendment`, `ReservationLineItem`, `StayAgreement` |
+| Money | `SecurityDeposit`, `DamageClaim`, `Payment`, `PaymentProvider`, `PaymentWebhookEvent`, `Refund`, `Payout`, `OwnerStatement`, `OwnerStatementLine` |
+| Contact and work | `Conversation`, `Message`, `Review`, `TaskRule`, `PropertyTask` |
+| Channels and jobs | `ChannelConnection`, `ChannelListing`, `ChannelReservation`, `ChannelSyncEvent`, `DataExchangeJob`, `OutboxEvent` |
+
+## Relationships
+
+| From | To |
+| --- | --- |
+| `Property` | address, units, owners |
+| `Listing` | `Property`, `AccommodationUnit`, media, rate plans, calendar blocks, reservations, reviews |
+| `Reservation` | `Listing`, unit, `GuestProfile`, `StayQuote`, payments, refunds, agreement, deposits |
+| `Payment` | `Reservation`, `PaymentProvider`, refunds, deposits, webhook events |
+| `OwnerStatement` | owner, lines, payouts |
+
+Every host-scoped list carries a `hostOrganization`. Quotes and line items keep snapshots of accepted values.
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Reservation` | `inquiry`, `quoted`, `pending`, `confirmed`, `in_stay`, `completed`, `cancelled`, `no_show` |
+| `Listing` | `draft`, `published`, `paused`, `archived` |
+| `Payment` | `pending`, `processing`, `succeeded`, `failed`, `cancelled`, `partially_refunded`, `refunded` |
+| `Refund` | `review`, `pending`, `processing`, `succeeded`, `failed`, `cancelled` |
+| `SecurityDeposit` | `required`, `authorized`, `held`, `partially_captured`, `captured`, `released`, `failed` |
+| `DamageClaim` | `draft`, `submitted`, `guest_response`, `approved`, `partially_approved`, `declined`, `settled` |
+| `OwnerStatement` | `draft`, `approved`, `sent`, `paid`, `voided` |
+| `Payout` | `scheduled`, `processing`, `paid`, `failed`, `reversed` |
+| `PropertyTask` | `queued`, `assigned`, `in_progress`, `completed`, `blocked`, `cancelled` |

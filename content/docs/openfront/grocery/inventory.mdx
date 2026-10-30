@@ -1,0 +1,43 @@
+---
+title: Inventory and lots
+description: Lots, expiry, adjustments, counts, case conversion, holds, and recalls.
+icon: Boxes
+---
+
+`/dashboard/platform/inventory` needs `canManageInventory`. Data comes from `groceryPlatformInventory`.
+
+## Lots
+
+An `InventoryLot` has `lotNumber`, `supplierLotNumber`, `expirationDate`, `receivedDate`, `quantity`, `quantityRemaining`, `costPerUnitCents`, `location`, `safetyStatus`, `conditionStatus`, and links to a product and supplier. Orders allocate from lots in expiry order. Only available, unexpired lots count as sellable stock.
+
+## Adjust a lot
+
+`adjustInventoryLot(inventoryLotId, targetQuantityRemaining, reason, idempotencyKey, note)` writes an `InventoryAdjustment` with `reason` of `cycle_count`, `damage`, `spoilage`, or `correction`, and an `InventoryMovement`.
+
+## Counts
+
+`manageInventoryCount(action, ...)`:
+
+- `observe`: record a count of a lot
+- `recount`: record a second count
+- `approve`: accept it. A different operator must approve, and a variance needs a recount first
+
+## Convert cases
+
+`convertInventoryCases` breaks cases into units (`mode`, `sourceInventoryLotId`, `quantityCases`, `reason`, `conditionNote`, `destinationLocation`). It records an `InventoryConversion` and supports a review hash for a dry run first.
+
+## Holds and recalls
+
+`manageInventorySafety(action, ...)`:
+
+| Action | Effect |
+| --- | --- |
+| `hold` | Lot becomes `held` and is not sellable |
+| `quarantine` | Lot becomes `quarantined` |
+| `release` | Lot returns to `available` |
+| `recall` | Opens an `InventoryRecall` for a product or set of lots and finds affected orders |
+| `notice` | Records a customer notice: `channel` (`phone`, `email`, `in_person`, `sms`), `outcome` (`delivered`, `failed`, `unreachable`), reference |
+| `disposition` | Records `released`, `recovered`, `disposed`, or `unaccounted` with quantity and custody |
+| `close` | Closes the recall once every affected order has a delivered notice |
+
+All actions need a reason and an idempotency key.

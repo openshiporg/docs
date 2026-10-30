@@ -1,0 +1,25 @@
+---
+title: Cashier and receivables
+description: Cash drawers, deposit holds, company accounts, and direct billing.
+icon: Landmark
+---
+
+Both pages need `canManagePayments`.
+
+## Cashier
+
+`/dashboard/platform/cashier` (`manageHotelCashier`).
+
+- Open a drawer with an opening count.
+- Record drops during the shift.
+- Count and close. A counted variance must be reviewed by a different payment manager.
+- Confirm cash refunds.
+- Place and release deposit holds with `manageHotelSecurityAuthorization`.
+
+## Receivables
+
+`/dashboard/platform/receivables` (`manageHotelReceivable`).
+
+- Create company accounts for direct billing. Direct billing needs an open USD folio.
+- Route charges to a payer using payer windows (`hotelPayerWindows`). A group member window can route only that member's attributable posted charges, and a reservation with posted folio history cannot be rerouted to a master folio.
+- Issue invoices, record collections, and write off balances. Write-offs need an independent approval.

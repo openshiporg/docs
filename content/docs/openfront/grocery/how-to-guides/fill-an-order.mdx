@@ -1,0 +1,30 @@
+---
+title: Pick, pack, and finalize an order
+description: Take an order from authorized to packed with actual weights.
+icon: PackageCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Start picking
+In `/dashboard/platform/orders` open the order and move it to `picking`. The payment must be authorized.
+</Step>
+<Step>
+### Record each line
+On `/dashboard/platform/fulfillment` mark each line `picked`, `short`, or `substituted`. For weighed items enter the weight and tare.
+</Step>
+<Step>
+### Wait for substitution answers
+Lines with an open proposal block finalization until the shopper responds.
+</Step>
+<Step>
+### Finalize
+Press finalize. Payment is captured on the picked total. If the total is higher than the hold, the shopper is asked to authorize the difference on `/order/[id]`.
+</Step>
+<Step>
+### Pack
+Move the order to `packed` for delivery, or `ready_for_pickup` for curbside.
+</Step>
+</Steps>

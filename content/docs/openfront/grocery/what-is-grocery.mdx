@@ -1,0 +1,37 @@
+---
+title: What is Openfront Grocery
+description: What the app covers, who uses each surface, and how an order moves from basket to final sale.
+icon: ShoppingBasket
+---
+
+Openfront Grocery runs one grocery store. Shoppers use the storefront. Staff use the dashboard at `/dashboard/platform/*`.
+
+## Who uses what
+
+| User | Surface | Jobs |
+| --- | --- | --- |
+| Shopper | Storefront | Browse, build a basket, choose pickup or delivery, pay, answer substitution requests, check in at the curb |
+| Picker | Fulfillment | Pick items, record weights, propose substitutions |
+| Order manager | Orders, pickup, subscriptions, messages | Advance orders, cancel, run recurring baskets, answer messages |
+| Delivery coordinator | Delivery | Slots, routes, stop outcomes |
+| Inventory and buying | Inventory, suppliers, purchasing | Lots, counts, recalls, purchase orders, receiving |
+| Finance | Payments, reports | Refunds, voids, close, statement import |
+| Admin | Settings, staff, communications | Store profile, delivery policy, invitations |
+
+## An order
+
+1. The shopper fills a basket and picks a delivery or pickup time. `initiatePaymentSession` places an authorization hold with manual capture.
+2. `submitGroceryOrder` re-reads prices, stock lots, the slot, the coupon, and the delivery policy, then allocates lots in expiry order and writes the order.
+3. Staff move the order to `picking`, record what was actually picked (weight or quantity per line), and propose or record substitutions.
+4. The shopper accepts or declines substitutions on the order page.
+5. `finalizeGroceryOrderActuals` freezes the picked goods and captures payment. A higher final total needs the shopper to authorize the difference.
+6. Pickup orders are handed off at the curb. Delivery orders go on a route and each stop is resolved.
+7. Refunds, cancellations, and returns are recorded against the order and its lots.
+
+## Where to go next
+
+- [Getting started](/docs/openfront/grocery/getting-started)
+- [Orders](/docs/openfront/grocery/orders) and [Fulfillment](/docs/openfront/grocery/fulfillment)
+- [Inventory](/docs/openfront/grocery/inventory)
+- [Data model](/docs/openfront/grocery/data-model)
+- [GraphQL API](/docs/openfront/grocery/api-reference)

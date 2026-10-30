@@ -1,0 +1,15 @@
+---
+title: Customers
+description: Customer directory, detail, and provisioning accounts.
+icon: Users
+---
+
+`/dashboard/platform/customers` needs `canManageUsers`. `groceryPlatformCustomers` lists customers and `groceryPlatformCustomer(id)` returns one with recent orders.
+
+## Provision an account
+
+`provisionGroceryCustomer` creates a customer account for a shopper who has not registered. It needs a valid name and email.
+
+## Shopper-owned data
+
+Shoppers manage their own addresses (`Address`), shopping lists, favorites, notification preferences, and recurring baskets from `/account` and related routes. Privacy requests (`CustomerPrivacyRequest`) go to staff; erasure requests are reviewed on the [Staff](/docs/openfront/grocery/staff) page with `reviewGroceryCustomerErasure`.

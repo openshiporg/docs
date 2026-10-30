@@ -1,0 +1,23 @@
+---
+title: Staff and locations
+description: Stylist profiles, tiers, services, locations, and operating hours.
+icon: Building2
+---
+
+`/dashboard/platform/administration` needs `canManageSalon`. It lists staff, locations, and resources.
+
+## Stylists
+
+Stylist fields: `user`, `role` (`stylist`, `colorist`, `nail_tech`, `esthetician`, `massage_therapist`, `manager`, `receptionist`), `tier` (`junior`, `senior`, `master`, `celebrity`), `bio`, `baseCommissionRate`, `employmentType` (`full_time`, `part_time`, `contractor`), `status` (`active`, `on_leave`, `inactive`), `hireDate`, `certifications`, `photo`, `specializations` (services), and `locations`.
+
+Create or edit with `saveSalonRecord` (`kind: "staff"`). At least one location is required. A staff member with active reservations cannot be deactivated or removed from a location until those bookings move. The commission rate is a decimal from 0 to 1 and needs `canManageCommissions`.
+
+`/dashboard/platform/staff/[id]` shows hours, upcoming appointments, earnings, reviews, and services.
+
+## Locations
+
+`saveSalonRecord` with `kind: "location"`: name, address, phone, email, `timezone`, `hours` for every weekday (open and close as `HH:MM`, or `closed`), and `isActive`.
+
+- A valid IANA timezone is required.
+- A location with active reservations cannot be disabled.
+- Timezone changes are refused once schedules or appointments exist.

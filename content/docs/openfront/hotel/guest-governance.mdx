@@ -1,0 +1,50 @@
+---
+title: Guest governance and approvals
+description: Consent, retention, identity documents, merges, and second-user approvals.
+icon: ShieldCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Guest governance
+
+`/dashboard/platform/guest-governance` needs `canManageGuestPrivacy` (`hotelGuestGovernance`, `updateHotelGuestGovernance`).
+
+- Record consent and communication preferences.
+- Place and release legal holds. A legal hold prevents anonymization.
+- Apply retention and anonymization.
+- Store and review identity documents (`GuestDocument`).
+- Handle data requests.
+- Merge duplicate guests and unmerge them.
+
+Search guests with `hotelGovernanceGuestSearch`.
+
+## Approvals
+
+`/dashboard/platform/approvals` (`hotelApprovalWorkspace`).
+
+<Steps>
+<Step>
+
+### Request
+
+A user requests approval for an exact action, target, and amount.
+
+</Step>
+<Step>
+
+### Decide
+
+A different user with `canApproveHotelExceptions` approves or rejects (`updateHotelApproval`).
+
+</Step>
+<Step>
+
+### Use
+
+The approval can be used once, by the operation it matches.
+
+</Step>
+</Steps>
+
+Refunds, write-offs, cash variances, and rate publication can need approval depending on thresholds in property settings.

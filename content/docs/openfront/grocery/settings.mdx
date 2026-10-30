@@ -1,0 +1,31 @@
+---
+title: Store settings
+description: Store profile, hours, delivery policy, tax rate, logo, and brand color.
+icon: Settings
+---
+
+`/dashboard/platform/settings` needs `canManageOnboarding`. Data comes from `groceryPlatformSettings`.
+
+## Profile
+
+`updateGroceryStoreProfile` saves `name`, `tagline`, `homepageTitle`, `homepageDescription`, `contactEmail`, `contactPhone`, `address`, `countryCode`, `locale`, `timezone`, `taxRateBps`, and `policyNotes`. Tax is a store-level rate in basis points (800 is 8%).
+
+Settings left at the onboarding placeholder text are not shown to shoppers, and the store counts as ready only after it has a real name.
+
+## Delivery policy
+
+`updateGroceryDeliveryPolicy(policy)`:
+
+| Field | Meaning |
+| --- | --- |
+| `pickupMinimumCents` | Minimum basket for pickup |
+| `deliveryMinimumCents` | Minimum basket for delivery |
+| `postalPrefixes` | Service area. Each prefix is 3 to 12 letters, digits, or hyphens, up to 200 |
+| `deliveryFeeCents` | Flat fee |
+| `feeTaxRateBasisPoints` | Tax on the fee |
+
+Checkout evaluates the policy against the basket after discounts. Delivery to a postal code outside the prefixes is refused and the shopper is told to pick pickup.
+
+## Logo and brand
+
+`updateGroceryStoreLogo` sets `logoIcon` and `logoColor`. `updateGroceryStorefrontBrandHue` sets `brandHue`. `/api/store-icon` serves the logo as an icon.

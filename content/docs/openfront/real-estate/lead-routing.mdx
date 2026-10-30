@@ -1,0 +1,17 @@
+---
+title: Lead routing
+description: Assign new leads to agents or teams by rule.
+icon: Route
+---
+
+Route: `/dashboard/platform/routing`.
+
+A `LeadRoutingRule` has `name`, `status` (`active` or `paused`), `priority`, and filters on `intent`, `source`, `city`, `state`, and `postalCode`. It assigns an `assignedAgent` or `assignedTeam`. One rule can be marked `isFallback`.
+
+## Order
+
+1. The first matching active rule by priority.
+2. The listing agent.
+3. The fallback rule.
+
+The agent must still hold an active membership; otherwise the lead stays unassigned. Create, edit, pause, activate, and delete from the routing page.

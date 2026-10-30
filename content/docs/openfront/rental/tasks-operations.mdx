@@ -1,0 +1,13 @@
+---
+title: Tasks and operations
+description: Turnover, inspections, maintenance, and task rules.
+icon: ClipboardList
+---
+
+Route: `/dashboard/platform/tasks`. Needs `canReadProperties`.
+
+`PropertyTask.status`: `queued`, `assigned`, `in_progress`, `completed`, `blocked`, `cancelled`. Source: `manual`, `task_rule`, `system`, `channel`.
+
+- `createOperationsTask` creates a task for a property, listing, or reservation with a checklist and due date.
+- `transitionPropertyTask` moves it. A task must be assigned before it starts, in progress before completion, and a blocked task needs a reason. Completed and cancelled tasks are terminal.
+- `TaskRule` rows generate tasks; `runPropertyTaskRules` runs them.

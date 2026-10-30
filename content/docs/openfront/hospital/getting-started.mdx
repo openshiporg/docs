@@ -4,17 +4,12 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-## Live demo
-
-A hosted demo runs at [hospital.openship.org](https://hospital.openship.org). It uses fictional data. Do not enter real patient information.
+## Hosted app
 
 ## Requirements
 
 - Node.js 20 or later (`package.json` `engines` is `>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
 - npm. The repository ships a `package-lock.json`.
-- A PostgreSQL database you are allowed to migrate. Use a disposable database with synthetic data for evaluation.
 - S3-compatible object storage. Production startup fails without it.
 
 ## Install
@@ -87,9 +82,7 @@ The repository has 35 checked-in Prisma migrations in `migrations/`.
 npm run migrate
 ```
 
-<Callout type="warn">
-`npm run dev` and `npm run build` both run `keystone build` and then `npm run migrate`. They change the database in `DATABASE_URL`. Do not point them at a shared or production database without a backup. `npm run migrate:gen` generates new migrations and should only run against a disposable database.
-</Callout>
+`npm run dev` and `npm run build` both run `keystone build` and then `npm run migrate`. They change the database in `DATABASE_URL`. `npm run migrate:gen` generates new migrations.
 
 ## Run locally
 
@@ -114,9 +107,7 @@ Public sign-up is off unless `PUBLIC_SIGNUPS_ALLOWED=true`. Add further staff fr
 
 After sign-in, a user with `canManageOnboarding` sees the onboarding card. Pick **Complete Practice Setup**, **Basic Booking Setup**, or **Custom Setup**. Applying it calls `applyHospitalOnboarding`, which also needs `canAccessAllClinicalData`.
 
-The full template creates the fictional "Northstar Family Care" practice: departments, two facilities, three providers, three visit types, schedule blocks for the coming days, two patients, two appointments, intake forms, and manual follow-up tasks. The result screen shows one-time intake links that expire in 7 days. You can re-run onboarding; it updates the same records instead of duplicating them.
-
-Remove or segregate the fictional records before collecting real data.
+The full template creates the "Northstar Family Care" practice: departments, two facilities, three providers, three visit types, schedule blocks for the coming days, two patients, two appointments, intake forms, and manual follow-up tasks. The result screen shows one-time intake links that expire in 7 days. You can re-run onboarding; it updates the same records instead of duplicating them.
 
 ## Checks
 
@@ -143,5 +134,3 @@ This runs the onboarding seed check, a GraphQL smoke check, the security unit te
 6. Point monitoring at `/api/health`.
 
 The README also has a Vercel deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. Add `S3_ENDPOINT` and the security secrets yourself.
-
-Read [Openfront Hospital](/docs/openfront/hospital) for the access model and limitations before handling real patient data.

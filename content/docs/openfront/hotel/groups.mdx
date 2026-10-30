@@ -1,0 +1,51 @@
+---
+title: Group blocks
+description: Reserve room blocks, rooming lists, pickup, and master folios.
+icon: UsersRound
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/groups`. Needs `canManageBookings` (`hotelGroupWorkspace`).
+
+A `GroupBlock` has `blockCode`, `arrivalDate`, `departureDate`, `releaseDate`, contact, and `billingType` (`guest_pays`, `master_folio`, `split`). Status is `tentative`, `definite`, `released`, or `cancelled`. Allocations hold the rooms per room type and date.
+
+<Steps>
+<Step>
+
+### Create
+
+`createHotelGroupBlock` with dates, allocations, and billing type.
+
+</Step>
+<Step>
+
+### Confirm
+
+`updateHotelGroupBlockStatus` to `definite`.
+
+</Step>
+<Step>
+
+### Rooming list
+
+`createHotelGroupRoomingList` creates bookings against the allocation. It cannot create stays in a closed business date.
+
+</Step>
+<Step>
+
+### Pickup
+
+`pickupHotelGroupBlock` records rooms picked up. A worker releases unused rooms after `releaseDate`.
+
+</Step>
+<Step>
+
+### Close
+
+`closeHotelGroupMasterFolio` after every stay has departed or been cancelled.
+
+</Step>
+</Steps>
+
+`detachHotelGroupBooking` removes a booking from the block.

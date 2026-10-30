@@ -1,0 +1,52 @@
+---
+title: Time, expenses, and billing
+description: Time capture, rate cards, invoices, payments, allocations, and refunds.
+icon: ReceiptText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Time and expenses
+
+`/dashboard/platform/time-expenses`: a timer and manual time, expenses, review, and pricing. Move entries with `transitionTimeEntry` and `transitionExpense`. Billing on a matter needs `canBill` on its team.
+
+## Rate cards
+
+`RateCard` and `RateRule` price time by role, matter, or other rules. Manage them on `/dashboard/platform/billing`.
+
+## Invoices
+
+<Steps>
+<Step>
+
+### Assemble
+`assembleDraftInvoice` selects approved time and expenses into `InvoiceLine` rows. Money is minor units.
+
+</Step>
+<Step>
+
+### Issue
+`transitionInvoice`: `draft` → `approved` → `issued` → `partially_paid` → `paid`. Also `overdue` and `void`.
+
+</Step>
+<Step>
+
+### Pay
+`recordManualPayment` against an open issued invoice, then `allocatePayment`.
+
+</Step>
+<Step>
+
+### Reverse
+`reversePaymentAllocation` undoes an allocation. An invoice with allocations must be reversed or refunded before voiding.
+
+</Step>
+</Steps>
+
+## Refunds
+
+`requestRefund` → `reviewRefund` → processing → `succeeded` or `failed`. A refund of a trust deposit needs its exact trust disbursement posted.
+
+## Retainers
+
+`/dashboard/platform/retainers`: `prepareRetainerAgreement` and `transitionRetainerAgreement`. An active retainer with a trust ledger and deposit amount can fund trust deposits.

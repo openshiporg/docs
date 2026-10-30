@@ -1,0 +1,40 @@
+---
+title: Delivery
+description: Delivery windows, routes, stop outcomes, and rescheduling returned orders.
+icon: Truck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/delivery` needs `canManageDelivery`. Data comes from `groceryPlatformDelivery`.
+
+## Windows
+
+A `DeliverySlot` has `date`, `startTime`, `endTime`, `capacity`, `currentBookings`, `deliveryFee`, and `isActive`. Change one with `configureDeliverySlot(slotId, capacity, deliveryFee, isActive, idempotencyKey)`. Capacity cannot go below current bookings. Windows come from the rolling policy in store hours plus dated slot records. The delivery area, minimum, and fee come from [Settings](/docs/openfront/grocery/settings).
+
+## Routes
+
+A `DeliveryRoute` has a `date`, `timeWindow` (`time_8_10` through `time_18_20`), a `driver`, `orders`, and a `status`: `planning`, `in_progress`, `completed`.
+
+<Steps>
+<Step>
+### Build the route
+Pick the date, window, driver, and packed orders. `createDeliveryRouteFromOrders` requires a driver with delivery permission and at least one order, and every order must be `packed` for that date and window.
+</Step>
+<Step>
+### Dispatch
+`updateDeliveryRouteWorkflow(routeId, status: "in_progress")` works only on a `planning` route. Orders become `out_for_delivery`.
+</Step>
+<Step>
+### Resolve each stop
+`resolveDeliveryStop` takes a `status` of `delivered`, `failed`, `refused`, `returned`, or `rescheduled`, plus `custody` and `conditionEvidence`. Delivered stops take a recipient and proof reference. Failed or refused stops can only go to `rescheduled` or `returned`.
+</Step>
+<Step>
+### Reschedule
+`groceryDeliveryRescheduleSlots` lists open windows and `rescheduleReturnedGroceryDelivery` moves a returned order to one.
+</Step>
+<Step>
+### Complete
+When all stops are resolved, move the route to `completed`.
+</Step>
+</Steps>

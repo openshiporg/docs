@@ -1,0 +1,36 @@
+---
+title: Supplies inventory
+description: Items, movements, and CSV imports per facility.
+icon: Boxes
+---
+
+Needs `canManageInventory`. Found on the inventory tab of `/dashboard/platform/operational-fabric`.
+
+| Action | Mutation |
+| --- | --- |
+| Add an item (`sku`, `reorderPoint`) | `registerInventoryItem` |
+| Receive, issue, or adjust | `moveInventory` |
+| Activate or deactivate | `transitionInventoryItem` (reason required) |
+
+Items keep `quantityOnHand` and `quantityReserved`. An adjustment must change the on-hand quantity. Every move adds an append-only `InventoryMovement`.
+
+## CSV import
+
+<Steps>
+<Step>
+### Preview
+`previewInventoryImport` stores an `ImportBatch` with the parsed result and any row errors.
+</Step>
+<Step>
+### Apply
+`applyInventoryImport` applies the previewed batch at the expected version.
+</Step>
+<Step>
+### Roll back
+`rollbackInventoryImport` reverses an applied batch with a reason.
+</Step>
+</Steps>
+
+Batches go `previewed` → `applied` → `rolled_back`, or `failed`.
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';

@@ -1,0 +1,36 @@
+---
+title: Refund a sale
+description: Void, refund, or partly refund, and fix commission and tips.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canIssueRefunds`.
+
+<Steps>
+<Step>
+### Find the sale
+Search at `/dashboard/platform/sales` and open it.
+</Step>
+<Step>
+### Choose the type
+Void or refund returns the whole remaining sale. Partial refund returns selected lines.
+</Step>
+<Step>
+### Set lines and stock
+Choose quantities. For retail, choose `return_to_stock`, `damaged`, or `consumed`.
+</Step>
+<Step>
+### Recover tip and package value
+Enter any tip to recover and package value to restore.
+</Step>
+<Step>
+### Add a reason and submit
+The reversal posts as `posted`, or `provider_pending` if the provider has not confirmed.
+</Step>
+<Step>
+### Correct compensation
+With `canManageCommissions`, use the compensation form to adjust commission or move tip between practitioners.
+</Step>
+</Steps>

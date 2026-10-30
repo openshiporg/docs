@@ -1,0 +1,43 @@
+---
+title: What is Openfront Hospital
+description: The product, who uses it, and how the pieces fit together.
+icon: HeartHandshake
+---
+
+Openfront Hospital is one application with three surfaces:
+
+| Surface | Who | Where |
+| --- | --- | --- |
+| Public site | Patients and visitors | `/`, `/care`, `/providers`, `/locations`, `/book`, `/intake` |
+| Operator dashboard | Front desk, clinicians, billing, administrators | `/dashboard/platform` |
+| GraphQL API | The two surfaces above, integrations, scripts | `/api/graphql` |
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Facility | The data boundary. Staff are linked to facilities and see their records only |
+| Provider and Clinician | A bookable directory entry and the care-team record behind it |
+| Visit type (`AppointmentType`) | What patients book: duration, buffers, providers, status |
+| Controlled record | A record changed only through a named workflow mutation |
+| Operation key | Idempotency key sent with each workflow call. Repeating a call with the same key returns the first result |
+| Expected version | Optimistic concurrency. A stale version is rejected with "refresh before retrying" |
+| Transition trail | `WorkflowTransition` and `ClinicalAuditLog` rows written for every change |
+
+## Who does what
+
+| Role | Typical flags | Daily work |
+| --- | --- | --- |
+| Front desk | `canAccessDashboard`, `canManageAppointments`, `canManagePatients`, `canManageIntake`, `canManageCommunications` | Confirm requests, check in, register, send messages |
+| Scheduler | `canManageScheduling`, `canManageProviders` | Schedule blocks, visit types |
+| Clinician | `canAccessDashboard`, `canManagePatients` and clinical scope | Encounters, orders, results |
+| Billing | `canManageBilling` | Coverage, claims, payments |
+| Administrator | `canAccessAllClinicalData`, `canManageRoles`, `canManagePeople` | Setup, staff, retention |
+
+See [Roles and permissions](/docs/openfront/hospital/roles-permissions).
+
+## Where to go next
+
+- [Getting started](/docs/openfront/hospital/getting-started) to install.
+- [Appointments](/docs/openfront/hospital/appointments) for the booking lifecycle.
+- [Data model](/docs/openfront/hospital/data-model) and [GraphQL API](/docs/openfront/hospital/api-reference) for developers.

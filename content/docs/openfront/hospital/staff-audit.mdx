@@ -1,0 +1,21 @@
+---
+title: Staff, audit, and reports
+description: Staff accounts, the audit trail, and practice reports.
+icon: ShieldCheck
+---
+
+## Staff
+
+`/dashboard/platform/staff`. Create users, assign a `Role` and facilities, and edit roles. Needs `canManagePeople` and `canManageRoles`.
+
+## Audit trail
+
+`/dashboard/platform/audit` shows `ClinicalAuditLog` (event type, actor type, time, metadata) and `WorkflowTransition` (from and to status and version, result). `PhiReadAudit` is written by the GraphQL endpoint whenever PHI fields are read, and is visible on `/dashboard/phi-read-audits`.
+
+## Reports
+
+`/dashboard/platform/reports` needs `canViewReports` plus the scope of each underlying record. It summarizes appointments, intake, messages, and inventory, and provider completion.
+
+## Practice identity
+
+`/dashboard/platform/store-settings` edits `HospitalProfile`: name, short name, logo, color, theme, address, support phone and email.

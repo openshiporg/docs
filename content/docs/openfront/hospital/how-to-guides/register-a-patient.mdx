@@ -1,0 +1,26 @@
+---
+title: Register a walk-in patient
+description: Create a patient with an MRN and consent, handling duplicates.
+icon: UserPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Search first
+At `/dashboard/platform/registration` search existing patients.
+</Step>
+<Step>
+### Enter details
+Fill name, date of birth, contact, and the consent decision.
+</Step>
+<Step>
+### Resolve duplicates
+If candidates appear, choose `create_new` or `link_existing`.
+</Step>
+<Step>
+### Save
+The patient receives an MRN. Open the chart from `/dashboard/platform/patients`.
+</Step>
+</Steps>

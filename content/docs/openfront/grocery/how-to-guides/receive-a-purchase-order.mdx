@@ -1,0 +1,34 @@
+---
+title: Order and receive stock
+description: Raise a purchase order, receive it into lots, and settle the supplier invoice.
+icon: PackagePlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Draft
+At `/dashboard/platform/purchasing` pick a supplier, add products with quantity and unit cost, and save the draft.
+</Step>
+<Step>
+### Send and confirm
+Mark it `sent` when you place it with the supplier, `confirmed` when they confirm.
+</Step>
+<Step>
+### Receive
+Enter, per item, the quantity received, supplier lot number, expiry date, location, and condition.
+</Step>
+<Step>
+### Capture the invoice
+Record the supplier invoice. A variance needs approval from a different operator.
+</Step>
+<Step>
+### Claim shortages
+Open a claim for short or damaged goods and resolve it as `credit` or `rejected`.
+</Step>
+<Step>
+### Settle
+Someone with `canManagePayments` settles the invoice.
+</Step>
+</Steps>

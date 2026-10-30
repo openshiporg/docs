@@ -1,0 +1,67 @@
+---
+title: Reservations
+description: Confirm, amend, reassign, check in, and cancel stays.
+icon: CalendarCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/reservations`, `/[id]`, and `/today`. Need `canReadReservations` and `canManageReservations`. Most actions call `hostStayCommand(command, input)`.
+
+## Status
+
+| Status | Meaning |
+| --- | --- |
+| `inquiry`, `quoted` | Before booking |
+| `pending` | Reserved, awaiting host or payment |
+| `confirmed` | Accepted |
+| `in_stay` | Checked in |
+| `completed` | Checked out |
+| `cancelled`, `no_show` | Closed |
+
+`paymentStatus` is `unpaid`, `partial`, `paid`, `partially_refunded`, `refund_pending`, or `refunded`. Source is `direct`, `operator`, `airbnb`, `vrbo`, `booking_com`, `pms`, or `ical`.
+
+## Commands
+
+| Action | Command |
+| --- | --- |
+| Confirm, check in, complete, cancel | `transition` (`transitionStayReservation`) |
+| Change dates or guests | `amend` (`amendConfirmedStay`); an amended stay cannot exceed 730 nights |
+| Move to another unit | `reassign` (`reassignStayReservation`) |
+| Allocate to a listing | `listing_allocate` |
+| Edit the guest party | `party_amend`, `party_invites_amend` (at most 15 invited guests) |
+
+<Steps>
+<Step>
+
+### Today
+
+`/dashboard/platform/today` lists arrivals, departures, in-house guests, and waiting work.
+
+</Step>
+<Step>
+
+### Confirm
+
+Open the reservation and confirm it.
+
+</Step>
+<Step>
+
+### Check in
+
+Check in on arrival. Before the arrival date you must confirm the override.
+
+</Step>
+<Step>
+
+### Complete
+
+Complete the stay at check-out.
+
+</Step>
+</Steps>
+
+## Agreements
+
+`/dashboard/platform/agreements`. A `StayAgreement` holds versioned terms and signature evidence (`draft`, `sent`, `signed`, `voided`). Use `agreement_void` and `agreement_reissue`. A signed agreement for an active stay stays in force; cancel the stay first.

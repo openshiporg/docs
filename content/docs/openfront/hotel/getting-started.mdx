@@ -4,8 +4,6 @@ description: Clone the source, configure PostgreSQL, secrets, and storage, apply
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js 20 or later (`package.json` `engines` is `>=20.0.0`; the README asks for 20.9 or later for Next.js 16).
@@ -13,9 +11,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - A PostgreSQL database you are allowed to migrate.
 - Optional: S3-compatible object storage for uploaded room images, and SMTP for guest email.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [hotel.openship.org](https://hotel.openship.org), with the dashboard at `/dashboard`. It shows the fictional property The Alder House with demo data.
+The hosted app is at [hotel.openship.org](https://hotel.openship.org), with the dashboard at `/dashboard`. It shows the property The Alder House.
 
 ## Install
 
@@ -91,9 +89,7 @@ npm run dev       # keystone build, view-order generation, next dev
 
 `npm run dev` does not apply migrations. Run `npm run migrate` first and after pulling new migrations. To change the schema, run `npm run migrate:gen` against a disposable database; it builds Keystone, regenerates view order, and runs `keystone prisma migrate dev`.
 
-<Callout type="warn">
-`npm run migrate` applies to whatever `DATABASE_URL` points at. Back up before migrating a shared or production database.
-</Callout>
+`npm run migrate` applies to whatever `DATABASE_URL` points at.
 
 A migration creates the single `HotelBusinessDate` row. Onboarding fails without it.
 
@@ -112,13 +108,11 @@ When no users exist, every page redirects to `/dashboard/init`. Other auth pages
 
 Open the onboarding dialog from the dashboard and pick a template:
 
-- **Complete Setup** (`full`): The Alder House with 3 room types, 8 rooms, 4 rate plans, guests, bookings, payments, housekeeping, maintenance, loyalty, inventory, and two inactive demo channels.
+- **Complete Setup** (`full`): The Alder House with 3 room types, 8 rooms, 4 rate plans, guests, bookings, payments, housekeeping, maintenance, loyalty, inventory, and two inactive channels.
 - **Basic Setup** (`minimal`): a smaller linked subset of the same data.
 - **Custom Setup** (`custom`): paste your own property JSON.
 
 Onboarding only runs on an empty property. It sets the business date to today in the property time zone. After it completes, edit the property at `/dashboard/platform/property`, then configure Stripe or PayPal at `/dashboard/platform/payment-providers`. Without an enabled provider, the storefront shows that online payment is unavailable.
-
-Seed data uses fictional guests and `example` addresses. Do not use it for real operation.
 
 ## Deployment
 

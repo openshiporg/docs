@@ -1,0 +1,36 @@
+---
+title: What is Openfront Hotel
+description: One property, three surfaces, and the concepts behind them.
+icon: Bed
+---
+
+Openfront Hotel runs a single property from one database.
+
+| Surface | Who | Where |
+| --- | --- | --- |
+| Guest site | Guests | `/`, `/rooms`, `/book`, `/booking/[id]`, `/account` |
+| Staff workspace | Front desk, housekeeping, finance, managers | `/dashboard/platform` |
+| GraphQL API | Both surfaces, payment and channel webhooks | `/api/graphql` |
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Room type | What guests book: rate, occupancy, bed configuration, images |
+| Room | A physical room of one type, with a floor and operational status |
+| Rate plan | Price rules for a room type: stay limits, cancellation policy, meal plan, dates, promo code |
+| Booking | A reservation with snapshot amounts in minor units. Written only by named commands |
+| Folio | The ledger for a booking or group. Entries are posted and reversed, never edited |
+| Business date | The date the property is trading on. Night audit moves it forward |
+| Approval | A second user with `canApproveHotelExceptions` authorizes refunds, write-offs, and similar exceptions |
+| Idempotency key | Sent with most staff mutations so a retry does not repeat the action |
+
+## A stay from start to finish
+
+1. A guest requests a quote (`storefrontQuote`) and creates a `pending` hold that lasts 30 minutes.
+2. The guest pays through Stripe or PayPal; the booking becomes `confirmed`.
+3. Staff assign a room (`assignRoomToBooking`) and check the guest in.
+4. Charges post to the folio. Housekeeping cleans after checkout.
+5. Payments and refunds reconcile. Night audit closes the day.
+
+Next: [Reservations](/docs/openfront/hotel/reservations), [Roles and permissions](/docs/openfront/hotel/roles-permissions), [Data model](/docs/openfront/hotel/data-model).

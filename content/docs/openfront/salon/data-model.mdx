@@ -1,0 +1,59 @@
+---
+title: Data model
+description: Lists, relationships, statuses, and the append-only rules of the Salon schema.
+icon: Database
+---
+
+The schema has 58 lists in `features/keystone/models`. The source repo keeps a fuller map in `docs/schema-map.md`.
+
+## Rules
+
+- Money is integer cents.
+- Times are instants. Local time comes from `Location.timezone`.
+- Most business lists block generated create, update, and delete. They change through custom mutations that check the role, run in a serializable transaction, and take an idempotency key.
+- Revisions, transitions, reviews, ledger entries, reversals, and adjustments are append-only.
+
+## Core relationships
+
+| From | To |
+| --- | --- |
+| `User` | `Role`, `Client`, `Stylist` |
+| `Service` | `ServiceCategory`, `Stylist` (specialists), `SalonResource` (required) |
+| `Stylist` | `StylistSchedule`, `Location`, `Service` |
+| `Appointment` | `Client`, `Stylist`, `Location`, `AppointmentLineItem`, `AppointmentSegment`, `AppointmentScheduleRevision`, `ConsultationSubmission` |
+| `SalonTransaction` | `Appointment`, `SalonTransactionLineItem`, `TransactionReversal` |
+| `Payment` | `Appointment`, `PaymentSession`, `Commission`, `GratuityLedgerEntry` |
+| `Commission` | `Stylist`, `Service`, `Payment`, `CommissionAdjustment` |
+| `ClientMembership` | `Client`, `Membership` |
+| `ClientPackage` | `Client`, `ServicePackage`, `ClientPackageUsage`, `ClientPackageAdjustment` |
+| `GiftCard` | `GiftCardTransaction` |
+| `ClientPoints` | `User` |
+| `Product` | `InventoryMovement` |
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Appointment` | `pending`, `confirmed`, `in_progress`, `completed`, `cancelled`, `no_show` |
+| `AppointmentSegment` | `planned`, `started`, `completed`, `skipped`, `superseded` |
+| `WaitlistEntry` | `active`, `notified`, `converted`, `removed` |
+| `SalonTransaction` | `open`, `completed`, `voided` |
+| `Payment` | `pending`, `processing`, `completed`, `failed`, `refunded`, `partially_refunded` |
+| `TransactionReversal` | `posted`, `provider_pending` |
+| `ClientMembership` | `active`, `paused`, `cancelled` |
+| `ClientPackage` | `active`, `expired`, `fully-used`, `cancelled` |
+| `Referral` | `pending`, `completed`, `expired` |
+| `ConsultationSubmission` | `submitted`, `reviewed`, `needs_clarification`, `accepted_for_service`, `deferred` |
+| `Stylist` | `active`, `on_leave`, `inactive` |
+| `Service` | `active`, `inactive` |
+
+## Lists by area
+
+- **Identity**: `User`, `Role`
+- **Catalog**: `ServiceCategory`, `Service`, `ServiceVariant`, `ServiceSegment`, `SalonImage`, `Product`, `InventoryMovement`
+- **People and capacity**: `Location`, `StoreSettings`, `Stylist`, `StylistSchedule`, `SalonResource`
+- **Clients and care**: `Client`, `ClientNote`, `ColorFormula`, `FormTemplate`, `ConsultationTemplateVersion`, `ConsultationSubmission`, `ConsultationReview`, `Review`
+- **Booking**: `Appointment`, `AppointmentLineItem`, `AppointmentScheduleRevision`, `AppointmentSegment`, `SegmentTransition`, `WaitlistEntry`
+- **Money**: `SalonTransaction`, `SalonTransactionLineItem`, `Payment`, `PaymentProvider`, `PaymentSession`, `PaymentWebhookEvent`, `TransactionReversal`, `TransactionReversalLine`, `Commission`, `CommissionAdjustment`, `GratuityLedgerEntry`, `DepositAdjustment`
+- **Benefits and loyalty**: `Membership`, `ClientMembership`, `ServicePackage`, `ClientPackage`, `ClientPackageUsage`, `ClientPackageAdjustment`, `GiftCard`, `GiftCardTransaction`, `LoyaltyProgram`, `ClientPoints`, `Referral`
+- **Messages and system**: `MessageTemplate`, `MessageLog`, `DomainEvent`, `WidgetConfiguration`

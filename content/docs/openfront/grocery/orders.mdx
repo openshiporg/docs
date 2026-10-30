@@ -1,0 +1,38 @@
+---
+title: Orders
+description: The order queue, status changes, cancellation, and checkout recovery.
+icon: ClipboardList
+---
+
+`/dashboard/platform/orders` needs `canManageOrders`. Data comes from `groceryPlatformOrders`.
+
+## Statuses
+
+`pending`, `picking`, `packed`, `out_for_delivery`, `delivered`, `delivery_failed`, `delivery_refused`, `returned`, `cancelled`. Pickup readiness is stored in order metadata, not as a status.
+
+## Advance an order
+
+`advanceOrderFulfillment(orderId, target)` accepts `picking`, `packed`, or `ready_for_pickup`.
+
+- Moving to `picking` needs a payment that is `authorized`, `succeeded`, or `partially_refunded`.
+- Moving to `packed` needs a captured payment (`succeeded` or `partially_refunded`), which comes from [finalizing the sale](/docs/openfront/grocery/fulfillment).
+- Delivery orders reach `out_for_delivery` through [routes](/docs/openfront/grocery/delivery).
+
+## Cancel
+
+`cancelGroceryOrder(orderId, reason, idempotencyKey, disposition, conditionNote)`.
+
+- The reason must be 3 to 500 characters.
+- A packed or returned order needs a `disposition` (`return_to_stock`, `waste`, or `quarantine`) and a condition note.
+- Cancellation releases lot allocations and refunds or voids the payment. It refuses to continue when refund evidence is incomplete.
+- Active or paid pickup orders cannot release their reserved slot by hand.
+
+## Recover interrupted checkouts
+
+A `CheckoutAttempt` is `pending`, `settled_pending_finalize`, `finalizing`, `finalized`, `compensation_required`, `compensation_processing`, `compensated`, or `failed`. Use the recover action on the Orders page (`reconcileCheckoutAttempts`) to finish attempts where payment succeeded but the order was not written.
+
+Shoppers can also resume or restart from the checkout page with `resumeGroceryCheckout` and `restartGroceryCheckout`. A fresh checkout is only available once payment compensation is confirmed.
+
+## Refund
+
+Refunds are started from here or [Payments](/docs/openfront/grocery/payments) with `refundPayment` or `refundGroceryOrderLines`.

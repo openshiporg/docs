@@ -1,0 +1,30 @@
+---
+title: Roles and permissions
+description: Membership roles, flags, and brokerage scoping.
+icon: KeyRound
+---
+
+## Scoping
+
+Access comes from `activeBrokerageIds(session)`: the selected `activeBrokerage`, or the one live membership. A user with two live memberships and no selection sees nothing.
+
+## Membership roles
+
+`owner`, `admin`, `team_lead`, `agent`, `coordinator`, `analyst`.
+
+## Flags
+
+| Flag | Allows |
+| --- | --- |
+| `canAccessDashboard` | Dashboard sign-in |
+| `canManageListings` | Listings and media |
+| `canManageLeads` | Leads and routing |
+| `canManageShowings` | Showings |
+| `canManageDeals` | Pipeline, commissions, records |
+| `canManagePeople` | Members, teams, all records |
+| `canManageRoles` | Roles |
+| `canViewReports` | Reports |
+| `canManageOnboarding` | Setup |
+| `canSeeOtherPeople`, `canEditOtherPeople` | Other users |
+
+Edit roles on `/dashboard/roles`. The first user gets `Admin` with every flag. Storefront customers have an `activeBrokerage` and no membership.

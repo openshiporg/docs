@@ -1,0 +1,21 @@
+---
+title: Care queue and encounters
+description: Arrival queue, encounters, and episode closure.
+icon: Stethoscope
+---
+
+## Care queue
+
+`/dashboard/platform/care-queue`. A `CareQueueTicket` is created by `arriveAppointment` with a `ticketNumber`, `queuePosition`, and `priority` (`routine` or `time_sensitive`).
+
+`waiting` → `called` → `in_care` → `completed`, or `cancelled`. Move a ticket with `transitionCareQueue`. Opening an encounter from a ticket links the two.
+
+## Encounters
+
+`/dashboard/platform/encounters`. `openEncounter` creates an `Encounter` with a chief complaint. An appointment can have only one encounter.
+
+`open` → `in_progress` → `closed`, or `cancelled`. Add a `diagnosisSummary` when closing.
+
+## Episode closure policy
+
+Each facility has a revisioned `EpisodeClosurePolicy` (`reviewEpisodePolicy`). `transitionEncounter` to `closed` checks the policy against the encounter's open children, such as orders, results, and documents. `episodeClosureWorkspace` and `episodeChildWorkspace` show what blocks closure. If a closure was interrupted, `recoverEpisodeClosure(encounterId, operationKey)` finishes it.

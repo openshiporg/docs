@@ -1,0 +1,55 @@
+---
+title: Deployment
+description: Build, start, workers, readiness, and checks.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Process
+
+One Node process serves the site, dashboard, and GraphQL, and starts four in-process workers from `instrumentation.ts`. `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`.
+
+Run a long-lived server, not a serverless runtime, so the workers keep running.
+
+| Worker | Job |
+| --- | --- |
+| Channel sync | Inventory push every 15 minutes, reservation pull every 5, retries every 2 (live channels only) |
+| Outbox | Delivers guest email through SMTP or an HTTP dispatcher |
+| Refund intents | Executes queued refunds with the provider |
+| Expiry | Cancels expired booking holds and releases group blocks past their release date |
+
+Workers hold a database lease (`HotelWorkerLease`), so running several web instances is safe.
+
+<Steps>
+<Step>
+
+### Configure
+
+Set `DATABASE_URL`, `SESSION_SECRET`, `HOTEL_DATA_ENCRYPTION_KEY`, `HOTEL_QUOTE_SECRET`, and `NEXT_PUBLIC_SITE_URL` with independent 32+ character secrets. Add the `S3_*` variables for image upload and SMTP for email.
+
+</Step>
+<Step>
+
+### Migrate and start
+
+`npm run migrate` then `next start`.
+
+</Step>
+<Step>
+
+### Check
+
+`/api/health` returns OK. `/api/ready` checks settings, the business date, payment providers, and worker progress.
+
+</Step>
+<Step>
+
+### Configure payments
+
+Add Stripe or PayPal at `/dashboard/platform/payment-providers` and point provider webhooks at `/api/payment-providers/[providerCode]/webhook`.
+
+</Step>
+</Steps>
+
+See [Getting started](/docs/openfront/hotel/getting-started) for every variable.

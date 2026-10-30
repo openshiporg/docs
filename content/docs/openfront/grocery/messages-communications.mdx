@@ -1,0 +1,21 @@
+---
+title: Messages and communications
+description: The customer inbox and the outbound email and event queue.
+icon: Mail
+---
+
+## Customer inbox
+
+`/dashboard/platform/messages` needs `canManageOrders`. Messages come from the Help page at `/support` (`submitGroceryContactMessage`). A `ContactMessage` has `reference`, `subject`, `topic`, `orderNumber`, `message`, `status` (`new`, `in_progress`, `replied`, `closed`), and `staffNotes`. Update status and notes with the generated `updateContactMessage`.
+
+## Communications
+
+`/dashboard/platform/communications` needs `canManageOnboarding`. Data comes from `groceryOutboxStatus`.
+
+Customer emails and outbound events are queued as `GroceryOutboxEvent` rows. On this page:
+
+- `deliverGroceryOutboxNow` sends a queued message now
+- `replayGroceryOutboxEvent` retries a failed event
+- `reconcileGroceryCustomerDelivery` resolves a delivery whose result is unknown
+
+The `worker:events` process claims events (`claimGroceryOutboxEvents`), sends emails and alerts, and posts events to `GROCERY_EVENT_WEBHOOK_URL` signed with HMAC-SHA256. Without SMTP, queued messages stay pending.

@@ -4,11 +4,9 @@ description: Clone the source, set the environment, apply migrations, create the
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+## Hosted app
 
-## Try the live demo
-
-A hosted demo runs at [salon.openship.org](https://salon.openship.org). The storefront is at `/` and the dashboard at `/dashboard`.
+The hosted app is at [salon.openship.org](https://salon.openship.org). The storefront is at `/` and the dashboard at `/dashboard`.
 
 ## Requirements
 
@@ -79,9 +77,7 @@ The repo has checked-in Prisma migrations in `migrations/`. Apply them with:
 npm run migrate
 ```
 
-<Callout type="warn">
-`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes whatever database `DATABASE_URL` points at. Use a database you own and can throw away.
-</Callout>
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes whatever database `DATABASE_URL` points at.
 
 `npm run migrate:gen` creates new development migrations after a model change. Run it only against a disposable database.
 
@@ -111,7 +107,7 @@ After sign-in, the dashboard sidebar shows onboarding cards. Open the setup dial
 
 The dialog calls `runSalonOnboarding` once. It creates the sample salon "Morrow & Mane" with a location, resources, services, stylists, schedules, sample clients, a consultation form, memberships, a package, a product, appointments, gallery images, and payment providers. It reports created and reused counts. Running it again reuses existing rows.
 
-This is sample data. Replace the salon name, hours, services, prices, and staff before real use, and delete the sample clients and appointments.
+This is starter data. Replace the salon name, hours, services, prices, and staff before real use, and delete the starter clients and appointments.
 
 ## Checks
 

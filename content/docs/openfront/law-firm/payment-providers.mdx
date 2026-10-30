@@ -1,0 +1,49 @@
+---
+title: Payment providers
+description: Operating and trust Stripe accounts, and the payment webhook.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/payment-providers`. Adapters live in `features/integrations/payment` (`stripe`, `paypal`, `manual`).
+
+Two Stripe accounts are kept apart so trust funds never mix with operating funds.
+
+| Provider | Code | Account | Secret key variable |
+| --- | --- | --- | --- |
+| Stripe (operating account) | `pp_stripe_operating` | `operating` | `STRIPE_SECRET_KEY` |
+| Stripe (trust / IOLTA account) | `pp_stripe_trust` | `trust` | `STRIPE_TRUST_SECRET_KEY` |
+
+<Steps>
+<Step>
+
+### Add the providers
+
+Press add Stripe providers. It creates whichever of the two records is missing and marks them installed.
+
+</Step>
+<Step>
+
+### Set keys
+
+Set the secret key variables on the server.
+
+</Step>
+<Step>
+
+### Add the webhook
+
+Point Stripe at `/api/payment-webhooks/[providerId]`, using the provider record's id. The route verifies the signature, handles `checkout.session.completed` and `payment_intent.succeeded`, and reconciles the payment named in the event metadata. Events are deduplicated by event id.
+
+</Step>
+<Step>
+
+### Toggle
+
+Install or uninstall a provider with its toggle.
+
+</Step>
+</Steps>
+
+Payments can also be recorded by hand with `recordManualPayment`.

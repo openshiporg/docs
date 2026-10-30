@@ -1,0 +1,26 @@
+---
+title: Confirm a request and check the patient in
+description: From a public request to an open encounter.
+icon: UserCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Confirm
+On `/dashboard/platform/appointments` confirm the `requested` appointment. If the provider is blocked, the confirm fails; change the time or the schedule.
+</Step>
+<Step>
+### Review intake
+At `/dashboard/platform/intake` mark the submitted form reviewed.
+</Step>
+<Step>
+### Check in
+On the day, check the appointment in. A care queue ticket appears.
+</Step>
+<Step>
+### Call and open
+At `/dashboard/platform/care-queue` call the patient, then open an encounter from the ticket.
+</Step>
+</Steps>

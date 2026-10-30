@@ -59,9 +59,6 @@ The storefront calls these documents from `features/storefront/lib/data`:
 - Saving homes and searches requires sign-in.
 - Password reset email needs `SMTP_HOST`. Without it, the reset page says email is not set up.
 
-## What is not in the storefront
+## Scope
 
-- No payments, deposits, or applications.
-- No deal or closing view for customers.
-- Saved search alerts are not emailed.
-- No map search.
+The storefront is for browsing, asking, touring, and saving. Deals and closing records stay in the dashboard. Saved search alerts are queued as outbox events.

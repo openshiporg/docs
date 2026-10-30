@@ -1,0 +1,34 @@
+---
+title: Turn over a room
+description: From checkout to ready for sale.
+icon: SprayCan
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Check out
+Move the booking to `checked_out`. The room needs cleaning.
+
+</Step>
+<Step>
+
+### Schedule
+On `/dashboard/platform/housekeeping` schedule a `checkout_clean` and assign it.
+
+</Step>
+<Step>
+
+### Inspect
+Move the task to `inspection_needed` if the property inspects, then `completed`.
+
+</Step>
+<Step>
+
+### Report issues
+Use report maintenance issue if something is broken. Take the room out with an outage if needed.
+
+</Step>
+</Steps>

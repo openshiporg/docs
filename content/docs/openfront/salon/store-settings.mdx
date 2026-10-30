@@ -1,0 +1,18 @@
+---
+title: Store settings
+description: Storefront name, description, theme, logo, and primary location.
+icon: Store
+---
+
+`/dashboard/platform/store-settings` needs `canManageSalon`. It edits the single `StoreSettings` row.
+
+| Field | Notes |
+| --- | --- |
+| `name`, `description` | Shown in the storefront header and home page |
+| `themeHue` | Integer hue for the storefront theme |
+| `logoIcon`, `logoColor` | Icon from the built-in registry, and its color. A custom SVG logo is sanitized before saving |
+| `primaryLocation` | Required. Used for contact details and default booking location |
+
+Save with `upsertSalonStoreSettings`. The storefront reads the public subset with `publicStorefrontSettings`.
+
+Locations, hours, and services are managed separately in [Staff and locations](/docs/openfront/salon/staff-locations) and [Services and catalog](/docs/openfront/salon/catalog).

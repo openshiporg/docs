@@ -1,0 +1,23 @@
+---
+title: Calendar and pricing
+description: Availability blocks, rate plans, fees, taxes, and cancellation policies.
+icon: CalendarRange
+---
+
+## Calendar
+
+`/dashboard/platform/calendar` needs `canManageCalendar`. Blocks come from reservations, owners, preparation, and channels. Create and release blocks here. A `CalendarBlock` must connect to an existing listing.
+
+## Pricing
+
+`/dashboard/platform/pricing`, `/create`, `/[id]`, `/[id]/edit`. Needs `canManagePricing`.
+
+| Record | Use |
+| --- | --- |
+| `RatePlan` | `status` `draft`, `active`, `archived`; base rate; stay limits; notice; window; `isDefault` |
+| `SeasonalRate` | Date-range adjustments |
+| `FeeDefinition` | Cleaning and other fees |
+| `TaxRule` | Taxes |
+| `CancellationPolicy` | `policyType` `flexible`, `moderate`, `firm`, `strict`, `non_refundable`, `custom`; `freeCancellationHours`; `rules` |
+
+Quotes snapshot these values, so later changes do not rewrite an accepted quote or a reservation.

@@ -1,0 +1,54 @@
+---
+title: Payment providers
+description: Manual and Stripe adapters, webhooks, and the integrations page.
+icon: Plug
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters live in `features/integrations/payment`. A `PaymentProvider` record has `name`, `code`, `adapter` (`manual` or `stripe`), `isInstalled`, `isDefault`, and `config`.
+
+## Manual
+
+No credentials. Desk checkout, recorded deposits, and gift-card sales use the installed manual provider. A payment records tender taken at the desk.
+
+## Stripe
+
+Needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Point the webhook at:
+
+```
+/api/payments/webhooks/pp_stripe
+```
+
+The route accepts only an installed Stripe provider, verifies the signature, logs each event once in `PaymentWebhookEvent`, rejects amount or currency mismatches, and handles:
+
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `payment_intent.canceled`
+- `charge.refunded`
+- `refund.updated`
+
+## Set up
+
+<Steps>
+<Step>
+### Run onboarding
+It creates the manual provider (installed, default) and a Stripe record.
+</Step>
+<Step>
+### Set environment variables
+Add the Stripe keys, then set `isInstalled` on the Stripe provider record in your seed or database. The webhook route only accepts an installed Stripe provider.
+</Step>
+<Step>
+### Register the webhook
+Use the URL above and the signing secret as `STRIPE_WEBHOOK_SECRET`.
+</Step>
+</Steps>
+
+## Integrations page
+
+`/dashboard/platform/integrations` needs `canManageIntegrations`. It shows providers, recent webhook events, and `DomainEvent` rows still `pending` or in `dead_letter`.
+
+## Email
+
+Booking confirmations, gift-card emails, and password resets send through SMTP when `SMTP_HOST` and `SMTP_FROM` are set.

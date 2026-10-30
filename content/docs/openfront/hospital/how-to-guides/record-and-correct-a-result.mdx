@@ -1,0 +1,26 @@
+---
+title: Record and correct a lab result
+description: Order, collect, result, and correct without overwriting.
+icon: FlaskConical
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Order
+On `/dashboard/platform/clinical-fulfillment` place a laboratory order for the encounter.
+</Step>
+<Step>
+### Collect
+Record the specimen.
+</Step>
+<Step>
+### Result
+Record the value, reference range, and abnormal flag as `preliminary`, then move it to `final`.
+</Step>
+<Step>
+### Correct
+If wrong, use correct result. A new version supersedes the old one and the original stays in the chain.
+</Step>
+</Steps>

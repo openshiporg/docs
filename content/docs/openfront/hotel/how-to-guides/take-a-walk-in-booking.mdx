@@ -1,0 +1,34 @@
+---
+title: Take a walk-in booking
+description: Create a staff booking, assign a room, and check in.
+icon: UserPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Create
+On `/dashboard/platform/reservations` choose dates, room type, and rate plan, then save the guest. The booking source is `walk_in`.
+
+</Step>
+<Step>
+
+### Assign a room
+Open the booking on the front desk and pick a `vacant` clean room.
+
+</Step>
+<Step>
+
+### Collect payment
+On `/dashboard/platform/folios` record the payment or a deposit.
+
+</Step>
+<Step>
+
+### Check in
+Move the booking to `checked_in`.
+
+</Step>
+</Steps>

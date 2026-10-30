@@ -1,0 +1,54 @@
+---
+title: Sales and refunds
+description: Find a sale, void or refund it, and correct commission and tip allocations.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/sales` lists `SalonTransaction` rows with status tabs and search. Open a sale at `/dashboard/platform/sales/[id]`. The pages need `canManagePayments`, `canIssueRefunds`, or `canViewReports`. Reversals need `canIssueRefunds`.
+
+## Sale fields
+
+- `type`: `appointment`, `walk_in`, or `retail`
+- `status`: `open`, `completed`, `voided`
+- `paymentStatus`: `pending`, `paid`, `partially_paid`, `refunded`
+- `paymentMethod`: `cash`, `card`, `split`, `gift_card`, `package`
+- line items, tip, and linked appointment
+
+## Reverse a sale
+
+`reverseSalonTransaction` takes the transaction, a `type` (`void`, `refund`, `partial_refund`), the lines and quantities to reverse, `tipCents` to recover, `restorePackageCents`, a reason, and an idempotency key.
+
+<Steps>
+<Step>
+### Choose the type
+Void and refund must cover the full remaining sale. A partial refund must not equal the full remaining amount.
+</Step>
+<Step>
+### Pick lines and quantities
+Quantity cannot exceed what is still unreversed.
+</Step>
+<Step>
+### Set retail stock handling
+Each retail line needs an inventory disposition: `return_to_stock`, `damaged`, or `consumed`. Services use `not_applicable`.
+</Step>
+<Step>
+### Recover tip and package value
+Tip recovery cannot exceed the unreversed gratuity. Package value restored cannot exceed what checkout used.
+</Step>
+<Step>
+### Submit
+A `TransactionReversal` and `TransactionReversalLine` rows are written. Payment refunds go to the provider when the sale was paid through one, and the reversal is `posted` or `provider_pending`.
+</Step>
+</Steps>
+
+Reversals are append-only. Commission and tip effects are written as `CommissionAdjustment` and `GratuityLedgerEntry` rows.
+
+## Correct compensation
+
+`adjustSaleCompensation` changes commission or moves tip between practitioners after a sale without refunding the client. Fields: `commissionId`, `commissionDelta`, `sourceGratuityEntryId`, `targetPractitionerId`, `gratuityTransferCents`, and a reason. It needs `canManageCommissions`. A commission cannot go below zero.
+
+## Related mutations
+
+`reverseSalonTransaction`, `adjustSaleCompensation`, `refundPayment`. See [Refund a sale](/docs/openfront/salon/how-to-guides/refund-a-sale).

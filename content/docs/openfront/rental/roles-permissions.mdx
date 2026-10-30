@@ -1,0 +1,23 @@
+---
+title: Roles and permissions
+description: Host memberships and read/manage flags.
+icon: KeyRound
+---
+
+## Memberships
+
+`HostMembership` links a user to a host with a role (`owner`, `admin`, `manager`, `operations`, `finance`) and a status (`invited`, `active`, `suspended`). Users whose role has `canManagePeople` or `canManageRoles` act as platform administrators. Administrators cannot grant the owner role or a higher role, and cannot modify an owner membership.
+
+## Flags
+
+Read and manage pairs exist for properties, listings, calendar, pricing, reservations, guests, messages, payments, payouts, reports, channels, and reviews (for example `canReadReservations`, `canManageReservations`).
+
+Other flags: `canAccessDashboard`, `canManageSettings`, `canManageOnboarding`, `canManagePeople`, `canManageRoles`, `canSeeOtherPeople`, `canEditOtherPeople`.
+
+| Job | Suggested flags |
+| --- | --- |
+| Operations | Properties, calendar, reservations, tasks |
+| Finance | Payments, payouts, reports |
+| Manager | Everything except people and roles |
+
+The sidebar lists every entry; each page and command checks the user's own permissions and membership.

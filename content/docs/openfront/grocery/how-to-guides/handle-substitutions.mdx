@@ -1,0 +1,28 @@
+---
+title: Handle substitutions
+description: Propose a replacement and record the shopper's decision.
+icon: Replace
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Check the preference
+Each basket item has a preference: `call_me`, `best_match`, or `refund`.
+</Step>
+<Step>
+### Propose
+On the fulfillment board choose the replacement product, quantity, and a reason. This calls `proposeOrderLineSubstitution`.
+</Step>
+<Step>
+### Shopper decides
+The shopper opens `/order/[id]` and accepts or declines (`respondToOrderLineSubstitution`).
+</Step>
+<Step>
+### Record the pick
+If accepted, resolve the line as `substituted` with the replacement's actual weight. If declined, resolve it as `short`.
+</Step>
+</Steps>
+
+If you agreed by phone, record the consent channel, who agreed, and evidence when you resolve the line as `substituted`.

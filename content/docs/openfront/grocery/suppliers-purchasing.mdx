@@ -1,0 +1,46 @@
+---
+title: Suppliers and purchasing
+description: Suppliers, purchase orders, receiving into lots, invoices, claims, and settlement.
+icon: Truck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Suppliers
+
+`/dashboard/platform/suppliers` needs `canManageSuppliers`. A `Supplier` has `name`, `contactName`, `email`, `phone`, `paymentTerms` (`net_30`, `net_60`, `cod`), and a minimum order. `updateSupplierMinimumOrder` changes the minimum.
+
+## Purchase orders
+
+`/dashboard/platform/purchasing` needs `canManageInventory`. Status flow: `draft`, `sent`, `confirmed`, `received`, `cancelled`.
+
+<Steps>
+<Step>
+### Create a draft
+`createPurchaseOrderDraft(idempotencyKey, supplierId, expectedDeliveryDate, notes, items)` where each item has `productId`, `quantity`, and `unitCost`. At least one item is required. `groceryPurchasingOptions` supplies the picker. Remove a line with `removePurchaseOrderDraftItem`.
+</Step>
+<Step>
+### Send and confirm
+`transitionPurchaseOrder(purchaseOrderId, status)` accepts `sent`, `confirmed`, or `cancelled`. These are status changes recorded by staff. A purchase order with received inventory cannot be cancelled.
+</Step>
+<Step>
+### Receive
+`receivePurchaseOrder(purchaseOrderId, receipts)`. Each receipt gives `poItemId`, `targetQuantityReceived`, `lotNumber`, `expirationDate`, optional `location`, `deliveryReference`, and a condition (`accepted`, `inspection_pending`, `rejected`). Each receipt creates a `PurchaseReceipt` and an `InventoryLot`.
+</Step>
+</Steps>
+
+## Supplier settlement
+
+`manageSupplierSettlement(action, idempotencyKey, invoiceId, creditId, input)`:
+
+| Action | Use |
+| --- | --- |
+| `capture_invoice` | Record a `SupplierInvoice` against receipts |
+| `approve_invoice` | Approve a captured or variance invoice. A different operator must approve variances |
+| `open_claim` | Open a `SupplierCredit` claim for short or damaged goods. Cannot exceed the invoice liability |
+| `record_debit` | Record a supplier debit |
+| `resolve_claim` | Outcome `credit` or `rejected` |
+| `settle_invoice` | Mark settled. Needs `canManagePayments` |
+| `void_invoice` | Void it |
+
+Settled and voided invoices are immutable.

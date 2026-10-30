@@ -1,0 +1,24 @@
+---
+title: Troubleshooting
+description: Common messages and what to do.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| A bounded idempotency key is required | Send a stable key |
+| Domain command idempotency key was reused with different input | Use a new key for a different request |
+| An active brokerage membership is required | The user has no live membership, or has two and none selected |
+| A valid lead email or phone number is required | Provide one |
+| Choose a showing time in the future, within one year. | Pick a later date |
+| A current verified practitioner license is required for this jurisdictional action. | Record the license authority |
+| An effective signed listing engagement with marketing authority is required. | Record the engagement |
+| Effective public_site publication authority is required | Record publication authority |
+| Effective through must be after effective from. | Fix the dates |
+| A single current allocation batch is required | Reverse or review conflicting batches |
+| Commission, batch, and accounting reconciliation reference are required. | Supply all three |
+| Every export item requires a document and SHA-256 checksum. | Add checksums |
+| Cannot create the first account: an owner membership already exists. | `/dashboard/init` only works on an empty database |
+| Listing does not show on the site | Status is not `active` or `coming_soon`, or authority is missing, or photos are not under `/images/real-estate/` |
+| Password reset says email is not set up | Set `SMTP_HOST` |
+| Outbox events stay `pending` | Run your dispatcher, or replay failed events |

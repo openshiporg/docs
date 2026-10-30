@@ -31,7 +31,7 @@ Routes live under `app/(storefront)/`. There is no country or region segment. Sc
 
 Named documents in `lib/queries.ts`: `GetRoomTypes`, `GetAvailableRooms`, `GetStayCalendar`, `GetStorefrontQuote`, `GetRoomType`, `GetRatePlans`, `CreateStorefrontBooking`, `GetBookingPaymentProviders`, `InitiateBookingPaymentSession`, `GetActiveBookingPaymentSession`, `CompleteBookingPayment`, `CancelBooking`, `VerifyGuestBooking`, `GetGuestBooking`, `GetBookingsByEmail`. Other screens use inline documents such as `PublicHotelSettings`, `GuestCancellationQuote`, `RequestBookingModification`, `SubmitHotelContactMessage`, `GuestAccountStatus`, and `GuestAccountBookings`.
 
-## Journey boundaries
+## Booking rules
 
 - Every booking needs a signed quote token from `storefrontQuote`. Do not compute prices in the client.
 - `createStorefrontBooking` creates a `pending` hold that a worker cancels after 30 minutes if it is not paid or confirmed.

@@ -37,9 +37,9 @@ Route files are at the top of `app/` (there is no route group). Screens live in 
 
 - The public site reads only the firm's published settings. If no firm is set up, it shows a neutral, unconfigured site.
 - Customer accounts open only when the firm's `PublicSitePolicy` has accounts enabled and a privacy notice. Booking opens only when booking is enabled and a first-contact notice is published.
-- Exactly one active firm must exist. A firm marked as demo is not served unless it runs on an owned offline fixture.
+- Exactly one active firm must exist.
 - Anonymous intake without an account is off (`PUBLIC_INTAKE_ENABLED = false`).
-- Booking slots are 9:00 to 17:00 on weekdays. Fees are shown but not collected; there is no payment step.
+- Booking slots are 9:00 to 17:00 on weekdays. Fees are shown on the booking page; payment is arranged with the firm.
 - Portal clients see only resources shared with them through `PortalShare`, under an active `PortalMatterAccess` grant. Drafts and internal notes in a thread are not shown.
 
 Storefront customers are `User` records without a firm membership. Portal clients are separate `PortalAccount` records with their own session cookie.

@@ -1,0 +1,46 @@
+---
+title: Leads and showings
+description: Capture, route, and follow up on leads; schedule and complete showings.
+icon: Users
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/leads`, `/leads/[id]`, `/showings`, `/showings/[id]`. Need `canManageLeads` and `canManageShowings`.
+
+## Leads
+
+Sources are `website`, `zillow`, `referral`, `open_house`, `phone`, and `import`. Intent is `buy`, `rent`, `sell`, `invest`, or `unknown`. A lead needs a valid email or phone.
+
+Status: `new` → `attempted_contact` → `qualified` → `tour_scheduled` → `offer` → `closed` or `lost` (`transitionLeadStatus`).
+
+- **New lead** drawer creates a lead by hand.
+- `addLeadActivityCommand` logs a call, note, or message to the timeline.
+- Duplicate groups appear on the leads page; `resolveDuplicateLeadCommand` merges them.
+
+## Showings
+
+`requestPropertyShowing` from the site creates a `requested` showing. Staff can also use `scheduleShowingForLeadCommand`.
+
+<Steps>
+<Step>
+
+### Confirm
+`reviewShowingCommand` confirms. It fails if the property or agent already has a confirmed showing at that time.
+
+</Step>
+<Step>
+
+### Complete
+`completeShowingWithFeedback` completes it and stores `ShowingFeedback`.
+
+</Step>
+<Step>
+
+### Or close
+`transitionShowingStatus` marks `no_show` or `cancelled`.
+
+</Step>
+</Steps>
+
+Showing types are `in_person`, `virtual`, and `open_house`. Length comes from `showingDurationMinutes` in store settings (15 to 240 minutes). Requests must be in the future, within one year.

@@ -4,17 +4,13 @@ description: Short-term accommodation listings, quotes, reservations, guest trip
 icon: KeyRound
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-rental) · [Live demo](https://rental.openship.org) · [Catalog](https://openship.org/products/openfront-rental)
+[Source](https://github.com/openshiporg/openfront-rental) · [Live site](https://rental.openship.org) · [Catalog](https://openship.org/products/openfront-rental)
 
 Openfront Rental is a self-hostable app for people who manage short-term accommodation. Guests search stays, get a quote, reserve, sign a stay agreement, and follow a private trip link. Hosts use the dashboard for properties, listings, calendar, pricing, reservations, guests, inbox, tasks, payments, payouts, reports, channels, reviews, and store settings.
 
 It is built with Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreSQL. To install it, see [Getting started](/docs/openfront/rental/getting-started).
 
-<Callout type="warn">
-Card payments use Stripe in test mode only. Live keys are rejected. No Airbnb, Vrbo, Booking.com, or other OTA adapter exists. Calendar exchange is iCalendar availability only. The outbox has no delivery target installed. See [Limitations](#limitations).
-</Callout>
+Card payments use Stripe with `sk_test_` and `pk_test_` keys. Calendar exchange uses iCalendar text. Outbox events wait for a dispatcher you register in `features/keystone/workers/outboxDispatchers.ts`.
 
 ## Guest and host surfaces
 
@@ -85,7 +81,7 @@ Onboarding runs from the dashboard. It calls `rentalOnboarding` with `mode` set 
 There are three templates:
 
 - **Minimal**: one home (Pineglass) with its amenities, collection, one guest, and one stay.
-- **Full**: the whole Housekind sample portfolio from `features/platform/onboarding/lib/seed.json`. That is store settings, the Housekind Collective host, amenities, collections, five properties with units and listings, a cancellation policy, house rules, rates, calendar blocks, guests, sample reservations, tasks, owner statement and payout records, a manual payment provider, a Stripe card provider record, and one availability-only iCalendar connection.
+- **Full**: the whole Housekind portfolio from `features/platform/onboarding/lib/seed.json`. That is store settings, the Housekind Collective host, amenities, collections, five properties with units and listings, a cancellation policy, house rules, rates, calendar blocks, guests, reservations, tasks, owner statement and payout records, a manual payment provider, a Stripe card provider record, and one availability-only iCalendar connection.
 - **Custom**: the full template merged with your own JSON, validated by a schema.
 
 The final step checks readiness for records that onboarding never creates, such as quotes, amendments, damage claims, refunds, webhook events, channel reservations, and outbox events. Those only come from real activity.
@@ -121,14 +117,3 @@ Password reset and guest mail use SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `
 ### AI assistant and MCP
 
 `/api/completion` powers the dashboard assistant through OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`). `/api/mcp-transport/[transport]` exposes MCP tools that forward the caller's session cookie to GraphQL: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`, and `stayCommand`. `stayCommand` runs a subset of host commands (`transition`, `conversation_reply`, `conversation_status`, `review_moderate`, `catalog_transition`, `refund_decline`, `payment_cancel_attempt`, `payment_record_manual`) and requires `confirm: true`.
-
-## Limitations
-
-- Card payments are Stripe test mode only. There is no live card processing, payout transfer, or deposit custody.
-- No OTA adapter (Airbnb, Vrbo, Booking.com, Expedia) is implemented. Channel records are local state.
-- iCalendar exchange is availability only and has no scheduled fetch.
-- The outbox has no installed dispatcher, so notifications are recorded but not delivered.
-- Owner statements and payouts are records. They do not move money.
-- The repository has no license file and no checked-in `.env.example`.
-- Host scope comes from access rules in source. Test cross-host access, membership changes, token expiry, and concurrent bookings against your own deployment before you take real bookings.
-- The app does not handle identity verification, guest screening, property licensing, tax remittance, insurance, or physical access.

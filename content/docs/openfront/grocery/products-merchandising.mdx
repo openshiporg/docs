@@ -1,0 +1,46 @@
+---
+title: Products and merchandising
+description: Products, departments, coupons, product information, and CSV catalog import.
+icon: Tags
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Both pages need `canManageProducts`.
+
+## Products
+
+`/dashboard/platform/products`, `/create`, and `/[id]` use the generated `products` queries and `createProduct` and `updateProduct`.
+
+Key fields: `title`, `handle`, `sku`, `status` (`draft`, `published`, `archived`), `price`, `compareAtPrice`, `costPrice`, `pricingMethod` (`unit`, `weight`, `volume`), `unitOfMeasure` (`each`, `lb`, `oz`, `kg`, `g`, `L`, `mL`, `gallon`, `quart`, `pint`), `department`, `supplier`, `taxRateBasisPoints`, `isPerishable`, `shelfLife`, `lowStockThreshold`, `organicCertified`, `variantOf` and `variantLabel`.
+
+Only `published` products appear on the storefront. Cost, supplier, and internal fields are readable only with `canManageProducts`.
+
+## Departments
+
+`/dashboard/platform/merchandising` manages `Department`: `name`, `handle`, `description`, `sortOrder`, `isActive`, and `temperatureZone` (`ambient`, `refrigerated`, `frozen`).
+
+## Coupons
+
+A `Coupon` has `code`, `discountType` (`percentage`, `fixed`, `bogo`), `discountValue`, `minPurchase`, `maxUses`, `currentUses`, `validFrom`, `validTo`, department filters, and excluded products. Shoppers enter the code at checkout. A coupon that has been used cannot be removed.
+
+## Product information
+
+`updateProductInformation` saves a new `ProductInformationVersion` (ingredients, allergens, nutrition and similar) so earlier orders keep the information the shopper saw.
+
+## Import a catalog
+
+<Steps>
+<Step>
+### Prepare the CSV
+Columns: `sku`, `title`, `priceCents`, `unitOfMeasure`, `pricingMethod`, `departmentId`, `supplierId`, `taxRateBasisPoints`. Up to 500 rows and 1 MB. Use `schemaVersion: 1`.
+</Step>
+<Step>
+### Dry run
+`importGroceryCatalog` with `mode: "dry_run"`, a `sourceSystem`, `sourceBatchId`, and `idempotencyKey`. The result includes a payload hash and a review hash.
+</Step>
+<Step>
+### Commit
+Run again with `mode: "commit"` and the returned `expectedPayloadHash` and `expectedReviewHash`. If the catalog changed after the review, it fails with "Catalog changed after review; run a fresh dry run before committing".
+</Step>
+</Steps>

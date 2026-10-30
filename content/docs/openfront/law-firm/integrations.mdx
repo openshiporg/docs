@@ -1,0 +1,25 @@
+---
+title: Integrations, API keys, and agents
+description: Connections, webhooks, OAuth, API keys, and supervised agents.
+icon: PlugZap
+---
+
+Route: `/dashboard/platform/integrations`. Needs `canManageIntegrations`.
+
+## Connections
+
+`IntegrationConnection` records have a kind: email, calendar, document storage, signature, payment, court, accounting, or other. Credentials are encrypted with `INTEGRATION_CREDENTIAL_KEY`. Use `rotateIntegrationCredential` and `transitionIntegrationConnection`. `ExternalRecordLink` maps local records to external IDs.
+
+## Webhooks
+
+`WebhookSubscription` rows define destinations. `enqueueWebhookDelivery` queues an event and `rotateWebhookSigningSecret` rotates the secret. The worker sends each delivery with an `x-openfront-signature` header to hosts in `WEBHOOK_ALLOWED_HOSTS`, recording `WebhookDeliveryAttempt` rows.
+
+## API keys and OAuth
+
+`issueApiKey` shows the secret once; `revokeApiKey` removes it. `issueOAuthClient` and `revokeOAuthClient` manage clients. OAuth uses `/api/oauth/authorize` and `/api/oauth/token` with authorization code, S256 PKCE, and refresh token rotation. Bearer tokens are accepted at `/api/graphql`.
+
+## Agents
+
+Agent principals, credentials, and grants are scoped to one firm and optionally one matter. Manage them on the generic Models pages.
+
+`requestAgentAction` → `reviewAgentAction` → `executeAgentAction` for action types such as `task.draft`, `matter.transition`, `invoice.issue`, `trust.post`, and `communication.send`. Every step writes an `AgentActionEvent`.

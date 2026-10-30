@@ -1,0 +1,17 @@
+---
+title: Payment providers
+description: Manual, Stripe, and the signed webhook provider.
+icon: Wallet
+---
+
+Adapters live in `features/integrations/payment`.
+
+| Code | Use |
+| --- | --- |
+| `pp_system_default` | Manual. A host records money already received and attests manual refunds |
+| `pp_stripe_stripe` | Stripe card payments. Enabled with `STRIPE_ENABLED=true`, `sk_test_` and `pk_test_` keys, and `STRIPE_WEBHOOK_SECRET`. Card checkout is offered for test bookings |
+| `pp_signed_test` | Webhook-only provider using `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET`. It cannot create payments or refunds |
+
+Webhooks arrive at `/api/payment-webhooks/[providerCode]`. The route limits body size and read time before verifying the signature. Events are stored as `PaymentWebhookEvent`.
+
+Guests see "Card payment is currently unavailable" when no card provider is enabled, and "Card payment is only available for test bookings" otherwise; they arrange payment with the host.

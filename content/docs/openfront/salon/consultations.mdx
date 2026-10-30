@@ -1,0 +1,45 @@
+---
+title: Consultations
+description: Publish consent forms, collect signed answers, and review them before service.
+icon: ClipboardCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/consultations` needs `canManageCareRecords`. The manager flag does not grant it.
+
+## Models
+
+- `FormTemplate`: name, type (`intake`, `consent`, `medical`, `waiver`), description, questions, `isActive`, and the categories that require it
+- `ConsultationTemplateVersion`: an immutable published version with `version`, `title`, `purpose`, `questions`, `effectiveFrom`, and `effectiveUntil`
+- `ConsultationSubmission`: the client's `answers`, signer (`self`, `parent`, `guardian`, `representative`), `signatureEvidence`, hashes, and `reviewStatus`
+- `ConsultationReview`: append-only review rows
+
+## Publish a form
+
+<Steps>
+<Step>
+### Create the template
+Create the template and mark it active with `CreateFormTemplate` and `SetFormTemplateActive`.
+</Step>
+<Step>
+### Publish a version
+`publishConsultationTemplateVersion` takes `templateId`, `version`, `title`, `purpose`, `questions`, `effectiveFrom`, optional `effectiveUntil`, optional `supersedesId`, and an idempotency key. A version is not editable after it is published.
+</Step>
+</Steps>
+
+## Review a submission
+
+Clients submit from `/account` with `submitConsultation`. Staff then call `reviewConsultation` with a status and a reason:
+
+- `submitted` (initial)
+- `reviewed`
+- `needs_clarification`
+- `accepted_for_service`
+- `deferred`
+
+A new submission can supersede an earlier one with `supersedesId`; the old one is kept with `supersededBy` set.
+
+## Errors
+
+"Consultation template version is not currently effective" means the date falls outside `effectiveFrom` and `effectiveUntil`. "Consultation supersession is invalid" means the target does not belong to the same client.

@@ -1,0 +1,34 @@
+---
+title: Run a delivery route
+description: Build a route from packed orders, dispatch it, and close each stop.
+icon: Truck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Check capacity
+On `/dashboard/platform/delivery` confirm the window is active and has capacity.
+</Step>
+<Step>
+### Build the route
+Choose date, window, driver, and the packed orders for that window.
+</Step>
+<Step>
+### Dispatch
+Set the route to `in_progress`. Orders become `out_for_delivery`.
+</Step>
+<Step>
+### Resolve stops
+For each stop record `delivered` with recipient and proof, or `failed` or `refused` with a reason. Add custody and condition evidence.
+</Step>
+<Step>
+### Reschedule returns
+For failed or refused stops, reschedule into an open window or mark `returned`.
+</Step>
+<Step>
+### Complete the route
+Set the route to `completed`.
+</Step>
+</Steps>

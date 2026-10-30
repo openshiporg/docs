@@ -1,0 +1,52 @@
+---
+title: GraphQL API
+description: Public, workflow, and integration operations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. `schema.graphql` is the reference. Workflow mutations take an `operationKey` and usually an `expectedVersion`.
+
+## Public
+
+| Operation | Purpose |
+| --- | --- |
+| `hospitalBranding` | Practice profile |
+| `bookableAppointmentTypes`, `bookableProviders` | Booking catalog |
+| `availableAppointmentSlots(appointmentTypeId, providerId, facilityId, date)` | Open slots |
+| `requestAppointment(...)` | Anonymous, rate limited |
+| `intakeFormByAccessCode`, `submitIntakeForm` | One-time intake |
+
+## Workflow mutations
+
+| Area | Mutations |
+| --- | --- |
+| Visits | `transitionAppointment`, `arriveAppointment`, `transitionCareQueue`, `openEncounter`, `transitionEncounter`, `reviewEpisodePolicy`, `recoverEpisodeClosure` |
+| Patients | `registerPatient`, `recordConsentDecision`, `issueIntakeForm`, `transitionIntakeReview` |
+| Inpatient | `reserveBed`, `releaseBedReservation`, `admitPatient`, `transitionAdmission`, `transitionBedReadiness` |
+| Clinical | `placeMedicalOrder`, `collectSpecimen`, `recordLabResult`, `correctLabResult`, `recordPrescription`, `scheduleProcedure`, `establishCarePlan`, `draftClinicalDocument`, `amendClinicalDocument`, `recordVitalSign` and their `transition…` pairs |
+| Billing | `recordPatientCoverage`, `prepareInsuranceClaim`, `recordPatientPayment`, `requestPatientRefund` and `transition…` pairs |
+| Communications | `sendSecurePatientMessage`, `transitionPatientMessage`, `registerCommunicationTemplate`, `reviseCommunicationTemplate`, `setCommunicationPreference` |
+| Supplies | `registerInventoryItem`, `moveInventory`, `previewInventoryImport`, `applyInventoryImport`, `rollbackInventoryImport` |
+| Platform | `installIntegration`, `issueMachineCredential`, `dispatchIntegrationOutbox`, `dispatchClinicalOutbox`, `linkExternalIdentity`, `establishRetentionPolicy`, `placeRecordHold`, `recordRetentionDisposition`, `requestExportJob`, `processExportJob` |
+| Accounts | `bootstrapHospital`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`, `updateActiveUser`, `applyHospitalOnboarding` |
+
+## Helper queries
+
+`appointmentScheduleConflicts`, `workflowPatientCandidates`, `workflowEncounterCandidates`, `labResultReadback`, `episodePolicyWorkspace`, `episodeClosureWorkspace`, `episodeChildWorkspace`.
+
+## Example
+
+```graphql
+mutation Confirm($id: ID!, $v: Int!) {
+  transitionAppointment(
+    operationKey: "confirm-1"
+    appointmentId: $id
+    toStatus: "confirmed"
+    expectedVersion: $v
+  ) { __typename }
+}
+```
+
+## Other routes
+
+`/api/health`, `/api/exports/{jobId}`, `/api/integrations/{installationKey}/webhook`, `/api/internal/outbox/dispatch`, `/api/payment-webhooks/[providerId]`, and `/api/mcp-transport/[transport]` (returns 404 here).

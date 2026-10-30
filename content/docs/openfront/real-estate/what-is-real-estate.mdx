@@ -1,0 +1,35 @@
+---
+title: What is Openfront Real Estate
+description: Surfaces, concepts, and the path from listing to closed deal.
+icon: House
+---
+
+Openfront Real Estate runs one brokerage.
+
+| Surface | Who | Where |
+| --- | --- | --- |
+| Public listing site | Buyers, renters, sellers | `/`, `/listings`, `/listings/[slug]`, `/account` |
+| Staff dashboard | Owners, admins, team leads, agents, coordinators | `/dashboard/platform` |
+| GraphQL API | Both | `/api/graphql` |
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Brokerage | The tenant. The storefront serves the primary one |
+| Membership | A user's seat: `owner`, `admin`, `team_lead`, `agent`, `coordinator`, `analyst` |
+| Property | A listing, `sale` or `rent` |
+| Authority records | License, listing engagement, publication, and representation records that gate publishing and actions |
+| Lead | A person with an interest, deduplicated per listing by an email or phone identity key |
+| Deal | A transaction with offers, milestones, documents, and closing records |
+| Ledger | Append-only commission entries |
+
+## Path of a transaction
+
+1. Create a listing and record its authority. It appears on the site when `active` or `coming_soon`.
+2. A visitor asks a question or requests a tour. A `Lead` is created or reused and routed to an agent.
+3. The agent confirms a showing and records feedback.
+4. A deal is created, offers are exchanged, and the checklist, disclosures, inspections, title, and escrow are tracked.
+5. The deal closes and commissions move through projected, approved, and paid.
+
+See [Listings](/docs/openfront/real-estate/listings), [Leads and showings](/docs/openfront/real-estate/leads-showings), and [Roles and permissions](/docs/openfront/real-estate/roles-permissions).

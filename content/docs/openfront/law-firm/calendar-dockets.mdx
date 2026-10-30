@@ -1,0 +1,44 @@
+---
+title: Calendar, dockets, and tasks
+description: Deadlines, tasks, courts, and docket entries.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Calendar and tasks
+
+`/dashboard/platform/work` lists deadlines, tasks, and consultations. Drill into `/[kind]/[recordId]`. Use `transitionLegalTask` for tasks and `transitionDeadline` for deadlines. `reviseDraftDeadline` edits a deadline before it is confirmed.
+
+## Courts and dockets
+
+`/dashboard/platform/dockets` and `/[docketId]` hold `Court`, `Docket`, and `DocketEntry` records.
+
+<Steps>
+<Step>
+
+### Record
+`recordDocketEntry` adds an entry to a docket.
+
+</Step>
+<Step>
+
+### Revise
+`reviseDocketEntry` corrects it.
+
+</Step>
+<Step>
+
+### Verify
+`verifyDocketEntry` marks that a person checked it against the court record.
+
+</Step>
+<Step>
+
+### Link deadlines
+Deadlines linked to an entry show on the docket detail.
+
+</Step>
+</Steps>
+
+Deadlines are entered and verified by staff.

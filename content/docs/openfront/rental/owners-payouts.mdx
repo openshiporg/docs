@@ -1,0 +1,14 @@
+---
+title: Owner statements and payouts
+description: Generate statements and track owner payouts.
+icon: Landmark
+---
+
+Route: `/dashboard/platform/payouts`, `/statements/[id]`. Needs `canManagePayouts`.
+
+1. Assign owners to properties (`PropertyOwnerAssignment`) with dates and basis points. An assignment cannot end on or before its start.
+2. `generateOwnerStatement` builds a statement for a period from reservations, refunds, expenses, and adjustments, with `managerCommissionCents` and `ownerEarningsCents`.
+3. `transitionOwnerStatement`: `draft` → `approved` → `sent` → `paid`, or `voided`.
+4. Track `Payout` rows: `scheduled`, `processing`, `paid`, `failed`, `reversed`, with gross, fees, refunds, and net.
+
+`ownerFinanceSummary` gives the summary. These pages record transfers; they do not send money.

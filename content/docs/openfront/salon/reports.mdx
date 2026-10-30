@@ -1,0 +1,27 @@
+---
+title: Reports
+description: Revenue, refunds, appointments, and close-out tables by payment method and stylist.
+icon: ChartNoAxesCombined
+---
+
+`/dashboard/platform/reports` needs `canViewReports`. Pick a range with `?range=`: `today`, `week` (last 7 days), `month` (last 30 days), or `all`. Days are counted in the first active location's timezone.
+
+## Metrics
+
+- Net payments (including tax and tips)
+- Tips
+- Refunds
+- Unpaid commissions
+- Completed appointments, and cancelled plus no-show appointments
+
+## Close-out tables
+
+**By payment method**: services, retail, tax, tips, refunded, and net.
+
+**By stylist**: services, retail, and tips (tips split by service value).
+
+Source data is completed, partially refunded, and refunded payments in the range. The data comes from `salonOperationsWorkspace(section: "reports", range: ...)`.
+
+## Other workspace sections
+
+The same query backs the list pages for `clients`, `catalog`, `benefits`, `inventory`, `engagement`, `administration`, and `integrations`. Each is guarded by the matching role flag.

@@ -1,0 +1,38 @@
+---
+title: GraphQL API
+description: Public, customer, and operator operations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`.
+
+## Public and customer
+
+| Queries | Mutations |
+| --- | --- |
+| `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `customerShowingHistory`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes` | `submitListingInquiry`, `requestPropertyShowing`, `registerRealEstateCustomer`, `cancelCustomerShowing`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser` |
+
+Customer sign-up needs a password of at least 12 characters.
+
+## Operator queries
+
+`platformContacts`, `platformLeadDetail`, `platformShowingRequestViewer`, `platformListings`, `platformShowings`, `platformShowingDetail`, `scheduledShowingReceipt`, `platformPipeline`, `platformPeople`, `platformReports`, `platformOperations`, `platformStorefrontSettings`, `domainOutboxEventStatus`.
+
+## Transitions
+
+`transitionLeadStatus`, `transitionPropertyStatus`, `transitionShowingStatus`, `reviewShowingCommand`, `transitionOpenHouseStatus`, `transitionOfferStatus`, `transitionDealStage`, `transitionCommissionStatus`, `transitionDisclosureStatus`, `transitionTransactionMilestoneStatus`. They take an idempotency key and can check the expected status or `updatedAt`.
+
+## Commands
+
+| Group | Commands |
+| --- | --- |
+| Leads and showings | `addLeadActivityCommand`, `resolveDuplicateLeadCommand`, `scheduleShowingForLeadCommand`, `completeShowingWithFeedback` |
+| Deals | `createOfferCommand`, `createCounterOfferCommand`, `createChecklistItemCommand`, `transitionDocumentCommand`, `transitionInspectionCommand`, `updateDealFinancialTermsCommand`, `updateDealNextStepCommand` |
+| Authority | `recordPractitionerLicenseAuthorityCommand`, `recordListingEngagementAuthorityCommand`, `recordListingPublicationAuthorityCommand`, `recordRepresentationAuthorityCommand`, `appendDocumentEvidenceEventCommand` |
+| Commission | `proposeCommissionAllocationCommand`, `approveCommissionAllocationCommand`, `recordCommissionReceiptCommand`, `reverseCommissionLedgerEntryCommand`, `reconcileCommissionLedgerCommand` |
+| Records | `recordRetentionPolicyCommand`, `assignTransactionFileRetentionCommand`, `recordTransactionLegalHoldCommand`, `createTransactionExportManifestCommand` |
+| Feeds | `queueSourceImportCommand`, `transitionListingSyndicationCommand`, `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand`, `replayDomainOutboxEvent` |
+| People | `inviteBrokerageMemberCommand`, `suspendBrokerageMemberCommand`, `transitionAgentTaskCommand` |
+| Setup | `runRealEstateOnboarding`, `dismissRealEstateOnboarding`, `updatePlatformStorefrontSettings` |
+
+A reused idempotency key with different input is rejected. Generated CRUD handles listings, leads, media, open houses, deals, tasks, routing rules, inspections, escrow, title orders, mortgage applications, and commissions under list access and tenant hooks.

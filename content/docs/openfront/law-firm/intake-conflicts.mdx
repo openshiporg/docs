@@ -1,0 +1,56 @@
+---
+title: Intake and conflicts
+description: Prospects, consultations, conflict searches, and conversion to a matter.
+icon: Inbox
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/intake`. Needs `canManageIntake`; conflict work needs `canRunConflictChecks` and `canResolveConflicts`.
+
+## Intake
+
+Create with `startClientIntake`. Add parties with `addIntakeParticipant` and `changeIntakeParticipant`. Move it with `transitionIntake`.
+
+`new` → `screening` → `conflict_review` → `consultation` → `decision` → `converted`, `declined`, or `withdrawn`.
+
+## Consultations
+
+`scheduleConsultation` sets host and time; `transitionConsultation` moves `requested` → `scheduled` → `completed`, `cancelled`, or `no_show`. Consultations also appear on `/dashboard/platform/work`.
+
+## Conflict check
+
+<Steps>
+<Step>
+
+### Request
+`requestConflictCheck` for exactly one intake or matter. An initial search term (500 characters or fewer) is required.
+
+</Step>
+<Step>
+
+### Search
+`addConflictSearchTerm` for each name. `addConflictMatch` records a hit with a match type and score, linked to exactly one verified contact, matter, or matter party.
+
+</Step>
+<Step>
+
+### Dispose
+`recordConflictDisposition` records each reviewer's outcome and rationale.
+
+</Step>
+<Step>
+
+### Finalize
+`finalizeConflictCheck` with `cleared` or `conflict_found`. Clearance needs non-empty search terms, completed-search evidence, and no unresolved disposition.
+
+</Step>
+<Step>
+
+### Convert
+`convertIntakeToMatter` creates the matter, parties, and team.
+
+</Step>
+</Steps>
+
+Check status: `requested` → `running` → `review_required` → `cleared` or `conflict_found`.

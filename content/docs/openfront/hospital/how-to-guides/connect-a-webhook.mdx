@@ -1,0 +1,26 @@
+---
+title: Connect an outbound webhook
+description: Send workflow events to your own endpoint.
+icon: Webhook
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Prepare
+Set `INTEGRATION_SECRET_ENCRYPTION_KEY` and `OUTBOX_WORKER_SECRET`, and run `npm run worker:outbox`.
+</Step>
+<Step>
+### Install
+On the integrations tab, add an installation with an HTTPS URL and the event types you want.
+</Step>
+<Step>
+### Verify signatures
+Check the `x-openfront-signature` HMAC with your signing secret.
+</Step>
+<Step>
+### Watch deliveries
+Failed deliveries retry, then dead-letter. Dispatch manually to retry.
+</Step>
+</Steps>

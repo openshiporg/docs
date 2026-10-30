@@ -1,0 +1,32 @@
+---
+title: Clients
+description: The client directory, profile, care details, notes, and color formulas.
+icon: ContactRound
+---
+
+Clients live at `/dashboard/platform/clients` and need `canManageClients`. A `Client` is either linked to a `User` account or a guest with `guestName`, `guestEmail`, and `guestPhone`.
+
+## Client profile
+
+`/dashboard/platform/clients/[id]` shows visit history, lifetime value, and care details:
+
+- `allergies`, `skinSensitivities`, `notes`
+- `skinType`, `hairType`, `hairTexture`, `scalpCondition`
+- `preferredStylist`, `homeLocation`
+- `photoConsent` and `marketingConsent`
+- `firstVisit`, `lastVisit`, `totalVisits`, `lifetimeValue`
+
+Edit care details with `updateClientCareProfile`. Add notes (`ClientNote`) and color formulas (`ColorFormula`: formula name, stylist, appointment) from the same page.
+
+## Creating and editing clients
+
+Staff create and edit clients through `saveSalonRecord` with `kind: "client"`: name, phone, email, and home location. Changing the email of an existing account is refused: "Account email changes require the separate verified identity workflow". A new client whose email matches an existing account is refused so identities are not merged.
+
+## Self-service
+
+Clients sign up at `/account/signup` (`registerSalonCustomer`) and see their own visits, receipts, benefits, points, and gift cards at `/account`.
+
+## Related
+
+- [Consultations](/docs/openfront/salon/consultations)
+- [Loyalty and reviews](/docs/openfront/salon/loyalty-reviews)

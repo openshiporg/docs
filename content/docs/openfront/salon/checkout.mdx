@@ -1,0 +1,73 @@
+---
+title: Checkout
+description: Close a visit with services, retail, discount, tip, and package or membership credit.
+icon: ReceiptText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The checkout queue at `/dashboard/platform/checkout` lists appointments that are ready to be paid. Open one at `/dashboard/platform/checkout/[id]`. It needs `canManagePayments`.
+
+## The ticket
+
+The ticket starts from the appointment's line items. You can add:
+
+- **Retail items**: products from the location's stock, up to 50 lines
+- **Discount**: a manual amount, allocated across lines
+- **Tip**: an amount in cents
+- **Client package** or **client membership**: pick one the client holds
+
+An appointment is eligible when its status is `confirmed` or `in_progress`, it has line items, and it has no payment or transaction yet.
+
+## Run checkout
+
+<Steps>
+<Step>
+### Open the ticket
+Choose the appointment from the queue. Benefits and local stock load with it.
+</Step>
+<Step>
+### Add retail, discount, and tip
+Retail quantity must be between 1 and 1000 per item and the product must have enough stock.
+</Step>
+<Step>
+### Apply a benefit
+A membership applies its `discountPercent` to services it includes. A package covers its included services up to the remaining value (`remainingValue`). Benefits need a client with a linked account.
+</Step>
+<Step>
+### Choose tender and complete
+`completeAppointmentCheckout` takes `cash`, `credit_card`, or `debit_card` as already-collected tender, plus an idempotency key. Tax is `TAX_RATE` (default 0.08) on the discounted subtotal.
+</Step>
+</Steps>
+
+## What checkout writes
+
+In one serializable transaction it creates:
+
+- a `SalonTransaction` with line items and a `Payment`
+- `InventoryMovement` rows of type `sale` for retail
+- one `Commission` per service line at the stylist's `baseCommissionRate`
+- `GratuityLedgerEntry` allocations for the tip, split by service value among assigned practitioners
+- `ClientPackageUsage` when package credit is used
+- loyalty points from the active `LoyaltyProgram` (`pointsPerDollar` on the taxable amount)
+- the deposit credit, if one was paid
+- appointment status `completed`
+
+Resubmitting with the same idempotency key returns the existing settlement.
+
+## Totals
+
+Subtotal minus membership and manual discounts gives the taxable amount. Tax and tip are added. Package credit and deposit credit are subtracted to give the amount due. Every amount is integer cents and allocations always sum exactly.
+
+## Errors you may see
+
+| Message | Cause |
+| --- | --- |
+| Appointment is not eligible for checkout | Status is not `confirmed` or `in_progress` |
+| Appointment is already checked out | A payment or transaction exists |
+| Appointment has no payable line items | Nothing to charge |
+| Retail product is unavailable | Not enough stock |
+| Only cash or an already-collected external terminal payment can be recorded | Another tender was submitted |
+| Tip cannot be conserved without an assigned practitioner | Tip with no stylist on the lines |
+
+See [Troubleshooting](/docs/openfront/salon/troubleshooting).

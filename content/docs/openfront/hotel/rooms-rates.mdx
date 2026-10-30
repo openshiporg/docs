@@ -1,0 +1,48 @@
+---
+title: Rooms and rates
+description: Physical rooms, room types, rate plans, derived rates, and inventory controls.
+icon: DoorOpen
+---
+
+Both pages need `canManageRooms`.
+
+## Rooms
+
+`/dashboard/platform/rooms` (`hotelRoomOperations`) shows readiness by floor with housekeeping and maintenance state. Change a room with `updateRoomOperationalStatus`.
+
+| `Room.status` | Meaning |
+| --- | --- |
+| `vacant` | Ready to assign |
+| `occupied` | Guest in room |
+| `cleaning` | Being cleaned |
+| `maintenance` | Under repair |
+| `out_of_order` | Removed from sale |
+
+A room with assignment history cannot change room type. Create a new room record to reclassify it.
+
+Room types and rooms are created on the generic `/dashboard/room-types` and `/dashboard/rooms` pages. A `RoomType` holds `name`, descriptions, `baseRateMinor`, `maxOccupancy`, `bedConfiguration` (`king`, `queen`, `double_queen`, `twin`, `double_twin`, `king_sofa`, `queen_sofa`, `suite`), `squareFeet`, and images.
+
+## Rate plans
+
+`/dashboard/platform/rate-plans` (`hotelRateOperations`).
+
+| Field | Use |
+| --- | --- |
+| `baseRateMinor` | Nightly rate in minor units |
+| `minimumStay`, `maximumStay` | Stay limits |
+| `advanceBookingMin`, `advanceBookingMax` | Booking window |
+| `cancellationPolicy` | `flexible`, `moderate`, `strict`, `non_refundable` |
+| `mealPlan` | `room_only`, `breakfast`, `half_board`, `full_board`, `all_inclusive` |
+| `validFrom`, `validTo`, `applicableDays` | When it applies |
+| `isPublic`, `isPromotional`, `promoCode` | Visibility |
+| `status` | `active`, `inactive`, `draft` |
+
+Publish or unpublish with `updateRatePlanPublication`. Publication can require approval. `SeasonalRate` rows adjust a plan by date.
+
+## Derived rates
+
+`updateHotelDerivedRate` creates a rate computed from another plan (`hotelDerivedRateWorkspace`).
+
+## Inventory controls
+
+`updateRoomInventoryControls` sets day-level controls per room type on `RoomInventory`, such as closing a date or limiting sales.

@@ -1,0 +1,50 @@
+---
+title: Trust accounting
+description: Trust accounts, client ledgers, postings, and three-way reconciliation.
+icon: Landmark
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/accounting`. Needs `canManageTrust`.
+
+## Structure
+
+| Record | Purpose |
+| --- | --- |
+| `TrustAccount` | The bank account |
+| `TrustLedgerAccount` | Client or matter ledger inside it |
+| `TrustTransaction` and `TrustLedgerEntry` | Balanced postings |
+| `TrustBalanceSnapshot` | Balances at a date |
+| `TrustReconciliation` | Three-way reconciliation |
+
+Setup: `setTrustAccountBankIdentity` (only while the account is pending and has no postings), `transitionTrustAccount`, `transitionTrustLedgerAccount`. Close every client ledger, each at zero balance, before closing the account.
+
+## Posting
+
+`postTrustTransaction` needs at least two entries that balance, an effective date, an active trust account, and an idempotency key of 12 to 160 characters. A client-liability entry needs a ledger account. A source payment or refund must be a same-account trust deposit in the same currency, and a transaction cannot reference both.
+
+Postings are never edited. Correct with a reversing transaction.
+
+## Reconciliation
+
+<Steps>
+<Step>
+
+### Prepare
+`prepareTrustReconciliation` for a period with the statement balance.
+
+</Step>
+<Step>
+
+### Revise
+`reviseTrustReconciliation` while it is a draft.
+
+</Step>
+<Step>
+
+### Complete
+`transitionTrustReconciliation` once bank, book, and client ledgers agree.
+
+</Step>
+</Steps>

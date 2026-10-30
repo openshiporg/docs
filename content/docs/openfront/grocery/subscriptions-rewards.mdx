@@ -1,0 +1,26 @@
+---
+title: Recurring baskets and rewards
+description: Recurring baskets, due runs, and the loyalty program.
+icon: Repeat
+---
+
+`/dashboard/platform/subscriptions` needs `canManageOrders`. Data comes from `groceryRecurringOverview`.
+
+## Recurring baskets
+
+A `Subscription` links a customer and product with `quantity`, `frequency` (`weekly`, `biweekly`, `monthly`), `nextDeliveryDate`, `pausedUntil`, and a status. Customers manage them at `/subscriptions` with `manageGrocerySubscription(action, ...)`:
+
+| Action | Effect |
+| --- | --- |
+| `create` | Quantity 1 to 10000, frequency, first run time |
+| `pause` | Needs `pausedUntil`. Not allowed on an inactive subscription |
+| `resume` | Back to active |
+| `skip` | Moves to the next occurrence |
+| `cancel` | Cancels it and any pending runs |
+| `prepare` | Builds the basket for a due run |
+
+A due run prepares a basket for the customer to check out. It does not place an order. Staff press run due baskets on this page (`processDueGrocerySubscriptions`). The `worker:subscriptions` process does the same on a schedule.
+
+## Loyalty
+
+`configureGroceryLoyalty(name, earnPointsPer100Cents, redeemPointsPer100Cents, minimumRedemptionPoints, isActive)` sets the store's single program. Customers see points with `getGroceryLoyalty` and redeem with `redeemGroceryLoyalty(points, idempotencyKey)`. Refunds reverse the points earned.

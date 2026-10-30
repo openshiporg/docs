@@ -1,0 +1,26 @@
+---
+title: Publish a bookable visit type
+description: Make a visit appear on the public booking page.
+icon: ListChecks
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the provider
+At `/dashboard/platform/providers` create the provider, set status `active`, and link a facility.
+</Step>
+<Step>
+### Add availability
+On `/dashboard/provider-schedule-blocks` add `available` blocks.
+</Step>
+<Step>
+### Create the visit type
+At `/dashboard/platform/visit-types` set name, duration, buffers, price, providers, and status `bookable`.
+</Step>
+<Step>
+### Check
+Open `/book` and pick the visit; slots appear for the provider's blocks.
+</Step>
+</Steps>

@@ -1,0 +1,36 @@
+---
+title: Run the till
+description: Check out a visit with retail, a discount, a tip, and a package or membership.
+icon: ReceiptText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the queue
+Go to `/dashboard/platform/checkout` and open the client's ticket.
+</Step>
+<Step>
+### Add retail
+Add products the client bought. The ticket checks stock at the appointment's location.
+</Step>
+<Step>
+### Apply discount and benefits
+Enter any manual discount. Choose the client's package or membership if one applies.
+</Step>
+<Step>
+### Add the tip
+Enter the tip amount. It is split among the practitioners on the ticket by service value.
+</Step>
+<Step>
+### Take tender
+Choose cash, credit card, or debit card (collected on your terminal) and complete. The deposit, if any, is deducted.
+</Step>
+<Step>
+### Close out the day
+At `/dashboard/platform/reports?range=today` read the by-payment-method table and match it to the till.
+</Step>
+</Steps>
+
+If checkout reports "Appointment is already checked out", the sale exists. Find it in Sales.

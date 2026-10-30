@@ -1,0 +1,44 @@
+---
+title: Client portal
+description: Invite clients, grant matter access, and share items.
+icon: Share2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/portal`. Needs `canManagePortal`. Portal clients are `PortalAccount` records with their own session cookie, separate from storefront users.
+
+<Steps>
+<Step>
+
+### Set the policy
+`recordPortalDiscoveryPolicy` sets how clients are matched to matters (`portalPolicyWorkspace`).
+
+</Step>
+<Step>
+
+### Invite
+`invitePortalAccount` emails an invitation for a valid address. The client opens `/portal/accept`.
+
+</Step>
+<Step>
+
+### Grant
+`grantPortalMatterAccess` or `executePortalGrant` gives access to a matter from the versioned directory.
+
+</Step>
+<Step>
+
+### Share
+`sharePortalResource` shares a document, invoice, or thread. Clients see only shared items under an active grant. Drafts and internal notes are not shown.
+
+</Step>
+<Step>
+
+### Revoke
+`revokePortalGrant` removes access.
+
+</Step>
+</Steps>
+
+Clients sign in at `/portal/signin` with an emailed link. Needs SMTP.

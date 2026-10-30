@@ -1,0 +1,56 @@
+---
+title: Deployment
+description: Build, migrate, the outbox worker, and production secrets.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `npm run migrate && next start` | Site, dashboard, portal, GraphQL |
+| Outbox worker | `npx tsx features/keystone/webhooks/run.ts` | Sends email deliveries and signed webhooks. Run it on a schedule. It prints counts and has no HTTP entry point |
+
+`railway.toml` builds with `keystone build --no-ui && next build` and migrates in the start command.
+
+<Steps>
+<Step>
+
+### Provision
+
+PostgreSQL, an S3-compatible bucket, and SMTP.
+
+</Step>
+<Step>
+
+### Secrets
+
+Set `DATABASE_URL`, `SESSION_SECRET`, `MACHINE_CREDENTIAL_PEPPER`, and `INTEGRATION_CREDENTIAL_KEY` (base64url, 32 bytes). Keep the pepper and key stable; changing them makes stored credentials unreadable.
+
+</Step>
+<Step>
+
+### Storage and mail
+
+All five `S3_*` values for documents. `SMTP_*` and `SMTP_STORE_LINK` for reset, portal, and message email.
+
+</Step>
+<Step>
+
+### Webhooks
+
+List destination hosts in `WEBHOOK_ALLOWED_HOSTS`. The worker contacts no other host.
+
+</Step>
+<Step>
+
+### Verify
+
+Run `npm run typecheck`, `npm run lint`, and `npm test`, then onboard the firm at `/dashboard/onboarding`.
+
+</Step>
+</Steps>
+
+GraphQL accepts POST only, with a 1 MB body limit and 10 MB / 5 files for uploads. Lists return at most 100 items per query. Introspection is off. See [Getting started](/docs/openfront/law-firm/getting-started) for every variable.

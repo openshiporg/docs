@@ -1,0 +1,34 @@
+---
+title: Reconcile a trust account
+description: Post deposits and complete three-way reconciliation.
+icon: Landmark
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Set up
+On `/dashboard/platform/accounting` set the bank identity while the account is pending, then activate it and its client ledgers.
+
+</Step>
+<Step>
+
+### Post deposits
+Post balanced transactions with idempotency keys.
+
+</Step>
+<Step>
+
+### Prepare
+Prepare the reconciliation with the statement balance and date.
+
+</Step>
+<Step>
+
+### Complete
+Complete it when bank, book, and client ledgers agree. Fix differences with reversing transactions.
+
+</Step>
+</Steps>

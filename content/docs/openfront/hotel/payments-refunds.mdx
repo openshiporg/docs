@@ -1,0 +1,56 @@
+---
+title: Payments, refunds, and payouts
+description: Booking payments, refund intents, provider payouts, and disputes.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+All pages need `canManagePayments`.
+
+## Payments
+
+`/dashboard/platform/payments` (`hotelPaymentOperations`) lists `BookingPayment` records with provider, status, and amount. Guests pay through a `BookingPaymentSession` (`initiateBookingPaymentSession`, then `completeBookingPayment` on return). Provider events are stored as `PaymentEvent`.
+
+## Refunds
+
+<Steps>
+<Step>
+
+### Quote
+
+`hotelRefundQuote(paymentId)` shows the refundable amount.
+
+</Step>
+<Step>
+
+### Request
+
+`requestBookingPaymentRefund` takes the payment, amount, a bounded reason, and an idempotency key. It creates a `RefundIntent`.
+
+</Step>
+<Step>
+
+### Execute
+
+The refund worker sends it to the provider. Status goes `pending` → `processing` → `succeeded`, or `failed` and `dead_letter`.
+
+</Step>
+<Step>
+
+### Replay
+
+Replay a stuck intent with `replayRefundIntent`.
+
+</Step>
+</Steps>
+
+A refund requires an independent approval when it exceeds the thresholds in [Property settings](/docs/openfront/hotel/property-settings). A booking cannot have two cancellation refunds in progress.
+
+## Payouts
+
+`/dashboard/platform/payouts` (`hotelPayoutOperations`). Import a reviewed provider statement, match each payment, and approve the bank deposit with `manageHotelPayout`.
+
+## Disputes
+
+`/dashboard/platform/disputes` lists Stripe dispute notices. Add an evidence note with `annotateHotelDispute`. Submit evidence in Stripe.

@@ -1,0 +1,29 @@
+---
+title: Payments and refunds
+description: Payment states, line refunds, authorization voids, and webhook recovery.
+icon: CreditCard
+---
+
+`/dashboard/platform/payments` needs `canManagePayments`. Data comes from `groceryPlatformPayments`.
+
+## Payment states
+
+`Payment.status`: `pending`, `authorized`, `processing`, `succeeded`, `failed`, `cancelled`, `refunded`, `partially_refunded`. Checkout authorizes; finalizing the sale captures.
+
+## Refunds
+
+- **By line**: `getGroceryOrderRefundLines(orderId)` lists refundable lines. `refundGroceryOrderLines(orderId, paymentId, idempotencyKey, reason, lines)` refunds the selected lines. Each line has a disposition of `return_to_stock`, `waste`, or `quarantine`; unsafe or expired goods cannot go back to stock. Loyalty points earned on the lines are reversed.
+- **By amount**: `refundPayment`.
+- The reason must be 3 to 500 characters.
+- A `PaymentRefund` is `processing`, `succeeded`, `failed`, or `canceled`. `reconcilePaymentRefunds` and the `worker:refund-reconcile` process check pending refunds with the provider.
+
+## Void an authorization
+
+`voidGroceryPaymentAuthorization(paymentId, reason, idempotencyKey)` releases a hold that has not been captured. It refuses while a final sale is processing.
+
+## Recovery
+
+- `recoverGroceryPaymentCreation` finishes a payment that was created at the provider but not recorded. It needs the checkout session, the provider payment reference, and a reason.
+- `groceryPaymentWebhookRecovery` lists stored `PaymentWebhookEvent` rows and `replayPaymentWebhookEvent` replays one with a review reason of 3 to 500 characters.
+
+See [Payment providers](/docs/openfront/grocery/payment-providers).

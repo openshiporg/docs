@@ -1,0 +1,94 @@
+---
+title: GraphQL API
+description: Endpoint, authentication, generated CRUD, and the custom Salon queries and mutations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. The checked-in `schema.graphql` in the repo is the reference for a revision.
+
+## Authentication
+
+Sessions use the `keystonejs-session` cookie. Sign in with `authenticateUserWithPassword`, sign out with `endSession`. Each operation re-checks the caller's `Role` flags. See [Roles and permissions](/docs/openfront/salon/roles-permissions).
+
+## Queries
+
+| Query | Arguments | Purpose |
+| --- | --- | --- |
+| `checkAvailability` | `stylistId`, `date`, `serviceDuration`, `serviceId`, `locationId` | Open slots |
+| `calculateCommission` | `stylistId`, `startDate`, `endDate` | Commission totals |
+| `storefrontStylists` | `serviceId`, `take` | Public stylists |
+| `storefrontStylist` | `id` | One public stylist |
+| `salonOperationsWorkspace` | `section`, `range` | Dashboard list data and reports |
+| `salonManagementWorkspace` | `kind` | Management lists |
+| `salonLocationStock` | `appointmentId`, `locationId`, `skip`, `take`, `search` | Stock at a location |
+| `clientPortal` | none | Signed-in client's visits and benefits |
+| `publicStorefrontSettings` | none | Storefront identity |
+| `storefrontBenefits` | none | Active plans |
+| `giftCardBalance` | `code` | Balance lookup |
+| `redirectToInit` | none | True while there are no users |
+
+## Mutations
+
+| Group | Mutations |
+| --- | --- |
+| Accounts | `registerSalonCustomer(name, email, password, phone)` |
+| Booking | `bookAppointment`, `transitionAppointment(appointmentId, status, reason)`, `scheduleAppointmentSegments`, `transitionAppointmentSegment`, `processAppointmentDeposit` |
+| Waitlist | `joinWaitlist`, `joinWaitlistAsClient`, `transitionWaitlistEntry(waitlistEntryId, action, appointmentId, reason)` |
+| Schedules | `upsertStylistSchedule`, `setStylistScheduleAvailability`, `setSalonResourceAvailability` |
+| Checkout | `completeAppointmentCheckout`, `processPayment`, `confirmPayment`, `refundPayment`, `distributeTip` |
+| Reversals | `reverseSalonTransaction`, `adjustSaleCompensation` |
+| Payouts | `payoutCommissions`, `payoutGratuities` |
+| Benefits | `sellClientBenefit`, `setClientBenefitStatus`, `redeemClientPackage` |
+| Gift cards | `purchaseGiftCard`, `confirmGiftCardPurchase`, `applyGiftCardBalance` |
+| Loyalty | `adjustClientPoints`, `completeReferral` |
+| Care | `updateClientCareProfile`, `submitAppointmentReview`, `publishConsultationTemplateVersion`, `submitConsultation`, `reviewConsultation` |
+| Stock | `adjustSalonInventory` |
+| Setup | `upsertSalonStoreSettings`, `saveSalonRecord`, `runSalonOnboarding` |
+
+Mutations that change money or stock take an `idempotencyKey`. Reusing a key with different arguments fails. Reusing it with the same arguments returns the first result.
+
+## Example: book
+
+```graphql
+mutation Book($serviceIds: [ID!]!, $stylistId: ID!, $startTime: String!) {
+  bookAppointment(
+    serviceIds: $serviceIds
+    stylistId: $stylistId
+    startTime: $startTime
+    clientName: "Ada Lovelace"
+    clientEmail: "ada@example.com"
+    policyAccepted: true
+    policyVersion: "salon-booking-v2"
+    requestKey: "book-123"
+  ) {
+    success
+    error
+  }
+}
+```
+
+## Example: check out
+
+```graphql
+mutation Checkout($appointmentId: ID!) {
+  completeAppointmentCheckout(
+    appointmentId: $appointmentId
+    paymentMethod: "cash"
+    tipAmount: 1000
+    discountAmount: 0
+    idempotencyKey: "checkout-123"
+  ) {
+    success
+    error
+  }
+}
+```
+
+## Generated CRUD
+
+Simple lists keep generated queries and mutations: membership and package plans, loyalty programs, referrals, review moderation, client notes, color formulas, form templates, and `createSalonImage`.
+
+## Webhooks and assistant
+
+- `POST /api/payments/webhooks/[provider]` for Stripe events.
+- `/api/completion` is the dashboard assistant and `/api/mcp-transport/[transport]` its MCP endpoint, both for signed-in users with `canAccessDashboard`.

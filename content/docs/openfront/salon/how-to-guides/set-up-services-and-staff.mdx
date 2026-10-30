@@ -1,0 +1,34 @@
+---
+title: Set up services and staff schedules
+description: Build the menu, add stylists, and set weekly hours so clients can book.
+icon: Scissors
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set the location
+Open `/dashboard/platform/administration`, edit the location, and enter address, `timezone`, and opening hours for every weekday. Then set it as the primary location in [Store settings](/docs/openfront/salon/store-settings).
+</Step>
+<Step>
+### Add resources
+At `/dashboard/platform/resources` add chairs, shampoo bowls, rooms, or equipment with a `capacity`.
+</Step>
+<Step>
+### Add categories and services
+At `/dashboard/platform/catalog` create a category, then each service with price, duration, buffer, and deposit. Tick the resources the service needs. Flag `requiresConsultation` or `requiresPatchTest` where it applies.
+</Step>
+<Step>
+### Add stylists
+In Staff and locations create the staff record: role, tier, locations, the services they perform, and commission rate (needs `canManageCommissions`). Give the user a role with `canManageOwnSchedule` if they edit their own hours.
+</Step>
+<Step>
+### Set weekly hours
+At `/dashboard/platform/schedules` enter hours and breaks for each stylist and day. Add time off for known absences.
+</Step>
+<Step>
+### Check the storefront
+Open `/book`, choose a service and stylist, and confirm times appear. No times means the stylist has no hours at that location or the service has no available resource.
+</Step>
+</Steps>

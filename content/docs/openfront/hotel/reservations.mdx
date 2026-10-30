@@ -1,0 +1,64 @@
+---
+title: Reservations and front desk
+description: Arrivals, departures, the stay calendar, and booking changes.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Both pages need `canManageBookings`.
+
+## Front desk
+
+`/dashboard/platform/front-desk` (`hotelFrontDesk`) lists arrivals, in-house guests, departures, and guest change requests for the business date.
+
+| Action | Mutation |
+| --- | --- |
+| Assign or change a room | `assignRoomToBooking` |
+| Check in, check out, no-show | `updateBookingStatus` |
+| Cancel | `cancelBooking` |
+| Approve or decline a change request | `resolveBookingModificationRequest` |
+| Handle a guest still checked in past departure | `resolveOverdueCheckedInBooking` |
+| Move a guest to another room | `updateHotelRelocation` |
+
+## Reservation calendar
+
+`/dashboard/platform/reservations` shows a room-by-room stay calendar (`hotelReservationCalendar`).
+
+<Steps>
+<Step>
+
+### Create
+
+Choose dates, room type, rate plan, and guest, then save. This calls `createStaffBooking`.
+
+</Step>
+<Step>
+
+### Change dates
+
+Drag the stay or use `updateBookingStayDates`. Availability and rates are checked again.
+
+</Step>
+<Step>
+
+### Amend
+
+`amendStaffBooking` changes guests, notes, and pricing with an idempotency key.
+
+</Step>
+</Steps>
+
+## Booking statuses
+
+| Status | Meaning |
+| --- | --- |
+| `pending` | Hold awaiting payment, cancelled after 30 minutes |
+| `confirmed` | Paid or accepted |
+| `checked_in`, `checked_out` | Stay progress |
+| `cancellation_pending` | Cancelled, refund unresolved |
+| `cancelled`, `no_show` | Closed |
+
+`paymentStatus` is `unpaid`, `partial`, `paid`, or `refunded`. Source is `direct`, `website`, `phone`, `walk_in`, `ota`, `corporate`, or `group`.
+
+The stay register (`updateHotelStayRegister`) records guest details required at check in.

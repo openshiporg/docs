@@ -1,0 +1,36 @@
+---
+title: Schedules and resources
+description: Weekly hours, time off, and bookable chairs, rooms, and equipment.
+icon: CalendarClock
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Staff schedules
+
+`/dashboard/platform/schedules` needs `canManageSchedules` (all stylists) or `canManageOwnSchedule` (own only).
+
+A `StylistSchedule` has a `type`: `recurring` (weekly, with `dayOfWeek`), `one_time`, or `time_off` (both with `localDate`). It has `startTime`, `endTime`, optional `breakStart` and `breakEnd`, `isAvailable`, `reason`, and a `revision`.
+
+<Steps>
+<Step>
+### Set weekly hours
+Use the weekly editor. `upsertStylistSchedule` with `type: "recurring"`, a day, start, end, and an optional break. The break must fall inside working hours.
+</Step>
+<Step>
+### Add time off
+Enter a date, times, and reason. It saves as `type: "time_off"` with `isAvailable: false`. The "Block day" menu is a shortcut.
+</Step>
+<Step>
+### Withdraw
+`setStylistScheduleAvailability` turns a row on or off. It needs the `expectedRevision`; a stale one fails with "Schedule was changed by another operator".
+</Step>
+</Steps>
+
+## Resources
+
+`/dashboard/platform/resources` needs `canManageResources` or `canManageAppointments`.
+
+A `SalonResource` has `name`, `type` (`station`, `room`, `shampoo_bowl`, `equipment`, `color_bar`, `other`), `capacity`, `location`, `notes`, and `isActive`. Services list the resources they need, and availability counts each booking against capacity.
+
+Create and edit with `saveSalonRecord` (`kind: "resource"`). Turn one off with `setSalonResourceAvailability`; it fails while the resource has active appointments or segment assignments. Capacity and location cannot change while it has active reservations.

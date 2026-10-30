@@ -1,0 +1,57 @@
+---
+title: Listings
+description: Create, publish, and manage properties, media, and open houses.
+icon: Building2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/listings`, `/listings/new`, `/listings/[id]`. Needs `canManageListings`.
+
+## Fields
+
+| Field | Values |
+| --- | --- |
+| `status` | `draft`, `coming_soon`, `active`, `pending`, `sold`, `rented`, `off_market` |
+| `listingType` | `sale`, `rent` |
+| `propertyType` | `house`, `condo`, `townhome`, `multi_family`, `land`, `commercial` |
+| Facts | `bedrooms` (0 to 20), `bathrooms` (0 to 20), `squareFeet`, `lotSizeSquareFeet`, `yearBuilt`, `latitude`, `longitude` |
+| Rental | `leaseTerm`, `securityDeposit`, `petPolicy`, `applicationFeeMinor` |
+| Display | `isFeatured`, `virtualTourUrl`, `primaryImageUrl`, `neighborhood` |
+
+## Steps
+
+<Steps>
+<Step>
+
+### Create a draft
+`/platform/listings/new` creates a draft with address, type, price, and description.
+
+</Step>
+<Step>
+
+### Add media
+On the detail page add images by `https://` URL or `/images/` path. Set the cover, reorder, or remove. The storefront shows images under `/images/real-estate/`.
+
+</Step>
+<Step>
+
+### Record authority
+Record the practitioner license, a signed listing engagement with marketing authority, and `public_site` publication authority (see [Authority and records](/docs/openfront/real-estate/authority-records)).
+
+</Step>
+<Step>
+
+### Publish
+Change status with `transitionPropertyStatus`. A listing shows on the site when `active` or `coming_soon` with effective authority.
+
+</Step>
+<Step>
+
+### Open houses
+Schedule an open house from the detail page. `transitionOpenHouseStatus` moves it `scheduled` → `completed` or `cancelled`. The storefront offers an `.ics` file.
+
+</Step>
+</Steps>
+
+The detail page also shows linked leads, showings, and syndication.

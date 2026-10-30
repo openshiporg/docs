@@ -1,0 +1,23 @@
+---
+title: Roles and permissions
+description: Staff capabilities and which dashboard page each one opens.
+icon: ShieldCheck
+---
+
+Roles hold boolean capabilities. The first user gets an `Admin` role with all of them. Staff access changes go through the staff commands, not generic GraphQL. Each page and command re-checks the capability against the database.
+
+| Capability | Pages |
+| --- | --- |
+| `canAccessDashboard` | Required to sign in to the dashboard |
+| `canManageOrders` | Orders, Fulfillment, Recurring baskets, Customer inbox |
+| `canManageProducts` | Products, Merchandising |
+| `canManageInventory` | Inventory, Purchasing |
+| `canManageSuppliers` | Suppliers |
+| `canManageDelivery` | Delivery, Pickup |
+| `canManagePayments` | Payments, Reports, settling supplier invoices |
+| `canManageUsers` | Customers, Staff |
+| `canManageOnboarding` | Settings, Communications, onboarding |
+
+A user without a capability is redirected to `/dashboard/no-access`. The count approval and supplier invoice variance approval each need a second operator.
+
+Shoppers have no role. They read their own orders, addresses, lists, favorites, and recurring baskets through owner filters.

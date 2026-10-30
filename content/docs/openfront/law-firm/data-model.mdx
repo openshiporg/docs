@@ -1,0 +1,45 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with lifecycles.
+icon: Database
+---
+
+`features/keystone/models/index.ts` registers the lists. The repository's `docs/schema-map.md` has every field.
+
+| Area | Lists |
+| --- | --- |
+| Firm and people | `Firm`, `Office`, `User`, `FirmMembership`, `Role` |
+| Machine access | `ApiKey`, `OAuthClient`, `OAuthConsent`, `OAuthToken`, `AgentPrincipal`, `AgentCredential`, `AgentGrant`, `AgentAction`, `AgentActionEvent` |
+| Contacts | `Contact`, `Address`, `ContactMethod` |
+| Intake | `Intake`, `IntakeParticipant`, `IntakeSubmission`, `Consultation` |
+| Conflicts | `ConflictCheck`, `ConflictSearchTerm`, `ConflictMatch`, `ConflictDisposition` |
+| Matters | `PracticeArea`, `Matter`, `MatterParty`, `MatterTeamMember`, `EthicalWall`, `EthicalWallMember`, `MatterStatusEvent` |
+| Calendar | `Court`, `Docket`, `DocketEntry`, `Deadline`, `LegalTask` |
+| Communications | `CommunicationThread`, `CommunicationParticipant`, `CommunicationMessage`, `CommunicationDelivery` |
+| Documents | `Document`, `DocumentVersion`, `SignatureRequest`, `DocumentSigner`, `SignatureEvent` |
+| Billing | `RateCard`, `RateRule`, `TimeEntry`, `Expense`, `RetainerAgreement`, `Invoice`, `InvoiceLine` |
+| Payments | `Payment`, `PaymentAllocation`, `Refund`, `PaymentProvider` |
+| Trust | `TrustAccount`, `TrustLedgerAccount`, `TrustTransaction`, `TrustLedgerEntry`, `TrustBalanceSnapshot`, `TrustReconciliation` |
+| Portal | `PortalAccount`, `PortalMatterAccess`, `PortalShare`, `PortalSession`, `PortalDiscoveryPolicy`, `PortalGrantIntent` |
+| Public site | `PublicSitePolicy`, `AttorneyProfile` |
+| Integrations | `IntegrationConnection`, `ExternalRecordLink`, `WebhookSubscription`, `WebhookDelivery`, `WebhookDeliveryAttempt` |
+| Governance | `RetentionPolicy`, `RetentionHold`, `RetentionAction`, `AuditEvent` |
+
+## Tenancy
+
+Every firm-owned list has a `firm` relationship. Shared hooks assign the active firm on create and reject links to another firm's records.
+
+## Append-only
+
+Document versions, trust entries, matter status events, signature events, audit events, and agent action events are append-only.
+
+## Lifecycles
+
+| Record | Path |
+| --- | --- |
+| Intake | `new` → `screening` → `conflict_review` → `consultation` → `decision` → `converted`, `declined`, `withdrawn` |
+| Conflict check | `requested` → `running` → `review_required` → `cleared`, `conflict_found` |
+| Matter | `proposed` → `pending_conflict` → `open`, `on_hold`, `closing`, `closed`; `declined` |
+| Consultation | `requested` → `scheduled` → `completed`, `cancelled`, `no_show` |
+| Invoice | `draft` → `approved` → `issued` → `partially_paid` → `paid`; `overdue`, `void` |
+| Refund | `requested` → `approved` → `processing` → `succeeded`, `failed` |

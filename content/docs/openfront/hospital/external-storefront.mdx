@@ -40,8 +40,6 @@ Unknown paths render the storefront not-found page. When no user exists yet, eve
 
 The consent statements and policy versions sent with booking and intake are defined in `features/storefront/lib/workflowConsent.ts`.
 
-## What is not there
+## From request to booking
 
-- No patient sign-in, appointment history, rescheduling, or cancellation for patients. `PatientPortalAccess` exists in the schema but nothing issues invites.
-- No online payment or price display.
-- A request is not a confirmed booking. Staff confirm it in the dashboard.
+A request is not a confirmed booking. It lands as a `requested` appointment and staff confirm it in the dashboard. Visitors do not sign in, so the confirmation screen and the one-time intake link are the patient's record of the request. Visit prices are shown as "Estimate provided by clinic", and payment is taken at the practice.

@@ -1,0 +1,44 @@
+---
+title: GraphQL API
+description: Guest and staff operations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`; `schema.graphql` is the reference.
+
+## Guest access
+
+A guest proves access with `verifyGuestBooking` (confirmation number and email) or by signing in. Access is an HMAC-signed `hotel-guest-access` cookie lasting 30 days and holding up to 20 bookings. A separate client must forward the cookie.
+
+## Guest queries
+
+`publicHotelSettings`, `storefrontRoomTypes`, `storefrontRoomType`, `storefrontAvailability`, `storefrontStayCalendar`, `storefrontQuote`, `bookingPaymentProviders`, `activeBookingPaymentSession`, `guestBooking`, `guestBookings`, `guestFolio`, `guestCancellationQuote`, `guestAccountStatus`, `guestAccountBookings`, `guestAccountBookingsCount`.
+
+## Guest mutations
+
+`verifyGuestBooking`, `createStorefrontBooking`, `initiateBookingPaymentSession`, `completeBookingPayment`, `cancelBooking`, `requestBookingModification`, `submitHotelContactMessage`, `registerGuestAccount`, `claimGuestAccountStays`, `updateGuestAccount`, `changeGuestAccountPassword`, `redeemHotelPasswordResetToken`.
+
+`createStorefrontBooking` requires the signed token from `storefrontQuote`.
+
+## Staff queries
+
+`hotelOperatorCapabilities`, `hotelFrontDesk`, `hotelReservationCalendar`, `hotelRoomOperations`, `hotelRateOperations`, `hotelHousekeepingOperations`, `hotelMaintenanceOperations`, `hotelFolioOperations`, `hotelChannelOperations`, `hotelPaymentOperations`, `hotelRefundQuote`, `hotelAnalyticsOperations`, `hotelGuestOperations`, `hotelPaymentProviderOperations`, `hotelNightAuditOperations`.
+
+## Staff mutations
+
+| Area | Mutations |
+| --- | --- |
+| Reservations | `createStaffBooking`, `amendStaffBooking`, `updateBookingStatus`, `updateBookingStayDates`, `assignRoomToBooking`, `resolveBookingModificationRequest`, `resolveOverdueCheckedInBooking`, `updateHotelStayRegister`, `updateHotelRelocation` |
+| Rooms and rates | `updateRoomOperationalStatus`, `updateHotelRoomOutage`, `updateRoomInventoryControls`, `updateRatePlanPublication`, `updateHotelDerivedRate` |
+| Housekeeping | `scheduleHousekeepingTask`, `updateHousekeepingTaskStatus`, `updateHotelHousekeepingStaffCapability`, `reportRoomMaintenanceIssue`, `updateMaintenanceRequestStatus`, `updateHotelMaintenanceCommercial`, `updateHotelStayService` |
+| Money | `postFolioEntry`, `reverseFolioEntry`, `recordBookingPayment`, `closeReconciledFolio`, `requestBookingPaymentRefund`, `replayRefundIntent`, `manageHotelCashier`, `manageHotelReceivable`, `manageHotelPayout`, `annotateHotelDispute`, `manageHotelSecurityAuthorization`, `redeemHotelLoyalty` |
+| Groups | `createHotelGroupBlock`, `updateHotelGroupBlockStatus`, `pickupHotelGroupBlock`, `createHotelGroupRoomingList`, `detachHotelGroupBooking`, `closeHotelGroupMasterFolio` |
+| Property | `runHotelOnboarding`, `updateHotelPropertySettings`, `runHotelNightAudit`, `configureHotelPaymentProvider` |
+| Governance | `updateHotelGuestGovernance`, `updateHotelApproval`, `verifyHotelMfa`, `manageHotelMfa` |
+| Channels | `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs`, `replayHotelOutboxEvent` |
+
+Most staff mutations take an `idempotencyKey`.
+
+## Other routes
+
+`/api/health`, `/api/ready`, `/api/payment-providers/[providerCode]/webhook`, `/api/webhooks/channel/[channelId]`, `/api/hotel/outbox/receiver`, `/api/completion`. `/api/mcp-transport/[transport]`, `/api/create-payment-intent`, and `/api/send-booking-confirmation` return HTTP 410.

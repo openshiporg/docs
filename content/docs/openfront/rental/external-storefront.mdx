@@ -54,8 +54,4 @@ Guest sign-in uses the same Keystone session cookie (`keystonejs-session`) as th
 
 `features/storefront/middleware.ts` is a no-op hook for the shared proxy. The storefront has no region, cart cookie, or redirect handling of its own.
 
-## Limitations
-
-- Card payment on the trip page uses Stripe test mode only, and only for test bookings.
-- The password reset pages work only when SMTP host, sender, and store link are configured.
-- There is no country or locale prefix in routes. Currency, locale, and timezone come from store settings.
+Card payment on the trip page uses Stripe for test bookings. Currency, locale, and timezone come from store settings; routes have no locale prefix.

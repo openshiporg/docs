@@ -1,0 +1,21 @@
+---
+title: Firm, offices, and team
+description: Firm defaults, offices, invitations, memberships, and roles.
+icon: UsersRound
+---
+
+## Firm and offices
+
+`/dashboard/platform/firm` edits time zone, currency, and offices (`name`, `code`, timezone, contact, status `active`, `inactive`, `closed`).
+
+## Team
+
+`/dashboard/platform/team` needs `canManageUsers` or equivalent.
+
+- `inviteFirmMember` sends an invitation with role and office scope.
+- `changeFirmMemberAccess` changes role, primary office, and allowed offices.
+- `updateFirmRoleAuthority` edits a role's permission toggles.
+
+Membership states: `invited` → `active` → `suspended` → `ended`. Onboarding seeds Firm administrator, Attorney, Paralegal, Billing, and Intake coordinator roles.
+
+See [Roles and permissions](/docs/openfront/law-firm/roles-permissions).

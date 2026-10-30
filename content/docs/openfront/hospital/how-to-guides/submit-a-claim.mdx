@@ -1,0 +1,26 @@
+---
+title: Prepare and track a claim
+description: From coverage to payer acknowledgement.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Record coverage
+On the billing tab, add the coverage and mark it `active`.
+</Step>
+<Step>
+### Prepare
+At `/dashboard/platform/claims` choose the encounter and coverage and enter the billed amount.
+</Step>
+<Step>
+### Submit
+Move the claim to `submitted` once sent to the payer by your own process.
+</Step>
+<Step>
+### Record the result
+Mark it acknowledged or rejected, with a denial reason. Correct and resubmit if needed.
+</Step>
+</Steps>

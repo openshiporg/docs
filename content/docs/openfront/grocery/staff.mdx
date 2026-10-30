@@ -1,0 +1,40 @@
+---
+title: Staff and privacy
+description: Staff directory, invitations, capability changes, and customer erasure review.
+icon: UserCog
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/staff` needs `canManageUsers`. Data comes from `groceryStaffDirectory`.
+
+## Invite staff
+
+<Steps>
+<Step>
+### Invite
+`inviteGroceryStaff(name, email, capabilities, delivery)`. The capability map must list the flags explicitly, and you can only grant capabilities you hold yourself. Any capability needs `canAccessDashboard`.
+</Step>
+<Step>
+### Share the link
+The invitation lasts 48 hours. With `delivery: "manual"` you hand over the link yourself. Only one pending invitation may exist per email; revoke it with `revokeGroceryStaffInvitation` before replacing it.
+</Step>
+<Step>
+### Accept
+The invited person opens `/staff/accept`, which calls `acceptGroceryStaffInvitation`.
+</Step>
+</Steps>
+
+An email that already belongs to an account cannot be invited. Use a separate staff identity.
+
+## Change access
+
+`updateGroceryStaffAccess(userId, capabilities, reason)` replaces a person's flags. Each change writes a `StaffAccessEvent`.
+
+## Capabilities
+
+`canAccessDashboard`, `canManageProducts`, `canManageOrders`, `canManageInventory`, `canManageSuppliers`, `canManageDelivery`, `canManageUsers`, `canManagePayments`, `canManageOnboarding`. See [Roles and permissions](/docs/openfront/grocery/roles-permissions).
+
+## Customer erasure
+
+`reviewGroceryCustomerErasure` takes `requestId`, `approve` (true or false), and a `reason`. A declined request becomes `rejected`. An approved one erases the customer's data and suppresses their queued messages.

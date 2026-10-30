@@ -1,0 +1,15 @@
+---
+title: Integrations
+description: Email, calendar files, feeds, and the AI chat.
+icon: PlugZap
+---
+
+| Area | What it does |
+| --- | --- |
+| Email | Password reset via nodemailer and the `SMTP_*` variables. `SMTP_STORE_LINK` sets the link origin |
+| Calendar files | `.ics` for a customer's own showing and for public open houses |
+| Feeds and syndication | `SourceFeed` and `ListingSyndication` track status; queue commands write outbox events |
+| AI chat | `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) for signed-in dashboard users |
+| MCP | `/api/mcp-transport/[transport]` exposes generic model tools with the caller's session |
+
+See [Operations, feeds, and alerts](/docs/openfront/real-estate/operations-feeds).

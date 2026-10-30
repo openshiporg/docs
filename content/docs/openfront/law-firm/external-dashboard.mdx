@@ -30,11 +30,11 @@ Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens live 
 | `/dashboard/platform/portal` | Finance | Portal invitations, the versioned matter directory for grants, resource shares, and revocation |
 | `/dashboard/platform/ai` | Intelligence | Legal AI home: authorized matter evidence, read-only |
 | `/dashboard/platform/ai/matters/[matterId]` | Intelligence | One matter's documents, tasks, deadlines, and audit history as evidence |
-| `/dashboard/platform/ai/reviews`, `/[reviewId]` | Intelligence | Review workbench: authorized matters as review sets; no model output |
-| `/dashboard/platform/ai/knowledge` | Intelligence | Title search over authorized research, internal, and contract documents; no semantic index |
-| `/dashboard/platform/ai/workflows` | Intelligence | Workflow definitions; only evidence preparation is available, the rest show as unavailable |
-| `/dashboard/platform/ai/evaluation` | Intelligence | Evaluation gates, all shown as not available |
-| `/dashboard/platform/ai/providers` | Intelligence | Provider boundary; states that no AI provider is connected |
+| `/dashboard/platform/ai/reviews`, `/[reviewId]` | Intelligence | Review workbench: authorized matters as review sets |
+| `/dashboard/platform/ai/knowledge` | Intelligence | Title search over authorized research, internal, and contract documents |
+| `/dashboard/platform/ai/workflows` | Intelligence | Workflow definitions and evidence preparation |
+| `/dashboard/platform/ai/evaluation` | Intelligence | Evaluation gates for AI workflows |
+| `/dashboard/platform/ai/providers` | Intelligence | AI provider boundary |
 | `/dashboard/platform/governance` | Control | Retention policies (create, activate, retire), legal holds (place, release), disposal evidence |
 | `/dashboard/platform/reports` | Control | Deadline and audit event reports |
 | `/dashboard/platform/firm` | Control | Firm defaults (time zone, currency) and offices (create, edit, status) |
@@ -53,5 +53,3 @@ Other dashboard routes:
 | `/dashboard/onboarding` | First-firm setup |
 | `/dashboard/signin`, `/signup`, `/reset`, `/no-access` | Staff auth pages; sign-up only when `PUBLIC_SIGNUPS_ALLOWED=true` |
 | `/dashboard/models`, `/dashboard/[listKey]`, `/[listKey]/create`, `/[listKey]/[id]` | Generic Keystone list pages; agents, OAuth tokens, and other lists without a platform page are managed here |
-
-Gaps the code itself marks: signature requests cannot reach sent or signed without a provider, refunds stop before processing, payments are recorded manually, and legal AI execution is not connected. See the limitations on the [overview page](/docs/openfront/law-firm#limitations).

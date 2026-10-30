@@ -4,17 +4,13 @@ description: Services, stylists, booking, schedules, resources, checkout, refund
 icon: Sparkles
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-salon) · [Live demo](https://salon.openship.org) · [Catalog](https://openship.org/products/openfront-salon)
+[Source](https://github.com/openshiporg/openfront-salon) · [Live site](https://salon.openship.org) · [Catalog](https://openship.org/products/openfront-salon)
 
 Openfront Salon is a self-hostable salon app. Clients browse services and stylists, book appointments, and manage their visits in an account. Salon staff use the dashboard to run the day: bookings, check-in, consultations, checkout, refunds, schedules, resources, retail stock, memberships, packages, gift cards, loyalty, reviews, commissions, and reports.
 
-It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/salon/getting-started).
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/salon/getting-started), then read the dashboard pages for the area you run.
 
-<Callout type="warn">
-The app runs one salon business. It has no organization or tenant model. Role flags apply to every location. Test permissions, money, and booking races on your own database before you use real client data.
-</Callout>
+The app runs one salon business. It has no organization or tenant model. Role flags apply to every location.
 
 ## Surfaces
 
@@ -97,25 +93,12 @@ New dashboard users see onboarding cards in the sidebar. The dialog offers three
 
 The seed creates a sample salon, "Morrow & Mane": store settings, a location, resources, categories, services, stylists and schedules, two clients, a consultation form, membership plans, a package, a product, a message template, two appointments, gallery images, and two payment providers (manual, installed and default; Stripe, not installed).
 
-The mutation needs `canManageOnboarding`. It runs in one transaction and reports how many records it created and reused, so a second run reuses existing rows. The data is sample data. Remove or replace it before real use.
+The mutation needs `canManageOnboarding`. It runs in one transaction and reports how many records it created and reused, so a second run reuses existing rows. Replace the sample names, prices, and hours with your own before you open for booking.
 
 ## Payments and integrations
 
-- **Payment adapters:** `manual` and `stripe`, in `features/integrations/payment`. Desk checkout, recorded deposits, and gift-card sales use the installed manual provider. A manual payment is a record of tender taken outside the app, not a card capture.
-- **Stripe:** reads `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. The webhook route takes a provider code like `pp_stripe`, checks the signature, logs each event once, rejects amount or currency mismatches, and handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded`, and `refund.updated`. Online deposit and online gift-card collection are not available in the current flows.
+- **Payment adapters:** `manual` and `stripe`, in `features/integrations/payment`. Desk checkout, recorded deposits, and gift-card sales use the installed manual provider. A manual payment records tender taken at the desk.
+- **Stripe:** reads `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. The webhook route takes a provider code like `pp_stripe`, checks the signature, logs each event once, rejects amount or currency mismatches, and handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded`, and `refund.updated`.
 - **Email:** booking confirmations, gift-card emails, and password resets are sent with SMTP only when `SMTP_HOST` and `SMTP_FROM` are set. Without SMTP, nothing is sent and the dashboard says reset email is unavailable.
 - **File storage:** uploads use S3-compatible storage (`S3_*` variables). Bundled storefront images under `/images` do not need it.
 - **Dashboard assistant:** `/api/completion` uses OpenRouter. It needs a signed-in user with `canAccessDashboard`, plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or a key the user enters locally. Its MCP endpoint exposes generic list tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) that run as the caller's session.
-
-## Limitations
-
-- One business per deployment. No organization, tenant, or per-location staff scoping.
-- No message dispatcher. `MessageTemplate` and `MessageLog` are not used to send anything. SMS is not implemented.
-- `DomainEvent` rows are written on tracked changes but stay pending. Nothing consumes them.
-- `WidgetConfiguration` has no widget runtime.
-- `ServiceVariant` and `ServiceSegment` have no salon page and are not read by storefront booking or checkout. Edit them in the generic list screens if needed.
-- `IntakeForm`, `FormSubmission`, and `ProductSale` are legacy lists, replaced by consultation versions and `SalonTransaction`.
-- Clients cannot buy gift cards, pay deposits, or pay for visits online. The storefront gift-card page says "In-salon purchase only".
-- Membership billing is not automated. `nextBillingDate` is stored, but no job charges it.
-- Tax is a single `TAX_RATE` (default `0.08`). There is no tax provider.
-- Tests in `tests/` cover helpers and security rules without a database. They are not an end-to-end check.

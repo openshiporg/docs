@@ -1,0 +1,27 @@
+---
+title: Exports, retention, and holds
+description: Encrypted exports, retention policies, legal holds, and dispositions.
+icon: Archive
+---
+
+Found on the operational-fabric page.
+
+## Exports
+
+Needs `canManageDataPortability`. `requestExportJob` queues an encrypted export of patients, appointments, audit, or inventory in CSV or JSON, and `processExportJob` builds it. Download from `/api/exports/{jobId}` with the one-time token. Jobs go `queued` → `processing` → `ready` → `expired`, or `failed`.
+
+## Retention
+
+Needs `canManageRetention`.
+
+| Record | Mutation |
+| --- | --- |
+| `RetentionPolicy` per record type | `establishRetentionPolicy`, `transitionRetentionPolicy` |
+| `RecordHold` (legal hold) | `placeRecordHold`, `releaseRecordHold` (reason required) |
+| `RetentionDisposition` | `recordRetentionDisposition` |
+
+A record cannot have two active holds, and a disposition is checked against the active policy and holds. Dispositions are append-only.
+
+## External identity links
+
+`linkExternalIdentity` records the ID a patient or record has in another system (`system`, `localType`).

@@ -1,0 +1,36 @@
+---
+title: What is Openfront Rental
+description: Surfaces, concepts, and the life of a stay.
+icon: KeyRound
+---
+
+Openfront Rental is for people who manage short-term accommodation.
+
+| Surface | Who | Where |
+| --- | --- | --- |
+| Guest storefront | Guests | `/`, `/search`, `/stays/[slug]`, `/checkout/[quoteToken]`, `/trips/[token]` |
+| Host dashboard | Owners, admins, managers, operations, finance | `/dashboard/platform` |
+| GraphQL API | Both | `/api/graphql` |
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Host organization | The tenant. Host-scoped records are visible through an active `HostMembership` |
+| Property and unit | The building and the bookable `AccommodationUnit` inside it |
+| Listing | The public page for a unit, with `bookingMode` `instant` or `request` |
+| Rate plan | Nightly rate, stay limits, notice, window, and a cancellation policy |
+| Quote | A `StayQuote` snapshot of dates, rates, fees, taxes, deposit, and guests |
+| Reservation | A stay created from a quote |
+| Trip link | A 48-character private token for the guest's trip, agreement, and messages |
+
+## Life of a stay
+
+1. The guest searches and asks for a quote (`quoteStay`).
+2. They reserve (`createStayReservation`) and sign the agreement (`signStayAgreement`).
+3. Payment is taken by card on the trip page or recorded by the host.
+4. The host confirms, checks in, and completes the stay (`transitionStayReservation`).
+5. Tasks are generated for turnover, deposits are released, owner statements are produced.
+6. The guest leaves a review (`submitStayReview`).
+
+See [Reservations](/docs/openfront/rental/reservations) and [Roles and permissions](/docs/openfront/rental/roles-permissions).

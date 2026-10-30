@@ -1,0 +1,25 @@
+---
+title: Communications
+description: Patient messages, templates, and preferences.
+icon: MessageSquare
+---
+
+Route: `/dashboard/platform/communications`. Needs `canManageCommunications`.
+
+## Sending
+
+`sendSecurePatientMessage` takes `facilityId`, `patientId`, optional appointment, template, and installation, plus `channel` (`sms`, `email`, `phone`), `purpose`, `subject`, and `body`.
+
+| Channel | Result |
+| --- | --- |
+| `phone` | `manual_required` task. Staff call, then complete it with `transitionPatientMessage` |
+| `email`, `sms` | `queued` for an active `communications` integration, then `sent` and `delivered` from webhooks |
+
+The app does not send email or SMS by itself. Without an active communications installation, use phone tasks. Message bodies are protected by a specific permission as well as facility scope.
+
+## Templates and preferences
+
+On the communications tab of `/dashboard/platform/operational-fabric`:
+
+- `registerCommunicationTemplate` and `reviseCommunicationTemplate` keep versioned templates (`templateKey`, `channel`, `subjectTemplate`).
+- `setCommunicationPreference` stores per-patient `allowed` or `opted_out` by channel and purpose.

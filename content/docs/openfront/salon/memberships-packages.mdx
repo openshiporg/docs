@@ -1,0 +1,34 @@
+---
+title: Memberships and packages
+description: Plans, selling to clients, pausing, cancelling, and redeeming package value.
+icon: Gift
+---
+
+`/dashboard/platform/benefits` needs `canManageCatalog` or `canManageClients`.
+
+## Plans
+
+- `Membership`: `name`, `description`, `monthlyPrice`, `discountPercent` (0 to 100), `isActive`, and `includedServices`
+- `ServicePackage`: `name`, `description`, `totalPrice`, `savingsAmount`, `validDays` (0 to 3650), `isActive`, and `services`
+
+Create and edit plans with the plan form on the page (generated CRUD).
+
+## Sell to a client
+
+Use the sell form: client, plan, and "Paid by". It calls `sellClientBenefit` with `kind` (`membership` or `package`), `planId`, `clientUserId`, `paymentMethod`, and an idempotency key.
+
+- A membership creates a `ClientMembership` starting today with `nextBillingDate`. A client cannot hold the same membership twice.
+- A package creates a `ClientPackage` with `totalValue`, `paidAmount`, `usedValue`, and `expiresAt` from `validDays`.
+
+## Manage status
+
+`setClientBenefitStatus`:
+
+- Memberships: `active`, `paused` (needs a `pausedUntil` date), `cancelled`. A cancelled membership cannot be reactivated.
+- Packages: only an active package can be cancelled.
+
+## Use at checkout
+
+[Checkout](/docs/openfront/salon/checkout) applies the member discount to included services and draws down package value. `redeemClientPackage` records usage against an appointment and service with `valueUsed`. Returned sales can restore package value with `restorePackageCents`.
+
+Statuses of a package: `active`, `expired`, `fully-used`, `cancelled`.

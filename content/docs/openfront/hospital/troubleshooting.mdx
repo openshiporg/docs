@@ -1,0 +1,26 @@
+---
+title: Troubleshooting
+description: Common messages and what to do.
+icon: LifeBuoy
+---
+
+| Message | Cause and fix |
+| --- | --- |
+| `… changed; refresh before retrying` | The record moved on. Reload and retry with the new version |
+| `Expected … version is invalid` | `expectedVersion` was missing or not an integer |
+| Appointment cannot be confirmed because the provider schedule conflicts | Another appointment or an `unavailable` block overlaps |
+| Appointment check-in must use the atomic care-queue arrival workflow | Use check in, not a status change |
+| Appointment already has an encounter | Open the existing one |
+| Appointment requests must use a future slot | Choose a later slot |
+| A different destination bed is required | Pick another bed |
+| Bed is not available for reservation | The bed is not `available` |
+| Bed reservation expiry must be within the next 24 hours | Shorten the hold |
+| Active coverage does not match the claim patient and facility | Record coverage for the right patient |
+| A current consent decision already exists; select it as the superseded decision | Supersede the existing decision |
+| An active hold already exists for this record | Release it first |
+| Adjustment must change on-hand quantity | Enter a non-zero change |
+| Encounter opening conflicted with another request; retry with the same operation key | Retry unchanged |
+| Reset links never arrive | `SMTP_HOST` is unset |
+| Every page redirects to `/dashboard/init` | No user exists yet |
+| Production fails to start | An `S3_*` variable is missing |
+| Integration events stay pending | The outbox worker is not running or `OUTBOX_WORKER_SECRET` does not match |

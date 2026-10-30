@@ -1,0 +1,40 @@
+---
+title: Cancel a booking and refund
+description: Quote, request, and track a refund.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Check the policy
+Open the guest cancellation quote or the booking's rate plan `cancellationPolicy`.
+
+</Step>
+<Step>
+
+### Cancel
+Cancel from the front desk. The booking is `cancellation_pending` until the refund resolves.
+
+</Step>
+<Step>
+
+### Request the refund
+On `/dashboard/platform/payments` open the payment, check the quote, and request the refund with a reason.
+
+</Step>
+<Step>
+
+### Approve if required
+A different user with `canApproveHotelExceptions` approves at `/dashboard/platform/approvals`.
+
+</Step>
+<Step>
+
+### Follow up
+If the refund stalls, replay it from `/dashboard/platform/outbox`.
+
+</Step>
+</Steps>

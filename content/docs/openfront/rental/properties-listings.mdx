@@ -1,0 +1,25 @@
+---
+title: Properties and listings
+description: Homes, units, media, amenities, house rules, and publication.
+icon: House
+---
+
+## Properties
+
+`/dashboard/platform/properties`, `/create`, `/[id]`. Needs `canReadProperties` and `canManageProperties`. A `Property` has a `PropertyAddress`, `AccommodationUnit` rows, and each unit has `Bedroom` and `Bed` records. `PropertyOwner` and `PropertyOwnerAssignment` link owners for statements.
+
+## Listings
+
+`/dashboard/platform/listings`, `/create`, `/[id]`, `/[id]/edit`. Needs `canManageListings`.
+
+| Field | Values |
+| --- | --- |
+| `status` | `draft`, `published`, `paused`, `archived` |
+| `bookingMode` | `instant`, `request` |
+| Pricing | `baseNightlyRateCents`, `securityDepositCents` |
+| Stay limits | `minimumStay`, `maximumStay`, `advanceNoticeHours`, `bookingWindowDays` |
+| Display | `isFeatured`, `thumbnail`, `media`, `amenities`, `collections`, `houseRules` |
+
+A listing must be attached to an available unit before publishing. Archived listings are read-only. `listingReadinessIndex` reports what is missing for each listing (`onlineReadiness`).
+
+Collections (`StayCollection`) group listings for `/collections`.

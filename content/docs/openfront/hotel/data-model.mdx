@@ -1,0 +1,50 @@
+---
+title: Data model
+description: The 40 lists, relationships, and status values.
+icon: Database
+---
+
+One database holds one property. The property key `the-alder-house` labels audit, outbox, business-date, and night-audit rows.
+
+| Area | Lists |
+| --- | --- |
+| Access | `User`, `Role` |
+| Property | `HotelSettings`, `HotelBusinessDate`, `NightAuditRun`, `DailyMetrics` |
+| Rooms and rates | `RoomType`, `RoomImage`, `Room`, `RoomInventory`, `RatePlan`, `SeasonalRate` |
+| Reservations | `Booking`, `ReservationLineItem`, `RoomAssignment`, `BookingModificationRequest` |
+| Guests | `Guest`, `GuestDocument`, `LoyaltyTransaction` |
+| Payments | `PaymentProvider`, `BookingPaymentSession`, `BookingPayment`, `PaymentEvent`, `RefundIntent` |
+| Folios | `Folio`, `FolioEntry` |
+| Operations | `HousekeepingTask`, `MaintenanceRequest`, `GroupBlock`, `GroupBlockAllocation` |
+| Channels | `Channel`, `ChannelReservation`, `ChannelSyncEvent` |
+| Evidence and runtime | `HotelAuditEvent`, `HotelOutboxEvent`, `HotelOutboxAttempt`, `HotelOutboxReceipt`, `HotelSeedRecord`, `HotelAbuseBucket`, `HotelWorkerLease` |
+
+Cashier shifts, receivable accounts and invoices, approvals, stay services, outages, relocations, the stay register, and governance requests are stored as `HotelAuditEvent` rows with an `aggregateType` and read through named queries.
+
+## Relationships
+
+| From | To |
+| --- | --- |
+| `RoomType` | `Room`, `RatePlan`, `RoomImage` |
+| `Room` | `RoomType`, `HousekeepingTask`, `RoomAssignment` |
+| `Booking` | `Guest`, `RatePlan`, `RoomAssignment`, `Folio`, `BookingPayment` |
+| `Folio` | `Booking` or `GroupBlock`, `FolioEntry` |
+| `RefundIntent` | `Booking`, source `BookingPayment`, `PaymentProvider` |
+| `GroupBlock` | `GroupBlockAllocation`, `Booking`, master `Folio` |
+| `Channel` | `ChannelReservation`, `ChannelSyncEvent` |
+
+## Money
+
+Amounts are integer minor units (`totalAmountMinor`, `balanceDueMinor`, `amountMinor`). `Booking` still carries older `Float` fields (`totalAmount`, `roomRate`) alongside them. `Booking`, `ReservationLineItem`, and `FolioEntry` deny generated create, update, and delete.
+
+## Statuses
+
+| List | Values |
+| --- | --- |
+| `Booking` | `pending`, `confirmed`, `checked_in`, `checked_out`, `cancellation_pending`, `cancelled`, `no_show` |
+| `Room` | `vacant`, `occupied`, `cleaning`, `maintenance`, `out_of_order` |
+| `Folio` | `open`, `closed`, `voided` |
+| `RefundIntent` | `pending`, `processing`, `succeeded`, `failed`, `dead_letter` |
+| `GroupBlock` | `tentative`, `definite`, `released`, `cancelled` |
+| `HousekeepingTask` | `pending`, `in_progress`, `completed`, `inspection_needed`, `on_hold` |
+| `MaintenanceRequest` | `reported`, `assigned`, `in_progress`, `completed`, `verified`, `cancelled` |

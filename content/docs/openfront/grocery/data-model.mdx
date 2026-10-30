@@ -1,0 +1,49 @@
+---
+title: Data model
+description: Lists, relationships, and status values in the Grocery schema.
+icon: Database
+---
+
+The registry in `features/keystone/models/index.ts` defines 66 lists. Everything is scoped to a `Store`. Money is stored in cents. Quantities of weighed goods are stored in thousandths.
+
+## Areas
+
+| Area | Lists |
+| --- | --- |
+| Store and staff | `Store`, `StoreSettings`, `User`, `Role`, `StaffInvitation`, `StaffAccessEvent`, `RateLimitBucket` |
+| Catalog | `Department`, `Product`, `ProductInformationVersion`, `CatalogImport`, `Coupon`, `UserCoupon`, `Recipe`, `RecipeIngredient` |
+| Inventory | `InventoryLot`, `InventoryMovement`, `InventoryAdjustment`, `InventoryCount`, `InventoryRecall`, `InventoryConversion`, `OrderLineInventoryAllocation` |
+| Purchasing | `Supplier`, `PurchaseOrder`, `POItem`, `PurchaseReceipt`, `SupplierInvoice`, `SupplierCredit` |
+| Baskets and orders | `Cart`, `CartItem`, `CheckoutAttempt`, `Order`, `OrderLineItem`, `OrderItemSubstitution`, `SubstitutionPreference`, `OrderLineFulfillment`, `OrderSettlement` |
+| Pickup and delivery | `PickupSlot`, `DeliverySlot`, `ParkingSpot`, `DeliveryRoute` |
+| Payments and finance | `PaymentProvider`, `PaymentSession`, `Payment`, `PaymentRefund`, `OrderLineRefund`, `PaymentWebhookEvent`, `SettlementMatch`, `FinancialClose` |
+| Customers | `Address`, `ShoppingList`, `ShoppingListItem`, `FavoriteProduct`, `Subscription`, `SubscriptionRun`, `LoyaltyProgram`, `LoyaltyTransaction`, `LoyaltyRedemption`, `BackInStockAlert`, `PriceAlert`, `NotificationPreference` |
+| Messages and privacy | `ContactMessage`, `CustomerMessage`, `CustomerPrivacyRequest`, `CustomerBatchRequest`, `GroceryOutboxEvent` |
+
+## Relationships
+
+| From | To |
+| --- | --- |
+| `Product` | `Department`, `Supplier`, `InventoryLot`, `ShoppingListItem`, `Subscription` |
+| `InventoryLot` | `Product`, `Supplier`, `OrderLineInventoryAllocation` |
+| `Order` | `User`, `Address`, `OrderLineItem`, `Payment`, `CheckoutAttempt`, `DeliverySlot`, `PickupSlot`, `DeliveryRoute` |
+| `OrderLineItem` | `Product`, `InventoryLot`, `OrderItemSubstitution`, `OrderLineFulfillment` |
+| `PurchaseOrder` | `Supplier`, `POItem`, `PurchaseReceipt` |
+| `Payment` | `Order`, `PaymentProvider`, `PaymentRefund`, `PaymentWebhookEvent` |
+| `Role` | `Store`, `User` |
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Order` | `pending`, `picking`, `packed`, `out_for_delivery`, `delivered`, `delivery_failed`, `delivery_refused`, `returned`, `cancelled` |
+| `Product` | `draft`, `published`, `archived` |
+| `PurchaseOrder` | `draft`, `sent`, `confirmed`, `received`, `cancelled` |
+| `Payment` | `pending`, `authorized`, `processing`, `succeeded`, `failed`, `cancelled`, `refunded`, `partially_refunded` |
+| `PaymentRefund` | `processing`, `succeeded`, `failed`, `canceled` |
+| `DeliveryRoute` | `planning`, `in_progress`, `completed` |
+| `CheckoutAttempt` | `pending`, `settled_pending_finalize`, `finalizing`, `finalized`, `compensation_required`, `compensation_processing`, `compensated`, `failed` |
+| `ContactMessage` | `new`, `in_progress`, `replied`, `closed` |
+| `OrderLineFulfillment.resolution` | `picked`, `short`, `substituted` |
+
+Most lifecycle lists block generated create, update, and delete. They change through the named commands, which take an idempotency key.

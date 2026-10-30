@@ -1,0 +1,26 @@
+---
+title: Channels
+description: Connect an HTTP channel manager for inventory push and reservation pull.
+icon: Share2
+---
+
+Route: `/dashboard/platform/channels`. Needs `canManageBookings` and `canManageIntegrations` (`hotelChannelOperations`).
+
+A `Channel` stores its mode in its credentials: `disabled` or `live`. Only `live` channels send requests.
+
+## Setup
+
+1. Save a draft with `saveHotelChannelDraft`: name, HTTPS endpoints, `allowedOrigins`, and the signing secret.
+2. Switch the channel to `live`.
+3. Push inventory with `pushInventoryToChannel`, or pull reservations with `pullReservationsFromChannel`.
+4. Retry failures with `retryFailedChannelSyncs`.
+
+Every attempt is a `ChannelSyncEvent`. Imported reservations are `ChannelReservation` rows linked to bookings.
+
+## Inbound webhook
+
+`POST /api/webhooks/channel/[channelId]` needs live mode, an HMAC signature header, and a signed event id used for replay protection.
+
+## Automatic sync
+
+Workers push inventory every 15 minutes and pull reservations every 5 for live channels, with retries every 2 minutes.

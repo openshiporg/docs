@@ -1,0 +1,49 @@
+---
+title: Services and catalog
+description: Categories, services, pricing by stylist level, deposits, and required resources.
+icon: Scissors
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/catalog` needs `canManageCatalog`. It lists categories, services, and retail products. `/dashboard/platform/catalog/[id]` shows one service with booking rules, price by level, upcoming bookings, and reviews.
+
+## Service fields
+
+| Field | Notes |
+| --- | --- |
+| `name`, `description` | Shown on the storefront |
+| `price` (and `basePrice`) | Integer cents |
+| `baseDuration` | Minutes, 1 to 480 |
+| `bufferMinutes` | Cleanup time after, up to 120 |
+| `depositRequired`, `depositAmount` | Deposit cannot exceed the price |
+| `requiresConsultation`, `requiresPatchTest` | Blocks online booking |
+| `status` | `active` or `inactive`. Inactive services cannot be booked |
+| `category` | A `ServiceCategory` |
+| `specialists` | Stylists who offer it |
+| `requiredResources` | Chairs, rooms, equipment the service occupies |
+| `pricingTier` | Price per stylist level: `junior`, `senior`, `master`, `celebrity` |
+| `image` | A `SalonImage` |
+
+## Add a service
+
+<Steps>
+<Step>
+### Create a category
+`saveSalonRecord` with `kind: "category"`. The slug must be lowercase letters, numbers, and hyphens.
+</Step>
+<Step>
+### Create the service
+`saveSalonRecord` with `kind: "service"`, then set specialists and resources.
+</Step>
+<Step>
+### Set level pricing
+On the service detail page, enter a price for each stylist tier.
+</Step>
+</Steps>
+
+`ServiceVariant` and `ServiceSegment` lists can be edited from the generic list screens at `/dashboard/ServiceSegment`.
+
+## Retail products
+
+Products have `name`, `sku`, `price`, `cost`, `quantity`, `reorderPoint`, `category`, and `isActive`. Stock changes through [Inventory](/docs/openfront/salon/inventory).

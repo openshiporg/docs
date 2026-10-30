@@ -1,0 +1,26 @@
+---
+title: Pay out commissions and tips
+description: Review what each stylist is owed and mark it paid.
+icon: Banknote
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open Commissions
+Go to `/dashboard/platform/commissions`. Unpaid commissions and payable card tips are grouped by stylist.
+</Step>
+<Step>
+### Pay the batch
+Select a stylist's commissions and enter a payout reference (for example a payroll batch ID).
+</Step>
+<Step>
+### Pay tips
+Run the gratuity payout for the same stylist with a reference.
+</Step>
+<Step>
+### Check
+Reports show remaining unpaid commissions. Refunds after payout appear as `recovery_due` tips and negative adjustments.
+</Step>
+</Steps>

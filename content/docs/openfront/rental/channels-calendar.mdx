@@ -1,0 +1,36 @@
+---
+title: Channels and calendar exchange
+description: Channel connections, listing mappings, and iCalendar import and export.
+icon: Share2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/channels`. Needs `canManageChannels`.
+
+A `ChannelConnection` has a provider (`direct`, `airbnb`, `vrbo`, `booking_com`, `ical`, `pms`), a connection type (`api`, `webhook`, `ical`, `manual`), and status (`pending`, `active`, `paused`, `error`, `disconnected`). `ChannelListing` maps a listing to the external one; `ChannelReservation` and `ChannelSyncEvent` record imports and events.
+
+The installed adapters are `direct` and `ical`. The `ical` adapter handles availability.
+
+<Steps>
+<Step>
+
+### Create the connection
+Add an `ical` connection and map each listing.
+
+</Step>
+<Step>
+
+### Import
+Paste calendar text into `importListingCalendar`. Imported dates become calendar blocks.
+
+</Step>
+<Step>
+
+### Export
+Fetch `exportListingCalendar` output and give it to the other calendar.
+
+</Step>
+</Steps>
+
+Failures show as "Calendar import is unavailable" with the blocker.

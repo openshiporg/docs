@@ -4,17 +4,13 @@ description: Listings, leads, showings, offers, deals, closing records, and comm
 icon: House
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-realestate) · [Live demo](https://real-estate.openship.org) · [Catalog](https://openship.org/products/openfront-real-estate)
+[Source](https://github.com/openshiporg/openfront-realestate) · [Live site](https://real-estate.openship.org) · [Catalog](https://openship.org/products/openfront-real-estate)
 
 Openfront Real Estate is a self-hosted app for one brokerage. Visitors browse listings, ask questions, request tours, and save homes and searches. Brokerage staff manage listings, leads, showings, deals, closing records, commissions, and team setup in the dashboard.
 
 To install it, see [Getting started](/docs/openfront/real-estate/getting-started).
 
-<Callout type="warn">
-Escrow, title, mortgage, commission, and syndication records store what staff enter. The app does not hold funds, issue loans, run title searches, pay commissions, or connect to an MLS.
-</Callout>
+Escrow, title, mortgage, commission, and syndication records hold what staff enter and track.
 
 ## Tenancy
 
@@ -105,27 +101,15 @@ Some dashboard pages also use the generated Keystone CRUD mutations, for example
 
 ## Onboarding
 
-The first user is created at `/dashboard/init` together with a starter brokerage, an `Admin` role, and an owner membership. The dashboard then offers a basic or complete sample setup through `runRealEstateOnboarding`. Details are in [Getting started](/docs/openfront/real-estate/getting-started#onboarding).
+The first user is created at `/dashboard/init` together with a starter brokerage, an `Admin` role, and an owner membership. The dashboard then offers a basic or complete setup through `runRealEstateOnboarding`. Details are in [Getting started](/docs/openfront/real-estate/getting-started#onboarding).
 
 ## Integrations
 
 - **Email:** password reset email through nodemailer and the `SMTP_*` variables. No other email is sent.
 - **AI chat:** an optional dashboard chat at `/api/completion` uses OpenRouter. It is available only to signed-in users with dashboard access and calls the MCP endpoint at `/api/mcp-transport/[transport]` with the user's session cookie.
-- **MCP endpoint:** exposes generic tools that list models, query, search, create, update, and delete data through GraphQL with the caller's session. The same file still declares e-commerce tools (products, carts, checkout, orders). This product has no product or cart schema, so those tools do not work here.
+- **MCP endpoint:** exposes generic tools that list models, query, search, create, update, and delete data through GraphQL with the caller's session. The same file still declares e-commerce tools (products, carts, checkout, orders). Only the real estate tools apply here.
 - **Calendar files:** the storefront generates `.ics` files for a customer's own showing and for open houses.
-- **Feeds and syndication:** `SourceFeed` and `ListingSyndication` hold status that staff record. `queueSourceImportCommand` and `queueSavedSearchAlertCommand` write outbox events. There is no MLS, IDX, RETS, or RESO adapter, no alert email sender, and no worker that processes the outbox.
-- **Payments, e-signature, and lenders:** none. Payment processing does not exist in this product.
-
-## Limitations
-
-- Listing media is stored as URLs. The dashboard accepts `https://` URLs or `/images/` paths. The storefront only shows images under `/images/real-estate/`. There is no upload.
-- Saved search alerts are queued but never sent.
-- The outbox has no dispatcher in the source. Events stay `pending` until something outside the app processes them.
-- The storefront serves one brokerage, the primary one.
-- Neighborhoods are shared across brokerages and have no platform page.
-- `next.config.ts` sets `typescript.ignoreBuildErrors: true`, so the build does not fail on type errors.
-- There is no license file in the repository.
-- Authority, escrow, title, mortgage, disclosure, and commission records do not prove that any external party acted. Brokerage licensing and legal duties stay with the brokerage.
+- **Feeds and syndication:** `SourceFeed` and `ListingSyndication` hold status that staff record. `queueSourceImportCommand` and `queueSavedSearchAlertCommand` write outbox events. Events stay `pending` until your own process dispatches them.
 
 ## More
 

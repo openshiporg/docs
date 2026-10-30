@@ -1,0 +1,25 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| A durable idempotency key between 12 and 160 characters is required | Send a longer stable key |
+| A check with an unresolved conflict disposition cannot be cleared | Record every disposition first |
+| Conflict clearance requires nonempty search terms and explicit completed-search evidence | Add terms and evidence |
+| Conflict evidence is unclassified; link exactly one verified source before review | Link one contact, matter, or party |
+| A payment can be recorded against an open issued invoice only | Issue the invoice |
+| An invoice with payment allocations must be reversed or refunded before voiding | Reverse allocations |
+| A trust posting requires at least two ledger entries | Add balancing entries |
+| A client trust ledger must have a zero balance before closing | Disburse or transfer first |
+| Bank identity can be set only while the trust account is pending | Do it before any posting |
+| A retention hold requires a matter, document, or contact target | Name a target |
+| A hold cannot be placed after document disposal | Place holds earlier |
+| Choose exactly one staff member, contact or portal account | Pick one subject |
+| Booking and account sign-up closed | Publish the privacy and first-contact notices and enable the switches |
+| Public site is blank | Exactly one active firm is needed |
+| Uploads fail | A value among the five `S3_*` is missing |
+| Emails and webhooks never leave | Run the worker; set `SMTP_*` and `WEBHOOK_ALLOWED_HOSTS` |
+| Stored credentials unreadable | `INTEGRATION_CREDENTIAL_KEY` or `MACHINE_CREDENTIAL_PEPPER` changed |

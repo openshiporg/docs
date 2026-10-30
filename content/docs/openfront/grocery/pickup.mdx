@@ -1,0 +1,22 @@
+---
+title: Pickup and curbside
+description: Pickup windows, parking spots, curbside check-in, and handoff.
+icon: Car
+---
+
+`/dashboard/platform/pickup` needs `canManageDelivery`. Data comes from `groceryPlatformPickup`.
+
+## Configuration
+
+- `PickupSlot`: `date`, `startTime`, `endTime`, `maxOrders`, `currentOrders`, `isActive`, `isAvailable`. `configurePickupSlot(slotId, maxOrders, isAvailable, idempotencyKey)` changes capacity or closes a slot.
+- `ParkingSpot`: `spotNumber`, `description`, `isAccessible`, `isAvailable`. `configureParkingSpot(spotId, isAvailable, idempotencyKey)` opens or closes one.
+
+## Customer side
+
+When an order is ready, the shopper checks in on `/order/[id]` with `customerCheckIn` (signed in) or `guestCustomerCheckIn` (guest link), choosing a spot from `availableParkingSpots`. `releaseParkingSpot` frees it.
+
+## Handoff
+
+The pickup board shows arrivals. The order must be `packed` and marked ready first. After bringing the goods out, staff hand off with `completeOrderHandoff(orderId)`. The order becomes `delivered` and the parking spot is released.
+
+Pickup orders have their own minimum in the delivery policy.

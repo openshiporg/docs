@@ -1,0 +1,35 @@
+---
+title: Commissions and tips
+description: Unpaid commissions, card tip allocations, and payouts.
+icon: Banknote
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/commissions` needs `canManageCommissions`.
+
+## Where amounts come from
+
+- A `Commission` is created per service line at checkout: `saleAmount`, `commissionRate`, `commissionAmount`, `isPaid`, `paidAt`.
+- Tips are `GratuityLedgerEntry` rows of type `allocation` or `recovery`, with `payoutStatus` `payable`, `paid`, or `recovery_due`.
+
+`calculateCommission(stylistId, startDate, endDate)` returns totals for a period.
+
+## Pay out
+
+<Steps>
+<Step>
+### Pick a stylist
+The page lists unpaid commissions per stylist (`UnpaidStylistCommissions`).
+</Step>
+<Step>
+### Pay commissions
+`payoutCommissions` takes `commissionIds` and a `reference`. All commissions in one batch must belong to one stylist.
+</Step>
+<Step>
+### Pay card tips
+`payoutGratuities` takes `stylistId` and a `reference` and marks payable tips as paid.
+</Step>
+</Steps>
+
+Refunds create `CommissionAdjustment` rows and tip recoveries, so a later payout reflects them. See [Sales and refunds](/docs/openfront/salon/sales-refunds).

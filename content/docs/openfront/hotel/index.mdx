@@ -4,17 +4,13 @@ description: Single-property room inventory, direct booking, guest access, front
 icon: Bed
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-hotel) · [Live demo](https://hotel.openship.org) · [Catalog](https://openship.org/products/openfront-hotel)
+[Source](https://github.com/openshiporg/openfront-hotel) · [Live site](https://hotel.openship.org) · [Catalog](https://openship.org/products/openfront-hotel)
 
 Openfront Hotel is a self-hostable hotel property-management and direct-booking application for one property. Guests browse rooms, get a stay quote, book direct, and review their booking and folio. Staff use the dashboard for reservations, room assignment, rates, housekeeping, maintenance, folios, cashier work, receivables, group blocks, and night audit.
 
 It is built with Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/hotel/getting-started).
 
-<Callout type="warn">
 One database holds one property. There is no Organization, Property, or Location model. `HotelSettings` is a singleton row, roles are global, and the property key `the-alder-house` is a fixed constant used to label audit, outbox, business-date, and night-audit records. There are no native Booking.com or Expedia adapters.
-</Callout>
 
 ## Code layout
 
@@ -100,7 +96,7 @@ A storefront booking starts as a `pending` hold that expires after 30 minutes. A
 - `minimal` — a smaller subset: 2 room types, 5 rooms, 2 rate plans, 1 seasonal rate, 1 guest, 1 booking and payment, 1 housekeeping task, 1 maintenance request, 1 channel, and 2 inventory rows.
 - `custom` — your own JSON, checked against the onboarding schema.
 
-For `full` and `minimal`, seed dates are moved relative to the property business date; `custom` dates are kept as given. Seeded channels (named Booking.com and Expedia) are inactive and use `mode: demo`, so they never call a remote endpoint. Onboarding refuses to run if the database already has rooms, room types, bookings, folios, housekeeping tasks, maintenance requests, guests, rate plans, channels, inventory rows, night audits, or seed records. Running it again with the same input is a no-op; with different input it fails. After setup, change data through property settings and the workspaces.
+For `full` and `minimal`, seed dates are moved relative to the property business date; `custom` dates are kept as given. Seeded channels (named Booking.com and Expedia) are inactive and are not in `live` mode, so they never call a remote endpoint. Onboarding refuses to run if the database already has rooms, room types, bookings, folios, housekeeping tasks, maintenance requests, guests, rate plans, channels, inventory rows, night audits, or seed records. Running it again with the same input is a no-op; with different input it fails. After setup, change data through property settings and the workspaces.
 
 ## Payments
 
@@ -110,7 +106,7 @@ Provider webhooks enter at `/api/payment-providers/[providerCode]/webhook`. Staf
 
 ## Channels
 
-Channel support is a generic HTTP bridge, not an OTA integration. Each `Channel` stores a `mode` in its credentials: `disabled`, `demo`, or `live`. Only `live` channels send requests. A live channel needs HTTPS endpoints whose origins are listed in `allowedOrigins`. Inbound reservations arrive at `/api/webhooks/channel/[channelId]`, which requires live mode, an HMAC signature header, and a signed event id used for replay protection. Rate sync is not implemented. The dashboard Channels page says channels are off by default.
+Channel support is a generic HTTP bridge, not an OTA integration. Each `Channel` stores a `mode` in its credentials: `disabled` or `live` (or a non-sending mode). Only `live` channels send requests. A live channel needs HTTPS endpoints whose origins are listed in `allowedOrigins`. Inbound reservations arrive at `/api/webhooks/channel/[channelId]`, which requires live mode, an HMAC signature header, and a signed event id used for replay protection. Channel sync pushes inventory and pulls reservations. The dashboard Channels page says channels are off by default.
 
 ## Workers and outbox
 
@@ -128,17 +124,5 @@ Workers take database leases (`HotelWorkerLease`), so only one process runs each
 - `/api/health` returns a static OK. `/api/ready` checks settings, business date, providers, and worker progress.
 - `/api/hotel/outbox/receiver` accepts HMAC-signed events only when `HOTEL_OUTBOX_RECEIVER_SECRET` and `HOTEL_OUTBOX_RECEIVER_CREDENTIAL_KEY_ID` are set.
 - `/api/completion` is the dashboard AI chat. It needs a signed-in user with `canAccessDashboard` plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
-- `/api/mcp-transport/[transport]` returns HTTP 410. MCP machine access is disabled until scoped machine authentication exists. `/api/completion` opens an MCP client against this endpoint for its tools, so the dashboard AI chat is expected to fail in current source.
+- `/api/mcp-transport/[transport]` returns HTTP 410. MCP machine access is disabled until scoped machine authentication exists, so the dashboard AI chat has no tools to call.
 - `/api/create-payment-intent` and `/api/send-booking-confirmation` return HTTP 410. Use the booking payment session and outbox paths instead.
-
-## Limitations
-
-- One property per database. No multi-property tenancy.
-- No native OTA adapters and no rate sync. Seeded channels are demo rows.
-- Email depends on SMTP or an external dispatcher. Queued outbox rows are not proof of delivery.
-- Image upload needs all five `S3_*` variables. Without them, room images can only use public paths.
-- Booking money fields are partly `Float` and partly integer minor units.
-- MCP transport is disabled, so the dashboard AI chat cannot reach its tools.
-- Workers run inside the web process. A serverless deploy with no long-running process will not run them.
-- The repository has only two test files under `tests/`. Test booking concurrency, guest access, payments, refunds, night audit, and workers on your own deployment before handling real guests or money.
-- No compliance or certification is claimed.

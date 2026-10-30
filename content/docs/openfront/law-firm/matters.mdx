@@ -1,0 +1,30 @@
+---
+title: Matters, contacts, and ethical walls
+description: Matter workspace, parties, team access, confidentiality, and walls.
+icon: BriefcaseBusiness
+---
+
+## Contacts
+
+`/dashboard/platform/contacts` and `/[contactId]`: search, create, and view addresses, contact methods, matters, intakes, and portal access. `Contact.contactType` is a person or organization, with a status from `prospective_client` to `client`.
+
+## Matters
+
+`/dashboard/platform/matters` and `/[matterId]`. The workspace shows parties, team, walls, confidentiality, status history, and registers for tasks, deadlines, documents, messages, and invoices.
+
+| Action | Mutation |
+| --- | --- |
+| Change status | `transitionMatter` |
+| Change confidentiality | `changeMatterConfidentiality` |
+| Set team access | `setMatterTeamAccess` |
+| Add or change a party | `addMatterParty`, `changeMatterParty` |
+
+Status: `proposed` → `pending_conflict` → `open` ⇄ `on_hold` → `closing` → `closed`; or `declined`. Each change writes a `MatterStatusEvent`.
+
+## Access
+
+A user sees a matter when the firm role allows it, they are on the team, and no wall blocks them. `authorizedUsers` and `blockedUsers` are maintained by the team and wall mutations and cannot be written directly.
+
+## Ethical walls
+
+`transitionEthicalWall` moves a wall `draft` → `active` → `lifted`. `setEthicalWallMember` sets each user `allowed` or `blocked`. A firm administrator does not pass a wall.

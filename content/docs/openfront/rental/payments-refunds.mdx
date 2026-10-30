@@ -1,0 +1,52 @@
+---
+title: Payments, deposits, and refunds
+description: Record and capture payments, hold deposits, assess claims, and refund.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/payments`, `/[id]`. Needs `canManagePayments`.
+
+## Payments
+
+`Payment.status`: `pending`, `processing`, `succeeded`, `failed`, `cancelled`, `partially_refunded`, `refunded`. Methods: `card`, `bank_transfer`, `cash`, `check`, `manual`.
+
+| Action | Command |
+| --- | --- |
+| Record money already received | `payment_record_manual` (the operator attests receipt) |
+| Start or capture a card payment | `initiateStayPayment`, `captureStayPayment` |
+| Cancel an attempt | `payment_cancel_attempt` |
+
+A cancelled or no-show reservation cannot newly capture a payment. Another payment awaiting confirmation blocks a second attempt.
+
+## Deposits and claims
+
+`SecurityDeposit`: `required` → `authorized` → `held` → `partially_captured`, `captured`, or `released`; `failed`. Use `transitionSecurityDeposit`.
+
+`DamageClaim`: `draft` → `submitted` → `guest_response` → `approved`, `partially_approved`, `declined`, `settled`. A partial approval must be above zero and below the claimed amount. Use `createStayDamageClaim` and `transitionDamageClaim`.
+
+## Refunds
+
+Reasons: `guest_cancellation`, `host_cancellation`, `stay_issue`, `stay_amendment`, `overpayment`, `goodwill`, `other`. Status: `review`, `pending`, `processing`, `succeeded`, `failed`, `cancelled`.
+
+<Steps>
+<Step>
+
+### Assess
+`refund_assess` decides the amount (at least 3 characters of explanation) or declines with `refund_decline`. A refund can be reduced under the cancellation policy, not increased.
+
+</Step>
+<Step>
+
+### Create
+`refund_create` with a description of 3 to 1000 characters.
+
+</Step>
+<Step>
+
+### Process
+`refund_process` sends a card refund; `refund_record_manual` records one already completed in cash or elsewhere.
+
+</Step>
+</Steps>

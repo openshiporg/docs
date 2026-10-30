@@ -1,0 +1,62 @@
+---
+title: Roles and permissions
+description: Role flags, what each one unlocks, and which dashboard pages and mutations they guard.
+icon: ShieldCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Access comes from boolean flags on the `Role` list. A `User` has one role. The first user created at `/dashboard/init` gets an Admin role with every flag. Manage roles at `/dashboard/roles` (needs `canManageRoles`).
+
+## Flags
+
+| Flag | Unlocks |
+| --- | --- |
+| `canAccessDashboard` | Sign in to the operations dashboard |
+| `canManageSalon` | Manager override. Passes every operational check below except the two noted |
+| `canManageAppointments` | Appointments, desk booking, arrivals, waitlist, resources |
+| `canManageClients` | Client directory, preferences, benefits, loyalty, reviews |
+| `canManageCareRecords` | Consultation answers, signatures, and review evidence. Not granted by `canManageSalon` |
+| `canManageCatalog` | Services, categories, membership and package plans |
+| `canManageSchedules` | Every stylist's weekly hours and time off |
+| `canManageOwnSchedule` | Only the signed-in stylist's own schedule |
+| `canManageResources` | Chairs, rooms, equipment, availability |
+| `canManageInventory` | Retail products and stock movements |
+| `canManagePayments` | Checkout, deposits, gift cards, tips |
+| `canIssueRefunds` | Refunds, voids, partial refunds |
+| `canManageCommissions` | Commission payouts, staff commission rates, sale compensation corrections |
+| `canViewReports` | Reports and the sales list |
+| `canManageIntegrations` | Payment providers and delivery exceptions |
+| `canManageOnboarding` | `runSalonOnboarding`. Not granted by `canManageSalon` |
+| `canManagePeople`, `canManageRoles` | Users and roles |
+
+## Page guards
+
+Each route under `/dashboard/platform/*` is wrapped in `withPlatformPermission`. A user with `canManageSalon` passes. Otherwise the role needs at least one of the listed flags or the page redirects to `/dashboard/no-access`. The full route-to-flag table is in [External dashboards](/docs/openfront/salon/external-dashboard).
+
+Guards only control navigation. Each mutation checks the flag again on the server.
+
+## Suggested roles
+
+<Steps>
+<Step>
+### Reception
+`canAccessDashboard`, `canManageAppointments`, `canManageClients`, `canManagePayments`.
+</Step>
+<Step>
+### Stylist
+`canAccessDashboard`, `canManageOwnSchedule`. Add `canManageAppointments` if they run their own day board.
+</Step>
+<Step>
+### Finance
+`canAccessDashboard`, `canManagePayments`, `canIssueRefunds`, `canManageCommissions`, `canViewReports`.
+</Step>
+<Step>
+### Practitioner with consultation access
+Add `canManageCareRecords` to read answers on consent forms.
+</Step>
+</Steps>
+
+## Clients
+
+Clients register at `/account/signup` with `registerSalonCustomer`. They get a client profile and no role. Owner filters let them read only their own client record, appointments, payments, benefits, points, and gift cards.

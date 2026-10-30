@@ -39,9 +39,3 @@ Other dashboard routes come from `features/dashboard`: `/dashboard` (home), `/da
 Screens call named GraphQL documents from their slice's `actions` folder. Reads are workspace queries such as `TodayOverview`, `ReservationWorkspace`, `ReservationDetail`, `HostCalendar`, `PricingWorkspace`, `PaymentWorkspace`, `OwnerWorkspace`, `ChannelWorkspace`, `HostOperationsReport`, and `ListingReadinessIndex`. Most writes go through `mutation HostStayCommand`, which calls `hostStayCommand(command, input)`. Other writes use dedicated mutations such as `CreatePlatformProperty`, `CreatePlatformListing`, `CreatePlatformRatePlan`, `CreateCalendarBlock`, `ReleaseCalendarBlock`, `ImportCalendar`, `GenerateOwnerStatement`, `TransitionOwnerStatement`, `CreatePropertyTask`, `TransitionPropertyTask`, `RunPropertyTaskRules`, and `UpdateMarketplaceSettings`. See the [overview](/docs/openfront/rental#named-graphql-operations) for the server operations.
 
 Sidebar items are listed for every user. Each page and command checks the user's own permissions and host membership.
-
-## Limitations
-
-- Payment pages show manual records and Stripe test-mode attempts only. They do not move real money.
-- Payout and owner statement pages record transfers. They do not send them.
-- The channels page manages local mappings and pasted iCalendar text. It does not connect to an OTA.

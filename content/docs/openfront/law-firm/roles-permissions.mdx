@@ -1,0 +1,31 @@
+---
+title: Roles and permissions
+description: Role flags, matter team capabilities, and ethical walls.
+icon: KeyRound
+---
+
+## Layers
+
+1. **Firm role.** A `Role` with 39 `can*` flags, held through an active `FirmMembership`.
+2. **Matter team.** `canEdit`, `canBill`, `canAccessRestricted` per matter.
+3. **Ethical wall.** Blocks named users regardless of role.
+
+## Representative flags
+
+| Flag | Allows |
+| --- | --- |
+| `canManageIntake` | Intake and consultations |
+| `canRunConflictChecks`, `canResolveConflicts` | Run searches; record dispositions and finalize |
+| `canManageMatters` | Matter workspace and status |
+| `canManageEthicalWalls` | Walls |
+| `canManageBilling` | Time, invoices, payments, refunds |
+| `canManageTrust` | Trust accounts and reconciliation |
+| `canManagePortal` | Portal invitations and shares |
+| `canManageRetention` | Retention and holds |
+| `canManageIntegrations` | Connections, API keys, OAuth, webhooks |
+| `canManageAgents` | Agent principals and grants |
+| `canViewAudit` | Audit reports |
+
+Edit all flags on `/dashboard/platform/team`. Standard roles: Firm administrator (every flag), Attorney, Paralegal, Billing, Intake coordinator.
+
+Storefront customers are `User` records with no membership. Dashboard sign-up is closed unless `PUBLIC_SIGNUPS_ALLOWED=true`.

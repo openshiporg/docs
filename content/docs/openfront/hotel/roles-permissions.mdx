@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: Role flags and what each one unlocks.
+icon: KeyRound
+---
+
+Roles are global. The first user gets `Admin` with every flag. Manage users and roles on `/dashboard/users` and `/dashboard/roles`.
+
+| Flag | Unlocks |
+| --- | --- |
+| `canAccessDashboard` | Dashboard sign-in and MFA setup |
+| `canManageRooms` | Rooms, rate plans, maintenance |
+| `canManageBookings` | Front desk, reservations, groups, channels, analytics |
+| `canManageHousekeeping` | Housekeeping |
+| `canManageGuests` | Guests and messages |
+| `canManagePayments` | Payments, folios, cashier, receivables, payouts, disputes, payment providers |
+| `canManageOnboarding` | Onboarding and property settings |
+| `canManageAudit` | Outbox and audit |
+| `canManageGuestPrivacy` | Guest governance |
+| `canApproveHotelExceptions` | Decide approvals |
+| `canManageIntegrations` | Channels and provider credentials |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles` | Users and roles |
+
+Guest accounts are users with no role. The sidebar shows every entry; each page, query, and mutation checks its own permission.
+
+Staff can enable TOTP at `/dashboard/platform/security`. Dashboard sign-up is closed unless `PUBLIC_SIGNUPS_ALLOWED=true`.

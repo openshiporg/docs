@@ -1,0 +1,22 @@
+---
+title: Refund an order
+description: Refund selected lines, void an authorization, or cancel an order.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Choose the path
+Before capture, void the authorization or cancel the order. After capture, refund lines.
+</Step>
+<Step>
+### Refund lines
+At `/dashboard/platform/payments` open the order, select the lines, give a reason (3 to 500 characters), and choose a disposition for each: `return_to_stock`, `waste`, or `quarantine`.
+</Step>
+<Step>
+### Watch the status
+The refund shows `processing` until the provider confirms. The refund worker updates it. A stuck refund appears in the recovery list.
+</Step>
+</Steps>

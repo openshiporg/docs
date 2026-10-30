@@ -1,0 +1,40 @@
+---
+title: Payment providers
+description: Configure Stripe and PayPal for online booking payment.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/payment-providers`. Needs `canManagePayments`; saving also needs `canManageIntegrations` (`configureHotelPaymentProvider`).
+
+| Provider | Id |
+| --- | --- |
+| Stripe | `pp_stripe_stripe` |
+| PayPal | `pp_paypal_paypal` |
+
+<Steps>
+<Step>
+
+### Enter credentials
+
+Open a provider, enter its keys and webhook secret, and enable it. Secrets are encrypted with `HOTEL_DATA_ENCRYPTION_KEY` and never shown again.
+
+</Step>
+<Step>
+
+### Add the webhook
+
+Point the provider at `/api/payment-providers/[providerCode]/webhook`.
+
+</Step>
+<Step>
+
+### Test a booking
+
+The provider appears at `/book` only when enabled with complete credentials.
+
+</Step>
+</Steps>
+
+Stripe can fall back to `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET` when `STRIPE_ENABLED=true` and the record has no stored credentials. If neither provider is enabled, the booking page says online payment is unavailable and staff can record payments on the folio.

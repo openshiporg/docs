@@ -1,0 +1,19 @@
+---
+title: Guests and messages
+description: Guest profiles, loyalty, and contact-form messages.
+icon: Users
+---
+
+## Guests
+
+`/dashboard/platform/guests` and `/guests/[id]` need `canManageGuests` (`hotelGuestOperations`). The list searches and filters by segment. A profile shows contact details, stay history, `totalStays`, `totalSpent`, and flags `isVip` and `isBlacklisted`.
+
+## Loyalty
+
+Tiers are `bronze`, `silver`, `gold`, `platinum`, `diamond`. Points are written as `LoyaltyTransaction` rows. Staff redeem points on the front desk with `redeemHotelLoyalty`. Earning rules are set in property settings.
+
+## Messages
+
+`/dashboard/platform/messages` lists messages sent from `/contact` (`hotelGuestMessages`). Reply from your own email client through the `mailto:` link.
+
+Guest privacy tools (consent, retention, merge) are in [Guest governance](/docs/openfront/hotel/guest-governance).

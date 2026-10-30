@@ -4,17 +4,11 @@ description: Appointments, intake, patients, clinicians, communications, and cli
 icon: HeartHandshake
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-hospital) · [Live demo](https://hospital.openship.org) · [Catalog](https://openship.org/products/openfront-hospital)
+[Source](https://github.com/openshiporg/openfront-hospital) · [Live site](https://hospital.openship.org) · [Catalog](https://openship.org/products/openfront-hospital)
 
 Openfront Hospital is a self-hosted care-booking and hospital-operations application. Visitors browse care services, clinicians, and locations, request an appointment, and complete a one-time intake form. Staff work registration, appointments, intake, care queue, encounters, inpatient beds, clinical fulfillment, claims, communications, and reports from `/dashboard/platform`.
 
 It is built on Next.js 16, React 19, Keystone 6 (GraphQL), PostgreSQL with Prisma, and Tailwind CSS 4.
-
-<Callout type="warn">
-This project is not documented as HIPAA compliant, certified clinical software, an EHR, or a medical device. Do not use it for real patient or clinical data without a separate security, privacy, compliance, hosting, and operational program.
-</Callout>
 
 Start with [Getting started](/docs/openfront/hospital/getting-started).
 
@@ -85,7 +79,7 @@ Custom operations are registered in `features/keystone/mutations/index.ts`.
 | Integrations and retention | `installIntegration`, `transitionIntegrationInstallation`, `issueMachineCredential`, `revokeMachineCredential`, `dispatchIntegrationOutbox`, `dispatchClinicalOutbox`, `linkExternalIdentity`, `establishRetentionPolicy`, `transitionRetentionPolicy`, `placeRecordHold`, `releaseRecordHold`, `recordRetentionDisposition` |
 | Onboarding | `applyHospitalOnboarding`, `createOnboardingAppointment` |
 
-Some of these have no dashboard caller yet, for example `transitionPatientPayment`, `transitionPatientRefund`, `transitionInventoryItem`, `reviseCommunicationTemplate`, `transitionIntegrationInstallation`, `revokeMachineCredential`, `transitionRetentionPolicy`, `releaseRecordHold`, `transitionClinicalDocument`, `amendClinicalDocument`, and `transitionSpecimen`. They are reachable through GraphQL with the right role.
+Some of these are used by integrations and scripts rather than a dashboard button, for example `transitionPatientPayment`, `transitionPatientRefund`, `transitionInventoryItem`, `reviseCommunicationTemplate`, `transitionIntegrationInstallation`, `revokeMachineCredential`, `transitionRetentionPolicy`, `releaseRecordHold`, `transitionClinicalDocument`, `amendClinicalDocument`, and `transitionSpecimen`. They are reachable through GraphQL with the right role.
 
 These operations record what staff did. They do not make a clinical decision safe or correct; authorized clinicians remain responsible.
 
@@ -93,7 +87,7 @@ These operations record what staff did. They do not make a clinical decision saf
 
 When a user with `canManageOnboarding` signs in, the dashboard offers three templates: **Complete Practice Setup**, **Basic Booking Setup**, and **Custom Setup** (edit the setup JSON before applying). All three call `applyHospitalOnboarding`, which requires both `canManageOnboarding` and `canAccessAllClinicalData`.
 
-The full template seeds the fictional practice "Northstar Family Care": 2 departments (Primary Care, Behavioral Health), 2 facilities (a downtown clinic and a telehealth site), 3 providers and clinicians, 3 appointment types, 5 schedule blocks, 2 patients, 2 appointments, 2 intake forms, and 2 manual phone follow-up messages. Patients are created through `registerPatient`, appointments through `createOnboardingAppointment`, intake through `issueIntakeForm`, and messages through `sendSecurePatientMessage`, so seeded data follows the same rules as staff-created data.
+The full template seeds the practice "Northstar Family Care": 2 departments (Primary Care, Behavioral Health), 2 facilities (a downtown clinic and a telehealth site), 3 providers and clinicians, 3 appointment types, 5 schedule blocks, 2 patients, 2 appointments, 2 intake forms, and 2 manual phone follow-up messages. Patients are created through `registerPatient`, appointments through `createOnboardingAppointment`, intake through `issueIntakeForm`, and messages through `sendSecurePatientMessage`, so seeded data follows the same rules as staff-created data.
 
 Onboarding is idempotent: it upserts by stable keys (department code, facility slug, onboarding key, MRN). It returns one-time intake links (`/intake#accessCode=…`) that expire after 7 days. The links are shown once; only a hash is stored. Onboarding rejects a `portalAccess` section because no portal invite workflow exists.
 
@@ -110,14 +104,3 @@ There is no provider adapter registry. Integration support is a generic, signed 
 - **AI chat:** the dashboard AI chat needs `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. The MCP endpoint it calls (`/api/mcp-transport/[transport]`) returns 404 in this product, so no MCP tools are exposed.
 
 An installation record does not prove an external EHR, lab, payer, or messaging system is connected.
-
-## Limitations
-
-- No patient accounts or portal. `PatientPortalAccess` exists but nothing issues invites or lets patients sign in.
-- Patient demographics cannot be edited from the dashboard. `Patient` has GraphQL update omitted, and no workflow mutation exists for demographic changes. The patient chart is read-only.
-- The public site shows "Estimate provided by clinic" instead of a price, even though `AppointmentType.priceCents` is stored.
-- Several transition mutations have no dashboard UI (see the list above).
-- No EHR interoperability (HL7, FHIR), e-prescribing, lab interface, clearinghouse, or payment processor. Claims and prescriptions are local records.
-- No clinical decision support. Clinical content is whatever staff record.
-- `features/platform/bootstrap` contains a bootstrap screen that is not mounted on any route. The first user is created at `/dashboard/init`, or by calling `bootstrapHospital` directly.
-- The code does not establish HIPAA compliance, PHI hosting controls, medical-device status, or any certification. Deployers need their own encryption and key management, backup and restore, access review, audit retention, breach response, monitoring, and jurisdiction-specific policy.

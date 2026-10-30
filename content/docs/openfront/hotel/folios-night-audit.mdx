@@ -1,0 +1,50 @@
+---
+title: Folios and night audit
+description: Post charges, reverse entries, close folios, and run the night audit.
+icon: BookOpen
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/folios`. Needs `canManagePayments`.
+
+## Folio entries
+
+A `Folio` is `open`, `closed`, or `voided`. Each `FolioEntry` has `entryType` (`room_charge`, `tax`, `fee`, `addon`, `payment`, `refund`, `adjustment`, `transfer`, `reversal`), `direction` (`debit`, `credit`), `amountMinor`, and a `postingKey` that prevents double posting.
+
+<Steps>
+<Step>
+
+### Post
+
+`postFolioEntry` adds a charge or credit with a description and idempotency key.
+
+</Step>
+<Step>
+
+### Correct
+
+`reverseFolioEntry` posts an opposite entry linked to the original. Entries are never edited or deleted.
+
+</Step>
+<Step>
+
+### Take payment
+
+`recordBookingPayment` records a payment made at the desk.
+
+</Step>
+<Step>
+
+### Close
+
+`closeReconciledFolio` closes a folio only when the balance is reconciled.
+
+</Step>
+</Steps>
+
+`hotelFolioReceipt` prints a receipt.
+
+## Night audit
+
+`hotelNightAuditOperations` shows the checks for the current business date. `runHotelNightAudit` posts room charges and tax, records `DailyMetrics`, writes a `NightAuditRun`, and advances `HotelBusinessDate`. Resolve overdue checked-in stays first. A closed business date cannot receive new stays.

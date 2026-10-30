@@ -1,0 +1,47 @@
+---
+title: Documents and communications
+description: Versioned documents, signature requests, threads, and email delivery.
+icon: FileSignature
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Documents
+
+`/dashboard/platform/documents`. Files go to the S3 bucket; downloads use signed links that expire after 5 minutes.
+
+<Steps>
+<Step>
+
+### Upload
+
+`ingestDocumentVersion` stores a new `DocumentVersion`. Versions are append-only.
+
+</Step>
+<Step>
+
+### Set current
+
+`setDocumentCurrentVersion` chooses the version in use.
+
+</Step>
+<Step>
+
+### Signature request
+
+`prepareSignatureRequest`, then `addDocumentSigner`. Move requests and signers with `transitionSignatureRequest` and `transitionDocumentSigner`.
+
+</Step>
+</Steps>
+
+`transitionDocument` moves a document through its lifecycle.
+
+## Communications
+
+`/dashboard/platform/communications`.
+
+1. Create a thread and add recipients with `addCommunicationParticipant` (remove with `removeCommunicationParticipant`).
+2. Write a draft `CommunicationMessage`.
+3. `prepareCommunicationDeliveries` creates email deliveries.
+4. `queueCommunicationMessage` queues them. The outbox worker sends through SMTP with up to 5 attempts.
+5. `transitionCommunicationDelivery` updates delivery state.

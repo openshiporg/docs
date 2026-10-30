@@ -1,0 +1,29 @@
+---
+title: Appointments
+description: Review requests, confirm, check in, and close visits.
+icon: CalendarDays
+---
+
+Route: `/dashboard/platform/appointments`. Needs `canManageAppointments`.
+
+## Lifecycle
+
+| Status | Meaning | Next |
+| --- | --- | --- |
+| `requested` | Submitted from the public site or created by staff | `confirmed`, `cancelled` |
+| `confirmed` | Slot accepted | `checked_in`, `cancelled`, `no_show` |
+| `checked_in` | Patient arrived; a care queue ticket exists | `in_visit` |
+| `in_visit` | Visit under way | `completed` |
+| `completed`, `cancelled`, `no_show` | Closed | none |
+
+`source` is one of `patient_portal`, `front_desk`, `phone`, or `referral`.
+
+## Actions
+
+- **Confirm, start, complete, cancel, no-show** call `transitionAppointment(operationKey, appointmentId, toStatus, expectedVersion, reason, operationalNotes)`. A reason is recorded for cancellations.
+- **Check in** is the atomic `arriveAppointment` workflow, which creates the care queue ticket. `transitionAppointment` cannot check in.
+- Confirming runs a provider schedule check (`appointmentScheduleConflicts`) and fails if the provider is blocked or double-booked.
+
+The page shows status counts and the queue. Each row links the patient, provider, visit type, and facility.
+
+See [Care queue and encounters](/docs/openfront/hospital/care-queue-encounters) for what happens after check in.

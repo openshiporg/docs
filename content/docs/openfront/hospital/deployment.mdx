@@ -1,0 +1,43 @@
+---
+title: Deployment
+description: Build, start, workers, and checks for a production install.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `npm run migrate && next start` | Public site, dashboard, GraphQL |
+| Outbox worker | `npm run worker:outbox` | Calls `POST /api/internal/outbox/dispatch` on an interval so queued integration events are delivered |
+
+`railway.toml` builds with `keystone build --no-ui && next build` and runs migrations in the start command, because internal databases are not reachable during build.
+
+## Checklist
+
+<Steps>
+<Step>
+### Provision
+PostgreSQL and S3-compatible storage. Production startup fails without the `S3_*` variables.
+</Step>
+<Step>
+### Secrets
+Set independent values for `SESSION_SECRET`, `BOOTSTRAP_ADMIN_SECRET` (48+ characters), `PASSWORD_RESET_PEPPER`, `AUTH_RATE_LIMIT_PEPPER`, `INTAKE_DELIVERY_SIGNING_KEY`, `INTEGRATION_SECRET_ENCRYPTION_KEY`, `EXPORT_ENCRYPTION_KEY`, and `OUTBOX_WORKER_SECRET`. The PHI audit reference secret must also be strong.
+</Step>
+<Step>
+### Proxy
+Set `TRUST_PROXY=1` behind a reverse proxy so rate limits use the client address. Railway is detected automatically.
+</Step>
+<Step>
+### Worker
+Point `OUTBOX_WORKER_URL` at `/api/internal/outbox/dispatch` over HTTPS and set `OUTBOX_WORKER_INTERVAL_SECONDS` (15 to 300).
+</Step>
+<Step>
+### Verify
+Open `/api/health`; it returns `ok` when the database answers. Run `npm run validate:static` before release.
+</Step>
+</Steps>
+
+See [Getting started](/docs/openfront/hospital/getting-started) for every variable.

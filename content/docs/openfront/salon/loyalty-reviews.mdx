@@ -1,0 +1,20 @@
+---
+title: Loyalty and reviews
+description: The points program, tiers, referrals, and review moderation.
+icon: Award
+---
+
+## Loyalty
+
+`/dashboard/platform/loyalty` needs `canManageClients`.
+
+A `LoyaltyProgram` has `name`, `pointsPerDollar`, `redemptionRate`, `tiers` (a list of `name` and `minPoints`), and `isActive`. The oldest active program is used.
+
+- Checkout awards `floor(taxable dollars * pointsPerDollar)` points.
+- `ClientPoints` keeps `points`, `tier`, and a ledger of the last 500 entries. A client's tier is the highest tier whose `minPoints` they meet, or `bronze`.
+- `adjustClientPoints` adds or removes points with a required reason. Points cannot go below zero ("Not enough points").
+- A `Referral` links `referrer` and `referred` with `rewardType` (`points` or `credit`), `rewardAmount`, and `status` (`pending`, `completed`, `expired`). `completeReferral` pays it out.
+
+## Reviews
+
+`/dashboard/platform/reviews` needs `canManageClients`. Clients leave a rating and comment after a completed visit with `submitAppointmentReview`. Reviews appear on the storefront only after `isApproved` is set. Staff publish or hide a review, or delete it.

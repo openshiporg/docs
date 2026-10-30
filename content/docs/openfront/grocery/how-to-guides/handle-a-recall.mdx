@@ -1,0 +1,28 @@
+---
+title: Handle a recall
+description: Quarantine lots, notify affected customers, and close the recall.
+icon: ShieldAlert
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the recall
+At `/dashboard/platform/inventory` choose the product or lots and run the recall action with a reason. Lots become `recalled` and unsellable. Affected orders are listed.
+</Step>
+<Step>
+### Notify customers
+Record a notice per affected order: channel, outcome, and reference.
+</Step>
+<Step>
+### Record dispositions
+For recalled stock record `released`, `recovered`, `disposed`, or `unaccounted` with quantity and custody.
+</Step>
+<Step>
+### Close
+Close the recall. It is refused until every affected order has a delivered notice.
+</Step>
+</Steps>
+
+For a precaution without a recall use `hold` or `quarantine`, then `release`.

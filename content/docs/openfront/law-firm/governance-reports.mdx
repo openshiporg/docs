@@ -1,0 +1,27 @@
+---
+title: Retention, reports, and data
+description: Retention policies, legal holds, audit reports, and import and export.
+icon: ShieldCheck
+---
+
+## Retention and holds
+
+`/dashboard/platform/governance` needs `canManageRetention`.
+
+| Action | Mutation |
+| --- | --- |
+| Activate or retire a policy | `transitionRetentionPolicy` |
+| Assign a policy to a document | `assignDocumentRetentionPolicy` |
+| Place a hold on a matter, document, or contact | `placeRetentionHold` |
+| Release a hold | `releaseRetentionHold` |
+| Dispose of a document | `disposeRetainedDocument` |
+
+A document retention policy is frozen after archival, and a hold cannot be placed after disposal. Disposal writes `RetentionAction` evidence.
+
+## Reports
+
+`/dashboard/platform/reports` shows deadline and audit event reports. Needs `canViewAudit`. Audit events are append-only.
+
+## Import and export
+
+`/dashboard/platform/data`. Import contacts from CSV with `previewContactImport`, then `applyContactImport`. `preparePracticeExport` exports contacts, matters, invoices, time entries, or audit events, up to 500 rows.

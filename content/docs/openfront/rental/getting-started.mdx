@@ -4,9 +4,7 @@ description: Clone the source, configure PostgreSQL, sessions, and storage, run 
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-You can try the app first on the live demo at [rental.openship.org](https://rental.openship.org). The host dashboard is at [rental.openship.org/dashboard](https://rental.openship.org/dashboard).
+The hosted app is at [rental.openship.org](https://rental.openship.org). The host dashboard is at [rental.openship.org/dashboard](https://rental.openship.org/dashboard).
 
 ## Requirements
 
@@ -68,9 +66,7 @@ npm run dev
 
 This runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js.
 
-<Callout type="warn">
-`npm run dev` migrates the database in `DATABASE_URL`. Do not point it at a shared or production database. `npm run migrate:gen` generates and applies new migrations and is for development databases only.
-</Callout>
+`npm run dev` migrates the database in `DATABASE_URL`. `npm run migrate:gen` generates and applies new migrations.
 
 Once running:
 
@@ -87,11 +83,11 @@ Open `/dashboard/init` and create the first administrator. Sign-in is at `/dashb
 
 After sign-in, open onboarding from the card in the dashboard sidebar. Running it requires `canManageOnboarding`. Pick a template:
 
-- **Minimal**: one home and one sample stay.
-- **Full**: the Housekind sample portfolio with five properties, guests, stays, tasks, owner records, payment providers, and one iCalendar connection.
+- **Minimal**: one home and one stay.
+- **Full**: the Housekind portfolio with five properties, guests, stays, tasks, owner records, payment providers, and one iCalendar connection.
 - **Custom**: your own validated JSON on top of the full template.
 
-Items are created one at a time and reused if they already exist. Review properties, rates, and policies before you publish stays. Remove or replace sample data before real use. Details are on the [overview page](/docs/openfront/rental#onboarding).
+Items are created one at a time and reused if they already exist. Review properties, rates, and policies before you publish stays. Replace the seeded records with your own. Details are on the [overview page](/docs/openfront/rental#onboarding).
 
 ## Other commands
 
@@ -103,7 +99,7 @@ Items are created one at a time and reused if they already exist. Review propert
 | `npm run release:migrate` | Same as `migrate`, for a release step. |
 | `npm run lint` | Runs ESLint. |
 | `npm run seed:runtime` | Seeds a local `runtime_rental` database only. |
-| `npm run outbox:deliver` | Runs the outbox worker. No dispatcher is installed, so it does nothing yet. |
+| `npm run outbox:deliver` | Runs the outbox worker. Reports `no_dispatcher` until you register one. |
 
 ## Deploy
 

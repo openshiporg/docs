@@ -1,0 +1,46 @@
+---
+title: Data model
+description: The 44 lists and their relationships.
+icon: Database
+---
+
+See also `docs/schema-map.md` in the repository.
+
+| Area | Lists |
+| --- | --- |
+| Brokerage and people | `Brokerage`, `BrokerageSettings`, `BrokerageMembership`, `User`, `Role`, `AgentTeam`, `AgentTask` |
+| Listings | `Property`, `PropertyMedia`, `OpenHouse`, `ListingSyndication`, `MarketComp`, `PropertyValuation`, `Neighborhood`, `SourceFeed` |
+| Authority | `ListingEngagementAuthority`, `ListingPublicationAuthority`, `PractitionerLicenseAuthority`, `RepresentationAuthority` |
+| Leads and showings | `Lead`, `LeadActivity`, `LeadRoutingRule`, `Showing`, `ShowingFeedback` |
+| Shopper data | `SavedProperty`, `SavedSearch`, `SavedSearchAlert` |
+| Deals | `Deal`, `Offer`, `TransactionMilestone`, `DealDocument`, `DocumentEvidenceEvent`, `Disclosure`, `PropertyInspection`, `Escrow`, `TitleOrder`, `MortgageApplication` |
+| Commission | `Commission`, `CommissionLedgerEntry` |
+| Records | `RetentionPolicy`, `TransactionFileEvent`, `DomainOutboxEvent`, `DomainAuditEvent` |
+
+## Relationships
+
+| From | To |
+| --- | --- |
+| `Property` | `assignedAgent`, `Lead`, `Showing`, media, open houses, syndication |
+| `Lead` | `Property`, `assignedAgent`, `assignedTeam`, `Showing`, `LeadActivity` |
+| `Showing` | `Property`, `Lead`, `customer`, `assignedAgent` |
+| `Deal` | `Property`, `Lead`, offers, evidence, ledger entries |
+| `Commission` | `Deal`, `Property`, `agent`, ledger entries |
+
+Every operational list carries a `brokerage`; children take it from the parent. `Neighborhood` has none.
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Property` | `draft`, `coming_soon`, `active`, `pending`, `sold`, `rented`, `off_market` |
+| `Lead` | `new`, `attempted_contact`, `qualified`, `tour_scheduled`, `offer`, `closed`, `lost` |
+| `Showing` | `requested`, `scheduled`, `completed`, `no_show`, `cancelled` |
+| `Deal` | `prospecting`, `active_search`, `offer_drafted`, `under_contract`, `inspection`, `financing`, `closed_won`, `closed_lost` |
+| `Offer` | `draft`, `submitted`, `countered`, `accepted`, `rejected`, `withdrawn` |
+| `Commission` | `projected`, `approved`, `paid`, `clawed_back` |
+| `DealDocument` | `draft`, `sent`, `signed`, `archived` |
+| `Disclosure` | `draft`, `sent`, `acknowledged`, `expired` |
+| `PropertyInspection` | `scheduled`, `completed`, `needs_follow_up`, `waived` |
+
+Authority records, evidence, ledger entries, retention policies, file events, and audit events are append-only.

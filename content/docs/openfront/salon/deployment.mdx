@@ -1,0 +1,51 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Salon on Railway or any Node host.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Railway
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run on each start.
+
+## Any host
+
+<Steps>
+<Step>
+### Provision services
+PostgreSQL and S3-compatible storage.
+</Step>
+<Step>
+### Set environment
+`DATABASE_URL`, `SESSION_SECRET` (32+ characters), the `S3_*` values, and optional integrations. See [Getting started](/docs/openfront/salon/getting-started).
+</Step>
+<Step>
+### Back up, build, migrate, start
+```bash
+npm run build
+npm run migrate
+npm start
+```
+</Step>
+<Step>
+### Create the first user
+Open `/dashboard/init`, then run onboarding or enter your own data.
+</Step>
+<Step>
+### Add Stripe if you use it
+Register `/api/payments/webhooks/pp_stripe`. See [Payment providers](/docs/openfront/salon/payment-providers).
+</Step>
+</Steps>
+
+## Policy settings
+
+| Variable | Default |
+| --- | --- |
+| `TAX_RATE` | `0.08` |
+| `CLIENT_CANCELLATION_NOTICE_MINUTES` | 1440 |
+| `CLIENT_RESCHEDULE_NOTICE_MINUTES` | 1440 |
+| `CLIENT_BOOKING_POLICY_VERSION` | `salon-booking-v2` |
+
+All app processes must share the same database, `SESSION_SECRET`, and storage settings.

@@ -1,0 +1,27 @@
+---
+title: Troubleshooting
+description: Messages from bookings, folios, refunds, and workers.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| A bounded idempotency key is required | Send a stable `idempotencyKey` |
+| A `<status>` booking cannot be cancelled | Cancel only from `pending` or `confirmed` |
+| A cancellation refund is already in progress; resolve it before requesting another refund | Wait or replay the existing `RefundIntent` |
+| An independent approval is required | A second user with `canApproveHotelExceptions` must approve the exact action |
+| Approval does not match the requested action, actor, target and amount | Request a new approval |
+| Approval has already been used by another operation | Approvals are single use |
+| A different payment manager must review a counted shift variance | Another user closes the review |
+| A room with assignment history cannot change room type | Create a new room |
+| A rooming list cannot create stays in a closed business date | Run or wait for the next business date |
+| All group stays must depart or be cancelled before master-folio close | Finish stays first |
+| An open USD folio is required for direct billing | Open the folio |
+| A legal hold prevents anonymization | Release the hold |
+| Booking hold disappears | It expired after 30 minutes. Start again |
+| Guest queries fail from a custom client | Forward the `hotel-guest-access` cookie |
+| Guest emails stay pending | SMTP or the HTTP dispatcher is not fully configured |
+| Production refuses to start | A secret is missing, short, or a placeholder |
+| Channel does nothing | It is not in `live` mode |
+| Room images fail to upload | One of the five `S3_*` variables is missing |
+| Background jobs do not run | The host is serverless; use a long-running process |

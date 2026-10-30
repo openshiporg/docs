@@ -1,0 +1,31 @@
+---
+title: Integrations
+description: Signed webhooks, machine credentials, and the outbox worker.
+icon: Cable
+---
+
+Needs `canManageIntegrations`. Managed on the integrations tab of `/dashboard/platform/operational-fabric`.
+
+## Installations
+
+`installIntegration` creates an `IntegrationInstallation` with `kind` (`communications`, `payment`, `laboratory`, `pharmacy`, `webhook`), an HTTPS endpoint, allowed event types, and an encrypted signing secret. Status is `active`, `paused`, or `revoked` (`transitionIntegrationInstallation`).
+
+Endpoints must resolve to public addresses. `INTEGRATION_HOST_ALLOWLIST` restricts hosts.
+
+## Outbound events
+
+Workflow events are written to `ClinicalOutboxEvent`. The worker calls `POST /api/internal/outbox/dispatch` with `OUTBOX_WORKER_SECRET`; each event is POSTed as JSON with an `x-openfront-signature` HMAC header. Failures retry, then `dead_letter`. `IntegrationDeliveryAttempt` records each try. You can also run `dispatchIntegrationOutbox` or `dispatchClinicalOutbox` by hand.
+
+## Inbound events
+
+`issueMachineCredential` returns a credential once and stores only a digest (`active`, `revoked`, `expired`; revoke with `revokeMachineCredential`). Sign requests to `POST /api/integrations/{installationKey}/webhook` with a credential that has the `webhook:write` scope.
+
+| Kind | Events |
+| --- | --- |
+| payment | `payment.succeeded`, `payment.failed`, `refund.succeeded`, `refund.failed` |
+| communications | `message.sent`, `message.delivered`, `message.failed` |
+| claims | `claim.acknowledged`, `claim.rejected` |
+
+Requests outside a 5-minute window, or replayed, are rejected. Each is stored as an `IntegrationWebhookReceipt`.
+
+An installation record does not prove an external system is connected; check `lastSuccessAt`.

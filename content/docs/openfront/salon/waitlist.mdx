@@ -1,0 +1,33 @@
+---
+title: Waitlist
+description: Walk-in queue, client waitlist requests, and converting entries to appointments.
+icon: ListOrdered
+---
+
+Two pages cover the waitlist.
+
+| Route | Flag | What it does |
+| --- | --- | --- |
+| `/dashboard/platform/waitlist` | `canManageAppointments` or `canManageClients` | Add walk-ins and seat them |
+| `/dashboard/platform/engagement` | same | Read-only demand and message log |
+
+## Entries
+
+A `WaitlistEntry` has a client or guest name and phone, a `service`, `preferredStylists`, `preferredDays`, `preferredTimeRange` (morning 9am to 12pm, afternoon 12pm to 5pm, evening 5pm to 8pm, or anytime), a date range, notes, and a `status`: `active`, `notified`, `converted`, or `removed`.
+
+## Add an entry
+
+Staff call `joinWaitlist` with a service, optional stylists, preferences, and an idempotency key. Signed-in clients on the storefront call `joinWaitlistAsClient` when `/book` shows no open times for a day. The date range cannot end before it starts or run more than a year ahead.
+
+## Work the queue
+
+`transitionWaitlistEntry` takes an `action`:
+
+| Action | Result |
+| --- | --- |
+| `notify` | `active` to `notified` |
+| `remove` | to `removed` |
+| `reactivate` | `removed` or `notified` back to `active` |
+| `convert` | to `converted`; needs the `appointmentId` you booked |
+
+A converted entry cannot change again. The appointment must match the entry's client and service.

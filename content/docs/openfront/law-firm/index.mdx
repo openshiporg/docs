@@ -4,17 +4,11 @@ description: Firm-owned intake, conflicts, matters, documents, billing, trust, c
 icon: Scale
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-law-firm) · [Live demo](https://law-firm.openship.org) · [Catalog](https://openship.org/products/openfront-law-firm)
+[Source](https://github.com/openshiporg/openfront-law-firm) · [Live site](https://law-firm.openship.org) · [Catalog](https://openship.org/products/openfront-law-firm)
 
 Openfront Law Firm is an open-source app for running a law practice. Staff handle intake, conflict checks, matters, dockets, deadlines, documents, messages, time, billing, retainers, and trust records in one dashboard. Visitors can read about the firm, browse practice areas and attorneys, open an account, and request a consultation. Clients can see items the firm shares with them in a portal.
 
 To install it, see [Getting started](/docs/openfront/law-firm/getting-started).
-
-<Callout type="warn">
-The software gives you records, controls, and audit evidence. It does not guarantee compliance with legal-ethics, privilege, trust-accounting, privacy, retention, signature, or court rules. Each firm still needs its own legal, security, and provider review.
-</Callout>
 
 ## Stack
 
@@ -107,13 +101,13 @@ Custom queries in `features/keystone/mutations/index.ts`:
 
 - Public and customer: `consultationCatalog`, `consultationCatalogPage`, `consultationService`, `consultationAvailability`, `customerConsultations`, `customerConsultationPage`, `customerConsultation`, `portalSharedResource`.
 - Staff: `practiceOverview`, `practiceWorkspace(category)`, `previewContactImport`, `portalPolicyWorkspace`.
-- Viewer checks: `redirectToInit`, `viewerCanAccessDashboard`, `viewerCanRunConflictChecks`, `viewerCanResolveConflicts`, `viewerNeedsFirmOnboarding`, `viewerCanSeedSyntheticDemo`.
+- Viewer checks: `redirectToInit`, `viewerCanAccessDashboard`, `viewerCanRunConflictChecks`, `viewerCanResolveConflicts`, `viewerNeedsFirmOnboarding`.
 
 Custom mutations, grouped:
 
 | Group | Mutations |
 |---|---|
-| Onboarding and people | `completeFirmOnboarding`, `seedSyntheticDemoScenario`, `inviteFirmMember`, `changeFirmMemberAccess`, `updateFirmRoleAuthority` |
+| Onboarding and people | `completeFirmOnboarding`, `inviteFirmMember`, `changeFirmMemberAccess`, `updateFirmRoleAuthority` |
 | Customer | `registerConsultationAccount`, `bookClientConsultation`, `cancelOwnConsultation` |
 | Intake and conflicts | `startClientIntake`, `addIntakeParticipant`, `changeIntakeParticipant`, `transitionIntake`, `scheduleConsultation`, `transitionConsultation`, `requestConflictCheck`, `addConflictSearchTerm`, `addConflictMatch`, `transitionConflictCheck`, `recordConflictDisposition`, `finalizeConflictCheck`, `convertIntakeToMatter` |
 | Matters and calendar | `transitionMatter`, `changeMatterConfidentiality`, `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `recordDocketEntry`, `reviseDocketEntry`, `verifyDocketEntry`, `reviseDraftDeadline`, `transitionDeadline`, `transitionLegalTask` |
@@ -139,27 +133,11 @@ The dashboard calls these through named documents in `features/platform` (for ex
 | Document storage | Uploads go to the configured S3-compatible bucket. Downloads use signed links that expire after 5 minutes. |
 | Email | Password reset, portal sign-in, and portal invitation emails use SMTP. Message deliveries are sent by the outbox worker (`features/keystone/webhooks/run.ts`) through the same SMTP settings, with up to 5 attempts. Only email deliveries can be prepared; portal and SMS delivery are not configured. |
 | Webhooks | Subscriptions, signed deliveries (`x-openfront-signature` header), and attempts. The worker only contacts hosts listed in `WEBHOOK_ALLOWED_HOSTS`. |
-| Provider connections | `IntegrationConnection` records for email, calendar, document storage, signature, payment, court, accounting, or other. Credentials are stored encrypted with `INTEGRATION_CREDENTIAL_KEY`. A connection record does not mean an adapter exists. |
+| Provider connections | `IntegrationConnection` records for email, calendar, document storage, signature, payment, court, accounting, or other. Credentials are stored encrypted with `INTEGRATION_CREDENTIAL_KEY`. A connection record stores the credential; it does not by itself add an adapter. |
 | API keys and OAuth | `issueApiKey` shows the secret once. OAuth uses `/api/oauth/authorize` and `/api/oauth/token` with authorization code plus S256 PKCE and refresh token rotation. |
 | Agents | Agent principals, credentials, and grants scoped to one firm and optionally one matter. `requestAgentAction` → `reviewAgentAction` → `executeAgentAction` for a fixed set of action types (for example `task.draft`, `matter.transition`, `invoice.issue`, `trust.post`, `communication.send`). Agents are managed in the generic Models pages, not a platform page. |
 | AI chat | The dashboard AI sidebar can use a shared OpenRouter key (`OPENROUTER_*`) or a key the user enters. |
 | MCP | `/api/mcp-transport/http` returns 501 `LEGAL_MCP_DISABLED`. Generic MCP tools for legal data are turned off. |
-
-## Limitations
-
-- **No payment provider.** Payments are recorded by hand. `recordRefundProviderOutcome` and payment provider outcomes throw "unavailable until authenticated provider ingress is configured". There is no card checkout, and consultation fees are shown but not collected.
-- **No signature provider.** You can prepare a signature request and add signers. Sent and signed states need provider events, which the code refuses for now.
-- **No inbound provider events.** Communication delivery outcomes, signature outcomes, and webhook attempt recording through GraphQL all throw until authenticated ingress exists.
-- **Email only.** Portal and SMS message delivery are not configured.
-- **No court rules.** Deadlines are entered and verified by people. Nothing calculates court deadlines or files with a court.
-- **Legal AI is read-only.** The AI pages show matter evidence, a document inventory, and review sets. No model is connected for drafting, review tables, or research. The provider page says providers are not connected.
-- **MCP is disabled.**
-- **Anonymous intake is off.** `PUBLIC_INTAKE_ENABLED` is `false` in `features/storefront/content.ts`. Visitors must sign up to request a consultation.
-- **One public firm.** The public site and booking only work when exactly one firm is active.
-- **Fixed booking hours.** Consultation slots are 9:00 to 17:00, Monday to Friday, in code.
-- **Outbox needs a scheduler.** Email deliveries and webhooks only go out when you run the worker script.
-- **Sample data is limited.** The onboarding sample option works only on an owned offline test database.
-- **Not certified.** Nothing in the repository certifies trust accounting, privacy, security, or ethics compliance.
 
 ## More
 

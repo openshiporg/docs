@@ -1,0 +1,23 @@
+---
+title: Commissions
+description: Commission records and the append-only allocation ledger.
+icon: BadgeDollarSign
+---
+
+Found on the deal detail page and `/dashboard/platform/operations`. Needs `canManageDeals`.
+
+A `Commission` has `side` (`listing`, `buyer`, `referral`), `brokerageSplitPercent`, `agentSplitPercent`, and status `projected` → `approved` → `paid`, or `clawed_back` (`transitionCommissionStatus`).
+
+## Ledger
+
+`CommissionLedgerEntry` rows are append-only.
+
+| Step | Command |
+| --- | --- |
+| Propose a split | `proposeCommissionAllocationCommand` |
+| Approve it | `approveCommissionAllocationCommand` |
+| Record a receipt | `recordCommissionReceiptCommand` |
+| Reverse an entry | `reverseCommissionLedgerEntryCommand` |
+| Reconcile | `reconcileCommissionLedgerCommand` |
+
+Each allocation needs a type, positive cents, and a payee. Approval needs a single current allocation batch; reverse or review conflicting batches first. Reconciliation needs the commission, batch, and an accounting reference.

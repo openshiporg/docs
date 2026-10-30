@@ -1,0 +1,30 @@
+---
+title: Admit, transfer, and discharge
+description: Run an inpatient stay and release the bed.
+icon: BedDouble
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open an encounter
+The patient needs an open encounter.
+</Step>
+<Step>
+### Reserve (optional)
+On `/dashboard/platform/inpatient` hold an available bed for up to 24 hours.
+</Step>
+<Step>
+### Admit
+Choose the encounter, attending provider, and bed.
+</Step>
+<Step>
+### Transfer
+Pick a different available bed.
+</Step>
+<Step>
+### Discharge
+Record the disposition. The bed moves to `cleaning`; mark it ready to return it to `available`.
+</Step>
+</Steps>

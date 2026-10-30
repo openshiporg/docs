@@ -1,20 +1,16 @@
 ---
 title: Openfront Grocery
-description: Single-store grocery storefront and operator platform for catalog, lots, purchasing, picking, substitutions, pickup, delivery, payments, and recurring baskets.
+description: Grocery storefront and operator platform for catalog, lots, purchasing, picking, substitutions, pickup, delivery, payments, and recurring baskets.
 icon: ShoppingBasket
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-grocery) · [Live demo](https://grocery.openship.org) · [Catalog](https://openship.org/products/openfront-grocery)
+[Source](https://github.com/openshiporg/openfront-grocery) · [Live site](https://grocery.openship.org) · [Catalog](https://openship.org/products/openfront-grocery)
 
 Openfront Grocery is a self-hostable grocery storefront and store-operations app. Shoppers browse departments and products, build a basket, keep lists and favorites, choose pickup or delivery, pay with Stripe, and track their order. Store staff use `/dashboard/platform/*` pages for products, merchandising, lot inventory, suppliers, purchasing, picking, substitutions, pickup, delivery, payments, recurring baskets, staff, reports, and customer messages.
 
 It runs on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/grocery/getting-started).
 
-<Callout type="warn">
 The app serves one store per deployment. A migration creates the Store row `store_juniper`, and production requires `PUBLIC_STORE_ID=store_juniper`. Data is scoped to that Store, but there is no organization or multi-location model.
-</Callout>
 
 ## Customer and operator surfaces
 
@@ -103,7 +99,7 @@ If the Store already has a settings row, running onboarding again does not resee
 
 ## Payments and integrations
 
-- **Payments.** The adapter registry in `features/integrations/payment` has two entries: Stripe (`pp_stripe_default`, public checkout) and a local test adapter (`pp_test_default`, not public, refused in production). A `manual.ts` file exists but is not registered, and the selector `manual` is rejected. Stripe is off unless `STRIPE_ENABLED=true` and all three Stripe keys are set. Production requires live keys unless `STRIPE_ALLOW_TEST_MODE=true`. Custom remote adapters must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.
+- **Payments.** The adapter registry in `features/integrations/payment` has two entries: Stripe (`pp_stripe_default`, public checkout) and a local adapter (`pp_test_default`, not public, refused in production). A `manual.ts` file exists but is not registered, and the selector `manual` is rejected. Stripe is off unless `STRIPE_ENABLED=true` and all three Stripe keys are set. Production requires live keys unless `STRIPE_ALLOW_TEST_MODE=true`. Custom remote adapters must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.
 - **Webhooks.** `POST /api/payments/webhooks/[providerCode]` reads a size-limited raw body, verifies the provider signature, throttles invalid signatures per sender, and records a `PaymentWebhookEvent`.
 - **Email.** Customer messages and password resets use SMTP (`SMTP_HOST`, `SMTP_FROM`, and related settings). Without SMTP, queued messages stay pending and reset links cannot be sent.
 - **Outbound events.** If `GROCERY_EVENT_WEBHOOK_URL` is set, the event worker posts outbox events to that HTTPS URL, signed with HMAC-SHA256 using `GROCERY_EVENT_WEBHOOK_SECRET` (at least 32 characters).
@@ -112,14 +108,3 @@ If the Store already has a settings row, running onboarding again does not resee
 - **Other routes.** `/api/health` checks the database. `/api/store-icon` serves the store logo as an icon.
 
 Background workers run as separate processes: `npm run worker:events` (emails, stock and price alerts, outbound events), `npm run worker:subscriptions` (prepares due recurring baskets), and `npm run worker:refund-reconcile` (checks pending refunds with the provider). Each needs a staff user id from the store with the right capability; see `.env.example`.
-
-## Current limitations
-
-- One Store per deployment. No organizations, locations, or multi-store switching.
-- Stripe is the only public checkout adapter. There is no cash, manual, or pay-at-pickup option.
-- Tax is a store-level rate in basis points stored in settings. There is no tax provider.
-- Delivery routes and stops are recorded by staff. There is no driver app, map routing, or carrier integration.
-- Purchase orders are not sent to suppliers. "Sent" and "confirmed" are status changes made by staff.
-- `Recipe`, `RecipeIngredient`, and `UserCoupon` lists exist, and the schema still has `clippedCoupons` and some recipe and coupon-clip result types. There is no storefront recipe page, and no command to clip a coupon. Shoppers enter a coupon code at checkout.
-- Emails, recurring baskets, outbound events, and refund reconciliation depend on the workers running. The web process alone does not send them.
-- `package.json` has no `test` or `typecheck` script.

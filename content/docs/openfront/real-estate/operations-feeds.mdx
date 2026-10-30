@@ -1,0 +1,21 @@
+---
+title: Operations, feeds, and alerts
+description: Comparables, valuations, syndication, import feeds, saved search alerts, and the outbox.
+icon: Workflow
+---
+
+Route: `/dashboard/platform/operations` (`platformOperations`).
+
+| Area | Records | Commands |
+| --- | --- | --- |
+| Market | `MarketComp`, `PropertyValuation` | Generic create and edit |
+| Syndication | `ListingSyndication` | `transitionListingSyndicationCommand` |
+| Import feeds | `SourceFeed` | `queueSourceImportCommand` |
+| Saved search alerts | `SavedSearchAlert` | `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand` |
+| Outbox | `DomainOutboxEvent` | `replayDomainOutboxEvent` |
+
+Queue commands write outbox events (`pending`, `processing`, `dispatched`, `failed`). Replay resets a `failed` or `dispatched` event to `pending`. `domainOutboxEventStatus` reads status.
+
+The page also lists offers, deals, commissions, disclosures, inspections, open houses, jobs, licenses and agreements, document history, retention policies, and file activity.
+
+`Neighborhood` is shared reference data without a brokerage; edit it on `/dashboard/neighborhoods`.

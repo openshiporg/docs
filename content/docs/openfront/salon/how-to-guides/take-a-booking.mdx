@@ -1,0 +1,36 @@
+---
+title: Take a booking
+description: Book a client at the desk, record a deposit, and handle consultations.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Start a booking
+Open `/dashboard/platform/appointments/new`. Pick the service, stylist, and location.
+</Step>
+<Step>
+### Choose a time
+Select a slot from the picker. If the day is full, add the client to the [waitlist](/docs/openfront/salon/waitlist).
+</Step>
+<Step>
+### Choose or create the client
+Search by name, email, or phone, or enter a new client.
+</Step>
+<Step>
+### Confirm
+Save. The appointment starts as `pending`. Open it and move it to `confirmed`.
+</Step>
+<Step>
+### Collect the deposit
+If the service needs one, record it on the appointment page with a payment method. It is credited at checkout.
+</Step>
+<Step>
+### Consultation
+For services needing a consultation, ask the client to complete the form at `/account`. Staff with `canManageCareRecords` review it at `/dashboard/platform/consultations` and set `accepted_for_service`.
+</Step>
+</Steps>
+
+On the day: move the appointment to `in_progress` at arrival, mark service steps `started` and `completed`, then go to checkout. A client who does not arrive is marked `no_show` once the start time has passed.

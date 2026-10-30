@@ -4,9 +4,7 @@ description: Clone the source, configure PostgreSQL and secrets, apply migration
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-You can try the hosted demo at [law-firm.openship.org](https://law-firm.openship.org) before installing anything.
+The hosted app is at [law-firm.openship.org](https://law-firm.openship.org) before installing anything.
 
 ## Requirements
 
@@ -121,7 +119,7 @@ After sign-in, a user with no firm is sent to `/dashboard/onboarding`. The form 
 
 Submitting calls `completeFirmOnboarding`. In one serializable transaction it creates the firm, the office, a "Firm administrator" role with every permission, four standard roles (Attorney, Paralegal, Billing, Intake coordinator), your membership, and the practice area. It sets your active firm and writes an audit event.
 
-The "Add sample services, clients and matters" box is only enabled on an owned offline test database (checked by `viewerCanSeedSyntheticDemo`). On a normal database you get a clean firm with no sample records.
+Onboarding creates a clean firm with no client records.
 
 After onboarding:
 
@@ -130,9 +128,7 @@ After onboarding:
 3. Publish the public site, practice areas, and attorney profiles under **Public site**. Customer accounts and booking stay closed until the privacy notice and first-contact notice are published.
 4. Set up rate cards, trust accounts, and portal policy as needed.
 
-<Callout type="info">
-The public site only serves customers when exactly one firm is active. A firm marked as demo is never served to the public unless it runs on an owned offline fixture.
-</Callout>
+The public site only serves customers when exactly one firm is active.
 
 ## Checks
 
@@ -162,6 +158,6 @@ npx tsx features/keystone/webhooks/run.ts
 
 It prints counts only. There is no HTTP or GraphQL entry point for it.
 
-## Local synthetic database scripts
+## Local database scripts
 
 The repository also has guarded scripts for its own local test databases: `npm run seed:runtime`, `npm run verify:complete-runtime`, and `npm run migrate:maintained`. They refuse to run unless specific `ALLOW_*` and `MIGRATION_*` variables name an exact loopback database. They are not a general deployment path. Do not point them at real firm data.

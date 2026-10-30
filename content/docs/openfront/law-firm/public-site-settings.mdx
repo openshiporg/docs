@@ -1,0 +1,23 @@
+---
+title: Public site and store settings
+description: Publish the site, practice areas, attorneys, and branding.
+icon: Globe
+---
+
+## Public site
+
+`/dashboard/platform/public-site`.
+
+- A `PublicSitePolicy` holds the privacy notice, first-contact notice, about text, and switches for accounts and booking. Accounts open when enabled with a privacy notice. Booking opens when enabled with a first-contact notice.
+- Mark a `PracticeArea` public with `publicSlug`, `consultationFeeMinor`, and `consultationMinutes`.
+- Publish `AttorneyProfile` records.
+
+Exactly one active firm must exist for the public site to serve.
+
+## Store settings
+
+`/dashboard/platform/branding`: display name, logo, accent color, tagline, and support email. These feed the public site and email.
+
+## Booking slots
+
+Consultation slots run 9:00 to 17:00, Monday to Friday. `consultationAvailability(serviceId)` returns open times.

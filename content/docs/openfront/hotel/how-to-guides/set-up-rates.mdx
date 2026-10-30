@@ -1,0 +1,34 @@
+---
+title: Set up room types and rates
+description: Make a room bookable with a rate plan.
+icon: BadgeDollarSign
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Room type and rooms
+Create the room type at `/dashboard/room-types`, then each room at `/dashboard/rooms`.
+
+</Step>
+<Step>
+
+### Rate plan
+At `/dashboard/platform/rate-plans` create a plan with base rate, stay limits, cancellation policy, and meal plan.
+
+</Step>
+<Step>
+
+### Publish
+Set the plan to `active` and public with `updateRatePlanPublication`.
+
+</Step>
+<Step>
+
+### Check the quote
+Open `/rooms` on the guest site, pick dates, and confirm the quote.
+
+</Step>
+</Steps>

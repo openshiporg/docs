@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Build, migrate, workers, and production settings for Openfront Grocery.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Provision
+PostgreSQL (back it up before migrating) and an S3-compatible bucket for product images.
+</Step>
+<Step>
+### Configure
+`DATABASE_URL`, `SESSION_SECRET` (32+ characters), `PUBLIC_STORE_ID=store_juniper`, `NEXT_PUBLIC_SITE_URL`, the `S3_*` variables, SMTP, and Stripe. See [Getting started](/docs/openfront/grocery/getting-started).
+</Step>
+<Step>
+### Build, migrate, start
+```bash
+npm run build
+npm run migrate
+npm start
+```
+`railway.toml` runs `npm run migrate && next start` at start.
+</Step>
+<Step>
+### Register the Stripe webhook
+`/api/payments/webhooks/pp_stripe_default`
+</Step>
+<Step>
+### Start the workers
+Run each as a supervised process:
+
+| Command | Does |
+| --- | --- |
+| `npm run worker:events` | Emails, stock and price alerts, outbound events |
+| `npm run worker:subscriptions` | Prepares due recurring baskets |
+| `npm run worker:refund-reconcile` | Checks pending refunds with the provider |
+
+Each needs a store staff user with the right capability: `GROCERY_EVENT_WORKER_USER_ID`, `GROCERY_SUBSCRIPTION_OPERATOR_ID`, `REFUND_RECONCILIATION_USER_ID`.
+</Step>
+<Step>
+### Check health
+`/api/health` checks the database.
+</Step>
+</Steps>
+
+Set `TRUSTED_PROXY=true` only behind an edge that overwrites `X-Real-IP`. Set `MCP_ENABLED=true` to turn on `/api/mcp-transport/[transport]`.

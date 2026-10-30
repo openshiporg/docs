@@ -1,0 +1,27 @@
+---
+title: Housekeeping and maintenance
+description: Cleaning queues, staff skills, outages, and repair requests.
+icon: SprayCan
+---
+
+## Housekeeping
+
+`/dashboard/platform/housekeeping` needs `canManageHousekeeping` (`hotelHousekeepingOperations`).
+
+| Field | Values |
+| --- | --- |
+| `taskType` | `checkout_clean`, `stayover_clean`, `deep_clean`, `maintenance`, `inspection`, `turn_down` |
+| `status` | `pending`, `in_progress`, `completed`, `inspection_needed`, `on_hold` |
+
+- `scheduleHousekeepingTask` creates a task for a room with priority and assignee.
+- `updateHousekeepingTaskStatus` moves it along. Completing a clean updates the room.
+- `updateHotelHousekeepingStaffCapability` records which staff may do which tasks.
+- `updateHotelRoomOutage` takes a room out of sale for a period and returns it.
+
+## Maintenance
+
+`/dashboard/platform/maintenance` needs `canManageRooms`.
+
+`reportRoomMaintenanceIssue` opens a `MaintenanceRequest` with `category` (`plumbing`, `electrical`, `hvac`, `furniture`, `appliance`, `structural`, `cleaning`, `other`) and `priority` (`low`, `medium`, `high`, `emergency`).
+
+`reported` → `assigned` → `in_progress` → `completed` → `verified`, or `cancelled`. Update with `updateMaintenanceRequestStatus`. Cost and vendor details go through `updateHotelMaintenanceCommercial`.

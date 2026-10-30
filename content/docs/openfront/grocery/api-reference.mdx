@@ -1,0 +1,73 @@
+---
+title: GraphQL API
+description: Endpoint, authentication, and the custom Grocery queries and mutations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. `schema.graphql` in the repo is the reference. The playground is on outside production.
+
+## Authentication
+
+Dashboard and storefront sessions use the Keystone session cookie. Guest carts and guest orders use HttpOnly cookies and a signed order token. Signed-in requests read the user's current Store and capability from the database each time. Public reads use `PUBLIC_STORE_ID` and return only published products and active departments.
+
+## Public and customer queries
+
+`groceryCart`, `customerOrderSubstitutions`, `activeCartPaymentProviders`, `guestGroceryOrder`, `publicGroceryCoupons`, `publicGroceryStorefrontSettings`, `publicGroceryProducts`, `publicGroceryProduct`, `publicGroceryAvailability`, `availablePickupSlots`, `pickupSlotsByDate`, `availableParkingSpots`, `getGroceryLoyalty`, `groceryCustomerPrivacy`, `redirectToInit`.
+
+## Customer commands
+
+| Group | Mutations |
+| --- | --- |
+| Basket | `addItemToGroceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `mergeGuestGroceryCart`, `updateGrocerySubstitutionPreference`, `reorderGroceryOrder` |
+| Lists | `createCustomerShoppingList`, `deleteCustomerShoppingList`, `addToShoppingList`, `removeFromShoppingList`, `updateShoppingListItemQuantity`, `toggleShoppingListItemChecked`, `addShoppingListToCart`, `saveFavoriteProduct` |
+| Alerts | `requestGroceryBackInStockAlert`, `requestGroceryPriceAlert` |
+| Checkout | `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `requestGuestOrderAccess`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot` |
+| Account | `registerGroceryCustomer`, `updateActiveUser`, `updateActiveUserPassword`, `updateGroceryNotificationPreferences`, `manageGrocerySubscription`, `redeemGroceryLoyalty`, `requestGroceryCustomerPrivacy`, `exportGroceryCustomerData`, `acceptGroceryStaffInvitation`, `submitGroceryContactMessage` |
+
+## Operator projections
+
+`groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`, `groceryOutboxStatus`.
+
+## Operator commands
+
+| Group | Mutations |
+| --- | --- |
+| Orders | `advanceOrderFulfillment(orderId, target)`, `cancelGroceryOrder`, `reconcileCheckoutAttempts`, `resolveOrderLineFulfillment`, `recordOrderItemSubstitution`, `proposeOrderLineSubstitution`, `finalizeGroceryOrderActuals(orderId)`, `completeOrderHandoff(orderId)` |
+| Capacity | `configureDeliverySlot`, `configurePickupSlot`, `configureParkingSpot`, `createDeliveryRouteFromOrders`, `updateDeliveryRouteWorkflow`, `resolveDeliveryStop`, `rescheduleReturnedGroceryDelivery`, `updateGroceryDeliveryPolicy` |
+| Inventory | `adjustInventoryLot`, `manageInventoryCount`, `manageInventorySafety`, `convertInventoryCases`, `createPurchaseOrderDraft`, `removePurchaseOrderDraftItem`, `transitionPurchaseOrder`, `receivePurchaseOrder`, `manageSupplierSettlement`, `updateSupplierMinimumOrder` |
+| Catalog | `importGroceryCatalog`, `updateProductInformation` |
+| Payments | `refundPayment`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `recoverGroceryPaymentCreation`, `recoverRevisedAuthorization`, `reconcilePaymentRefunds`, `replayPaymentWebhookEvent`, `handlePaymentProviderWebhook`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch` |
+| People | `provisionGroceryCustomer`, `inviteGroceryStaff`, `revokeGroceryStaffInvitation`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty` |
+| Store | `runGroceryOnboarding`, `updateGroceryStoreProfile`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue` |
+| Outbox | `claimGroceryOutboxEvents`, `completeGroceryOutboxEvent`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery`, `deliverGroceryOutboxNow` |
+
+## Examples
+
+```graphql
+mutation Advance($orderId: ID!) {
+  advanceOrderFulfillment(orderId: $orderId, target: "picking") {
+    success
+  }
+}
+```
+
+```graphql
+mutation Pick($orderId: ID!, $lineItemId: ID!) {
+  resolveOrderLineFulfillment(
+    orderId: $orderId
+    lineItemId: $lineItemId
+    resolution: "picked"
+    quantity: "1.250"
+    unitOfMeasure: "lb"
+    idempotencyKey: "pick-1"
+  ) {
+    success
+  }
+}
+```
+
+Generated CRUD stays for lists such as `departments`, `orders`, `addresses`, `favoriteProducts`, `shoppingLists`, `subscriptions`, `products`, and `contactMessages`, under the list access rules.
+
+## Other routes
+
+`POST /api/payments/webhooks/[providerCode]`, `/api/health`, `/api/store-icon`, `/api/completion`, and `/api/mcp-transport/[transport]` (404 unless `MCP_ENABLED=true`).

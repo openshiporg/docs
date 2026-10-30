@@ -1,0 +1,26 @@
+---
+title: Close a trading period
+description: Create a close, import the settlement statement, and clear mismatches.
+icon: CalendarCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the close
+At `/dashboard/platform/reports` enter start date, end date, and timezone.
+</Step>
+<Step>
+### Import the statement
+Paste the provider's settlement CSV with its statement reference.
+</Step>
+<Step>
+### Review matches
+Open each unmatched entry and record a review reason of 8 to 1000 characters.
+</Step>
+<Step>
+### Export
+Export the close for your accountant.
+</Step>
+</Steps>

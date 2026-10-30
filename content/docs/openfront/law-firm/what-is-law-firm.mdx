@@ -1,0 +1,37 @@
+---
+title: What is Openfront Law Firm
+description: The product, its surfaces, and the concepts behind them.
+icon: Scale
+---
+
+Openfront Law Firm runs the operations of a practice: intake, conflicts, matters, calendar, documents, messages, time, billing, trust accounting, and a client portal.
+
+| Surface | Who | Where |
+| --- | --- | --- |
+| Public site | Prospective clients | `/`, `/practice-areas`, `/attorneys`, `/consultation`, `/account` |
+| Client portal | Clients | `/portal` |
+| Staff dashboard | Firm staff | `/dashboard/platform` |
+| GraphQL API | All of the above, API keys, OAuth clients, agents | `/api/graphql` |
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Firm | The tenant. Every firm-owned record carries a `firm` and cannot link to another firm's records |
+| Membership and role | Staff access comes from an active `FirmMembership` and its `Role` (39 `can*` flags) |
+| Matter team | `MatterTeamMember` rows with `canEdit`, `canBill`, `canAccessRestricted` |
+| Ethical wall | Blocks named users from a matter, even administrators |
+| Controlled record | Status, money, access, and evidence fields change only through named mutations with a serializable transaction and an `AuditEvent` |
+| Minor units | Money is integer minor units plus a currency code |
+| Trust ledger | Client or matter ledger inside a trust account, posted with balanced entries |
+
+## The path of a client
+
+1. A visitor registers (`registerConsultationAccount`) and books a consultation (`bookClientConsultation`).
+2. Booking creates a contact, an intake, a `requested` consultation, and a conflict check when an opposing party is named.
+3. Staff clear the conflict check and convert the intake to a matter (`convertIntakeToMatter`).
+4. The team records time, deadlines, documents, and messages.
+5. Invoices are assembled, issued, and paid. Retainer money sits in trust.
+6. The firm shares documents and invoices with the client through the portal.
+
+See [Intake and conflicts](/docs/openfront/law-firm/intake-conflicts), [Matters](/docs/openfront/law-firm/matters), and [Roles and permissions](/docs/openfront/law-firm/roles-permissions).

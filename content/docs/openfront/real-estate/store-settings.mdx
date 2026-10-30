@@ -1,0 +1,18 @@
+---
+title: Store settings
+description: Public identity, contact details, and showing length.
+icon: Settings
+---
+
+Route: `/dashboard/platform/store-settings`. Saved with `updatePlatformStorefrontSettings` into `BrokerageSettings`.
+
+| Field | Use |
+| --- | --- |
+| `businessName`, `marketLabel`, `city`, `state` | Identity and market |
+| `tagline`, `description` | Home page text |
+| `publicPhone`, `publicEmail` | Contact |
+| `equalHousingNotice` | Footer notice |
+| `showingDurationMinutes` | Default tour length, 15 to 240 |
+| `brandHue`, `logoIcon`, `logoColor` | Branding, shown at `/brand-mark.svg` |
+
+The storefront reads these through `publicBrokerageIdentity`.

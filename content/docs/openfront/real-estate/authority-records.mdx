@@ -1,0 +1,33 @@
+---
+title: Authority and records
+description: Licenses, listing authority, evidence, and retention.
+icon: ShieldCheck
+---
+
+Found on `/dashboard/platform/operations`.
+
+## Authority
+
+| Record | Command |
+| --- | --- |
+| `PractitionerLicenseAuthority` | `recordPractitionerLicenseAuthorityCommand` |
+| `ListingEngagementAuthority` | `recordListingEngagementAuthorityCommand` |
+| `ListingPublicationAuthority` | `recordListingPublicationAuthorityCommand` |
+| `RepresentationAuthority` | `recordRepresentationAuthorityCommand` |
+
+These are append-only. A jurisdictional action needs a current verified practitioner license, and the effective-through date must be after effective-from. Publishing needs a signed engagement with marketing authority and effective authority for the destination, such as `public_site`.
+
+## Evidence
+
+`appendDocumentEvidenceEventCommand` adds immutable evidence to a deal document. Recipients need bounded name, address, and role values.
+
+## Retention
+
+| Action | Command |
+| --- | --- |
+| Create a policy | `recordRetentionPolicyCommand` |
+| Apply to a deal file or document | `assignTransactionFileRetentionCommand` |
+| Place or release a legal hold | `recordTransactionLegalHoldCommand` |
+| Export manifest (1 to 500 checksummed items) | `createTransactionExportManifestCommand` |
+
+`TransactionFileEvent` and `DomainAuditEvent` record file activity and are append-only.

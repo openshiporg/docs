@@ -1,0 +1,25 @@
+---
+title: Inpatient beds and admissions
+description: Reserve beds, admit, transfer, discharge, and turn beds over.
+icon: BedDouble
+---
+
+Route: `/dashboard/platform/inpatient`.
+
+## Bed lifecycle
+
+`available` → `reserved` → `occupied` → `cleaning` → `available`. `out_of_service` removes a bed from use. Bed status is changed only by workflows.
+
+## Actions
+
+| Action | Mutation |
+| --- | --- |
+| Hold a bed (expiry within 24 hours) | `reserveBed` |
+| Release a hold | `releaseBedReservation` |
+| Admit | `admitPatient` |
+| Transfer or discharge | `transitionAdmission(..., bedId, dischargeDisposition)` |
+| Finish cleaning or mark out of service | `transitionBedReadiness` |
+
+An admission needs an open or in-progress encounter. A transfer needs a different destination bed. Reservations move `active` → `consumed`, `released`, or `expired`. `BedOccupancyEvent` records every assignment, transfer, and release.
+
+Facility setup (wards, rooms, beds) is on `/dashboard/platform/facilities`. Room types are `private`, `semi_private`, `icu`, and `procedure`.

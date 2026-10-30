@@ -1,0 +1,38 @@
+---
+title: GraphQL API
+description: Endpoint rules and custom queries and mutations.
+icon: Code
+---
+
+`/api/graphql` accepts POST only, JSON or same-origin multipart. Bodies are capped at 1 MB; uploads at 10 MB and 5 files. Lists return at most 100 items. Depth is limited and introspection is off. Bearer API keys, OAuth tokens, and agent credentials are accepted.
+
+## Queries
+
+| Group | Queries |
+| --- | --- |
+| Public and customer | `consultationCatalog`, `consultationCatalogPage`, `consultationService`, `consultationAvailability`, `customerConsultations`, `customerConsultationPage`, `customerConsultation`, `portalSharedResource` |
+| Staff | `practiceOverview`, `practiceWorkspace(category)`, `previewContactImport`, `portalPolicyWorkspace` |
+| Viewer | `viewerCanAccessDashboard`, `viewerCanRunConflictChecks`, `viewerCanResolveConflicts`, `viewerNeedsFirmOnboarding` |
+
+## Mutations
+
+| Group | Mutations |
+| --- | --- |
+| Onboarding and people | `completeFirmOnboarding`, `inviteFirmMember`, `changeFirmMemberAccess`, `updateFirmRoleAuthority` |
+| Customer | `registerConsultationAccount`, `bookClientConsultation`, `cancelOwnConsultation` |
+| Intake and conflicts | `startClientIntake`, `addIntakeParticipant`, `changeIntakeParticipant`, `transitionIntake`, `scheduleConsultation`, `transitionConsultation`, `requestConflictCheck`, `addConflictSearchTerm`, `addConflictMatch`, `transitionConflictCheck`, `recordConflictDisposition`, `finalizeConflictCheck`, `convertIntakeToMatter` |
+| Matters and calendar | `transitionMatter`, `changeMatterConfidentiality`, `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `recordDocketEntry`, `reviseDocketEntry`, `verifyDocketEntry`, `reviseDraftDeadline`, `transitionDeadline`, `transitionLegalTask` |
+| Documents | `ingestDocumentVersion`, `setDocumentCurrentVersion`, `transitionDocument`, `prepareSignatureRequest`, `addDocumentSigner`, `transitionDocumentSigner`, `transitionSignatureRequest` |
+| Communications | `addCommunicationParticipant`, `removeCommunicationParticipant`, `prepareCommunicationDeliveries`, `queueCommunicationMessage`, `transitionCommunicationDelivery` |
+| Billing | `transitionTimeEntry`, `transitionExpense`, `assembleDraftInvoice`, `transitionInvoice`, `transitionPayment`, `recordManualPayment`, `allocatePayment`, `reversePaymentAllocation`, `requestRefund`, `reviewRefund`, `recordRefundProviderOutcome`, `prepareRetainerAgreement`, `transitionRetainerAgreement` |
+| Trust | `setTrustAccountBankIdentity`, `transitionTrustAccount`, `transitionTrustLedgerAccount`, `postTrustTransaction`, `prepareTrustReconciliation`, `reviseTrustReconciliation`, `transitionTrustReconciliation` |
+| Portal | `recordPortalDiscoveryPolicy`, `executePortalGrant`, `invitePortalAccount`, `acceptPortalInvitation`, `grantPortalMatterAccess`, `sharePortalResource`, `revokePortalGrant` |
+| Retention | `transitionRetentionPolicy`, `assignDocumentRetentionPolicy`, `placeRetentionHold`, `releaseRetentionHold`, `disposeRetainedDocument` |
+| Integrations and data | `rotateIntegrationCredential`, `transitionIntegrationConnection`, `enqueueWebhookDelivery`, `rotateWebhookSigningSecret`, `applyContactImport`, `preparePracticeExport` |
+| Machine access | `issueApiKey`, `revokeApiKey`, `issueOAuthClient`, `revokeOAuthClient`, `issueAgentCredential`, `revokeAgentCredential`, `transitionAgentPrincipal`, `updateAgentGrantAuthority`, `requestAgentAction`, `reviewAgentAction`, `executeAgentAction` |
+
+Money and access mutations take an idempotency key, run in a serializable transaction under an advisory lock, and write an `AuditEvent`.
+
+## Other routes
+
+`/api/oauth/authorize`, `/api/oauth/token`, `/api/payment-webhooks/[providerId]`, `/api/health`, `/api/completion`. `/api/mcp-transport/http` returns 501.

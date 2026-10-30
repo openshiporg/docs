@@ -1,0 +1,21 @@
+---
+title: Intake
+description: One-time pre-visit forms and staff review.
+icon: ClipboardList
+---
+
+Route: `/dashboard/platform/intake`. Needs `canManageIntake`.
+
+## How a form is issued
+
+- `requestAppointment` creates an `IntakeForm` and returns a one-time access code.
+- Staff can issue another with `issueIntakeForm`. The code is shown once. Only a hash is stored, and it expires after 7 days.
+- The patient opens `/intake#accessCode=…`. The code is in the URL fragment, so it is not sent to the server in the page request.
+
+## Statuses
+
+`not_sent` → `sent` → `in_progress` → `submitted` → `needs_review` or `reviewed`.
+
+## Review
+
+Open a submitted form, read `responses`, then mark it reviewed or needs review with `transitionIntakeReview(operationKey, intakeFormId, toStatus, expectedVersion, reviewNotes)`. Contact updates and consent submitted with the form are applied through `submitIntakeForm`.

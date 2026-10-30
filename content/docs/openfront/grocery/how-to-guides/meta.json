@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "fill-an-order",
+    "handle-substitutions",
+    "run-a-delivery-route",
+    "receive-a-purchase-order",
+    "handle-a-recall",
+    "refund-an-order",
+    "close-a-trading-period"
+  ]
+}

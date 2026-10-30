@@ -1,0 +1,34 @@
+---
+title: Providers, visit types, and schedules
+description: Build the bookable catalog and set availability.
+icon: CalendarClock
+---
+
+## Providers
+
+`/dashboard/platform/providers` (needs `canManageProviders`). A `Provider` has `displayName`, `credentials`, `specialty`, `bio`, `locationName`, and status `active`, `unavailable`, or `inactive`. It links to facilities and visit types, and optionally to a staff `User`. A `Clinician` adds `clinicianType` (`physician`, `nurse`, `therapist`, `technician`), `licenseNumber`, department, and an `active` flag. Only active providers are shown publicly.
+
+## Visit types
+
+`/dashboard/platform/visit-types`. Fields: `name`, `slug`, `description`, `durationMinutes`, buffers, `priceCents`, `intakeRequirements`, linked providers, and `status`:
+
+| Status | Effect |
+| --- | --- |
+| `bookable` | Appears on `/care` and `/book` |
+| `internal` | Staff only |
+| `paused` | Hidden from booking |
+
+Duration and buffers must be within the supported range. A requested window must match the visit's duration.
+
+## Schedules
+
+`/dashboard/platform/schedules` (needs `canManageScheduling`) lists `ProviderScheduleBlock` rows and checks conflicts. Create and edit blocks on `/dashboard/provider-schedule-blocks`.
+
+| `blockType` | Meaning |
+| --- | --- |
+| `available` | Open for booking |
+| `unavailable` | Blocked |
+| `on_call` | On call |
+| `admin_time` | Non-clinical time |
+
+A block has `startsAt`, `endsAt`, `maxAppointments`, `recurrenceRule`, `locationName`, a facility, and notes. `availableAppointmentSlots(appointmentTypeId, providerId, facilityId, date)` computes the public slots in the facility time zone, and appointment requests must use a future slot.

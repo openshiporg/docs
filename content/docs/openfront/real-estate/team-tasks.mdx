@@ -1,0 +1,19 @@
+---
+title: Team, tasks, and reports
+description: Members, teams, agent tasks, and reporting.
+icon: UsersRound
+---
+
+## Agents and teams
+
+`/dashboard/platform/people` (`platformPeople`). Needs `canManagePeople`. Owners and admins invite (`inviteBrokerageMemberCommand`) and suspend (`suspendBrokerageMemberCommand`) members. Only an owner can add another admin. Membership status is `invited`, `active`, or `suspended`.
+
+Without `canManagePeople`, agents work only on records assigned to them.
+
+## Tasks
+
+`/dashboard/platform/tasks`. Create, edit, and move tasks with `transitionAgentTaskCommand`: `open` → `in_progress` → `done`, or `blocked`.
+
+## Reports
+
+`/dashboard/platform/reports` (`platformReports`). Needs `canViewReports`. Shows the funnel, lead sources, and per-agent numbers.

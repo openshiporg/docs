@@ -4,9 +4,7 @@ description: Clone the source, configure PostgreSQL, sessions and storage, apply
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-To see the app before installing it, open the live demo at [grocery.openship.org](https://grocery.openship.org). The operator dashboard is at `/dashboard` on the same host.
+The hosted app is at [grocery.openship.org](https://grocery.openship.org). The operator dashboard is at `/dashboard` on the same host.
 
 ## Requirements
 
@@ -69,7 +67,7 @@ Outside production, missing values fall back to local defaults, including a loca
 | `TRUSTED_PROXY` | `true` reads the client address from `X-Real-IP`. Only safe behind an edge that overwrites that header. |
 | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe checkout. Off unless `STRIPE_ENABLED=true` and all three keys are set. |
 | `STRIPE_ALLOW_TEST_MODE` | Allows test keys in production. |
-| `STRIPE_USE_ENVIRONMENT_PROVIDER` | With test mode, treats the seeded Stripe record as installed without a database write. |
+| `STRIPE_USE_ENVIRONMENT_PROVIDER` | With `STRIPE_ALLOW_TEST_MODE`, treats the seeded Stripe record as installed without a database write. |
 | `PAYMENT_ADAPTER_ALLOWED_ORIGINS` | Comma-separated HTTPS origins allowed for custom remote payment adapters. |
 | `PAYMENT_PROVIDER_ADMIN_USER_IDS` | Comma-separated user ids allowed to change payment provider records. Without it, provider settings are read-only in the app. |
 | `GUEST_ORDER_TOKEN_MAX_AGE_SECONDS` | Lifetime of the signed guest order link. |
@@ -93,9 +91,7 @@ The repository has 46 checked-in migrations. One of them inserts the Store `stor
 npm run migrate
 ```
 
-<Callout type="warn">
-`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database in `DATABASE_URL`. Point it only at a database you control. `npm run migrate:gen` creates and applies new migrations and is for development databases only.
-</Callout>
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database in `DATABASE_URL`. `npm run migrate:gen` creates and applies new migrations.
 
 ## Run locally
 

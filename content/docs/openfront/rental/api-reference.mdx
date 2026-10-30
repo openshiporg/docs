@@ -1,0 +1,40 @@
+---
+title: GraphQL API
+description: Guest and host operations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. Public reads use exact slugs or opaque 48-character hex tokens.
+
+## Guest queries
+
+`publicMarketplaceSettings`, `searchStays`, `publicListing`, `publicStayAvailability`, `publicStayQuote`, `publicTrip`, `publicStayAgreement`, `publicGuestThread`, `myGuestAccount`, `guestPasswordResetAvailable`.
+
+## Guest mutations
+
+| Group | Mutations |
+| --- | --- |
+| Booking | `quoteStay`, `createStayReservation`, `recoverStayCheckout`, `requestStayCancellation`, `signStayAgreement` |
+| Card payment | `startGuestStayPayment`, `completeGuestStayPayment` |
+| Account and messages | `registerGuestAccount`, `updateMyGuestProfile`, `changeGuestEmail`, `changeGuestPassword`, `openAccountTrip`, `recoverStayTrip`, `claimStayTrip`, `submitGuestInquiry`, `replyToGuestThread`, `sendTripMessage`, `submitStayReview` |
+
+## Host mutations
+
+| Area | Mutations |
+| --- | --- |
+| Reservations | `transitionStayReservation`, `reassignStayReservation`, `amendConfirmedStay`, `cancelStayQuote` |
+| Payments | `initiateStayPayment`, `captureStayPayment`, `refundStayPayment` |
+| Deposits and claims | `transitionSecurityDeposit`, `createStayDamageClaim`, `transitionDamageClaim` |
+| Owners | `generateOwnerStatement`, `transitionOwnerStatement`, `ownerFinanceSummary` |
+| Tasks | `createOperationsTask`, `transitionPropertyTask`, `runPropertyTaskRules` |
+| Calendar | `importListingCalendar`, `exportListingCalendar` |
+| Reports | `hostOperationsReport`, `exportHostArchive`, `permittedHostOrganizations`, `listingReadinessIndex` |
+| Outbox and setup | `deliverOutboxEvents`, `rentalOnboarding`, `updateOnboardingStatus` |
+
+## hostStayCommand
+
+`hostStayCommand(command, input)` is the entry point for most dashboard actions. It requires a signed-in user and returns `{ ok, message, data }`.
+
+Commands: `transition`, `amend`, `reassign`, `listing_allocate`, `party_amend`, `party_invites_amend`, `payment_record_manual`, `payment_cancel_attempt`, `refund_create`, `refund_record_manual`, `refund_process`, `refund_decline`, `refund_assess`, `deposit`, `claim_create`, `claim_transition`, `agreement_void`, `agreement_reissue`, `conversation_reply`, `conversation_status`, `conversation_link_revoke`, `conversation_link_reissue`, `review_moderate`, `catalog_transition`.
+
+Generated CRUD exists for every model; change reservation, payment, and refund state through the commands.

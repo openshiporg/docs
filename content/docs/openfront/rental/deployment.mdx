@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Build, migrate, and run in production.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`.
+
+<Steps>
+<Step>
+
+### Provision
+
+PostgreSQL, an S3-compatible bucket for listing media, and SMTP.
+
+</Step>
+<Step>
+
+### Configure
+
+`DATABASE_URL`, `SESSION_SECRET` (32+ characters), the five `S3_*` values, `NEXT_PUBLIC_APP_URL`. Add `SMTP_*`, `STRIPE_*`, and `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET` as needed. A development session secret is rejected in production.
+
+</Step>
+<Step>
+
+### Migrate and start
+
+`npm run migrate` then `npm start`.
+
+</Step>
+<Step>
+
+### Webhooks
+
+Point Stripe at `/api/payment-webhooks/pp_stripe_stripe`.
+
+</Step>
+<Step>
+
+### Outbox
+
+`npm run outbox:deliver` runs the worker. Register a dispatcher in `features/keystone/workers/outboxDispatchers.ts`; until then runs report `no_dispatcher`.
+
+</Step>
+</Steps>
+
+See [Getting started](/docs/openfront/rental/getting-started) for every variable.

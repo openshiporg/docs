@@ -1,0 +1,37 @@
+---
+title: Roles and permissions
+description: Role flags, facility scope, and what each one unlocks.
+icon: KeyRound
+---
+
+## Facility scope
+
+A user sees a record when they are on the facility's staff, are the record's provider, or are the linked patient. `canAccessAllClinicalData` bypasses facility filters.
+
+## Flags
+
+| Flag | Allows |
+| --- | --- |
+| `canAccessDashboard` | Sign in to `/dashboard` |
+| `canManageAppointments` | Appointment transitions and check in |
+| `canManageScheduling` | Provider schedule blocks |
+| `canManagePatients` | Registration, consent, patient records |
+| `canManageProviders` | Providers, clinicians, visit types |
+| `canManageIntake` | Intake issue and review |
+| `canManageCommunications` | Messages, templates, preferences |
+| `canManageBilling` | Coverage, claims, payments, refunds |
+| `canManageInventory` | Supplies |
+| `canManageIntegrations` | Installations, credentials, outbox |
+| `canManageDataPortability` | Exports |
+| `canManageRetention` | Policies, holds, dispositions |
+| `canViewReports` | Reports |
+| `canManageOnboarding` | Onboarding |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople` | Other users |
+| `canManageRoles` | Roles |
+| `canAccessAllClinicalData` | Every facility |
+
+Sidebar visibility is presentation. Keystone list and field access plus the checks in each mutation enforce access.
+
+## Recommended setups
+
+Give the front desk appointments, patients, intake, and communications. Give billing only `canManageBilling` and `canViewReports`. Keep `canAccessAllClinicalData` for one or two administrators. The first user gets "Global Clinical Administrator" with every flag.

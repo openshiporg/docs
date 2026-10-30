@@ -1,0 +1,28 @@
+---
+title: Coverage, claims, and payments
+description: Insurance coverage, claims with versions, manual payments, and refunds.
+icon: Receipt
+---
+
+Needs `canManageBilling`.
+
+## Coverage
+
+`recordPatientCoverage` stores payer, member ID, group, and effective date. `unverified` → `active`, `inactive`, or `rejected`.
+
+## Claims
+
+`/dashboard/platform/claims`. `prepareInsuranceClaim` needs active coverage matching the patient and facility, and an encounter. Billed amounts are non-negative integer cents. Every change adds an immutable `ClaimVersion`.
+
+`draft` → `prepared` → `submitted` → `external_acknowledged` or `external_rejected` → `corrected`; `cancelled`. Recording `external_*` results can also arrive from the payer through the inbound webhook (`claim.acknowledged`, `claim.rejected`).
+
+## Payments and refunds
+
+These are on the billing tab of `/dashboard/platform/operational-fabric`.
+
+| Record | Methods and states |
+| --- | --- |
+| `PatientPayment` | Methods `cash`, `check`, `card_external`, `bank_external`. `pending` → `succeeded`, `failed`, `cancelled` |
+| `PatientRefund` | `pending` → `succeeded`, `failed`, `cancelled`. Tracks `refundedAmountCents` on the payment |
+
+Payments are recorded against money received outside the app. Add an `externalReference` when you mark one succeeded.

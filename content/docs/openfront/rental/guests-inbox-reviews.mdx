@@ -1,0 +1,17 @@
+---
+title: Guests, inbox, and reviews
+description: Guest profiles, conversations, and review moderation.
+icon: MessagesSquare
+---
+
+## Guests
+
+`/dashboard/platform/guests`, `/[id]`. Needs `canManageGuests`. Profiles (`GuestProfile`), parties (`GuestParty`), and stay history.
+
+## Inbox
+
+`/dashboard/platform/inbox`, `/[id]`. Needs `canManageMessages`. A `Conversation` is `open`, `snoozed`, or `archived`. Use `conversation_reply`, `conversation_status`, `conversation_link_revoke`, and `conversation_link_reissue`. Guests open their thread through a private `/messages/[token]` link.
+
+## Reviews
+
+`/dashboard/platform/reviews`, `/[id]`. Needs `canManageReviews`. `Review.direction` is `guest_to_host` or `host_to_guest`; status `draft`, `submitted`, `published`, `removed`. Moderate with `review_moderate` to publish, hold, or remove. Ratings cover overall, cleanliness, accuracy, communication, location, and value.

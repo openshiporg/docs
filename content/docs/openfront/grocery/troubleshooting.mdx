@@ -1,0 +1,63 @@
+---
+title: Troubleshooting
+description: Error messages from checkout, fulfillment, inventory, and finance with causes and fixes.
+icon: LifeBuoy
+---
+
+## Checkout
+
+| Message | Cause and fix |
+| --- | --- |
+| Cart is empty or has already been submitted | The order was already placed. Check the account's orders |
+| Cart contains an unavailable product | A product was unpublished or has no sellable lot |
+| Basket changed after payment authorization; recover the original checkout before replacing it | Use `resumeGroceryCheckout` |
+| A fresh checkout is available only after payment compensation is confirmed | Wait for the refund of the first attempt, or run checkout recovery from Orders |
+| Delivery is not available right now. Choose pickup instead. | No `postalPrefixes` are set. Add them in Settings |
+| We don't deliver to postal code X | The code is outside the service area |
+| The delivery minimum is $X | Basket is below `deliveryMinimumCents` |
+
+## Fulfillment
+
+| Message | Cause |
+| --- | --- |
+| A reason is required for shortages and substitutions | Add a reason |
+| Use shortage resolution when fewer units are picked | Unit products picked under the ordered count must be `short` |
+| A delivery driver is required before routing orders | Pick a driver |
+| Assigned driver must have delivery permission | Give the driver `canManageDelivery` |
+| Only planning routes can be dispatched | The route already started |
+| A route must contain orders before dispatch | Add orders |
+| Pickup order must be marked ready before handoff | Move it to `ready_for_pickup` |
+| Capacity cannot be below current bookings | Lower bookings first |
+
+## Inventory and purchasing
+
+| Message | Cause |
+| --- | --- |
+| A count variance requires a recount before approval | Run `recount` |
+| A different inventory operator must approve the count | A second user must approve |
+| A different operator must approve supplier invoice variances | A second user must approve |
+| A purchase order with received inventory cannot be cancelled | It was received |
+| All affected orders require a delivered notice outcome before closure | Record notices |
+| Catalog changed after review; run a fresh dry run before committing | Re-run the dry run |
+
+## Payments
+
+| Message | Cause |
+| --- | --- |
+| A final sale is processing; resolve it before voiding authorization | Wait or recover the final sale |
+| An authorization abandonment is unresolved; finish it before another refund | Recover the authorization |
+| A refund reason between 3 and 500 characters is required | Fix the reason |
+| Cancellation requires complete payment ownership, amount and refund evidence | Review the payment record |
+
+## Staff
+
+| Message | Cause |
+| --- | --- |
+| Cannot grant capability not currently held: X | You can only grant what you hold |
+| Staff capabilities require dashboard access | Add `canAccessDashboard` |
+| A pending invitation already exists; revoke it before replacing it | Revoke first |
+| An account already uses this email; invite a separate staff identity | Use another email |
+
+## Background work
+
+Emails, recurring baskets, outbound events, and refund checks run in the three worker processes. If queued messages stay pending, confirm the workers are running and SMTP is set. See [Deployment](/docs/openfront/grocery/deployment).

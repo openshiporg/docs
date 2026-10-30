@@ -1,0 +1,26 @@
+---
+title: Property settings
+description: Stay times, tax, fees, deposits, loyalty, approvals, and storefront branding.
+icon: Settings
+---
+
+Route: `/dashboard/platform/property`. Needs `canManageOnboarding`. Saved with `updateHotelPropertySettings` into the `HotelSettings` singleton.
+
+| Section | What it sets |
+| --- | --- |
+| Details and contact | Name, address, phone, email |
+| Stay times | Check-in and check-out times |
+| Tax and fees | Tax rate and fee rules used in quotes |
+| Deposit | Deposit applied at booking |
+| Loyalty | Earning and redemption rules |
+| Groups | Defaults for blocks |
+| Approvals | Thresholds that require a second user |
+| Storefront | Logo and media shown on the guest site |
+
+Public values are read by the storefront through `publicHotelSettings`.
+
+## Other pages
+
+- `/dashboard/platform/analytics`: occupancy, ADR, RevPAR, posted revenue, tax, payments, refunds, and folio exposure for a date range (`hotelAnalyticsOperations`). Needs `canManageBookings`.
+- `/dashboard/platform/outbox`: guest message and refund delivery status, with replay (`replayHotelOutboxEvent`). Needs `canManageAudit`.
+- `/dashboard/platform/security`: TOTP second factor and recovery codes for your own account.

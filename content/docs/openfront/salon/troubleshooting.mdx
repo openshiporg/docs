@@ -1,0 +1,65 @@
+---
+title: Troubleshooting
+description: Error messages from booking, checkout, refunds, and setup, with causes and fixes.
+icon: LifeBuoy
+---
+
+## Booking
+
+| Message | Cause and fix |
+| --- | --- |
+| Selected time is outside the stylist's schedule | Add weekly hours for that day and location |
+| Selected practitioner is not qualified for every booked service | Add the service to the stylist's specializations |
+| X is not currently bookable | The service is `inactive` |
+| This service requires a consultation or patch test | Book it at the desk instead |
+| Booking request key was reused with different details | Use a new `requestKey` |
+| Assigned practitioner is already allocated during this segment | Pick another time or stylist |
+| Assigned resource capacity is unavailable during this segment | Raise the resource `capacity` or pick another time |
+| Online cancel or reschedule is outside the accepted policy window | The change is inside `CLIENT_CANCELLATION_NOTICE_MINUTES` or `CLIENT_RESCHEDULE_NOTICE_MINUTES`. Staff can still change it |
+
+With more than one active location a booking needs `locationId`.
+
+## Appointments
+
+| Message | Cause |
+| --- | --- |
+| Cannot transition appointment from X to Y | The status move is not allowed. See [Appointments](/docs/openfront/salon/appointments) |
+| Checked-out appointments cannot be restarted | The sale already exists |
+| A no-show can be recorded after the appointment start time | Wait until the start time has passed |
+
+## Checkout and refunds
+
+| Message | Cause |
+| --- | --- |
+| Appointment is not eligible for checkout | Confirm the appointment first |
+| Appointment is already checked out | Open the sale instead |
+| Retail product is unavailable | Receive stock first |
+| Reversal quantity exceeds the unreversed sale quantity | Reduce the quantity |
+| Tip recovery exceeds the unreversed gratuity | Lower the tip recovery |
+| Void and refund require the full remaining sale | Use a partial refund for part of the sale |
+| Refund is pending or mismatched; reconciliation required | The provider did not confirm. Check the provider, then retry with the same key |
+| Commission adjustment would create negative earnings | Lower the adjustment |
+
+## Gift cards and points
+
+| Message | Cause |
+| --- | --- |
+| Gift card has expired | Past `expiresAt` |
+| Gift card has insufficient available balance | Amount over `currentBalance` |
+| Gift card refund exceeds its original value | Over `initialValue` |
+| Not enough points | Adjustment would go below zero |
+
+## Setup
+
+| Message | Cause |
+| --- | --- |
+| Salon setup is not complete | No dashboard user exists yet. Create one at `/dashboard/init` |
+| Enter a name, valid email and a password of 12–128 characters | Client sign-up validation |
+| Account email changes require the separate verified identity workflow | Email edits on an existing account are refused |
+| Staff member has active reservations and cannot be deactivated | Reschedule their bookings first |
+| Location has active reservations and cannot be disabled | Move the bookings |
+| Timezone changes require explicit schedule migration | Schedules or appointments exist |
+| Schedule was changed by another operator | Reload and retry with the new revision |
+| No emails arrive | `SMTP_HOST` and `SMTP_FROM` are not set |
+
+If a page redirects to `/dashboard/no-access`, the role lacks the required flag.

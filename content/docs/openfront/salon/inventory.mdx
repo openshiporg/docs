@@ -1,0 +1,23 @@
+---
+title: Retail inventory
+description: Stock levels, reorder points, and recorded stock movements.
+icon: Boxes
+---
+
+`/dashboard/platform/inventory` needs `canManageInventory`.
+
+## What you see
+
+Products with quantity, reorder point, and status. Items at or below `reorderPoint` are flagged for replenishment.
+
+## Adjust stock
+
+`adjustSalonInventory` takes `productId`, `locationId`, `delta`, a required `reason`, and an idempotency key. Each call writes an `InventoryMovement` with `balanceBefore` and `balanceAfter`.
+
+Movement types: `receive`, `adjustment`, `sale`, `return`.
+
+- Checkout writes `sale` movements.
+- Reversing a retail line with disposition `return_to_stock` writes a `return` movement.
+- Receiving stock and corrections use the adjustment form on the page.
+
+Stock is checked against the movement ledger. A mismatch is refused so counts cannot drift. `salonLocationStock` returns stock for a location and supports search and paging.
