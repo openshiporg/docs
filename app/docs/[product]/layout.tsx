@@ -22,10 +22,7 @@ const orderedOpenfrontProducts = [...openfrontProducts].sort((left, right) => {
 
 function TabIcon({ color, product }: { color: string; product: 'openfront' | 'openship' }) {
   return (
-    <div
-      className="size-full rounded-lg max-md:border max-md:p-1.5 [&_svg]:size-full"
-      style={{ color, backgroundColor: `${color}10` }}
-    >
+    <div className="size-full [&_svg]:size-full" style={{ color }}>
       {product === 'openfront' ? (
         <OpenfrontLogoIcon className="size-full" color={color} />
       ) : (

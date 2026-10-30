@@ -122,7 +122,7 @@ export function MobileVerticalSwitcher({ product }: { product: 'openfront' | 'op
                   onClick={() => router.push(o.url)}
                   className="flex h-11 w-full items-center gap-3 rounded-lg px-2 text-left hover:bg-fd-accent"
                 >
-                  <span className="size-6 shrink-0 rounded-md p-1" style={{ backgroundColor: `${o.color}20` }}>
+                  <span className="size-5 shrink-0">
                     <Logo className="size-full" color={o.color} />
                   </span>
                   <span className="truncate text-sm font-medium">{o.title}</span>
