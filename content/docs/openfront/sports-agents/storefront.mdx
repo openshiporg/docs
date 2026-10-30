@@ -1,0 +1,15 @@
+---
+title: Public routes
+description: What answers without a dashboard session.
+icon: Globe
+---
+
+| Route | What it does |
+|---|---|
+| `/` | Landing page with links to the dashboard and GraphQL |
+| `/api/graphql` | Anonymous requests can run `redirectToInit` and `authenticatedItem`; list queries need a signed-in user |
+| `/dashboard/signin`, `/dashboard/reset` | Sign in and password reset |
+| `/dashboard/signup` | Open when `PUBLIC_SIGNUPS_ALLOWED=true` |
+| `/api/mcp-transport/[transport]` (GET) | Returns a status message |
+
+Every list requires a signed-in user for reads. To expose data to the public, add an access rule for the fields you want visible and build routes under `app/`. See [External storefronts](/docs/openfront/sports-agents/external-storefront) for the skill that guides this.

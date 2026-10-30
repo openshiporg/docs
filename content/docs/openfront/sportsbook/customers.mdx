@@ -1,0 +1,13 @@
+---
+title: Customers
+description: Player records, verification, restrictions, consents, statements, sessions, and devices.
+icon: Contact
+---
+
+Needs `canManageCompliance`. Routes: `/dashboard/platform/customers`, `/customers/[playerId]`.
+
+The player page shows identity verification (`VerificationCase`, `VerificationCheck`), AML cases, `AccountRestriction` rows, `Consent`, `PlayerStatement`, sessions and devices (`CustomerSession`, `CustomerDevice`), closures, and notifications. `PlayerIdentity` payloads are encrypted with `PII_ENCRYPTION_KEY`. Customer credential and session lists are not exposed through GraphQL.
+
+Customer sessions use the `openfront_customer` cookie; its digest is stored in `CustomerSession`.
+
+Account closures (`/dashboard/platform/closures`) list requests and their blockers, and notifications (`/dashboard/platform/notifications`) list messages sent to customers and staff.

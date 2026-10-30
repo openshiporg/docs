@@ -1,0 +1,16 @@
+---
+title: Activity and your data
+description: The creator's event log, exports, and privacy requests.
+icon: Database
+---
+
+## Activity
+
+`/dashboard/platform/activity` lists the creator's own `SocialEvent` rows: action, target, time, and evidence. Events are append-only, written by every studio command.
+
+## Your data
+
+`/dashboard/platform/your-data`.
+
+- **Export:** by category (events, privacy, items, publications, destinations), paged with `socialPrivateExport` and downloadable from `/api/creator-export`. Passwords and reset links are never included.
+- **Request:** `requestPrivacy` files `request_access`, `request_correction`, or `request_erasure` with a reason of up to 1000 characters. The page shows its review status. A people manager decides it in [Privacy requests](/docs/openfront/social/privacy-requests).

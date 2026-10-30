@@ -1,0 +1,32 @@
+---
+title: Bookings
+description: Booking list, detail, lifecycle actions, and recovery.
+icon: CalendarCheck
+---
+
+`/dashboard/platform/bookings` has status tabs (pending, confirmed, cancelled, completed, no-show), search, and event and host filters. Row actions run inline. `/dashboard/platform/bookings/[id]` shows attendees, intake answers, payment, meeting link, calendar state, resources, series, and history.
+
+## Lifecycle actions
+
+`transitionBooking(bookingId, action, ...)`:
+
+| Action | From | To | Checks |
+|---|---|---|---|
+| `confirm` | `pending` | `confirmed` | payment `paid` if required; booking not ended |
+| `decline` | `pending` | `cancelled` | actor manages the team or is an assigned host |
+| `cancel` | `pending`, `confirmed` | `cancelled` | reason up to 1000 characters |
+| `no_show` | `confirmed` | `no_show` | booking has started |
+| `complete` | `confirmed` | `completed` | booking has ended |
+| `reschedule` | `pending`, `confirmed` | same status | new start; payment `paid` if required |
+
+Every transition writes a `BookingLifecycleEvent`. Workflows, reminders, webhooks, calendar writes, and meeting updates follow through the outbox. Changes close shortly before start ("Changes to this booking are no longer allowed this close to its start").
+
+## Recurring bookings
+
+A `BookingSeries` groups occurrences. Cancel future occurrences from the series panel.
+
+## Recovery
+
+`operatorBookingRecoveryOptions` and `operatorBookingAcceptedEvidence` back the recovery panel when a command's result is unknown. Re-running with the same idempotency key replays the outcome.
+
+See [Confirm or decline a booking](/docs/openfront/scheduling/how-to-guides/confirm-booking).

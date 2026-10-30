@@ -1,0 +1,26 @@
+---
+title: Site settings
+description: Handle, profile, image, logo, theme, visibility, and start over.
+icon: Settings
+---
+
+Route: `/dashboard/platform/site`.
+
+| Setting | Notes |
+|---|---|
+| Handle | unique address `/<handle>`; reserved application names are refused; renamed handles redirect |
+| Display name, bio, location, website | profile text |
+| Image | uploaded `MediaAsset` (needs S3) |
+| Logo | icon and color, `logoIcon` (sanitized SVG) and `logoColor` |
+| Theme | `paper`, `midnight`, `forest` |
+| Published | `isPublished`; a hidden site is not served |
+
+`createSite`, `updateSite` (with `expectedPublishingVersion`) save changes. Hiding a site cancels undispatched external requests.
+
+## Start over
+
+`deleteSite` removes a site only when all its publications are flagged as samples, which is the case for a site made by starter onboarding. A site with real publication history cannot be deleted: hide it, or change its address and content.
+
+## Minimum and maximum tip
+
+`minimumTipMinor` (default 100) and `maximumTipMinor` (default 50000) bound the amounts visitors can tip. See [Tips and memberships](/docs/openfront/social/tips-memberships).

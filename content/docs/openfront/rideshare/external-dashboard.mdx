@@ -29,7 +29,7 @@ Platform routes are thin files under `app/dashboard/(admin)/platform/**` that re
 | `/dashboard/platform/team` | `team` | Fleet members: add by email, change role, suspend, reactivate. |
 | `/dashboard/platform/settings` | `settings` | Create a fleet, go-live checklist (status, manual dispatch, rider accounts), and storefront branding. |
 
-The sidebar entries come from `features/platform/lib/navigation.ts`. `/dashboard` itself renders the generic Keystone home page from `features/dashboard`. `features/platform/overview/screens/OverviewPage.tsx` (counts of waiting requests, active trips, active drivers, and open incidents) exists in source but no route renders it.
+The sidebar entries come from `features/platform/lib/navigation.ts`. `/dashboard` itself renders the generic Keystone home page from `features/dashboard`. 
 
 The onboarding dialog and custom setup steps live in `features/platform/onboarding`. The GraphQL documents for setup and review actions on the settings, team, services, drivers, vehicles, trips, safety, and reviews pages are collected in `features/platform/setup/setupMutations.ts`.
 

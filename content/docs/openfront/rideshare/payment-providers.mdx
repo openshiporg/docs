@@ -1,0 +1,44 @@
+---
+title: Payment providers
+description: Stripe Checkout for rider card payments and the manual provider for payments the fleet collects.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters are registered in `features/integrations/payment/index.ts`: `manual` and `stripe`. A `PaymentProvider` row names the adapter in its `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, and `handleWebhookFunction` fields, and `isInstalled` (`yes` or `no`) turns it on. Manage rows in the generic list at `/dashboard/payment-providers`.
+
+## Manual (`pp_manual`)
+
+Onboarding installs it. Creating a payment records an obligation with a `manual:` reference and status `pending`. The fleet collects the fare directly (cash or another method), then a finance operator presses Confirm payment (`confirmManualPayment`), which captures the payment and posts ledger entries. Refunds work the same way with `confirmManualRefund`. The manual adapter does not accept webhooks.
+
+## Stripe (`pp_stripe`)
+
+Riders pay the quoted fare through Stripe Checkout once a driver is assigned.
+
+<Steps>
+<Step>
+### Set the key
+Set `STRIPE_SECRET_KEY` on the app service. The adapter accepts `sk_` or `rk_` keys, test or live. Start with a test key.
+</Step>
+<Step>
+### Create the provider
+Create a `PaymentProvider` with `code` `pp_stripe`, `isInstalled` `yes`, and every function field set to `stripe`.
+</Step>
+<Step>
+### Rider pays
+On the ride page `/rides/[confirmationCode]`, a signed-in rider presses Pay. `startTripCardPayment(tripId)` creates a pending `Payment` and a Checkout session and returns the Stripe URL.
+</Step>
+<Step>
+### Return and confirm
+Stripe returns to `/rides/<code>?checkout=<session id>`. `confirmTripCardPayment(tripId)` retrieves the session, checks the trip, amount, and currency against the stored attempt, and captures the payment. An expired session cancels the attempt, and the rider can start again.
+</Step>
+</Steps>
+
+`tripCardPayment(tripId)` reports whether card payment is enabled and payable for the rider. If the fleet already recorded a manual payment for the trip, card payment is hidden ("The fleet is collecting this fare directly").
+
+On capture the app stores a `PaymentObservation` with the Checkout session, payment intent, charge, and card brand and last four digits, and posts a `rider_charge` ledger entry.
+
+## Choosing between them
+
+Install both if you want. A trip has one active payment at a time. Riders see the card option only while the trip has no manual payment attempt.

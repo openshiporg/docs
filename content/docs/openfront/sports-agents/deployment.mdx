@@ -1,0 +1,23 @@
+---
+title: Deployment
+description: Build, migrate, and run Sports Agents on any Node.js and PostgreSQL host.
+icon: Rocket
+---
+
+1. Create the PostgreSQL database and, for images, an S3-compatible bucket.
+2. Set the environment variables from [Getting started](/docs/openfront/sports-agents/getting-started): `DATABASE_URL`, `SESSION_SECRET`, the five `S3_*` values, and optionally SMTP and OpenRouter.
+3. Build: `npm run build` (or `keystone build --no-ui && next build` if the build step cannot reach the database).
+4. Migrate: `npm run migrate` (`prisma migrate deploy`).
+5. Start: `npm start`.
+
+`railway.toml` does this split for Railway: build command `keystone build --no-ui && next build`, start command `npm run migrate && next start`.
+
+## After deploy
+
+Open `/dashboard/init` and create the first user. Then:
+
+- set `PUBLIC_SIGNUPS_ALLOWED=true` only if you want open registration at `/dashboard/signup`; new sign-ups have no role until an admin assigns one
+- set `SMTP_HOST` and `SMTP_STORE_LINK` so password reset emails carry a working link
+- set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` for the shared AI chat
+
+Make `SESSION_SECRET` long and random in every environment. Sessions are stateless signed cookies with a 360-day maximum age.

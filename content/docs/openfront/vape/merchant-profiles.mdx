@@ -1,0 +1,21 @@
+---
+title: Merchant profiles and licences
+description: The retailer's legal authority to sell, its licences, and the kill switch.
+icon: BadgeCheck
+---
+
+Routes: `/dashboard/platform/merchant-profiles` and `/[id]`. Needs `canManageCompliance`.
+
+A `RegulatedMerchantProfile` holds `legalName`, `enabledCategories`, `complianceOwner`, escalation contacts, counsel and insurance references, `pactRegistered` with `pactRegistrationReference` and `pactEvidenceDigest` (SHA-256), `effectiveAt`, `expiresAt`, `originJurisdiction`, `launchJurisdictions`, and `killSwitch` (default on).
+
+Lifecycle: `draft` → `review` → `active` → `suspended` / `revoked`. Activation needs PACT registration, a reference, a digest, an origin, and bounded dates. Active profiles are immutable; use New revision to change one. Records are never deleted.
+
+## Actions
+
+Create and edit a draft, Submit, Activate, Suspend, Revoke, New revision, Stop sales, and Resume sales. Stop and resume need `canOperateComplianceKillSwitch`.
+
+## Licences
+
+On the profile page add a `MerchantLicense`: `licenseType`, `licenseNumber`, `issuingAuthority`, `authorityReference`, `evidenceDigest`, `verificationSource`, `effectiveAt`, `expiresAt`, `verifiedAt`, jurisdiction. States: `draft`, `active`, `conditioned`, `suspended`, `expired`, `revoked`. A usable licence needs `verifiedAt` and a digest, and becomes immutable. A licence counts toward a cart only when the destination rule set has a `license_required` rule.
+
+You cannot have two active profiles: readiness requires exactly one.

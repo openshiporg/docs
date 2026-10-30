@@ -1,0 +1,22 @@
+---
+title: Licences and payments
+description: Operator licences, payment provider connections, and the withdrawal queue.
+icon: Wallet
+---
+
+Route: `/dashboard/platform/payments`. Licences need `canManageCompliance`; providers need `canManageIntegrations`; withdrawals need `canManageFinance`.
+
+## Operator licences
+
+Record `licenceNumber`, `regulator`, `expiresAt`, `permittedRegions` (comma-separated codes), and `status` (`ACTIVE`, `SUSPENDED`, `EXPIRED`). Customer commands are refused with `OPERATOR_NOT_LICENSED` unless an unexpired `ACTIVE` licence with regions exists, and with `GEO_BLOCKED` when the request region (from `x-vercel-ip-country-region`, `cf-ipcountry`, or `x-geo-region`) is not permitted.
+
+## Payment providers
+
+Adapters: `authorizenet`, `manual`, and the connection ids `paysafe` and `aeropay` for providers you attach. Add a `ProviderConnection` with `adapterId`, `adapterVersion`, `configReference` and `secretReference` (names of environment variables), and status `ACTIVE`, `DISABLED`, or `DEGRADED`. The page shows whether the referenced variables are set. Customer commands need at least one active payment connection (`PAYMENTS_NOT_CONFIGURED` otherwise).
+
+- Deposits use the active `authorizenet` connection. Set `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY`, and `AUTHORIZENET_ENV=production` for live (otherwise the test endpoint is used).
+- Withdrawals use the active `manual` connection. The funds are held at request.
+
+## Withdrawal queue
+
+Pending, processing, and unknown withdrawals are listed oldest first. Press Mark paid with a bank reference, or Reject (`settleOperatorWithdrawal`). A paid withdrawal captures the hold and posts the journal; a rejected one releases it. A resolved intent is not changed twice. Reconcile unknown deposits with `reconcileUnknownPayment`.

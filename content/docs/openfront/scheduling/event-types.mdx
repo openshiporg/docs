@@ -1,0 +1,39 @@
+---
+title: Event types
+description: Create bookable events with hosts, schedule, questions, buffers, payment policy, and templates.
+icon: CalendarPlus
+---
+
+Pages: `/dashboard/platform/event-types`, `/new`, and `/[id]`.
+
+## Fields
+
+| Field | Values |
+|---|---|
+| `status` | `draft`, `published`, `private`, `archived` |
+| `schedulingType` | `individual`, `collective`, `round_robin` |
+| duration, buffers | minutes before and after |
+| location | in person, phone, or a conference provider (`google_meet`, `microsoft_teams`, `zoom`) |
+| `requiresConfirmation` | new bookings start `pending` |
+| payment policy | `free` or `required`, set only with `configureEventPaymentPolicy` (price, currency, payment window, provider) |
+| limits | daily booking limits and recurrence |
+
+Hosts are `Member` records; the event links to one `Schedule`, optional `ConferenceConnection`, and optional `ManagedEventTemplate`.
+
+## Intake questions
+
+`BookingQuestion` rows, at most 50 active per event type. Answers are stored in `BookingResponse`.
+
+## Buffers and resources
+
+`BufferRule` adds buffers. `EventResourceRequirement` reserves units of a [resource](/docs/openfront/scheduling/resources) per booking (`configureEventResourceRequirement`).
+
+## Templates
+
+`applyManagedEventTemplate` copies a managed template to an event; `detachManagedEventTemplate` stops syncing it.
+
+## History
+
+`EventTypeLifecycleEvent` logs publish, archive, and edits.
+
+See [Create an event type](/docs/openfront/scheduling/how-to-guides/create-event-type).

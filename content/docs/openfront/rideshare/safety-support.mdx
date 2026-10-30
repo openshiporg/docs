@@ -1,0 +1,21 @@
+---
+title: Safety and support
+description: Safety incident and support case queues with triage, assignment, and resolution.
+icon: ShieldAlert
+---
+
+`/dashboard/platform/safety` needs the safety capability (`owner` or `support`). Riders and drivers raise cases from a trip; operators triage them here.
+
+## Safety incidents
+
+Created by `reportSafetyIncident(tripId, tripToken, severity, category, summary, restrictedDetails, evidenceRefs, idempotencyKey)` from a signed-in participant. Severity: `low`, `medium`, `high`, `critical`. Status: `open` → `triage` → `investigating` → `resolved` → `closed`. `restrictedDetails` is readable only with the safety capability.
+
+## Support cases
+
+Created by `openSupportCase(tripId, tripToken, category, subject, description, idempotencyKey)`. Priority: `low`, `normal`, `high`, `urgent`. Status: `open` → `waiting` → `resolved` → `closed`.
+
+## Triage
+
+Use the queue buttons: Assign to me, move to the next status, Resolve, Close. They call `triageSafetyIncident(incidentId, status, assignToMe)` and `triageSupportCase(caseId, status, assignToMe)`.
+
+Each case has a number (`caseNumber`) and is linked from the [trip](/docs/openfront/rideshare/trips). The queue loads after `safetyQueueScope` confirms access.

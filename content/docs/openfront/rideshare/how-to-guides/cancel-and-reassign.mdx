@@ -1,0 +1,32 @@
+---
+title: Cancel and reassign a trip
+description: Cancel a trip with the right fee, or send the request back to dispatch.
+icon: RotateCcw
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the trip
+Go to the trip page. Cancel is available while the trip is `driver_assigned`, `driver_en_route`, or `driver_arrived`.
+</Step>
+<Step>
+### Review the fee
+Press Cancel trip. The dialog shows the cancellation fee from the fare rule.
+</Step>
+<Step>
+### Choose a reason
+Rider requested, Driver unavailable, Vehicle unavailable, Operations change, or Other.
+</Step>
+<Step>
+### Decide on reassignment
+Choose Cancel and reassign to send the request back to Dispatch instead of cancelling the rider's request.
+</Step>
+<Step>
+### Confirm
+If the screen says "Cancellation unconfirmed", press Recover cancellation to replay the same command.
+</Step>
+</Steps>
+
+Riders cancel an unassigned request from their ride page.

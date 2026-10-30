@@ -1,0 +1,29 @@
+---
+title: Tasks
+description: Todo records with status, priority, tags, planning fields, notes, and images.
+icon: ListChecks
+---
+
+Route: `/dashboard/todos`. Create needs `canCreateTodos`.
+
+| Group | Fields |
+|---|---|
+| Basic | `label` (required), `description` (rich text) |
+| Task Status | `isComplete`, `status` (`todo`, `in_progress`, `done`, `blocked`), `priority` (1 to 5), `tags` |
+| Planning & Budget | `dueDate`, `weight`, `budget` (decimal, 2 places) |
+| Advanced Fields | `isPrivate`, `largeNumber`, `metadata` (JSON), `secretNote` (password field) |
+| Attachments | `coverImage`, `todoImages` |
+| Owner | `assignedTo` (defaults to the creator) |
+
+Tags: Frontend, Backend, Database, Testing, and others defined on the model.
+
+## Visibility
+
+You see your own todos. With `canManageAllTodos` you also see unassigned private todos and all non-private ones, and can reassign.
+
+## Create a task
+
+1. Open `/dashboard/todos/create`.
+2. Fill label and description, status and priority, and dates.
+3. Add a cover image or attach images from the library or inline.
+4. Save. You become the assignee.

@@ -1,0 +1,13 @@
+---
+title: Compliance reports
+description: Generate an evidence inventory report and record a filing receipt.
+icon: FileChartColumn
+---
+
+Routes: `/dashboard/platform/compliance-reports` and `/[id]`. Needs `canManageComplianceReports`.
+
+- **Generate:** `generateComplianceReport(reportType, jurisdictionId, merchantProfileId, periodStartsAt, periodEndsAt)`. The report type is `evidence_inventory` and the period is 93 days at most. The run stores `contentDigest`, `content`, source transaction ids, and policy versions.
+- **Export inventory:** `exportComplianceInventory(profileId)` snapshots the current evidence and writes `evidence.inventory_exported`.
+- **Record submission:** `recordComplianceReportSubmission(reportId, filingReceiptReference, status)` sets `submitted`, `accepted`, or `rejected` from `generated`, `reviewed`, or `submitted`, with a receipt reference.
+
+An evidence inventory documents your own records; filings to a regulator are made through that regulator's channel, and you record the receipt here.

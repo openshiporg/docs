@@ -1,0 +1,9 @@
+---
+title: Recovery and incidents
+description: Worker recovery, scheduled jobs, and incident handling.
+icon: Siren
+---
+
+- **Recovery** (`/dashboard/platform/recovery`): background jobs and worker heartbeats. `enqueueRecovery`, `replayQueueItem`, `scheduleOperationalJob` retry stuck work.
+- **Dead letters** (`/dashboard/platform/integrations/dlq`): failed jobs with replay.
+- **Incidents** (`/dashboard/platform/incidents`): `openOperationalIncident` and `setIncidentStatus` (open, mitigate, resolve). `Incident` rows feed `/api/metrics`.

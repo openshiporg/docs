@@ -26,8 +26,8 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `featur
 | `/dashboard/platform/products`, `/[id]` | Catalog list; detail with stock, publish or archive, online and POS switches, edit drawer |
 | `/dashboard/platform/drug-references`, `/[id]` | NDC drug references; record a drug reference review |
 | `/dashboard/platform/suppliers`, `/[id]` | Wholesalers and the lots received from them; status changes |
-| `/dashboard/platform/inventory`, `/[id]` | Lot queue; lot detail with movements, recalls, excursions (read-only), and quantity adjustment |
-| `/dashboard/platform/inventory/receive` | Receive a room-temperature lot (cold-chain receiving is disabled) |
+| `/dashboard/platform/inventory`, `/[id]` | Lot queue; lot detail with movements, recalls, and quantity adjustment |
+| `/dashboard/platform/inventory/receive` | Receive a room-temperature lot |
 | `/dashboard/platform/recalls`, `/open`, `/[id]` | Recall queue, open a recall on selected lots, quarantine, patient exposure outreach, lot disposition, close |
 | `/dashboard/platform/orders`, `/[id]` | Order queue; order detail with lines, payment, fulfillment transitions, and refunds |
 | `/dashboard/platform/pos` | Counter OTC cash sale and receipt |
@@ -39,4 +39,4 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `featur
 | `/dashboard/platform/integrations` | eRx, wholesaler, insurance, and tax provider status; configure eRx and insurance providers |
 | `/dashboard/platform/audit` | Audit timeline, outbox timeline, and replay of failed outbox events |
 
-`User` and `Role` have no platform page. They use the generic `/dashboard/users` and `/dashboard/roles` screens, which the sidebar links to. The other lists without their own page appear on a parent page. For example, `DispensingLabel` and `PrescriptionFill` appear on the prescription task, `InventoryMovement` on the lot task, and `HumanApproval` and `OutboxEvent` on the audit log. `MachineCredential` and temperature-excursion recording have no page and no working command.
+`User` and `Role` use the generic `/dashboard/users` and `/dashboard/roles` screens, which the sidebar links to. The other lists appear on a parent page. For example, `DispensingLabel` and `PrescriptionFill` appear on the prescription task, `InventoryMovement` on the lot task, and `HumanApproval` and `OutboxEvent` on the audit log.

@@ -1,0 +1,27 @@
+---
+title: Storefront
+description: The public booking experience for customers.
+icon: Store
+---
+
+Routes are listed on [External storefronts](/docs/openfront/scheduling/external-storefront).
+
+## Booking steps
+
+1. `/book` lists published event types (`storefrontEventTypes`).
+2. `/book/[slug]` shows time zone, dates, and open slots (`storefrontAvailability`).
+3. Picking a slot calls `createStorefrontBookingHold` (or the recurring variant) and reserves resources.
+4. The customer enters details and answers questions; `createStorefrontBooking` converts the hold. Status is `pending` if the event requires confirmation or payment, otherwise `confirmed`.
+5. The receipt links to a private manage page, signed with `BOOKING_MANAGE_SECRET`. If payment is required, Stripe Checkout returns to `/book/payment`.
+
+## Managing
+
+Guests use `/book/manage` (`manageStorefrontBooking`, `manageStorefrontBookingSeries`). Customers with accounts use `/account` (`customerBookingHistory`, `customerBookingDetail`, `manageCustomerBooking`). Accounts are created at `/account/signup` (`registerSchedulingCustomer`).
+
+## Recovery
+
+If a booking response is lost, `/book/manage/recover` and `/embed/[slug]/recover` call `recoverStorefrontBookingCommand` with the original idempotency key.
+
+## Public safety
+
+Public queries return bounded projections, and `PublicRequestBucket` rate-limits requests.

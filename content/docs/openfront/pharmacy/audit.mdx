@@ -1,0 +1,19 @@
+---
+title: Audit and outbox
+description: Audit timeline, human approvals, and the outbox event queue with replay.
+icon: ScrollText
+---
+
+`/dashboard/platform/audit` needs `canViewAuditLogs`.
+
+## Audit timeline
+
+`pharmacyAuditTimeline` lists `AuditEvent` rows: event type, resource, actor, location, and time. Each consequential command also stores a `HumanApproval` with the action type, reason, attestation, and evidence. The 17 action kinds cover prescription review, dispensing, inventory, recall, payment, transfer, and credential decisions.
+
+## Outbox
+
+Every command writes an `OutboxEvent` in the same transaction as its state change. `pharmacyOutboxTimeline` and `pharmacyOutboxQueue` show them.
+
+Status: `pending`, `processing`, `delivered`, `failed`, `dead_letter`.
+
+To retry a failed event, press Replay. `replayPharmacyOutboxEvent` (needs `canManageIntegrations`) resets a `failed` or `dead_letter` event to `pending` and increments `replayCount`. Events are consumed by whatever worker reads the `OutboxEvent` table.

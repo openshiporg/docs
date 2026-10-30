@@ -1,0 +1,29 @@
+---
+title: Overview
+description: The operator home page with queue cards for prescriptions, refills, orders, inventory, recalls, and payments.
+icon: LayoutDashboard
+---
+
+`/dashboard/platform/overview` is the first page staff see. It reads `pharmacyOperationalSummary` for the signed-in user's locations and shows what needs attention now.
+
+## Queue cards
+
+| Card | Counts |
+|---|---|
+| Prescriptions | New, awaiting pharmacist review, to fill |
+| Refills | Open refill requests |
+| Online | Online registration, transfer, and new-prescription requests |
+| Orders | To prepare, ready, with Rx |
+| Payment | Orders with a payment issue, and payments to reconcile |
+| Inventory | Expired or expiring within 60 days, quarantined, on recall, cold-chain evidence missing |
+| Recalls | Open recalls, Class I recalls open, outreach pending, lot gaps |
+
+Each card links to its queue: [Prescriptions](/docs/openfront/pharmacy/prescriptions), [Refills and requests](/docs/openfront/pharmacy/refills-requests), [Orders](/docs/openfront/pharmacy/orders), [Inventory](/docs/openfront/pharmacy/inventory), [Recalls](/docs/openfront/pharmacy/recalls), and [Payments](/docs/openfront/pharmacy/payment-providers). The inventory card has a Receive shortcut and the recall card has Open recall.
+
+## Onboarding cards
+
+Users with `canManageOnboarding` also see setup cards until onboarding is completed or dismissed. They run `runPharmacyOnboarding` (see [Getting started](/docs/openfront/pharmacy/getting-started)).
+
+## Scope
+
+Counts are filtered by the caller's active `OrganizationMembership` rows. A cashier scoped to one location sees that location only.

@@ -1,0 +1,40 @@
+---
+title: Point of sale
+description: Counter cash sales of OTC products with a receipt and inventory movement.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/pos` is for walk-in over-the-counter sales at one location. Prescription items are dispensed from the [prescription page](/docs/openfront/pharmacy/prescriptions) instead.
+
+## Take a sale
+
+<Steps>
+<Step>
+### Find products
+Search by title, SKU, or category, filter by stock (all, available, unavailable), and sort by title, price, or stock. Only OTC products with POS availability and stock at the location are sellable (`pharmacyPosCatalog`).
+</Step>
+<Step>
+### Build the basket
+Add quantities. The screen shows subtotal, tax at the organization's cash tax rate, and total. Choose a customer (`pharmacyPosCustomers`) or leave it as walk-in.
+</Step>
+<Step>
+### Enter cash received
+The amount must be at least the total. The screen shows change due.
+</Step>
+<Step>
+### Attest and submit
+Keep the reason (default "Walk-in cash sale") and confirm. `submitPharmacyPosCashOrder` creates the order, a captured cash `Payment`, and `sale` movements allocated from eligible lots, earliest expiration first. The receipt shows lines, subtotal, tax, total, cash received, and change due.
+</Step>
+</Steps>
+
+## Safe retries
+
+Each sale has an idempotency key. If the connection drops, the screen recovers the committed receipt with `pharmacyPosCashReceipt`, so the same sale is not recorded twice.
+
+## Requirements
+
+- A recorded cash and sales-tax policy (`recordPharmacyCashPolicy`, on [Payments](/docs/openfront/pharmacy/payment-providers)).
+- Duplicate product lines must be combined before submission.
+- Refunds are made from the order page.

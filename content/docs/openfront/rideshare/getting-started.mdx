@@ -4,12 +4,6 @@ description: Install the source, configure PostgreSQL, sessions, and optional S3
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-## Live demo
-
-A hosted demo runs at [rideshare.openship.org](https://rideshare.openship.org). Use it to look at the rider booking pages and the operator dashboard before installing. Treat any data you enter there as public.
-
 ## Requirements
 
 - Node.js 20 or later (`engines` in `package.json`); the README recommends Node.js 22 for Next.js 16.
@@ -61,9 +55,7 @@ npm run migrate        # prisma migrate deploy
 npm run migrate:gen    # after schema changes: keystone build, view-order generation, prisma migrate dev
 ```
 
-<Callout type="warn">
-`npm run dev` runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`. It applies migrations to whatever database `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`. It applies migrations to whatever database `DATABASE_URL` points at.
 
 ## Run locally
 
@@ -82,11 +74,11 @@ npm run dev
 ## First user and onboarding
 
 1. Open the app. While no users exist, every route redirects to `/dashboard/init`, which creates the first user. That user receives the Admin role.
-2. The onboarding dialog offers demo templates. `bootstrapRideshare(mode: "minimal" | "full")` creates one demo fleet with an owner membership for you, a service area, a ride service and fare rule, driver and vehicle eligibility policies, a driver and vehicle with compliance documents and policy evaluations, availability rules, the manual payment provider (if missing), provider connections, and a marketplace registration. `full` adds an accessible ride service and a wheelchair-accessible vehicle. Running it again inspects the existing demo fleet instead of creating a duplicate.
+2. The onboarding dialog offers starter templates. `bootstrapRideshare(mode: "minimal" | "full")` creates one starter fleet with an owner membership for you, a service area, a ride service and fare rule, driver and vehicle eligibility policies, a driver and vehicle with compliance documents and policy evaluations, availability rules, the manual payment provider (if missing), provider connections, and a marketplace registration. `full` adds an accessible ride service and a wheelchair-accessible vehicle. Running it again inspects the existing starter fleet instead of creating a duplicate.
 3. Alternatively, use the custom setup steps or Settings, which call `setupFleet`, `setupServiceArea`, `setupRideService`, and `setupFareRule`. `dismissRideshareOnboarding` hides the dialog.
 4. To take bookings, the fleet needs status `active`, operations mode `manual` (manual dispatch), an active ride service with an active fare rule, and at least one approved driver with an approved vehicle who is online (`available`) for immediate rides; scheduled rides can be offered to active drivers who are not currently available. Set rider accounts to `open` if riders should be able to sign up. Rider signup is global: it opens when any active fleet has rider accounts `open`.
 
-Seed values are examples for evaluation, not operating data.
+Replace the starter fleet's names, fares, and documents with your own before taking bookings.
 
 ## Checks
 
@@ -97,12 +89,4 @@ npm run lint
 npm run audit     # tsx scripts/audit.ts
 ```
 
-## Deployment
-
-- **Build:** `npm run build` runs `keystone build --no-ui && next build`. The build script does not migrate.
-- **Start:** `npm start` runs `next start`. Run `npm run migrate` against the production database before starting a new release.
-- **Railway:** `railway.toml` sets the build command to `keystone build --no-ui && next build` and the start command to `npm run migrate && next start`, because Railway builds cannot reach internal databases.
-- **Vercel:** the README includes a Deploy with Vercel button that prompts for `DATABASE_URL` and `SESSION_SECRET`.
-- **Postgres and S3:** provision a managed PostgreSQL database and, if you need image storage, an S3-compatible bucket with the five `S3_*` variables. Keep secrets in the host's secret store.
-
-Back up the database before applying migrations to retained data.
+Next: [Deployment](/docs/openfront/rideshare/deployment) and [Set up a fleet](/docs/openfront/rideshare/how-to-guides/set-up-fleet).

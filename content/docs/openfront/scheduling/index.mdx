@@ -4,16 +4,13 @@ description: Self-hosted booking pages and team scheduling with event types, ava
 icon: CalendarClock
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Scheduling is a self-hosted booking and team-scheduling application for appointment businesses such as studios, clinics, agencies, and consultancies. A team publishes bookable event types with hosts, weekly schedules, intake questions, buffers, optional payment, conferencing, and room or equipment requirements. Customers book on the public booking pages, through an embed on another site, or after answering a routing form. Hosts and team admins then confirm, decline, reschedule, cancel, complete, or mark bookings as no-shows from the operator dashboard.
 
-The source lives at [github.com/openshiporg/openfront-scheduling](https://github.com/openshiporg/openfront-scheduling). A hosted demo runs at [scheduling.openship.org](https://scheduling.openship.org).
+The source lives at [github.com/openshiporg/openfront-scheduling](https://github.com/openshiporg/openfront-scheduling).
 
-<Callout type="info">
-Calendar sync, conferencing, Stripe payments, SMTP email, SMS, and outbound webhooks call external providers only after you configure their credentials. Until then, those paths fail at the point of use and the booking flows that do not depend on them keep working.
-</Callout>
+Calendar sync, conferencing, Stripe payments, SMTP email, SMS, and outbound webhooks activate when you add their credentials. Booking flows that do not depend on them work without them.
 
 ## What the codebase contains
 
@@ -39,15 +36,17 @@ The public application shows one team's booking pages: the home page at `/`, the
 
 ## Onboarding
 
-On an empty database, `/dashboard/init` creates the first administrator. The dashboard onboarding dialog then runs `bootstrapSchedulingOnboarding` in one of two modes. Demo mode creates the fictional Northstar Studio team with sample hosts, a schedule, event types, questions, a routing form, an embed, a reminder, a webhook, a manual payment provider, and sample bookings. Merchant mode creates your own team from a business name, slug, time zone, owner display name, and logo, with sample data optional. See [Getting started](/docs/openfront/scheduling/getting-started).
+On an empty database, `/dashboard/init` creates the first administrator. The dashboard onboarding dialog then runs `bootstrapSchedulingOnboarding` in one of two modes. Starter mode creates the Northstar Studio team with sample hosts, a schedule, event types, questions, a routing form, an embed, a reminder, a webhook, a manual payment provider, and sample bookings. Merchant mode creates your own team from a business name, slug, time zone, owner display name, and logo, with sample data optional. See [Getting started](/docs/openfront/scheduling/getting-started).
 
 ## Ownership and tenancy
 
 `Team` is the tenant root. Almost every list is team-owned through `teamOwnedListAccess`: reads are scoped to teams where the user has an active `Member` row, and create, update, and delete need an `owner` or `admin` membership in the owning team. Hosts can confirm and decline bookings they are assigned to. Viewers can read. A record cannot be moved from one team to another, even by someone who manages both. Lists marked command-only (for example `Booking`, `Member`, `Resource`, `ApiKey`, `PaymentBooking`) reject raw create, update, and delete and change only through named mutations that take an `idempotencyKey` and write an audit event. The global `Role` flags control dashboard access, people and role administration, and onboarding. They do not bypass team scoping.
 
 <Cards>
-  <Card title="Getting started" href="/docs/openfront/scheduling/getting-started" description="Requirements, environment, migrations, first admin, onboarding, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/scheduling/architecture-workflows" description="Schema by domain, booking and payment lifecycles, GraphQL commands, and access control." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/scheduling/integrations-boundaries" description="Calendars, conferencing, payments, email, SMS, webhooks, embeds, machine access, MCP, and storage." />
-  <Card title="Current limitations" href="/docs/openfront/scheduling/limitations" description="What the current source does not do." />
+  <Card title="Getting started" href="/docs/openfront/scheduling/getting-started" description="Requirements, environment, migrations, first admin, onboarding." />
+  <Card title="Deployment" href="/docs/openfront/scheduling/deployment" description="Hosting, outbox worker, and email." />
+  <Card title="Bookings" href="/docs/openfront/scheduling/bookings" description="Lifecycle actions and recovery." />
+  <Card title="Event types" href="/docs/openfront/scheduling/event-types" description="Hosts, questions, buffers, and payment policy." />
+  <Card title="Integrations" href="/docs/openfront/scheduling/integrations" description="Calendars, conferencing, email, SMS, MCP." />
+  <Card title="API reference" href="/docs/openfront/scheduling/api-reference" description="Named GraphQL operations." />
 </Cards>

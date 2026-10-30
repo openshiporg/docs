@@ -1,20 +1,15 @@
 {
   "title": "Openfront Sports Agents",
-  "description": "Current source: a Next.js and Keystone starter with dashboard, auth, roles, AI chat, and MCP scaffolding; the sports-agents domain is not built yet",
+  "description": "Role-based dashboard with users, roles, task records, images, GraphQL, AI chat, and MCP",
   "icon": "Trophy",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "architecture-workflows",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront",
-    "---Integrations---",
-    "integrations-boundaries",
-    "---Advanced Features---",
-    "limitations"
+    "---Introduction---","index","getting-started","deployment",
+    "---Dashboard---","overview","users","todos","media","ai-assistant","external-dashboard",
+    "---Storefront---","storefront","external-storefront",
+    "---Integrations---","integrations",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","roles-permissions","data-model",
+    "---API---","api-reference","troubleshooting"
   ]
 }

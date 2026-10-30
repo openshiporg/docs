@@ -1,0 +1,20 @@
+---
+title: Roles and permissions
+description: Role flags, creator ownership, and who can see what.
+icon: Shield
+---
+
+There is no organization model. Each `User` owns at most one `PersonalSite`, and every collection, item, publication, job, destination, and media asset is filtered to its owner by `rules.own*` in `features/keystone/access.ts`. Generic create, update, and delete are closed on creator lists; writes go through `studioCommand`.
+
+| Flag | Effect |
+|---|---|
+| `canAccessDashboard` | Enter `/dashboard` |
+| `canUseStudio` | Read own lists, run studio commands |
+| `canManageOnboarding` | Run creator setup |
+| `canManagePeople` | Add creators, review and carry out privacy requests |
+| `canSeeOtherPeople`, `canEditOtherPeople` | Read or update other users; open the directory |
+| `canManageRoles` | Manage roles |
+
+The first user gets `Admin` with every flag. The `creator` role (`systemKey` `creator`) has dashboard, studio, and onboarding only. `SocialEvent` has no generic GraphQL access; it is readable through the owner's export, the activity page, and the privacy queue.
+
+Public pages use separate queries that return only published, exposable content.

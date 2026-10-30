@@ -1,0 +1,31 @@
+---
+title: Roles and permissions
+description: Role flags, compliance permissions, API key scopes, and immutable records.
+icon: Shield
+---
+
+Roles are checkbox bundles on the `Role` list (generic page `/dashboard/roles`). The first user created at `/dashboard/init` has every flag.
+
+## Commerce flags
+
+Per-area flags such as `canManageProducts`, `canManageOrders`, `canManageStore`, `canManageKeys`, each with read, create, update, and delete variants where applicable.
+
+## Compliance flags
+
+| Flag | Grants |
+|---|---|
+| `canReadCompliance` | View compliance pages and the ledger |
+| `canManageCompliance` | Create and edit profiles, licences, jurisdictions, rule sets, evidence, approvals |
+| `canReviewComplianceDecisions` | Review decisions |
+| `canManageComplianceReports` | Generate reports, export inventory, record submissions |
+| `canAccessIdentityEvidence` | See identity fields on age verification records |
+| `canOperateComplianceKillSwitch` | Stop and resume sales (the `killSwitch` field) |
+
+## Access rules
+
+- Compliance lists allow query for read or manage, create and update for manage, and never delete.
+- Ledger lists (decisions, events, age attempts, tax quotes, carrier decisions, report runs) are immutable and omitted from GraphQL create, update, and delete.
+- Evidence digests are not readable through the API.
+- Accepted evidence is immutable. Changing evidence fields on a usable record fails with "Accepted evidence is immutable…"; it can only move to `suspended`, `revoked`, `expired`, `retired`, `emergency_disabled`, or `delisted`.
+- `Order` create, update, and delete are disabled in GraphQL; orders change through custom mutations.
+- API keys and OAuth tokens need both the credential scope and the owner's role permission. Customer tokens never hold admin permissions.

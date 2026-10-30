@@ -1,0 +1,34 @@
+---
+title: Data model
+description: Keystone lists in Openfront Scheduling by domain.
+icon: Database
+---
+
+62 lists in `features/keystone/models`.
+
+| Domain | Lists |
+|---|---|
+| Identity and team | `User`, `Role`, `AuthSession`, `Team`, `Member`, `TeamInvitation`, `TeamInvitationDelivery`, `TeamAdministrationEvent` |
+| Catalog | `EventType`, `BookingQuestion`, `BufferRule`, `EventTypeLifecycleEvent`, `ManagedEventTemplate` |
+| Availability | `Schedule`, `AvailabilityRule`, `AvailabilityOverrideEvent`, `Resource`, `EventResourceRequirement`, `ResourceAllocation`, `ResourceLifecycleEvent` |
+| Bookings | `BookingHold`, `Booking`, `BookingAttendee`, `BookingResponse`, `BookingLifecycleEvent`, `BookingSeries` |
+| Routing | `RoutingForm`, `RoutingRule`, `RoutingSubmission` |
+| Automation | `WorkflowDefinition`, `WorkflowAction`, `WorkflowExecution`, `WorkflowActionExecution`, `WorkflowReminder`, `ReminderDelivery`, `WebhookSubscription`, `WebhookDelivery`, `NotificationSubscription` |
+| Payments | `PaymentProvider`, `PaymentBooking`, `PaymentSession`, `PaymentOperation`, `PaymentLifecycleEvent` |
+| Calendar and meetings | `CalendarConnection`, `CalendarBusyInterval`, `CalendarEventLink`, `CalendarOperation`, `ConferenceConnection`, `ConferenceMeeting`, `ConferenceOperation` |
+| Embeds, developers, data | `EmbedConfig`, `EmbedRelease`, `ApiKey`, `OAuthClient`, `OAuthToken`, `DataJob`, `DataJobEvent` |
+| Analytics | `AnalyticsFact`, `AnalyticsProjection`, `PublicRequestBucket` |
+
+## Key statuses
+
+| List | Values |
+|---|---|
+| `Team` | `active`, `paused`, `archived` |
+| `EventType` | `draft`, `published`, `private`, `archived` |
+| `BookingHold` | `held`, `converted`, `expired`, `abandoned` |
+| `Booking` | `pending`, `confirmed`, `cancelled`, `completed`, `no_show` |
+| `RoutingForm` | `draft`, `published`, `archived` |
+| `EmbedConfig` | `draft`, `published`, `archived` |
+| Outbox rows | `pending`, `processing`, `succeeded`, `retrying`, `dead_letter` |
+
+A booking links to hosts, attendees, responses, events, and optionally a series, payment, calendar link, and conference meeting.

@@ -1,0 +1,17 @@
+---
+title: API keys, data jobs, and analytics
+description: Machine credentials, imports and exports, and analytics.
+icon: KeyRound
+---
+
+## API keys and OAuth clients
+
+`/dashboard/platform/api-keys`. `createSchedulingApiKey` and `createSchedulingOAuthClient` issue team-scoped credentials with scopes such as `bookings:read`, `bookings:write`, `availability:write`, `payments:write`, `webhooks:write`, `analytics:read`. Keys expire within 366 days and a delegated key cannot outlive its creator. OAuth clients exchange credentials at `/api/oauth/token` with `client_credentials` or `refresh_token`. Secrets are hashed with `MACHINE_TOKEN_PEPPER`. Revoke with `revokeSchedulingApiKey` or `revokeSchedulingOAuthClient`. `machineViewer` reports the caller's identity and scopes.
+
+## Data jobs
+
+`/dashboard/platform/data-jobs`. `createSchedulingDataJob` runs imports (dry run or apply) and exports of event types, availability, resources, and bookings. `DataJobEvent` records progress; `retrySchedulingDataJob` retries.
+
+## Analytics
+
+`/dashboard/platform/analytics` shows booking and payment projections from `schedulingAnalytics`. Ranges are positive and at most 366 days.

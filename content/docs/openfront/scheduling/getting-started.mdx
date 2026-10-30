@@ -4,12 +4,6 @@ description: Clone the source, configure PostgreSQL, sessions, secrets, and stor
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-## Live demo
-
-A hosted demo runs at [scheduling.openship.org](https://scheduling.openship.org). Use it to see the public booking pages and the operator dashboard before you install anything. Demo data is fictional.
-
 ## Requirements
 
 - Node.js 20.9 or later (`engines.node` is `>=20.9.0`; the README targets Node.js 22).
@@ -63,7 +57,7 @@ No current list has an image or file field that uses this store (team logos are 
 
 ### Optional integrations
 
-Email (SMTP), calendar OAuth, credential encryption keys, SMS, and AI chat have their own variables. They are listed in [Integrations and boundaries](/docs/openfront/scheduling/integrations-boundaries). Keep every provider secret out of source control.
+Email (SMTP), calendar OAuth, credential encryption keys, SMS, and AI chat have their own variables. They are listed in [Integrations](/docs/openfront/scheduling/integrations). Keep every provider secret out of source control.
 
 ## Migrations and local run
 
@@ -74,9 +68,7 @@ npm run migrate      # prisma migrate deploy
 npm run dev          # keystone build --no-ui, npm run migrate, next dev
 ```
 
-<Callout type="warn">
-`npm run dev` and `npm run build` both run `npm run migrate` against `DATABASE_URL`. `npm run migrate:gen` runs `prisma migrate dev`, which can reset a database. Use a disposable development database for migration generation and never point these scripts at a database you cannot rebuild.
-</Callout>
+`npm run dev` and `npm run build` both run `npm run migrate` against `DATABASE_URL`. `npm run migrate:gen` runs `prisma migrate dev`.
 
 After start-up:
 
@@ -89,29 +81,14 @@ After start-up:
 1. On an empty database, visit `/dashboard/init` and create the first user. That user gets an `Admin` role with dashboard, scheduling, onboarding, people, and role permissions.
 2. Open the dashboard. The onboarding dialog calls `bootstrapSchedulingOnboarding`, which requires the `canManageOnboarding` role flag and an idempotency key.
 3. Pick a mode:
-   - **Demo** creates the fictional Northstar Studio team from `features/platform/onboarding/lib/seed.json`: two members, a weekly schedule, two event types, three booking questions, a routing form with two rules, an embed, a workflow reminder, a notification subscription, a webhook subscription, a manual payment provider, a placeholder Google calendar connection in `needs_reauth`, and two sample bookings.
+   - **Starter** creates the Northstar Studio team from `features/platform/onboarding/lib/seed.json`: two members, a weekly schedule, two event types, three booking questions, a routing form with two rules, an embed, a workflow reminder, a notification subscription, a webhook subscription, a manual payment provider, a placeholder Google calendar connection in `needs_reauth`, and two sample bookings.
    - **Merchant** creates your own team from a business name, slug, IANA time zone, owner display name, and SVG logo. Sample data is opt-in.
 4. Re-running the same request replays the result rather than creating duplicates.
 5. Connect calendars, conferencing, and payment providers from `/dashboard/platform/integrations` before you enable event types that depend on them.
 
-## Source checks
+## Next steps
 
-```bash
-npm test             # tsx --test tests/*.test.ts
-npm run lint         # eslint .
-npm run audit:relations
-```
-
-Passing checks cover only the paths they exercise. They do not prove provider credentials, delivery, or payment behavior in your environment.
-
-## Deployment
-
-The app is one Next.js server plus PostgreSQL. Optional pieces are SMTP, S3-compatible storage, and the external providers you choose.
-
-- **Build:** `railway.toml` uses `keystone build --no-ui && next build`. The package `build` script also runs `npm run migrate`; the Railway config moves migration to start time because the build environment cannot reach the database.
-- **Start:** `railway.toml` runs `npm run migrate && next start`. Alternatively, `npm run start:production` (`scripts/start-production.sh`) applies migrations, runs a scheduling outbox loop every `SCHEDULING_WORKER_INTERVAL_SECONDS` (default 30), and starts Next.js.
-- **Background work:** in production, `instrumentation.ts` also runs the scheduling outbox inside the Next.js server every 30 seconds. It processes webhooks, reminders, calendar writes and syncs, payments, conferencing, workflows, data jobs, invitations, analytics, and expiries. Workers claim rows with locks, so several replicas can run side by side. `npm run worker:scheduling-outbox` runs a single pass.
-- **Environment:** set `DATABASE_URL`, `SESSION_SECRET`, `BOOKING_MANAGE_SECRET`, `RATE_LIMIT_SECRET`, `TEAM_INVITATION_SECRET`, `SCHEDULING_PUBLIC_URL` (HTTPS), `SMTP_STORE_LINK` (HTTPS base for password reset links), and `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM` (plus `SMTP_USER` and `SMTP_PASSWORD` if your server needs auth) so invitation, reminder, and reset emails can be sent. `productionConfig.ts` lists these rules, but current source does not call its check at start-up, so verify the environment yourself. Add calendar, payment, and conferencing keys only for providers you use. In production, calendar, payment, and conferencing credential encryption refuses to run without its dedicated key.
-- **Postgres and S3:** use a managed PostgreSQL instance with backups. Configure S3 only if you add file or image fields.
-
-The README also includes a Vercel deploy button that prompts for `DATABASE_URL` and `SESSION_SECRET`. On a serverless host, run migrations as a separate step and run the outbox worker somewhere long-lived, because the in-process loop needs a persistent Node.js server.
+- [Deployment](/docs/openfront/scheduling/deployment)
+- [Event types](/docs/openfront/scheduling/event-types) and [Availability](/docs/openfront/scheduling/availability)
+- [Integrations](/docs/openfront/scheduling/integrations)
+- [Create an event type](/docs/openfront/scheduling/how-to-guides/create-event-type)

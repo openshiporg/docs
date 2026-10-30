@@ -1,0 +1,21 @@
+---
+title: Configuration and jurisdictions
+description: Channels, currencies, locales, house rules, feature flags, legal entities, and jurisdictions.
+icon: SlidersHorizontal
+---
+
+Routes: `/dashboard/platform/configuration`, `/configuration/jurisdictions`.
+
+Configuration lists effective values (`ConfigDefinition` merge strategies `REPLACE`, `MIN`, `MAX`, `UNION`, `DENY_WINS`; `ConfigValue`). Change them with request and apply pairs:
+
+| Item | Request | Apply |
+|---|---|---|
+| Legal entity | `requestLegalEntity` | `applyLegalEntity` |
+| Jurisdiction | `createJurisdictionPolicyDraft`, `requestJurisdictionActivation` | `applyJurisdictionActivation` |
+| Brand | `requestOperatorBrand` | `applyOperatorBrand` |
+| Currency | `requestTenantCurrency` | `applyTenantCurrency` |
+| Locale | `requestBrandLocale` | `applyBrandLocale` |
+| House rule | `requestHouseRule` | `applyHouseRule` |
+| Feature flag | `requestFeatureFlag` | `applyFeatureFlag` |
+
+Onboarding records the legal entity and operator jurisdiction as pending and the policy as a draft. Enter licence numbers and authority citations as you receive them.

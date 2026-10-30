@@ -1,0 +1,65 @@
+---
+title: Troubleshooting
+description: Error messages from the pharmacy commands and what to do about each.
+icon: LifeBuoy
+---
+
+## Setup
+
+| Message or symptom | Fix |
+|---|---|
+| App will not start | `DATABASE_URL` and `SESSION_SECRET` are required, and the secret must be 32 characters or more |
+| Every request redirects to `/dashboard/init` | No users exist. Create the first account there |
+| "A strong session secret is required for guest checkout" | Set a longer `SESSION_SECRET` |
+| Onboarding fails | You already have an active membership, or the seed organization or location code exists |
+
+## Prescriptions
+
+| Message | Fix |
+|---|---|
+| "A current operator-reviewed, active, non-controlled drug reference is required" | Record a drug reference review with marketing status active and schedule `none` |
+| "Current organization-recorded pharmacist credential review evidence is required for intake" | Record your credential review on Staff |
+| "Current organization-recorded prescriber identity and credential review evidence is required" | Record the prescriber credential review |
+| "Current operator-recorded patient identity evidence is required" | Add identity evidence on the patient |
+| "Enter one prescription item per prescription" | Intake takes one item |
+| "Explicit allergy and medication history evidence is required" | Record entries or "none known" on the patient |
+| "A human override reason is required" | An `override` review needs a reason of 8 or more characters |
+| "A current human clinical safety review is required for this fill" | Run the safety review for the current fill |
+| "Versioned pharmacist-reviewed fill policy is required" | Record the fill policy |
+| "Dispense one complete prescription item per cash pickup" | Dispense a full item at a time |
+| "Dispensed quantity exceeds the remaining authorized quantity" | Lower the quantity |
+| "Operator-attested cash and tax policy must be configured before POS sales" | Record the cash policy |
+
+## Inventory and recalls
+
+| Message | Fix |
+|---|---|
+| "Cold-chain receiving is not supported yet" | Receive room-temperature lots only |
+| "Expiration date must be in the future" | Check the date |
+| "Available quantity cannot be lower than quarantined quantity" | Dispose of quarantined stock first |
+| "A non-empty inventory lot cannot be deleted" | Adjust to zero and keep the lot |
+| "Every dispensed exposure requires a resolved outreach record before closure" | Record outreach for each exposure |
+| "Bounded recall disposition must dispose the complete quarantined quantity" | Enter the full quarantined quantity |
+| "Recall is not ready for closure" | Quarantine first |
+
+## Orders and payments
+
+| Message | Fix |
+|---|---|
+| "Cart total changed; review the cart before checkout" | Reload the cart |
+| "Delivery orders are paid online. Choose card payment." | Install Stripe and use card |
+| "A delivery address is required" | Add an address |
+| "Only the assigned staff member can record the handoff" | Sign in as the assignee |
+| "Payment must be captured before handoff" | Collect or capture the payment |
+| "Cancelling a paid order requires a refund; use the refund action instead" | Refund the payment |
+| "Cash received must be an integer amount at least equal to the order total" | Enter more cash |
+| "Combine duplicate POS product lines before submission" | Merge repeated products |
+| "Bounded cash refunds must return the exact captured amount" | Enter the captured amount |
+
+## Accounts
+
+| Message | Fix |
+|---|---|
+| "An account with this email already exists. Sign in instead." | Use sign in |
+| "Current password is incorrect" | Re-enter the current password |
+| "Permission required: canReviewPrescriptions" | Ask an admin to update the role |

@@ -1,0 +1,27 @@
+---
+title: Dashboard overview
+description: Operator workspaces under /dashboard/platform, two-factor requirement, and dual control.
+icon: LayoutDashboard
+---
+
+Operator pages are `app/dashboard/(admin)/platform/<route>/page.tsx`, backed by `features/platform/<slice>`. Most actions need operator two-factor assurance (valid 12 hours after a TOTP check) and the right role flag. Sensitive changes are requested by one operator and decided by another.
+
+| Workspace | Page |
+|---|---|
+| Control room | `/dashboard/platform` |
+| Catalog | [Catalog](/docs/openfront/sportsbook/catalog) |
+| Trading and risk | [Trading](/docs/openfront/sportsbook/trading), [Risk](/docs/openfront/sportsbook/risk) |
+| Wagers | [Wagers](/docs/openfront/sportsbook/wagers) |
+| Results to settlement | [Results and grading](/docs/openfront/sportsbook/results-grading), [Settlement](/docs/openfront/sportsbook/settlement) |
+| Players | [Customers](/docs/openfront/sportsbook/customers), [Compliance](/docs/openfront/sportsbook/compliance), [Responsible gaming](/docs/openfront/sportsbook/responsible-gaming), [Support](/docs/openfront/sportsbook/support) |
+| Money | [Finance](/docs/openfront/sportsbook/finance), [Licences and payments](/docs/openfront/sportsbook/payment-providers), [Promotions](/docs/openfront/sportsbook/promotions) |
+| Operations | [Integrations](/docs/openfront/sportsbook/integrations), [Recovery and incidents](/docs/openfront/sportsbook/operations), [Reports](/docs/openfront/sportsbook/reports) |
+| Governance | [Configuration](/docs/openfront/sportsbook/configuration), [Settings](/docs/openfront/sportsbook/store-settings), [Roles and approvals](/docs/openfront/sportsbook/roles-permissions), [Audit](/docs/openfront/sportsbook/audit) |
+
+The Control room shows today's queues, exceptions, exposure, latest wagers, and shortcuts. Lists without a dedicated page appear on the generic `/dashboard/<list-key>` pages, mostly read-only.
+
+## Dual control
+
+A request writes an `ApprovalRequest` with the reviewed payload and a payload hash; it expires after 24 hours. A different operator with `canApproveSensitiveActions` decides it in `/dashboard/platform/approvals` (`decideSensitiveApproval`). The requester cannot approve their own request (`DUAL_CONTROL_REQUIRED`). The apply mutation checks the approval, hash, and expiry before changing anything.
+
+Pairs: settings, roles, grants, revocations, operator admission, legal entities, jurisdiction activation, brands, currencies, locales, house rules, feature flags, promotions, webhook endpoints, trader overrides, correlation rules, tax rules, ledger adjustments, resettlements, cash-out corrections, dispute resolutions, retention executions, data exports.

@@ -1,0 +1,36 @@
+---
+title: API reference
+description: GraphQL queries and mutations at /api/graphql.
+icon: Code
+---
+
+## Writes
+
+```graphql
+mutation {
+  studioCommand(command: "publishItem", input: { itemId: "...", expectedVersion: 3, expectedGeneration: 1, expectedStatus: "draft" }) { ok code field message value }
+}
+```
+
+| Group | Commands |
+|---|---|
+| Site | `createSite`, `updateSite`, `deleteSite` |
+| Collections | `createCollection`, `updateCollection`, `reorderCollection`, `removeEmptyCollection` |
+| Items | `createItem`, `updateItem`, `publishItem`, `unpublishItem`, `archiveItem`, `restoreItem` |
+| Destinations | `addDestination`, `updateDestinationLabel`, `revokeDestination`, `requestExternal`, `cancelExternal` |
+| Privacy | `requestPrivacy` |
+
+Each command locks the site row, checks the reviewed version, writes, and appends a `SocialEvent`. A stale version returns a conflict result.
+
+Other mutations: `onboardMyPersonalSite`, `createCreatorAccount`, `adminCreateCreator`, `reviewPrivacyRequest`, `erasePrivacyRequest`, `updateActiveUser`, `startTip`, `startMembership`, `handlePaymentWebhook`, plus older named mutations (`createMyPersonalSite`, `updateMyPersonalSite`, `createMyPersonalCollection`, `publishPersonalItem`, and others) that call the same functions.
+
+## Queries
+
+| Query | Purpose |
+|---|---|
+| `studioLibrary`, `studioCollection`, `studioRecord`, `studioHistory`, `creatorWorkspace` | Owner-scoped reads |
+| `publicPersonalSite`, `publicPersonalCollection`, `publicPersonalItem`, `publicPersonalFeed`, `publicSitemap`, `publicHandleRedirect`, `paymentTiers` | Public reads |
+| `creatorDirectory`, `privacyRequestQueue` | People manager |
+| `socialPrivateExport` | The creator's export |
+
+Other endpoints: `/api/creator-export`, `/api/payment-webhooks/[providerId]`, `/api/completion`.

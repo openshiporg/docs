@@ -17,7 +17,7 @@ The storefront is not under `app/(storefront)`. Its routes are thin files at the
 |---|---|---|
 | `/` | `RiderHomePage` | Browse active ride services, get a quote, and request a ride. |
 | `/book?service=ID` | `RiderHomePage` | Same booking flow with a service preselected. |
-| `/rides/[confirmationCode]` | `TripStatusPage` | Trip status, timeline, fare, payments, and reviews. Signed-in riders can rate the ride, get help, report a safety issue, or message the driver. |
+| `/rides/[confirmationCode]` | `TripStatusPage` | Trip status, timeline, fare, payments, and reviews. Signed-in riders can pay by card, rate the ride, get help, report a safety issue, or message the driver. |
 | `/account`, `/account/signin` | `RiderSignInPage` | Rider sign-in. |
 | `/account/signup` | `RiderSignInPage` | Rider signup. Open when `riderAccountOptions.registrationEnabled` is true: any active fleet has rider accounts `open`, or `PUBLIC_SIGNUPS_ALLOWED` is `true`. Signup calls the generic `createUser` mutation. |
 | `/account/rides` | `RiderAccountPage` | Request status and trip history for the signed-in rider. |
@@ -34,4 +34,4 @@ The storefront is not under `app/(storefront)`. Its routes are thin files at the
 
 A separate client calls the same `/api/graphql` endpoint. It must keep quote proofs, request proofs, and trip tokens private to the rider, and send a stable `idempotencyKey` with every command so retries do not create duplicates.
 
-There is no payment step in the storefront. Riders do not enter a card; operators record payment on the trip in the dashboard. The store logo and colour come from the fleet branding returned with `marketplaceRideshareServices`.
+Signed-in riders pay on the trip page with `startTripCardPayment` and `confirmTripCardPayment` when the fleet has installed Stripe. Otherwise operators record payment on the trip. The store logo and colour come from the fleet branding returned with `marketplaceRideshareServices`.

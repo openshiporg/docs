@@ -1,0 +1,73 @@
+---
+title: Prescriptions
+description: Intake, clinical safety review, pharmacist review, fill entitlement, and dispensing with a label.
+icon: ClipboardList
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Prescriptions are the core workflow. The pages are:
+
+- `/dashboard/platform/prescriptions`: worklist from `pharmacyPrescriptionWorklist`, with status tabs and filters
+- `/dashboard/platform/prescriptions/intake`: new prescription
+- `/dashboard/platform/prescriptions/[id]`: the prescription task page
+
+## Status flow
+
+`draft` → `pending_review` → `needs_information` or `approved` → `ready_to_dispense` → `partially_dispensed` → `dispensed` → `fill_closed`. A prescription can also end as `rejected` or `cancelled`. Invalid jumps are refused by `assertPrescriptionTransition`.
+
+## Steps
+
+<Steps>
+<Step>
+### Take in the prescription
+Open Intake and choose the patient, prescriber, and location. Enter the prescription number, source (`paper`, `erx`, `transfer`, `phone`, or `manual`), external reference, written date, and expiry date. Add one item: a drug-linked product, directions (sig), quantity, days supply, refills authorized, and whether substitution is allowed. The command is `intakePharmacyPrescription`. It accepts one item per prescription. Every product needs an active, non-controlled drug reference review, and the intake needs a current pharmacist credential review on your membership.
+</Step>
+<Step>
+### Record the clinical safety review
+On the task page, record the seven checks: allergies, medication history, interactions, duplicate therapy, contraindications, dose, and counseling plan. Add a review reference and choose the outcome: `clear`, `override` (needs an override reason of at least 8 characters), or `rejected`. The command is `recordPrescriptionClinicalSafetyReview`. If the patient's allergy or medication history changed since the review, `holdPrescriptionForClinicalReReview` sends it back with a written reason.
+</Step>
+<Step>
+### Record the pharmacist review
+`recordPrescriptionReview` takes the decision `approved`, `needs_information`, or `rejected`, with a reason. Approval needs current patient identity evidence and credential evidence for the prescriber.
+</Step>
+<Step>
+### Authorize dispensing
+`authorizePrescriptionDispensing` moves an approved prescription to `ready_to_dispense`.
+</Step>
+<Step>
+### Reserve the fill
+The fill entitlement workbench shows authorized, reserved, dispensed, and released quantities, and refills left. `reservePharmacyPrescriptionFill` reserves a fill under the organization's fill policy. `releasePharmacyPrescriptionFill` gives it back with a reason of `cancelled`, `no_pickup`, or `expired`.
+</Step>
+<Step>
+### Dispense
+Pick an eligible lot, enter the quantity, auxiliary warnings, counseling outcome, and the cash received. `recordPrescriptionDispensing` checks the lot (location, product, expiry, available quantity, quarantine, recall, cold-chain state) and the safety review for this exact fill. It writes the inventory movement, a `DispensingLabel`, an `Order`, and a cash `Payment`. Dispense one complete item per pickup.
+</Step>
+</Steps>
+
+## Human attestation
+
+Each command asks for a reason (at least 8 characters) and an attestation checkbox: "I am the authorized pharmacist performing this action and reviewed the required source evidence." The server stores a `HumanApproval`, an `AuditEvent`, and an `OutboxEvent` in the same transaction. Replaying a command with the same idempotency key returns the original result.
+
+## Fill policy
+
+An organization needs a fill policy before reserving fills. Set it on `/dashboard/platform/credentials` with `recordPharmacyFillPolicy`:
+
+| Field | Meaning |
+|---|---|
+| `version`, `reference` | Policy version and the document it comes from |
+| `consumeOn` | `first_dispense` |
+| `allowPartial` | Whether partial fills are allowed |
+| `reservationMinutes` | How long a reserved fill is held (1 to 525600) |
+| `releaseReasons` | Any of `cancelled`, `no_pickup`, `expired` |
+
+A changed policy needs a new version.
+
+## Other panels on the task page
+
+- **Dispensing labels:** the label snapshot with patient, prescriber, drug, sig, lot, NDC, expiry, warnings, and counseling outcome.
+- **Pharmacist reviews and Safety reviews:** append-only history.
+- **Transfers:** approve an inbound transfer or start a transfer out. See [Transfer a prescription](/docs/openfront/pharmacy/how-to-guides/transfer-prescription).
+- **Refills:** see [Refills and requests](/docs/openfront/pharmacy/refills-requests).
+
+Related: [Fill a prescription](/docs/openfront/pharmacy/how-to-guides/fill-prescription).

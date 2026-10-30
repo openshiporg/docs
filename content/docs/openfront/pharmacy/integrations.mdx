@@ -1,0 +1,53 @@
+---
+title: Integrations
+description: eRx and insurance HTTP providers, webhooks, wholesaler and tax records, email, storage, MCP, and AI chat.
+icon: Unplug
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/integrations` shows each `IntegrationProvider` with its type, status, and validation state (`pharmacyIntegrationStatus`). It needs `canManageIntegrations`.
+
+## Provider types
+
+Onboarding creates four records, all `unconfigured`: eRx, Wholesaler, Insurance, and Tax. `configurePharmacyIntegrationProvider` configures `erx` and `insurance` providers. Wholesalers are managed as [Suppliers](/docs/openfront/pharmacy/products) and received by hand.
+
+## Configure eRx or insurance
+
+<Steps>
+<Step>
+### Open the drawer
+Press Configure on the provider.
+</Step>
+<Step>
+### Enter the endpoints
+Base URL, validation path, submit path, and status path. eRx also needs a prescriber validation path that contains `{npi}`. Production endpoints must use HTTPS.
+</Step>
+<Step>
+### Enter secrets
+A bearer token (16 characters or more) and a webhook secret (32 characters or more). They are write-only.
+</Step>
+<Step>
+### Save
+The command calls the validation path. When it succeeds the provider becomes `active` and `externalValidationComplete` is set.
+</Step>
+</Steps>
+
+The adapter in `features/integrations/erx` and `features/integrations/insurance` is a generic HTTP client. Responses are size-bounded and requests time out after 20 seconds.
+
+## Operations
+
+- `validatePharmacyPrescriber` calls the eRx prescriber path with an NPI. See [Prescribers](/docs/openfront/pharmacy/prescribers).
+- `submitPharmacyExternalWorkflow` sends a prescription (eRx) or an order (insurance) to the submit path with an idempotency key. `refreshPharmacyExternalWorkflow` reads the status path. Workflows are `ExternalIntegrationWorkflow` rows: `pending_submission`, `submitted`, `accepted`, `rejected`, `failed`.
+- `ingestPharmacyIntegrationWebhook` handles inbound events at `POST /api/webhooks/integrations/[providerKey]`. The adapter checks an HMAC-SHA256 of the raw body in the `x-pharmacy-signature-sha256` header.
+
+## Email and storage
+
+SMTP settings send password-reset email. S3 storage holds Keystone image fields.
+
+## MCP and AI chat
+
+- `/api/mcp-transport/[transport]` is an MCP server for callers whose session has `canAccessDashboard`. Tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. They run with the caller's session, so list access rules apply.
+- `/api/completion` is the dashboard AI chat. It needs `canAccessDashboard` and uses `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or a key the user enters in the browser.
+
+See also [Audit and outbox](/docs/openfront/pharmacy/audit) for event delivery.

@@ -1,0 +1,54 @@
+---
+title: Inventory
+description: Lot queue, receiving, quantity adjustments, expiry watch, and the append-only stock ledger.
+icon: Boxes
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Stock is tracked by `InventoryLot`. Lots change only through named commands, and every change writes an `InventoryMovement`.
+
+## Pages
+
+- `/dashboard/platform/inventory`: lot queue (`pharmacyInventoryQueue`) with status tabs
+- `/dashboard/platform/inventory/receive`: receive a lot
+- `/dashboard/platform/inventory/[id]`: lot task page with movements, recalls, and the adjustment form
+
+## Lot fields
+
+`lotNumber`, `serialNumber`, `expirationDate`, `receivedAt`, `quantityReceived`, `quantityAvailable`, `quantityQuarantined`, `storageBin`, `status`, plus `product`, `location`, and `supplier`.
+
+Status: `available`, `quarantined`, `expired`, `recalled`, `depleted`.
+
+## Receive a lot
+
+<Steps>
+<Step>
+### Open Receive
+Choose the product (`pharmacyInventoryReceiptProductWorklist`), location, and optional supplier.
+</Step>
+<Step>
+### Enter the lot
+Lot number, optional serial number, a future expiration date, and quantity.
+</Step>
+<Step>
+### Confirm
+Add a reason and attest. `receivePharmacyInventoryLot` creates the lot and a `receive` movement. The form is for room-temperature lots, so cold-chain products are refused.
+</Step>
+</Steps>
+
+## Adjust a count
+
+On the lot page enter the counted quantity, a reason, and attest. `adjustPharmacyInventoryLot` sets the quantity and writes an `adjust` movement. The new available quantity cannot be lower than the quarantined quantity.
+
+## Movement types
+
+`receive`, `reserve`, `dispense`, `sale`, `return`, `quarantine`, `release`, `recall`, `expire`, `destroy`, `adjust`. Each row records the quantity change, reason, actor, and the patient, prescription, or order it relates to.
+
+## Rules
+
+- A lot with stock cannot be deleted.
+- Dispensing and POS sales only draw from `available`, unexpired lots at the same location and product.
+- Expired or expiring within 60 days, quarantined, and recalled counts appear on the [Overview](/docs/openfront/pharmacy/overview).
+
+Needs `canManageInventory`. Related: [Receive an inventory lot](/docs/openfront/pharmacy/how-to-guides/receive-inventory-lot) and [Recalls](/docs/openfront/pharmacy/recalls).

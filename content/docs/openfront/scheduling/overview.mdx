@@ -1,0 +1,20 @@
+---
+title: Dashboard overview
+description: The operator workspace at /dashboard/platform and how its pages fit together.
+icon: LayoutDashboard
+---
+
+Operators sign in at `/dashboard`. Scheduling work happens under `/dashboard/platform/*`, rendered by slices in `features/platform/<slice>`. `/dashboard/platform/scheduling` is the overview of today's and upcoming work.
+
+| Area | Pages |
+|---|---|
+| Bookings | [Bookings](/docs/openfront/scheduling/bookings), [Clients](/docs/openfront/scheduling/clients), [Payments](/docs/openfront/scheduling/payments) |
+| Catalog | [Event types](/docs/openfront/scheduling/event-types), [Availability](/docs/openfront/scheduling/availability), [Resources](/docs/openfront/scheduling/resources), [Routing forms](/docs/openfront/scheduling/routing-forms) |
+| Team | [Team](/docs/openfront/scheduling/team) |
+| Automation | [Workflows](/docs/openfront/scheduling/workflows), [Webhooks and embeds](/docs/openfront/scheduling/webhooks-embeds) |
+| Settings | [Store settings](/docs/openfront/scheduling/store-settings), [Integrations](/docs/openfront/scheduling/integrations) |
+| Developer | [API keys, data jobs, analytics](/docs/openfront/scheduling/developer-tools) |
+
+Older `/dashboard/platform/scheduling/*` sub-routes redirect to these pages and keep their query strings. The generic Keystone list screens (`/dashboard/[listKey]`) remain for records without a dedicated page.
+
+Every operator command takes an `idempotencyKey`, so a retried request replays its result. Failed side effects (calendar writes, payments, webhooks, reminders) are retried from the page that owns them.

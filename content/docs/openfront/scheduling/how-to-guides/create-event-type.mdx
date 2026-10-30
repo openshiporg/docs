@@ -1,0 +1,33 @@
+---
+title: Create an event type
+description: Publish a bookable event.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open Event types
+Go to `/dashboard/platform/event-types/new`.
+</Step>
+<Step>
+### Set basics
+Title, slug, duration, scheduling type, location or conference provider, and whether it needs confirmation.
+</Step>
+<Step>
+### Choose hosts and schedule
+Pick host members and an availability schedule.
+</Step>
+<Step>
+### Add questions and buffers
+Add intake questions and before/after buffers.
+</Step>
+<Step>
+### Set payment
+For paid events apply `configureEventPaymentPolicy` with price, currency, and provider.
+</Step>
+<Step>
+### Publish
+Set status `published`. The event appears at `/book`.
+</Step></Steps>

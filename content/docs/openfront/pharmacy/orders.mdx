@@ -1,0 +1,29 @@
+---
+title: Orders and fulfillment
+description: Online pickup and delivery orders, prescription orders, handoff, and refunds.
+icon: ShoppingBag
+---
+
+`/dashboard/platform/orders` is the order queue (`pharmacyOrderQueue`). `/dashboard/platform/orders/[id]` is the order task page (`pharmacyOrderTask`) with line items, payment, fulfillment, and refund actions.
+
+## Order types
+
+`fulfillmentMethod` is `pickup`, `delivery`, or `pos`. Orders come from storefront checkout (`submitPharmacyOrder`), the counter ([POS](/docs/openfront/pharmacy/pos)), and prescription dispensing.
+
+Order status: `pending`, `review_required`, `approved`, `processing`, `ready`, `out_for_delivery`, `completed`, `cancelled`.
+
+## Fulfillment
+
+`transitionOrderFulfillment(fulfillmentId, status, reason, attested)` moves a `Fulfillment` through:
+
+`pending` → `preparing` → `ready` → `out_for_delivery` (delivery only) → `handed_off`
+
+- Only the assigned staff member can record `handed_off`.
+- Handoff needs a captured payment, or a pay-at-pickup payment that is collected at handoff.
+- Cancelling a paid order goes through a refund.
+
+## Payment actions
+
+The page shows the `Payment` with its status (`pending`, `authorized`, `captured`, `refund_pending`, `refunded`, `failed`). Card payments refund with `refundPharmacyPayment`. Cash payments refund with `refundPharmacyCashPayment`, which returns the exact captured amount and needs the cash returned. Both take a reason and attestation.
+
+Needs `canManageOrders` for fulfillment and `canManagePayments` for refunds. See [Payment at pickup](/docs/openfront/pharmacy/how-to-guides/payment-at-pickup).

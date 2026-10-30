@@ -1,0 +1,19 @@
+---
+title: Payments
+description: Payment ledger, capture, refund, and retry.
+icon: CreditCard
+---
+
+`/dashboard/platform/payments` lists payments with status tabs. `/[id]` shows the booking, session, and events.
+
+## Flow
+
+1. `configureEventPaymentPolicy` sets price, currency, window, and provider on an event type.
+2. `initiateBookingPayment` creates a `PaymentSession`. Storefront payments with Stripe create a hosted Checkout Session with an expiry; other Stripe payments create a PaymentIntent with manual capture. The `manual` adapter records an offline payment.
+3. Stripe events arrive at `/api/payments/webhook/[providerCode]` and are verified with the provider's webhook secret.
+4. `transitionBookingPayment` captures or refunds.
+5. Failed provider calls land in `PaymentOperation` and are retried with `retryPaymentOperation`.
+
+Session states: `created`, `pending`, `authorized`, `captured`, `refunded`, with `failed` and `expired` exits. A booking that requires payment cannot be confirmed or rescheduled until payment is `paid`.
+
+Provider setup is on [Payment providers](/docs/openfront/scheduling/payment-providers).

@@ -1,0 +1,36 @@
+---
+title: Integrations
+description: Provider connections, mapping estimates, notifications, storage, email, AI assistant, MCP, and the marketplace contract.
+icon: Unplug
+---
+
+Integration code lives in `features/integrations/**`. A `ProviderConnection` row records the adapter a fleet uses for a kind (`mapping`, `payment`, `communications`, `identity`, `background_check`, `location`, `notification`) and its status.
+
+## Payments
+
+Stripe Checkout and the manual provider. See [Payment providers](/docs/openfront/rideshare/payment-providers).
+
+## Mapping
+
+`features/integrations/mapping/manual.ts` estimates distance and duration from the pickup and drop-off labels, and quotes carry that estimate with a disclosure. Fares are computed from the active fare rule and the estimate.
+
+## Notifications
+
+The notification adapter in `features/integrations/notifications` is a console adapter for development; it throws when `NODE_ENV` is `production`. `Notification` rows (`email`, `sms`, `push`, `webhook`; `queued` to `dead_letter`) hold trip notification intents.
+
+## File storage
+
+With `S3_BUCKET_NAME` set, Keystone image fields use S3-compatible storage with signed URLs (`S3_REGION` defaults to `auto`). Compliance documents store the issuer and a masked reference.
+
+## Email
+
+`features/keystone/lib/mail.ts` sends password reset email over SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`).
+
+## AI assistant and MCP
+
+- `/api/mcp-transport/[transport]` is an MCP server exposing `listModels`, `searchModels`, `getFieldsForType`, `lookupInputType`, `queryData`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. It forwards the caller's session cookie, so access rules apply.
+- `/api/completion` is the dashboard assistant. It needs dashboard access plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (optional `OPENROUTER_MAX_TOKENS`). Without them it returns 503.
+
+## Marketplace
+
+Each fleet has a `MarketplaceRegistration` with `capabilities` `marketplace.discovery`, `rideshare.quote`, `rideshare.request`, and `rideshare.trip.view`. The public `marketplaceRideshare*` queries and the quote and request mutations are the contract an external booking client uses.

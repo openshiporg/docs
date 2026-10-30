@@ -1,0 +1,25 @@
+---
+title: Prepare to take bets
+description: Add a licence, a payment provider, and an active policy.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the licence
+At `/dashboard/platform/payments` enter licence number, regulator, expiry, permitted regions, status `ACTIVE`.
+</Step>
+<Step>
+### Add payments
+Set the Authorize.net variables and add an `authorizenet` connection for deposits and a `manual` one for withdrawals, both `ACTIVE`.
+</Step>
+<Step>
+### Activate a jurisdiction policy
+At `/dashboard/platform/configuration/jurisdictions` request activation; a second operator approves.
+</Step>
+<Step>
+### Check the storefront
+Open `/`. "Betting closed" should be gone.
+</Step></Steps>

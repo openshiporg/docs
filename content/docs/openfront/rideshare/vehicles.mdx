@@ -1,0 +1,19 @@
+---
+title: Vehicles
+description: Vehicle list, documents, approval, maintenance, retirement, and driver assignment.
+icon: CarFront
+---
+
+`/dashboard/platform/vehicles` lists vehicles by status. It needs the drivers capability.
+
+## Add a vehicle
+
+`addFleetVehicle(fleetId, label, make, model, year, color, plateMasked, capacity, wheelchairAccessible, driverIds)`. The full plate and VIN are stored as encrypted references that the API never returns; only `plateMasked` is shown. New vehicles start in `pending_review`.
+
+## Actions
+
+- **Approve, maintenance, suspend, retire:** `reviewVehicle(vehicleId, decision, notes)` records a policy evaluation against the vehicle eligibility policy. Status: `pending_review`, `active`, `maintenance`, `suspended`, `retired`.
+- **Documents:** registration, insurance, and inspection through `addComplianceDocument(vehicleId, ...)` and `reviewComplianceDocument`.
+- **Assign drivers:** `assignVehicleDrivers(vehicleId, driverIds)` replaces the set of drivers allowed to use the vehicle.
+
+`capacity` and `wheelchairAccessible` decide which requests a vehicle matches in [Dispatch](/docs/openfront/rideshare/dispatch).

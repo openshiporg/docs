@@ -1,0 +1,24 @@
+---
+title: Troubleshooting
+description: Refusal codes and common operator problems.
+icon: LifeBuoy
+---
+
+| Code or symptom | Meaning and fix |
+|---|---|
+| Storefront shows "Betting closed" | Tenant not ready. Add an active licence, an active payment connection, and an active jurisdiction policy |
+| `OPERATOR_NOT_LICENSED` | No `ACTIVE`, unexpired `OperatorLicence` with regions |
+| `PAYMENTS_NOT_CONFIGURED` | No active payment `ProviderConnection` |
+| `RESPONSIBLE_GAMING_NOT_CONFIGURED` | No active `JurisdictionPolicyVersion` |
+| `GEO_BLOCKED` | Request region not in `permittedRegions`; check the geo header |
+| `ORIGIN_DENIED` | Request origin differs from `SANDBOX_PUBLIC_ORIGIN` |
+| `DUAL_CONTROL_REQUIRED` | A different operator with `canApproveSensitiveActions` must approve |
+| Operator can sign in but cannot act | Enrol and verify two-factor at `/dashboard/platform/security` |
+| `KYC_REQUIRED`, `GEO_REQUIRED`, `STALE_PRICE`, `LIMIT_EXCEEDED` | Acceptance gates; see [Wagers](/docs/openfront/sportsbook/wagers) |
+| `SELECTION_RESULT_REQUIRED` | Use `gradeMarketSelection`, not `gradeMarket` |
+| `INSUFFICIENT_FUNDS`, `WITHDRAWAL_REVIEW_REQUIRED` | Balance too low, or an active withdraw restriction |
+| `BANK_REFERENCE_REQUIRED` | Enter the bank reference to mark a withdrawal paid |
+| `PAYMENT_STILL_UNKNOWN` | Provider has not resolved the payment; retry reconciliation later |
+| Settlements never start | Run `npm run worker` and check `/api/ready` |
+| Anchoring skipped | Set `AUDIT_ANCHOR_DIR` and `AUDIT_ANCHOR_SECRET` |
+| Approval request expired | Requests last 24 hours; request again |

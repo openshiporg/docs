@@ -1,0 +1,25 @@
+---
+title: Dashboard overview
+description: Creator studio and people-manager pages under /dashboard/platform.
+icon: LayoutDashboard
+---
+
+Creators and people managers sign in at `/dashboard`. Pages live under `/dashboard/platform/*` and render slices from `features/platform/<slice>`. Reads use owner-scoped `studio*` queries; every write is a `studioCommand` from a server action.
+
+| Group | Page | Route |
+|---|---|---|
+| Publishing | [Items](/docs/openfront/social/items) | `/platform/library` |
+| Publishing | [Collections](/docs/openfront/social/collections) | `/platform/site/collections` |
+| Publishing | [Site](/docs/openfront/social/store-settings) | `/platform/site` |
+| Publishing | [Publications](/docs/openfront/social/publications) | `/platform/history` |
+| Publishing | [Destinations](/docs/openfront/social/destinations) | `/platform/destinations` |
+| Publishing | [Activity and your data](/docs/openfront/social/activity-your-data) | `/platform/activity`, `/platform/your-data` |
+| People | [Creators](/docs/openfront/social/creators) | `/platform/users` |
+| People | [Privacy requests](/docs/openfront/social/privacy-requests) | `/platform/users/privacy-requests` |
+| Setup | Creator setup | `/onboarding` |
+
+The People group shows only for roles with `canManagePeople`. `/platform/items`, `/platform/publications`, `/platform/collections`, `/platform/creators`, `/platform/privacy-requests`, and the older `/dashboard/studio/*` routes redirect to these pages. The generic `/dashboard/[listKey]` screens remain for users, roles, payment providers, and membership tiers.
+
+## Safe edits
+
+Each command carries the version you reviewed (`publishingVersion`, `contentVersion`, `publishGeneration`, status). If someone else changed the record, you get a conflict instead of an overwrite. Reload and retry.

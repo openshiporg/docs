@@ -1,0 +1,14 @@
+---
+title: Data model
+description: The four Keystone lists and their relationships.
+icon: Database
+---
+
+| List | Fields | Relationships |
+|---|---|---|
+| `User` | `name`, `email` (unique), `password`, reset token fields | `role` to `Role.assignedTo`; `tasks` to `Todo.assignedTo` |
+| `Role` | `name`, `canAccessDashboard`, `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManageRoles`, `canCreateTodos`, `canManageAllTodos` | `assignedTo` users |
+| `Todo` | `label`, `description`, `isComplete`, `status`, `priority`, `tags`, `dueDate`, `weight`, `budget`, `isPrivate`, `largeNumber`, `metadata`, `secretNote`, `coverImage` | `assignedTo` user; `todoImages` |
+| `TodoImage` | `image`, `imagePath`, `altText`, `metadata` | `todos` |
+
+Seven Prisma migrations create the schema. Keystone config lives in `features/keystone/index.ts`, re-exported from `keystone.ts`. The generated schema is `schema.graphql`.

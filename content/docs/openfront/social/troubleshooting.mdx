@@ -1,0 +1,27 @@
+---
+title: Troubleshooting
+description: Common messages in Social and what to do.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| "That site address is already used." | Pick another handle |
+| "That handle is reserved for an application route." | Choose a different handle |
+| "Your personal site already exists. Continue in Studio without replacing it." | Open the studio |
+| "Create your personal site first." | Run creator setup |
+| "Item URL names are stable after creation to preserve published links." | Keep the slug |
+| "That URL name is already used in this collection." | Rename the slug |
+| "Unpublish this item before archiving it." | Unpublish first |
+| "Only an empty collection can be removed. Use private visibility..." | Set it private |
+| "This site has published history, so it can’t be deleted." | Hide or edit it |
+| "Creator registration is currently closed." | Set `PUBLIC_SIGNUPS_ALLOWED=true` or add the creator as a people manager |
+| "Complete first-owner setup before creator registration opens." | Create the first user at `/dashboard/init` |
+| "Choose a less common password of at least 12 characters." | Use a stronger password |
+| "Give a reason when declining." | Add a note |
+| "Grant the request before carrying it out." | Review the request first |
+| "Creator payments are not configured" | Install a provider and set its environment |
+| "Tip amount or currency is invalid" | Stay within the site's bounds, in USD |
+| "Membership tier is unavailable" | The tier needs a `providerPriceId` and `priceMinor` of at least 50 |
+| "Invalid payment webhook" | Check `STRIPE_WEBHOOK_SECRET` and the endpoint id |
+| Uploads fail | Set all five `S3_*` variables |

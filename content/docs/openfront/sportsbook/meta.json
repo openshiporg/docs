@@ -4,17 +4,12 @@
   "icon": "Trophy",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "architecture-workflows",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront",
-    "---Integrations---",
-    "integrations-boundaries",
-    "---Advanced Features---",
-    "limitations"
+    "---Introduction---","index","getting-started","deployment",
+    "---Dashboard---","overview","catalog","trading","wagers","risk","results-grading","settlement","customers","compliance","responsible-gaming","support","finance","promotions","configuration","store-settings","external-dashboard",
+    "---Storefront---","storefront","external-storefront",
+    "---Integrations---","integrations","payment-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","operations","reports","roles-permissions","audit","data-model",
+    "---API---","api-reference","troubleshooting"
   ]
 }

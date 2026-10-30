@@ -1,0 +1,21 @@
+---
+title: Dashboard overview
+description: "The shared Openfront dashboard: home, list pages, forms, and filters."
+icon: LayoutDashboard
+---
+
+| Page | What you do there |
+|---|---|
+| `/dashboard` | Home with a card per visible list and its item count |
+| `/dashboard/<list-path>` | List with search, filters, sorting, column choice, pagination, and bulk delete. Paths: `users`, `roles`, `todos`, `todo-images` |
+| `/dashboard/<list-path>/create` | Create form built from the list's fields |
+| `/dashboard/<list-path>/[id]` | Edit fields, manage inline relationship cards, delete |
+| `/dashboard/init` | Create the first user when the database is empty |
+| `/dashboard/signin`, `/signup`, `/reset` | Authentication |
+| `/dashboard/no-access` | Shown to signed-in users whose role lacks `canAccessDashboard` |
+
+Pages are built from Keystone admin metadata (`KsFetchAdminMeta`), so fields, labels, and field groups come from the model definitions. Create and delete buttons hide when your role lacks the flag, and the server enforces access on every operation.
+
+The right sidebar holds the [AI assistant](/docs/openfront/sports-agents/ai-assistant).
+
+Per-list pages: [Users](/docs/openfront/sports-agents/users), [Roles and permissions](/docs/openfront/sports-agents/roles-permissions), [Tasks](/docs/openfront/sports-agents/todos), [Images](/docs/openfront/sports-agents/media).

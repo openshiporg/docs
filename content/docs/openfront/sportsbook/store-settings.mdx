@@ -1,0 +1,7 @@
+---
+title: Store settings
+description: Storefront branding and typed policy settings.
+icon: Settings
+---
+
+Route: `/dashboard/platform/settings`. Edit the store name, logo icon, and color, and request typed setting changes with `requestSettingChange` and `applyApprovedSetting` (dual control). The storefront resolves one brand per host: the brand matching `SANDBOX_PUBLIC_ORIGIN`, a brand whose domain matches the host, or the only operator-owned brand. `SANDBOX_TENANT_SLUG` pins a tenant.

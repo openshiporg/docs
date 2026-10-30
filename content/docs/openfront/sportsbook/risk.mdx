@@ -1,0 +1,13 @@
+---
+title: Risk and limits
+description: Exposure, limit profiles and rules, and correlation rules.
+icon: ShieldCheck
+---
+
+Needs `canManageRisk`. Route: `/dashboard/platform/risk`.
+
+- **Exposure:** `ExposurePosition` and `WagerExposureAllocation` by market and selection.
+- **Limits:** `LimitProfile` and `LimitRule`. `createRiskLimit` adds stake, payout, and liability limits.
+- **Correlation:** `CorrelationGroup` and `CorrelationRule`, requested with `requestCorrelationRule` and applied with `applyCorrelationRule` under dual control.
+
+Liability is capped by `SANDBOX_MAX_LIABILITY_MINOR` and the configured maximum stake and payout.

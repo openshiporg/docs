@@ -1,0 +1,31 @@
+---
+title: My driving
+description: The driver workspace for going online, answering offers, and advancing trips.
+icon: Navigation
+---
+
+`/dashboard/platform/my-driving` is for users with a `DriverProfile`. It loads `myDriverWorkspace(offersCursor, tripsCursor)`.
+
+## Go online
+
+The toggle calls `setDriverOnline(online, driverId)` and switches dispatch status between `offline` and `available`. Only an `active` driver can go online. Dispatch status values: `offline`, `available`, `offered`, `assigned`, `on_trip`.
+
+## Offers
+
+Open offers show pickup, drop-off, passengers, the fare, and the time left. Accept or decline with `respondToRideOffer(offerId, response, reason, idempotencyKey)`; `response` is `accept` or `decline`. Accepting returns a confirmation code and creates the trip.
+
+## Assigned trips
+
+Each trip shows the next action from `transitionTrip`:
+
+| Button | Action | Result |
+|---|---|---|
+| On my way | `start_en_route` | `driver_en_route` |
+| Arrived | `arrive` | `driver_arrived` |
+| Start trip | `start_trip` | `in_progress` |
+| Complete | `complete` | `completed` |
+| No-show | `no_show` | `no_show` |
+
+A scheduled trip cannot start en route more than two hours early, and a future trip cannot be marked no-show. During a trip `recordTripLocation` appends coarse, expiring location events.
+
+Drivers can also message the rider from the trip. See [Trips](/docs/openfront/rideshare/trips).

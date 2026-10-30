@@ -1,0 +1,21 @@
+---
+title: Payment providers
+description: Stripe, PayPal, and manual adapters, configuration, and the webhook.
+icon: Wallet
+---
+
+`PaymentProvider` rows belong to a site. Fields: `name`, `code` (must match `pp_...`, unique), `isInstalled`, `credentials`, `metadata`, and the function fields `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction`, `handleWebhookFunction` (default `stripe`). Adapters live in `features/integrations/payment`: `stripe`, `paypal`, `manual`.
+
+A provider is usable when installed and configured:
+
+| Code prefix | Required environment |
+|---|---|
+| `pp_stripe` | `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_KEY` or `STRIPE_PUBLISHABLE_KEY` |
+| `pp_paypal` | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` |
+| `pp_manual` | none |
+
+Checkout with Stripe returns to `PUBLIC_SITE_ORIGIN/payment/success` unless the caller passes URLs. Set `PUBLIC_SITE_ORIGIN`.
+
+## Webhook
+
+Point Stripe at `/api/payment-webhooks/<providerId>` (the provider's id) and set `STRIPE_WEBHOOK_SECRET`. The handler checks the signature and a 5-minute timestamp window, verifies the amount and currency against the local `Tip`, records a `SocialEvent` keyed by provider and event id so retries are idempotent, and marks the tip `succeeded`. Invalid requests get HTTP 400; bodies over 1 MB get 413.

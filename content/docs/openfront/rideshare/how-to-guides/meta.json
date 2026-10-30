@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "set-up-fleet",
+    "onboard-driver-vehicle",
+    "dispatch-ride",
+    "run-trip",
+    "cancel-and-reassign",
+    "collect-payment-refund"
+  ]
+}

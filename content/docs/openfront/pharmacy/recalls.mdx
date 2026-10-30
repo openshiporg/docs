@@ -1,0 +1,40 @@
+---
+title: Recalls
+description: Open a recall on lots, quarantine stock, reach exposed patients, dispose of units, and close.
+icon: TriangleAlert
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/recalls` (queue from `pharmacyRecallQueue`), `/recalls/open`, and `/recalls/[id]`.
+
+## Recall fields
+
+`recallNumber`, `classification` (`class_i`, `class_ii`, `class_iii`, `market_withdrawal`, `unverified`), `status` (`draft`, `active`, `quarantined`, `resolved`, `closed`, `cancelled`), `reason`, `source`, `sourceValidationReference`, `initiatedAt`, `closedAt`, and the affected `lots`.
+
+## Steps
+
+<Steps>
+<Step>
+### Open the recall
+Choose the location, recall number, classification, reason, source, and source reference, then select the affected lots. `openPharmacyRecall` requires every lot to belong to the pharmacy. Exposure rows are built from `dispense` and `sale` movements on those lots.
+</Step>
+<Step>
+### Quarantine
+`quarantineRecallLots` moves the remaining available stock to `quantityQuarantined`, writes `quarantine` movements, and sets the recall to `quarantined`.
+</Step>
+<Step>
+### Reach exposed patients
+Each `RecallExposure` starts as `outreach_required`. Record the contact method, outcome, and notes with `recordRecallExposureAction`, and set the status to `contacted`, `returned`, `unable_to_reach`, or `resolved`.
+</Step>
+<Step>
+### Dispose of quarantined stock
+`disposeRecallLot` takes the lot, the full quarantined quantity, and a disposition reference.
+</Step>
+<Step>
+### Close
+`closePharmacyRecall` succeeds once every lot's quarantined quantity has a disposition, every sale or dispense movement has an exposure, and every exposure is `returned`, `resolved`, or `unable_to_reach`.
+</Step>
+</Steps>
+
+Needs `canManageRecalls`. See [Run a recall](/docs/openfront/pharmacy/how-to-guides/run-recall).

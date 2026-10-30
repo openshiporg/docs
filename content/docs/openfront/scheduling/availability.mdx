@@ -1,0 +1,15 @@
+---
+title: Availability
+description: Weekly schedules, date overrides, and blocked time.
+icon: Clock
+---
+
+`/dashboard/platform/availability` and `/new`.
+
+- **Schedule:** a named set of weekly hours in a time zone, attached to event types.
+- **`AvailabilityRule` types:** `weekly`, `date` (a one-day override), and `block` (time off).
+- **Overrides:** `manageAvailabilityOverride` creates or removes a date override or block and logs it in `AvailabilityOverrideEvent`.
+
+Open slots combine schedules, rules, buffers, existing bookings, calendar busy intervals (from connected calendars), host daily capacity, and resource requirements. Round-robin events pick hosts using `roundRobinWeight` and `dailyBookingCapacity` on `Member`.
+
+See [Set weekly availability](/docs/openfront/scheduling/how-to-guides/set-availability).

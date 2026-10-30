@@ -1,0 +1,39 @@
+---
+title: Trips
+description: Trip board, lifecycle transitions, cancellation and reassignment, payments, messages, safety cases, and reviews.
+icon: Route
+---
+
+`/dashboard/platform/trips` lists scheduled, active, and completed trips. `/dashboard/platform/trips/[id]` is the trip detail. Operators need the operations capability to act on trips.
+
+## Lifecycle
+
+| Action | From | To |
+|---|---|---|
+| `start_en_route` | `driver_assigned` | `driver_en_route` |
+| `arrive` | `driver_en_route` | `driver_arrived` |
+| `start_trip` | `driver_arrived` | `in_progress` |
+| `complete` | `in_progress` | `completed` |
+| `no_show` | `driver_arrived` | `no_show` |
+
+`transitionTrip(tripId, action, reason, idempotencyKey, expectedActorId, expectedAcceptedOfferId)` takes the expected actor and accepted offer, so a stale screen cannot move the wrong trip. Each transition writes a `TripEvent`. Trip statuses: `driver_assigned`, `driver_en_route`, `driver_arrived`, `in_progress`, `completed`, `cancelled`, `no_show`.
+
+## Cancel a trip
+
+Press Cancel trip or Cancel and reassign. The dialog loads `tripCancellationPreview` to show the fee, then you choose a reason: Rider requested, Driver unavailable, Vehicle unavailable, Operations change, or Other. `cancelRide` records a `Cancellation` with the actor (`rider`, `driver`, `operator`, `system`), fee, and fee outcome (`no`, `partial`, `full`, `manual_review`). Cancellation is allowed from `driver_assigned`, `driver_en_route`, and `driver_arrived`. With reassign on, the request goes back to dispatch. See [Cancel and reassign](/docs/openfront/rideshare/how-to-guides/cancel-and-reassign).
+
+## Detail sections
+
+- **Stage rail and route:** status and pickup to drop-off.
+- **Driver, vehicle, rider, passengers.**
+- **Payments:** record a charge, confirm a manual payment, request a refund. See [Payments](/docs/openfront/rideshare/finance).
+- **Timeline:** `TripEvent` rows and any cancellation.
+- **Messages:** the trip `Conversation`. Operators send with `sendTripMessage`.
+- **Safety and support:** incidents and cases linked to the trip.
+- **Reviews:** ratings left by the rider and driver.
+
+The page reads `operatorTripHandoff(tripId, cursor)` for the timeline.
+
+## Recovery
+
+If a command response is lost, the page shows "Cancellation unconfirmed" or a recovery button. Retrying replays the same idempotency key, so the command is not applied twice.

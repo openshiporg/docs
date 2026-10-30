@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: Team roles, global role flags, and machine scopes.
+icon: Shield
+---
+
+## Team roles
+
+`Team` is the tenant root. Reads are scoped to teams where the user has an active `Member` row.
+
+| Role | Access |
+|---|---|
+| `owner` | everything in the team, ownership transfer |
+| `admin` | manage the team's records |
+| `host` | read, and confirm or decline bookings they are assigned to |
+| `viewer` | read |
+
+Writes need `owner` or `admin`. A record cannot move between teams. Command-only lists (`Booking`, `Member`, `TeamInvitation`, `Resource`, `EventResourceRequirement`, `PaymentBooking`, `ConferenceConnection`, `ApiKey`) refuse raw create, update, and delete.
+
+## Global role flags
+
+`canAccessDashboard`, `canManageScheduling`, `canManageOnboarding`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`. They gate dashboard areas and do not bypass team scoping. Accepting an invitation grants dashboard access.
+
+## Machine scopes
+
+API keys and OAuth tokens carry scopes checked by `requireMachineScope`.

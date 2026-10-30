@@ -1,0 +1,23 @@
+---
+title: Finance and payments
+description: Payment review, manual payment confirmation, refunds, ledger entries, and payment observations.
+icon: Banknote
+---
+
+`/dashboard/platform/finance` needs the finance capability (`owner` or `finance`). It lists payments by status with links to each trip, where payment actions live.
+
+## Payments
+
+`Payment` fields: `amountMinor`, `currencyCode`, `status`, `providerReference`, and the provider. Status: `pending`, `authorized`, `captured`, `failed`, `partially_refunded`, `refunded`, `cancelled`.
+
+- **Record a charge:** on the trip press Record payment. `initiateTripPayment(tripId, providerCode, idempotencyKey)` creates a payment for a trip that is assigned, en route, arrived, in progress, or completed. Only one attempt can be active per trip.
+- **Confirm collection:** for the manual provider, Confirm payment calls `confirmManualPayment(paymentId, method)`. The payment becomes `captured` and a `rider_charge` ledger entry is posted.
+- **Card payments:** Stripe payments are captured when the rider completes Checkout. See [Payment providers](/docs/openfront/rideshare/payment-providers).
+
+## Refunds
+
+`requestTripRefund(paymentId, amountMinor, reason, idempotencyKey)` creates a `Refund` (`requested`). For manual payments `confirmManualRefund(refundId)` sets it `succeeded` and posts a `refund` ledger entry. Refund status: `requested`, `processing`, `succeeded`, `failed`, `cancelled`. The amount cannot exceed what remains on the payment.
+
+## Ledger and observations
+
+`LedgerEntry` rows (`kind`: `rider_charge`, `tax`, `platform_fee`, `driver_earning`, `fleet_share`, `tip`, `refund`, `adjustment`, `payout_transfer`; `direction`: `debit` or `credit`) are append-only. `PaymentObservation` rows record each provider event for a payment, such as Stripe capture details.

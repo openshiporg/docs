@@ -1,0 +1,12 @@
+---
+title: Support and disputes
+description: Support cases and dispute resolution.
+icon: LifeBuoy
+---
+
+Routes: `/dashboard/platform/support`, `/support/[caseId]`.
+
+- Change a case status with `setSupportCaseStatus`. Events are in `SupportCaseEvent`.
+- Disputes (`Dispute`, `DisputeEvent`): propose a resolution with `requestDisputeResolution`, withdraw it with `withdrawDisputeProposal`, apply it after approval with `applyDisputeResolution`.
+
+Customers open cases and disputes at `/account/disputes`.

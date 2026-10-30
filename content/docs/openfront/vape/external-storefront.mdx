@@ -28,9 +28,9 @@ Routes live under `app/(storefront)/[countryCode]/`; logic lives in `features/st
 | `/policies/[slug]` | The five store policies read from store settings |
 | `/[...rest]` | Not found |
 
-## Journey boundaries
+## Journey notes
 
 - Every cart change revokes prior compliance evidence. A custom client must re-evaluate rather than cache a decision.
-- Regulated carts end in a deny at checkout in current source, because no adapter records identity, tax, or carrier evidence. Show the returned reason codes; do not imply that sales are open.
+- Regulated carts are allowed only when identity, tax, and carrier evidence is recorded for the cart. Show the returned reason codes.
 - Customers cannot create returns or claims from the storefront; those are staff-only.
 - Required regulatory warning copy is an owner decision; the source does not supply it.

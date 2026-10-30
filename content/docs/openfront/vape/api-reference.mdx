@@ -1,0 +1,31 @@
+---
+title: API reference
+description: GraphQL operations, REST routes, and authentication.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql` (Keystone). Session cookie, API key, or OAuth token authenticates; see [Roles and permissions](/docs/openfront/vape/roles-permissions). Custom operations live in `features/keystone/mutations`.
+
+## Storefront operations
+
+`createActiveCart`, `activeCart`, `updateActiveCart`, `updateActiveCartLineItem`, `addActiveCartShippingMethod`, `addDiscountToActiveCart`, `removeDiscountFromActiveCart`, `createActiveCartPaymentSessions`, `setActiveCartPaymentSession`, `initiatePaymentSession`, `authorizeCardPaymentSession`, `evaluateActiveCartCompliance`, `completeActiveCart`, `validateShippingAddress`, `createActiveUserAddress`, `updateActiveUserAddress`, `deleteActiveUserAddress`, `updateActiveUser`, `updateActiveUserPassword`, `regenerateCustomerToken`, `getCustomerOrders`, `getCustomerOrder`, `getCustomerAccount`, `getCustomerAccounts`, `getUnpaidLineItemsByRegion`, `createInvoiceFromLineItems`, `createInvoicePaymentSessions`, `initiateInvoicePaymentSession`, `setInvoicePaymentSession`, `payInvoice`, `completeInvoicePayment`, `getInvoicePaymentSessions`, `getCustomerPaidInvoices`, `getMyPrivacyData`, `updatePrivacyPreferences`, `requestPrivacyAction`, `registerWebhookEndpoint`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`.
+
+## Operator operations
+
+| Area | Operations |
+|---|---|
+| Orders | `transitionOrderStatus`, `createOrderFulfillment`, `cancelOrderFulfillment`, `getRatesForOrder`, `createProviderShippingLabel`, `cancelShippingLabel`, `trackShipment`, `processReturnRefund`, `getAnalytics` |
+| Inventory | `adjustInventory` |
+| Compliance | `stopRegulatedCommerce`, `regulatedCommerceReadiness`, `generateComplianceReport`, `recordComplianceReportSubmission`, `exportComplianceInventory` |
+| Webhooks | `retryWebhookDeliveries` |
+| Setup | `redirectToInit` |
+
+## REST routes
+
+| Route | Purpose |
+|---|---|
+| `/api/graphql` | GraphQL |
+| `/api/payment-webhooks/[providerId]` | Payment provider webhooks |
+| `/api/oauth/authorize`, `/callback`, `/token` | OAuth |
+| `/api/mcp-transport/[transport]` | MCP |
+| `/api/completion` | Dashboard AI chat |

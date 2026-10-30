@@ -1,0 +1,21 @@
+---
+title: Enable public sign-up
+description: Let people register, then grant access.
+icon: UserCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Turn it on
+Set `PUBLIC_SIGNUPS_ALLOWED=true` and restart.
+</Step>
+<Step>
+### Register
+A person registers at `/dashboard/signup`. They have no role and see the no-access page.
+</Step>
+<Step>
+### Grant a role
+In Users, set their role.
+</Step></Steps>

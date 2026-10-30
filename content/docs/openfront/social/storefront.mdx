@@ -1,0 +1,19 @@
+---
+title: Public site
+description: The visitor-facing creator site, feed, tips, and memberships.
+icon: Store
+---
+
+Routes are listed in [External storefronts](/docs/openfront/social/external-storefront).
+
+- `/<handle>` is the profile: themed branding, public collections, a Support section, and membership tiers when configured.
+- `/<handle>/<collection>` pages through published items in a public or unlisted collection.
+- `/<handle>/<collection>/<slug>` shows an item with rendered markdown and newer and older links.
+- `/feeds/[handle]` is an RSS 2.0 feed of public collections.
+- `/sitemap.xml` and `/robots.txt` expose public content and disallow `/dashboard`, `/api`, and `/account`.
+
+Renamed handles return a permanent redirect (`publicHandleRedirect`). Private collections, hidden sites, and `membersOnly` collections return no items.
+
+The landing page `/` links to sign in and, when `PUBLIC_SIGNUPS_ALLOWED=true`, sign up.
+
+Visitors support a creator with a tip or a membership. See [Tips and memberships](/docs/openfront/social/tips-memberships).

@@ -1,0 +1,14 @@
+---
+title: Settlement
+description: Settle wagers, resettle, and correct cash-outs.
+icon: WalletCards
+---
+
+Routes: `/dashboard/platform/settlements`, `/settlements/[wagerId]`.
+
+- `settleWager` settles simple straight wagers. `settleCombinationWager` settles wagers with parts and routes full straight wagers. `fullStraightSettlementPlan` previews a plan.
+- Settlements are versioned. A `Settlement` has `SettlementLine` rows for stake return, profit, tax, and rounding. Each posts a balanced `JournalTransaction`.
+- **Resettle:** `requestResettlementApproval` then `resettleWager`, or `requestCombinationResettlement` then `resettleCombinationWager`.
+- **Cash-out corrections:** `requestCashOutCorrection` then `correctCashOut`.
+
+Settlement runs are `SettlementRun` rows, started by `settlement.requested` events that the worker drains.

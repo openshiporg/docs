@@ -1,0 +1,36 @@
+---
+title: Transfer a prescription
+description: Accept a transfer in from another pharmacy or send one out.
+icon: ArrowLeftRight
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Transfer in
+
+<Steps>
+<Step>
+### Receive the request
+A patient sends a `transfer` request from `/prescriptions` on the storefront with the other pharmacy and medications. It appears at `/dashboard/platform/requests`.
+</Step>
+<Step>
+### Register the patient
+If they are new, create the patient from the request.
+</Step>
+<Step>
+### Take in the prescription
+Enter it at `/dashboard/platform/prescriptions/intake` with source `transfer`.
+</Step>
+<Step>
+### Approve the transfer
+On the prescription page, review the inbound transfer and press Approve (`approvePrescriptionTransfer`). It must be `consent_recorded` with accepted consent.
+</Step>
+<Step>
+### Resolve the request
+Mark the online request `completed`.
+</Step>
+</Steps>
+
+## Transfer out
+
+On the prescription page open the transfer-out form. Enter the receiving pharmacy name and phone and record the patient's consent with the policy version. `requestPrescriptionTransfer` creates an `outbound` transfer. Statuses: `requested`, `consent_recorded`, `under_review`, `accepted`, `completed`, `rejected`, `cancelled`.

@@ -1,0 +1,31 @@
+---
+title: Refills and requests
+description: The refill queue and the online registration, transfer, and new-prescription requests from the storefront.
+icon: RefreshCw
+---
+
+## Refills
+
+`/dashboard/platform/refills` lists `RefillRequest` rows across prescriptions. Patients create them from their storefront account with `requestPrescriptionRefill`.
+
+Statuses: `requested`, `under_review`, `prescriber_contacted`, `approved`, `fulfilled`, `rejected`, `cancelled`.
+
+A refill is offered to the patient only when the prescription has refills left and the current authorized fill is completely dispensed. An open request for the same entitlement blocks a second one.
+
+The patient's request reserves a refill and creates a requested `PrescriptionFill`. Staff with `canReviewPrescriptions` resolve it with `resolvePrescriptionRefill(refillRequestId, decision, reason, attested, expectedFillVersion)`. The decision is `approved` or `rejected`. Rejecting releases the reserved refill. Approving makes the fill ready, and the pharmacist dispenses it from the prescription page, which marks the request `fulfilled`. An expired reservation cannot be approved; release it instead. See [Handle a refill request](/docs/openfront/pharmacy/how-to-guides/handle-refill-request).
+
+## Online requests
+
+`/dashboard/platform/requests` lists `PrescriptionRequest` rows sent from `/prescriptions` on the storefront with `submitPharmacyPrescriptionRequest`.
+
+| Kind | What the patient sends |
+|---|---|
+| `registration` | Legal name, date of birth, phone, email, allergies, insurance |
+| `transfer` | Pharmacy to transfer from, its phone, and medications |
+| `new_prescription` | Prescriber name and phone, and medications |
+
+Statuses: `requested`, `in_review`, `completed`, `declined`. Staff choose one with `resolvePharmacyPrescriptionRequest` and may add a resolution note. A registration request can be turned into a patient through the Create patient flow, which carries over the reported details.
+
+## Permissions
+
+Both queues need `canManagePrescriptions`. Resolving a refill also needs the pharmacist attestation.

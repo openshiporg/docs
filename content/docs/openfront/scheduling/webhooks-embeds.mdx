@@ -1,0 +1,13 @@
+---
+title: Webhooks and embeds
+description: Outbound booking webhooks and the embeddable booking widget.
+icon: Webhook
+---
+
+## Webhooks
+
+`/dashboard/platform/webhooks` lists `WebhookSubscription` endpoints, `NotificationSubscription` rows, and the delivery log. Endpoints receive booking events such as `booking.created`, signed with HMAC-SHA256 over timestamp and body in the `openfront-webhook-signature` header as `v1=<signature>`. `transitionNotificationSubscription` activates or pauses a subscription and returns the signing secret once. `transitionWebhookDelivery` retries a delivery.
+
+## Embeds
+
+`/dashboard/platform/embeds`, `/new`, `/[id]`. An `EmbedConfig` targets one event type with theme, accent color, branding, mode (`inline`, `modal`, `popover`), and `allowedOrigins` (HTTPS in production, at least one required to publish). `publishEmbedConfig` creates an immutable `EmbedRelease`. The detail page shows the install snippet, which loads `/api/embed/v1.js` and mounts `/embed/[slug]` in an iframe for allowed parent origins.

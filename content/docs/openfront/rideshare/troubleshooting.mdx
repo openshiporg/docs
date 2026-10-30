@@ -1,0 +1,55 @@
+---
+title: Troubleshooting
+description: Common errors in Rideshare setup, dispatch, trips, and payments.
+icon: LifeBuoy
+---
+
+## Setup
+
+| Message or symptom | Fix |
+|---|---|
+| "DATABASE_URL and SESSION_SECRET of at least 32 characters are required in production." | Set both variables |
+| Every route redirects to `/dashboard/init` | No users exist. Create the first user |
+| A service shows as not bookable | The fleet must be `active`, operations mode `manual`, the service and fare rule active, and a driver and vehicle eligible |
+| Riders cannot sign up | Set rider accounts to `open` on an active fleet, or `PUBLIC_SIGNUPS_ALLOWED=true` |
+
+## Dispatch
+
+| Message | Fix |
+|---|---|
+| "Driver or vehicle already has an overlapping active reservation." | Pick another driver or vehicle |
+| "Driver or vehicle lacks current fleet-bound eligibility evidence." | Review the driver and vehicle and accept documents |
+| "Applicable driver availability is incomplete; reconcile the schedule before dispatch." | Set the driver's weekly hours |
+| "Driver or vehicle eligibility changed after the offer was made." | Send a new offer |
+| "Only approved drivers can go online." | Review the driver to `active` |
+| "Finish or decline your current offer or trip before going offline." | Complete the offer or trip first |
+| "Idempotency key was already used for another dispatch command." | Reload and retry |
+
+## Trips
+
+| Message | Fix |
+|---|---|
+| "A scheduled trip cannot start en route more than two hours early." | Wait |
+| "A future trip cannot be marked no-show." | Wait until the pickup time |
+| "Cancellation actor or assignment changed; reconciliation is required." | Reload the trip and recover the original command |
+| "A review has already been submitted for this trip and direction." | One review per direction |
+
+## Payments
+
+| Message | Fix |
+|---|---|
+| "A payment attempt already exists for this trip. Reconciliation is required before another attempt." | Resolve the existing attempt |
+| "Only manual payments are confirmed here." | Stripe payments capture through Checkout |
+| "Stripe is not configured for this deployment." | Set `STRIPE_SECRET_KEY` |
+| "Card payment isn’t available for this ride." | Install the `pp_stripe` provider |
+| "The fleet is collecting this fare directly." | A manual payment already exists |
+| "The paid amount doesn’t match this ride. Contact the fleet." | Check the Checkout session in Stripe |
+| "Sign in to pay for this ride." | Riders pay while signed in |
+
+## Team
+
+| Message | Fix |
+|---|---|
+| "No account uses that email..." | The person needs an account first |
+| "That person is already on this fleet." | Edit the existing membership |
+| "A fleet needs at least one active owner." | Promote another owner first |

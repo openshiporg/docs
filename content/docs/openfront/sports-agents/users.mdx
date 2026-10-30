@@ -1,0 +1,32 @@
+---
+title: Users
+description: Create, edit, and remove people, and control who can see them.
+icon: Users
+---
+
+Route: `/dashboard/users`.
+
+Fields: `name`, `email` (unique), `password` (never readable), `role`, and `tasks` (the todos assigned to the person). Password reset token fields support Keystone's reset flow.
+
+## Who can do what
+
+| Action | Needs |
+|---|---|
+| Read your own record | signed in |
+| Read other users | `canSeeOtherPeople` |
+| Edit other users | `canEditOtherPeople` |
+| Create, delete users, set roles, change passwords | `canManagePeople` |
+| Sign up yourself | `PUBLIC_SIGNUPS_ALLOWED=true` |
+
+A self-signed-up user has no role and lands on `/dashboard/no-access` until an admin assigns one. A user needs a role with `canAccessDashboard` to enter.
+
+## Create a user
+
+1. Go to `/dashboard/users/create`.
+2. Enter name, email, and password.
+3. Pick a role.
+4. Save.
+
+## Password reset
+
+`sendUserPasswordResetLink` emails a link to `/dashboard/reset?token=...`, and `redeemUserPasswordResetToken` sets the new password. Without `SMTP_HOST` the reset page says email is not available.

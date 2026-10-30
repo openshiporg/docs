@@ -1,0 +1,13 @@
+---
+title: Customers
+description: Customer records, 21+ attestation, and business accounts.
+icon: Users
+---
+
+- **Users** (`/dashboard/platform/users`, `/[id]`): the list and a detail page with profile, 21+ attestation, orders, addresses, carts, accounts, and invoices. Staff and customers share the `User` list; customers have `hasAccount` set.
+- **Business account requests** (`/dashboard/platform/business-account-requests`): review applications (business name, type, monthly volume, requested credit). Statuses: `pending` → `approved` / `not_approved` / `requires_info`. Approval is final and creates an `Account` with a credit limit.
+- **Business accounts** (`/dashboard/platform/invoices`): account number, status (`active`, `suspended`, `not_approved`, `paid`, `overdue`), balance, and credit.
+
+Sign-up requires the 21+ box and writes the event `AGE_ATTESTED_21` (best effort). It is a self-attestation, not verification evidence.
+
+Customers manage privacy at `/account/privacy`. Requests arrive as `Notification` rows with event name `requestPrivacyAction`; review them on the generic Notifications page.

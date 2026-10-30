@@ -1,0 +1,11 @@
+---
+title: Compliance Ledger
+description: Read-only decisions, events, age records, tax quotes, and carrier decisions.
+icon: ScrollText
+---
+
+Routes: `/dashboard/platform/compliance-ledger` and `/[id]`. Needs `canReadCompliance` (identity fields also need `canAccessIdentityEvidence`).
+
+Tabs: Decisions, Events, Age verification, Age attestations, Tax quotes, Carrier decisions. Reason codes are shown in readable form. A decision's detail page shows its purpose, result, policy pack and hash, rule ids, snapshot digest, expiry, and the event timeline.
+
+These lists are immutable: no one can create, edit, or delete them from the dashboard or GraphQL. Events written include `cart.compliance_invalidated`, `checkout.compliance_committed`, `tax.commit_acknowledged`, `tax.reversal_acknowledged`, `regulated.return_refunded`, `merchant.emergency_stop`, `report.generated`, `report.submission_recorded`, `evidence.inventory_exported`, and `AGE_ATTESTED_21`.

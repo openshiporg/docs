@@ -1,0 +1,12 @@
+---
+title: Routing forms
+description: Ask questions and send visitors to the right event type and host.
+icon: GitFork
+---
+
+`/dashboard/platform/routing-forms`, `/new`, `/[id]`.
+
+- `RoutingForm` status: `draft`, `published`, `archived`.
+- Ordered `RoutingRule` rows match answers and target an event type and optional host. A default event handles unmatched answers.
+- Visitors answer at `/routes/[slug]`; `evaluateStorefrontRouting` records a `RoutingSubmission` (`evaluated`, `converted`, `expired`) and returns the match. The submission ID carries into availability and booking.
+- The detail page lists recent submissions.

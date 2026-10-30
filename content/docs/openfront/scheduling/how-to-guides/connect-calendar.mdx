@@ -1,0 +1,21 @@
+---
+title: Connect a calendar
+description: Sync a host's Google or Microsoft calendar.
+icon: Calendar
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set OAuth variables
+Set the client ID and secret, `CALENDAR_OAUTH_REDIRECT_URI`, `CALENDAR_OAUTH_STATE_SECRET`, and `CALENDAR_CREDENTIALS_KEY`.
+</Step>
+<Step>
+### Connect
+On Integrations press Connect for the provider and approve access.
+</Step>
+<Step>
+### Sync
+Run Sync. Busy time blocks matching slots, and new bookings are written to the calendar.
+</Step></Steps>

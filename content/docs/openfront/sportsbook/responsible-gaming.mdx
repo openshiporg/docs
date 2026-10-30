@@ -1,0 +1,13 @@
+---
+title: Responsible gaming
+description: Player limits, cool-offs, and self-exclusion.
+icon: HeartPulse
+---
+
+Route: `/dashboard/platform/responsible-gaming`. Needs `canManageCompliance`.
+
+- `setResponsibleGamingLimit` sets a `PlayerLimit` (deposit, stake, loss, session).
+- `selfExclude` records a `SelfExclusion`.
+- Cool-offs and exclusions block wager acceptance.
+
+Customers set their own limits and take breaks at `/account/limits` and `/account/responsible-play`.

@@ -1,0 +1,24 @@
+---
+title: Product evidence
+description: Classify regulated variants and record their authorizations.
+icon: FileCheck
+---
+
+Route: `/dashboard/platform/product-evidence`. Needs `canManageCompliance`.
+
+The page lists classifications by status with filters for expiring and missing federal evidence, plus unclassified regulated variants with a Classify button. Authorizations can be suspended, delisted, or expired.
+
+## Classification
+
+`RegulatedProductClassification` (one per variant): `category` (`ends_device`, `e_liquid`, `component`, `accessory`, `tobacco_derived_nicotine`, `synthetic_nicotine`), `nicotineSource`, `nicotineConcentrationMgMl`, `flavor`, `packageUnits`, `liquidVolumeMl`, `manufacturer`, `brand`, `sourceReference`, `evidenceDigest`, `marketingReviewStatus` (`pending`, `approved`, `rejected`, `revoked`) with `marketingEvidenceDigest` and `marketingReviewedAt`. Status `draft` → `review` → `approved` → `rejected` / `revoked`; approval needs a reviewer, bounded dates, a product digest, and an approved marketing review.
+
+## Authorization
+
+`ProductAuthorization`: `authorizationType` (`federal_marketing_order`, `preexisting_status`, `state_directory`, `local_directory`), `authority`, `authorizationIdentifier`, `evidenceUrl`, `evidenceDigest`, `claimRestrictions`, `effectiveAt`, `expiresAt`, `delistedAt`, `sellThroughEndsAt`, `lastVerifiedAt`. `pending` → `authorized` → `suspended` / `delisted` / `denied` / `expired`. Authorized needs `effectiveAt`, `lastVerifiedAt`, and a digest, and is then immutable.
+
+## Effects on publishing
+
+- Publishing a product needs an approved classification and a current federal authorization for every variant.
+- If evidence is moved to a non-usable state, the linked published product returns to `draft`. Evidence that lapses by date stops counting when read, so carts are denied, but the product stays published.
+- Replacing a product image drafts the product and revokes approved classifications.
+- A product outside regulation sets `regulatedCommerceRequired` to false and records an exemption reference, digest, review time, and future expiry (needs compliance permission).

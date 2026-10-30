@@ -1,0 +1,49 @@
+---
+title: Items
+description: Draft, edit, publish, unpublish, archive, and restore posts, notes, runs, and more.
+icon: FileText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/library`, `/library/create`, `/library/[id]`.
+
+The list has status tabs with counts (draft, published, archived) and filters. The editor offers markdown with preview, an occurred-at date, a cover image, version history, and share links.
+
+## Fields
+
+| Field | Notes |
+|---|---|
+| `title` | required |
+| `slug` | unique per collection, stable after the item is created |
+| `summary`, `body` | body is markdown |
+| `externalUrl` | optional link |
+| `type` | `post`, `note`, `run`, `project`, `album`, `film`, `book`, `link`, `custom` |
+| `status` | `draft`, `published`, `archived` |
+| `occurredAt`, `publishedAt`, `firstPublishedAt` | dates |
+| `contentVersion`, `publishGeneration` | used to detect stale edits |
+
+## Lifecycle
+
+<Steps>
+<Step>
+### Draft
+`createItem` adds a draft to a collection. `updateItem` edits it and bumps `contentVersion`.
+</Step>
+<Step>
+### Publish
+`publishItem` writes a canonical `Publication` (destination `personal_site`) holding an immutable snapshot, and any previous canonical publication is cancelled.
+</Step>
+<Step>
+### Republish
+Editing a published item shows unpublished changes. Publish again for a new snapshot.
+</Step>
+<Step>
+### Unpublish, archive, restore
+`unpublishItem` returns it to draft. `archiveItem` works from draft only. `restoreItem` returns an archived item to draft.
+</Step>
+</Steps>
+
+Visitors see an item only when the site is published and the collection is public or unlisted. Share links open the public post pages for X and Threads and a copy-link action.
+
+Images in bodies are uploaded as `MediaAsset` rows and stored as `/media/[id]`.

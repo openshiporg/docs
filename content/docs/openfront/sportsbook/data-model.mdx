@@ -1,0 +1,24 @@
+---
+title: Data model
+description: Keystone lists by domain and money conventions.
+icon: Database
+---
+
+Defined in `features/keystone/models` (`Sportsbook.ts`, `SportsbookFull.ts`, `SportsbookP0.ts`, `Customer.ts`, `User.ts`, `Role.ts`). The source repo's `docs/schema-map.md` lists every list. `Tenant` is the operator boundary; nearly every list has a `tenant` relation and PostgreSQL row-level security uses `app.tenant_id`.
+
+| Domain | Lists |
+|---|---|
+| Operator | `Tenant`, `Brand`, `BrandLocale`, `LegalEntity`, `Jurisdiction`, `OperatorJurisdiction`, `OperatorLicence`, `JurisdictionPolicyVersion`, `OperatorChannel`, `CurrencyDefinition`, `TenantCurrency`, `OnboardingProgress` |
+| Catalog | `Region`, `Sport`, `Competition`, `Season`, `CompetitionStage`, `Venue`, `Competitor`, `Event`, `EventParticipant`, `EventScheduleChange`, `MarketDefinition` |
+| Configuration | `ConfigDefinition`, `ConfigValue`, `FeatureFlag`, `HouseRuleVersion`, `TaxRuleVersion`, `RetentionPolicyVersion` |
+| Trading and risk | `Market`, `Selection`, `PriceSnapshot`, `TradingStatusChange`, `TraderOverride`, `FeedHealthSnapshot`, `LimitProfile`, `LimitRule`, `CorrelationGroup`, `CorrelationRule`, `ExposurePosition`, `WagerExposureAllocation` |
+| Wagering | `BetSlip`, `BetSlipItem`, `Quote`, `CustomerQuoteTerms`, `CustomerQuoteLegTerms`, `AcceptanceDecision`, `Wager`, `WagerLeg`, `WagerPart`, `WagerStatusEvent`, `CashOutOffer`, `CashOutAcceptance` |
+| Results | `ResultVersion`, `MarketGrade`, `LegGrade`, `SettlementRun`, `Settlement`, `SettlementLine`, `ResettlementCase` |
+| Finance | `LedgerAccount`, `JournalTransaction`, `JournalEntry`, `BalanceProjection`, `Hold`, `PaymentIntent`, `PaymentAttempt`, `LedgerAdjustmentRequest`, `ReconciliationRun`, `ReconciliationItem`, `SafeguardingAccount`, `SafeguardingReconciliation`, `TaxAssessment` |
+| Customers | `Player`, `PlayerIdentity`, `CustomerCredential`, `CustomerSession`, `CustomerDevice`, `CustomerRecoveryToken`, `CustomerCommand`, `CustomerFavorite`, `Consent`, `PlayerStatement`, `AccountClosure`, `AffiliateAttribution`, `PamSubjectMapping`, `Notification` |
+| Compliance | `VerificationCase`, `VerificationCheck`, `GeoSession`, `GeoCheck`, `AMLCase`, `ScreeningHit`, `AffordabilityAssessment`, `IntegrityCase`, `CustomerPrivacyRequest`, `AccountRestriction`, `PlayerLimit`, `SelfExclusion` |
+| Support and promotions | `SupportCase`, `SupportCaseEvent`, `Dispute`, `DisputeEvent`, `Promotion`, `PromotionRuleVersion`, `CampaignBudget`, `PromotionRedemption`, `BonusAward`, `BonusTransaction` |
+| Integrations and ops | `ProviderConnection`, `ProviderHealthSample`, `ProviderEntityMapping`, `AdapterCertificationRun`, `TradingReplayRun`, `RawEnvelope`, `InboxMessage`, `OutboxMessage`, `WebhookEndpoint`, `WebhookDelivery`, `IntegrationDeliveryAttempt`, `WebhookReplay`, `DeadLetter`, `ScheduledJob`, `WorkerHeartbeat`, `Incident`, `ApiRateBucket` |
+| Governance | `AuditEvent`, `AuditAnchor`, `ApprovalRequest`, `DataCorrectionCase`, `LegalHold`, `AccessReview`, `ComplianceReport`, `ReportArtifact`, `DataExport`, `RetentionExecution`, `User`, `Role`, `RoleGrant`, `Team` |
+
+Money is integer minor units in text fields with a currency code.

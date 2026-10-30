@@ -1,0 +1,60 @@
+---
+title: Payment providers
+description: Stripe, PayPal, and pay-at-pickup adapters, the payment ledger, cash and tax policy, webhooks, and reconciliation.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/payments` holds the payment ledger, sessions that need reconciliation, payment providers, and the cash policy. It needs `canManagePayments`.
+
+## Adapters
+
+Adapters are registered in `features/integrations/payment/index.ts`. A `PaymentProvider` record names its adapter in the `*Function` fields and must be installed (`isInstalled`) to appear at checkout.
+
+| Adapter | Behavior |
+|---|---|
+| `stripe` | Creates, captures, refunds, and reads PaymentIntents with `STRIPE_SECRET_KEY`. Verifies webhooks with `STRIPE_WEBHOOK_SECRET`. The storefront card step needs `NEXT_PUBLIC_STRIPE_KEY` |
+| `paypal` | Server-side order create, capture, refund, status, and webhook verification with `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and `NEXT_PUBLIC_PAYPAL_SANDBOX` |
+| `manual` | Pay at pickup. No money moves online and the payment is collected at handoff. Rejects webhooks |
+
+Onboarding creates "Pay at pickup" (installed) and, with Complete Setup, "Stripe" (not installed).
+
+## Install Stripe
+
+<Steps>
+<Step>
+### Set the environment
+`NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`. Use test keys while you try it.
+</Step>
+<Step>
+### Install the provider
+In the Payment providers panel, press Install on Stripe.
+</Step>
+<Step>
+### Register the webhook
+In Stripe, add `https://<your-host>/api/payment-webhooks/<providerId>`.
+</Step>
+</Steps>
+
+Provider records can be edited with the Edit drawer. A provider with payment history cannot be deleted.
+
+## Checkout flow
+
+`initiatePharmacyPaymentSession` creates a `PaymentSession` for the cart. `submitPharmacyOrder` commits the order. Card payments must be `captured` or `succeeded` with the provider first. Pay-at-pickup orders commit with a pending payment. Delivery orders are paid online and do not offer pay at pickup.
+
+## Cash and tax policy
+
+`recordPharmacyCashPolicy(organizationId, taxRateBps, policyReference, reason, attested)` sets the sales-tax rate in basis points (0 to 10000) and the policy reference. POS sales and prescription dispensing use it. Online cart tax is 0.
+
+## Webhooks
+
+`POST /api/payment-webhooks/[providerId]` limits the body to 1 MB and passes the raw body to `handlePaymentProviderWebhook`. The mutation checks the provider signature, then the amount and currency against the stored payment, and handles succeeded and refunded events. Each event is stored as a `PaymentWebhookEvent` (`received`, `processed`, `ignored`, `failed`).
+
+## Reconcile sessions
+
+Sessions that end up paid without an order (`settled_unordered`), or that need a refund (`compensation_pending`), appear under Needs reconciliation. `reconcilePharmacyPaymentSession` resolves them. Session status flows: `pending` → `requires_action` → `authorized` or `captured` → `settled_unordered` → `compensation_pending` → `compensated`, or `failed` / `cancelled`.
+
+## Ledger
+
+`Payment` rows: `amount`, `status` (`pending`, `authorized`, `captured`, `refund_pending`, `refunded`, `failed`), `tenderMethod` (provider or cash), cash received and change, provider, and session. Refunds are made from the order page.

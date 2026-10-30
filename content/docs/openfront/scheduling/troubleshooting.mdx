@@ -1,0 +1,22 @@
+---
+title: Troubleshooting
+description: Common messages when booking, paying, and operating Scheduling.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| "Booking hold not found. Please choose the time again." | The hold expired; pick a slot again |
+| "A booking cannot be confirmed after it has ended." | Cancel or decline instead |
+| "A booking cannot be completed before it ends." | Wait until the end time |
+| "A booking cannot be marked no-show before it starts." | Wait until the start time |
+| "Complete payment before rescheduling this booking, or cancel and choose a new time." | Collect payment first |
+| "Changes to this booking are no longer allowed this close to its start" | Use cancel via the operator |
+| "A payment provider with existing sessions cannot change adapters." | Create a new provider |
+| "A pending invitation already exists; resend or revoke it instead." | Use resend or revoke |
+| "At least one valid embed origin is required before publishing." | Add an HTTPS origin |
+| "Calendar OAuth state is invalid or expired." | Restart the connect flow |
+| "CALENDAR_OAUTH_REDIRECT_URI is required in production." | Set it to `/api/calendar/callback` |
+| "Choose a password of 12–128 characters." | Use a longer password |
+| Reminders and webhooks never send | Check SMTP and the outbox worker; retry dead-lettered rows |
+| Conferencing connection `needs_reauth` | Enter a fresh token with `configureConferencingConnection` |

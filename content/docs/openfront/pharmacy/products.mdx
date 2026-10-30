@@ -1,0 +1,31 @@
+---
+title: Products and drug references
+description: OTC and prescription products, NDC drug references, categories, pricing, and online and POS availability.
+icon: Package
+---
+
+## Products
+
+`/dashboard/platform/products` is the catalog (`pharmacyCatalogQueue`). The detail page `/dashboard/platform/products/[id]` shows stock by lot, publish and archive actions, the online and POS switches, and an edit drawer.
+
+| Field | Values |
+|---|---|
+| `status` | `draft`, `published`, `archived` |
+| `category` | `prescription`, `otc_medication`, `first_aid`, `wellness`, `personal_care`, `medical_supply`, `allergy`, `cold_and_flu`, `digestive_health`, `vitamins`, `health_devices` |
+| `prescriptionRequirement` | `none`, `prescription_required`, `pharmacist_review_required` |
+| `priceAmount`, `currencyCode` | Price in minor units |
+| `taxable`, `onlineAvailable`, `posAvailable`, `coldChainRequired` | Switches |
+| `sku`, `handle`, `imageUrl`, `description` | Identification |
+| `drugReference` | Required for prescription products |
+
+Only `none` products that are published and online-available appear in the public catalog and carts. Changing the prescription requirement or drug reference is blocked while open prescriptions use the product. A product that is referenced cannot be deleted.
+
+## Drug references
+
+`/dashboard/platform/drug-references` and `/[id]` hold the NDC entries prescription products dispense. Fields: `ndc11` (unique, 11 digits), proprietary and generic name, strength, dosage form, route, labeler, `controlledSchedule`, and `marketingStatus`.
+
+Identity locks after review. The schedule and marketing status are set only by `recordPharmacyDrugReferenceReview`, which needs the source name, version, and reference. Dispensing needs a review with an `active` marketing status and schedule `none`. Entries with a controlled schedule (`schedule_i` to `schedule_v`) are recorded but cannot be taken through intake or dispensing.
+
+## Suppliers
+
+`/dashboard/platform/suppliers` and `/[id]` list wholesalers (name, account reference) and the lots received from them. Status: `pending_validation`, `active`, `suspended`. Needs `canManageInventory`.

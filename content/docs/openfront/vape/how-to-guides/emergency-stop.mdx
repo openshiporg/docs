@@ -1,0 +1,25 @@
+---
+title: Stop sales
+description: Halt regulated checkout immediately.
+icon: OctagonX
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open Compliance Center
+Needs `canOperateComplianceKillSwitch`.
+</Step>
+<Step>
+### Stop
+Press Emergency stop and enter a reason of 10 to 500 characters.
+</Step>
+<Step>
+### Review in-flight orders
+The event `merchant.emergency_stop` records that review is needed; check recent orders in the Compliance Ledger.
+</Step>
+<Step>
+### Resume
+After review, Resume sales on the merchant profile.
+</Step></Steps>

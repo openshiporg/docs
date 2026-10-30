@@ -1,0 +1,62 @@
+---
+title: Regulated checkout
+description: How the release gate, the decision engine, and per-cart evidence decide whether an order can be placed.
+icon: ShieldCheck
+---
+
+Every cart containing a regulated product (`Product.regulatedCommerceRequired`, default true) is evaluated by the decision engine in `features/regulated-commerce/core/decision-engine.ts`. A decision is `allow`, `deny`, or `manual_review`, stored as an immutable `ComplianceDecision` with a snapshot and reason codes, and valid for at most five minutes.
+
+## Two layers
+
+1. **Release gate** (`release-gate.ts`): store-wide. Runs on every cart, payment, and checkout purpose. If it fails, checkout reports "Checkout isn't available for this store yet."
+2. **Per-cart evidence:** the cart's destination, products, licences, and provider evidence.
+
+### Release gate blockers
+
+| Code | Fix |
+|---|---|
+| `STORE_POLICIES_REQUIRED` | [Store settings](/docs/openfront/vape/store-settings): legal name, at least one licence line, and all five policies |
+| `ACTIVE_MERCHANT_PROFILE_REQUIRED` | Activate a [merchant profile](/docs/openfront/vape/merchant-profiles) with PACT registration, reference, and digest |
+| `KILL_SWITCH_ENABLED` | Turn the kill switch off on an active profile |
+| `LAUNCH_JURISDICTION_REQUIRED` | Link at least one active [jurisdiction](/docs/openfront/vape/jurisdictions) to the profile |
+
+### Per-cart denial codes
+
+Examples: `MERCHANT_NOT_ACTIVE`, `MERCHANT_KILL_SWITCH_ACTIVE`, `PACT_REGISTRATION_NOT_RECORDED`, `DESTINATION_JURISDICTION_UNRESOLVED`, `DESTINATION_NOT_IN_MERCHANT_LAUNCH_SCOPE`, `GENERIC_TAX_RATE_MUST_BE_ZERO_FOR_REGULATED_CART`, `ACTIVE_POLICY_REQUIRED`, `CATEGORY_NOT_ENABLED_FOR_MERCHANT`, `MARKETING_REVIEW_REQUIRED`, `PRODUCT_CLASSIFICATION_REQUIRED`, `FEDERAL_AUTHORIZATION_REQUIRED`, `MERCHANT_LICENSE_REQUIRED`, plus rule codes such as `CATEGORY_PROHIBITED`, `FLAVOR_PROHIBITED`, `QUANTITY_LIMIT_EXCEEDED`, `DESTINATION_AUTHORIZATION_REQUIRED`, and `REQUIRED_PACKAGE_MARKING_MISSING`. The storefront turns these into customer-readable reasons; the [Compliance Ledger](/docs/openfront/vape/compliance-ledger) shows the raw codes.
+
+## Evidence a regulated cart needs
+
+| Evidence | List | Requirement |
+|---|---|---|
+| Identity and age | `AgeVerificationAttempt` | `passed`, age at or above threshold (21+), `addressMatch=matched`, current, same cart fingerprint |
+| Tax | `RegulatedTaxQuote` | `committed`: sales, excise, and local fee amounts; the region's generic tax rate must be 0 |
+| Carrier | `CarrierEligibilityDecision` | `allow` with `adultSignature=true`, exact rate and package digest |
+| Payment | `ProviderApproval` (payment) | active, bound to the `PaymentProvider`, covering the destination jurisdiction and categories |
+
+These records are written by provider adapter code (`recordVerifiedIdentityResult`, `recordRegulatedTaxQuote`, `commitRegulatedTaxQuote`, `recordCarrierEligibility` in `features/keystone/regulated`) after the adapter verifies the provider's signature. They have no GraphQL entry point, and the self-attested age gate does not count. Adapter contracts are in [Integrations](/docs/openfront/vape/integrations). Until a provider adapter records this evidence, regulated carts are denied at payment and checkout.
+
+## Checkout sequence
+
+| Step | Operation | Effect |
+|---|---|---|
+| Bag | `createActiveCart`, `updateActiveCartLineItem` | each variant must pass publication evidence checks; invalidates evidence |
+| Address | `updateActiveCart` | destination `US-<state>` resolves the jurisdiction |
+| Shipping | `addActiveCartShippingMethod` | needs an allowed carrier decision for that option |
+| Discount | `addDiscountToActiveCart`, `removeDiscountFromActiveCart` | invalidates evidence |
+| Payment | `createActiveCartPaymentSessions`, `setActiveCartPaymentSession`, `initiatePaymentSession` | runs the `payment` purpose |
+| Pre-check | `evaluateActiveCartCompliance` | read; persists only when asked |
+| Place order | `completeActiveCart` | persists the `checkout` decision, creates the order, binds evidence to it |
+
+Any change to lines, address, shipping, discounts, or payment revokes earlier evidence for the cart. Clients must re-evaluate instead of caching a decision.
+
+## Fulfillment
+
+Manual fulfillment is refused for regulated orders ("Manual fulfillment is disabled for regulated orders"). A label needs a fresh `fulfillment` decision that allows, an order-bound adult-signature `CarrierEligibilityDecision` with the matching rate id and package digest, and an active carrier `ProviderApproval` bound to the `ShippingProvider`. Rates are limited to the exact approved rate.
+
+## Returns
+
+`processReturnRefund` refunds only after the payment provider confirms the exact amount and currency; manual tender is refused. For regulated orders it also writes the event `regulated.return_refunded` with reason `TAX_AND_REPORTING_REVERSAL_REVIEW_REQUIRED`. The order page shows a banner for it so staff can review the tax and reporting reversal.
+
+## Emergency stop
+
+`stopRegulatedCommerce(profileId, reason)` (reason 10–500 characters) sets the kill switch, moves the profile from `active` to `suspended`, revokes open decisions and unbound carrier allows, and writes `merchant.emergency_stop` with `inFlightReviewRequired`. See [Compliance Center](/docs/openfront/vape/compliance-center).

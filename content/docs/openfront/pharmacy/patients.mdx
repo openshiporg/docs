@@ -1,0 +1,26 @@
+---
+title: Patients
+description: Patient directory, identity evidence, contact details, allergies, medications, consents, and portal account link.
+icon: Users
+---
+
+Pages: `/dashboard/platform/patients`, `/dashboard/platform/patients/create`, and `/dashboard/platform/patients/[id]`. Data comes from `pharmacyPatientDirectory` and `pharmacyPatientSafeView`.
+
+## Create a patient
+
+Open Create patient and enter the patient number, first and last name, date of birth, email, phone, preferred contact method (`phone`, `sms`, `email`, `portal`, or `none`), and address. Record the identity evidence: the method and a reference. Add a reason and attest. The command is `createPharmacyPatient`. A new patient gets identity status `confirmed` when you attest the match; the other states are `unverified` and `rejected`.
+
+## Patient detail
+
+- **Contact:** `updatePharmacyPatientContact` edits email, phone, address, and preferred contact method.
+- **Allergies:** `recordPharmacyPatientAllergy` takes the allergen, reaction, and severity.
+- **Medications:** `recordPharmacyPatientMedication` takes the name, directions, and status.
+- **None known:** `recordPharmacyPatientNoneKnown` records an explicit "no known allergies" or "no current medications" entry. Clinical review needs either entries or this record.
+- **Consents:** privacy, communications, transfer, and delivery consents collected at checkout and transfer.
+- **Account link:** `linkPharmacyPatientAccount` connects the patient to a storefront `User` so they can request refills. `pharmacyPatientAccountCandidates` lists candidates.
+
+Statuses: `active`, `inactive`, `archived`.
+
+## Private data
+
+Identity and clinical details need `canViewPatientPrivateData`. Without it the page shows the safe projection only.

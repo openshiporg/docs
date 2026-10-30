@@ -4,18 +4,12 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js matching `package.json` `engines` (`>=20.9.0`); the README recommends Node.js 22 for Next.js 16.
 - npm (the repository ships a `package-lock.json`).
 - A PostgreSQL database you are allowed to migrate.
 - S3-compatible object storage for product and claim images in production.
-
-## Live demo
-
-A hosted demo runs at [vape.openship.org](https://vape.openship.org). It is a demonstration instance with demo data; it does not represent a licensed retailer, and regulated checkout is gated there as it is in source.
 
 ## Install
 
@@ -48,6 +42,7 @@ Optional settings read by the code:
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Transactional email and links in emails |
 | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment adapter |
 | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment adapter |
+| `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `AUTHORIZENET_ENV`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY` | Authorize.net payment adapter (`AUTHORIZENET_ENV=production` for live) |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
 | `NEXT_PUBLIC_DEFAULT_REGION` | Default storefront country code |
 | `HIDE_OPENFRONT_BRANDING` | Hide Openfront branding in the storefront |
@@ -65,9 +60,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database; it rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
 
-<Callout type="warn">
-`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 
@@ -78,29 +71,15 @@ Once running:
 ## First operator and onboarding
 
 1. Visit `/dashboard/init` on an empty database to create the first administrator, then sign in.
-2. Open the onboarding dialog from the dashboard. Setup seeds a store, a `us` region (tax rate 0), currency, country, three shipping options, four categories, three collections, ten draft products, a Manual payment provider, a manual fulfillment provider, and, if your role has `canManageCompliance`, a draft `RegulatedMerchantProfile` with the kill switch on.
+2. Open the onboarding dialog from the dashboard. Setup seeds a store, a `us` region (tax rate 0), currency, country, three shipping options, four categories, three collections, ten draft products, Manual and Authorize.net payment providers, a manual fulfillment provider, and, if your role has `canManageCompliance`, a draft `RegulatedMerchantProfile` with the kill switch on.
 3. Fill in store business details and the five required policies (shipping, returns, age verification, privacy, terms) at `/dashboard/platform/store`.
 4. Work through the blockers listed on `/dashboard/platform/overview` and `/dashboard/platform/compliance`: activate a merchant profile, add launch jurisdictions and an active signed rule set, classify and authorize variants, and record provider approvals.
 
-Onboarding does not enable regulated transactions, and the seeded Manual provider is refused by storefront checkout. See [Architecture and workflows](/docs/openfront/vape/architecture-workflows) for the full go-live sequence.
+Onboarding leaves the kill switch on, so sales stay closed until you finish the checklist in [Go live](/docs/openfront/vape/how-to-guides/go-live). Storefront checkout refuses the Manual payment provider.
 
-## Deployment
+## Next steps
 
-Scripts in `package.json`:
-
-| Script | Effect |
-|---|---|
-| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
-| `npm run migrate` / `npm run release:migrate` | `prisma migrate deploy` |
-| `npm start` | `next start` |
-| `npm run lint` | ESLint |
-
-A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
-
-```bash
-npm run build
-npm run migrate
-npm start
-```
-
-The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also includes a Vercel import button. Either way, provision PostgreSQL, S3-compatible storage, SMTP, and any payment or shipping credentials yourself, and share the same database, `SESSION_SECRET`, and storage across all application processes. There is no persistent background worker in the source; webhook redelivery is triggered through the `retryWebhookDeliveries` mutation.
+- [Deployment](/docs/openfront/vape/deployment)
+- [Dashboard overview](/docs/openfront/vape/overview)
+- [Regulated checkout](/docs/openfront/vape/regulated-checkout)
+- [Go live](/docs/openfront/vape/how-to-guides/go-live)

@@ -1,0 +1,33 @@
+---
+title: Integrations
+description: S3 images, SMTP, RSS and sitemap, share links, destinations, and AI completion.
+icon: Unplug
+---
+
+## Image storage (S3)
+
+Keystone storage `my_images` reads `S3_BUCKET_NAME`, `S3_REGION` (default `auto`), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_ENDPOINT`. Reads use presigned URLs with a 5000-second expiry; `storageapi.dev` endpoints use virtual-hosted addressing and others use path style. Profile images, item covers, and body images are `MediaAsset` rows owned by the site. Markdown stores `/media/[id]`, which redirects to a fresh URL. Uploads need `canUseStudio` and an owned site.
+
+## Password-reset email (SMTP)
+
+`features/keystone/lib/mail.ts` uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`. The reset link base is `SMTP_STORE_LINK` or `NEXT_PUBLIC_APP_URL`.
+
+## Public origin, RSS, and sitemap
+
+`publicSiteOrigin()` reads `NEXT_PUBLIC_APP_URL` or `https://` plus `RAILWAY_PUBLIC_DOMAIN`. It must be an origin with no path, and HTTPS in production. It feeds `/feeds/[handle]`, `/sitemap.xml`, and `/robots.txt`.
+
+## Share links
+
+The item editor links to the X and Threads post-intent pages and offers copy link. Nothing is stored.
+
+## External destinations
+
+Destinations record consent for X, Instagram, and Threads per item revision. A request creates a `Publication` with `not_configured` status and a `PublishJob`. Posting to a network requires a connector, which is not part of the source. Revoking a destination blocks new requests and does not remove anything already posted.
+
+## Payments
+
+Stripe, PayPal, and manual adapters power tips and memberships. See [Payment providers](/docs/openfront/social/payment-providers).
+
+## AI completion
+
+`/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`, or keys supplied in the browser) and needs a dashboard session. The MCP transport route `/api/mcp-transport/[transport]` returns 404, so no MCP tools are available.

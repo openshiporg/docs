@@ -1,0 +1,18 @@
+---
+title: Troubleshooting
+description: Common setup and access problems.
+icon: LifeBuoy
+---
+
+| Symptom | Fix |
+|---|---|
+| Every dashboard URL redirects to `/dashboard/init` | No users exist. Create the first user |
+| Signed in but sent to `/dashboard/no-access` | The user's role lacks `canAccessDashboard`, or they have no role |
+| Cannot see other people or their todos | Needs `canSeeOtherPeople` or `canManageAllTodos` |
+| Cannot create a todo | Needs `canCreateTodos` |
+| Image uploads fail | Set all five `S3_*` variables |
+| Password reset says email is not available | Set `SMTP_HOST` |
+| Reset link has no host | Set `SMTP_STORE_LINK` |
+| Database errors at startup | `DATABASE_URL` must be a PostgreSQL URL |
+| AI chat unavailable | Set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or enter keys in chat settings |
+| Sign-up page rejects | Set `PUBLIC_SIGNUPS_ALLOWED=true` |

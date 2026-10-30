@@ -1,17 +1,14 @@
 ---
 title: Openfront Rideshare
-description: Self-hosted ride booking and fleet operations for independent drivers and fleets, with manual dispatch, trip lifecycle, safety, support, and manual payment records.
+description: Self-hosted ride booking and fleet operations for independent drivers and fleets, with dispatch, trip lifecycle, safety, support, and payments.
 icon: Car
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-Openfront Rideshare is a self-hostable ride-booking and fleet-operations application. Riders browse a fleet's ride services, get a priced quote, request a ride, and follow the trip on a status page. Fleet operators set up service areas, ride services, and fare versions; onboard drivers and vehicles with compliance documents and eligibility reviews; dispatch requests to drivers by hand; move trips through their lifecycle; and handle cancellations, messages, reviews, support cases, safety incidents, and manually recorded payments and refunds.
+Openfront Rideshare is a self-hostable ride-booking and fleet-operations application. Riders browse a fleet's ride services, get a priced quote, request a ride, and follow the trip on a status page. Fleet operators set up service areas, ride services, and fare versions; onboard drivers and vehicles with compliance documents and eligibility reviews; dispatch requests to drivers by hand; move trips through their lifecycle; and handle cancellations, messages, reviews, support cases, safety incidents, and payments and refunds.
 
-<Callout type="warn">
-Dispatch is manual: an operator chooses the driver and vehicle for each request. Route distance and duration come from a built-in estimate, not a mapping provider. The only installed payment adapter is manual and does not move money. Driver payouts are modeled in the schema but have no workflow. See [Current limitations](/docs/openfront/rideshare/limitations).
-</Callout>
+Operators choose the driver and vehicle for each request. Route distance and duration are estimated from the pickup and drop-off. Riders can pay by card through Stripe Checkout, or the fleet records payment on the trip.
 
 ## Who it is for
 
@@ -25,7 +22,7 @@ Dispatch is manual: an operator chooses the driver and vehicle for each request.
 - **Custom GraphQL:** named queries and mutations in `features/keystone/mutations/**` for quoting, requesting, dispatching, trip transitions, cancellations, payments, fleet setup, and onboarding. Generic create and delete are closed on tenant lists, so records are created through these commands.
 - **Operator surfaces:** `features/platform/**` mounted at `/dashboard/platform/*` for dispatch, my driving, trips, services and fares, drivers, vehicles, safety and support, reviews, finance, team, and settings. The shared Keystone admin shell lives in `features/dashboard`.
 - **Storefront:** `features/storefront/**` serving `/`, `/book`, `/rides/[confirmationCode]`, and rider account pages under `/account`.
-- **Onboarding:** a dashboard onboarding dialog that calls `bootstrapRideshare` with a `minimal` or `full` demo template, plus a custom setup path built from the fleet setup mutations.
+- **Onboarding:** a dashboard onboarding dialog that calls `bootstrapRideshare` with a `minimal` or `full` starter template, plus a custom setup path built from the fleet setup mutations.
 
 ## Ownership and tenancy
 
@@ -44,12 +41,15 @@ A `viewer` membership grants none of these capabilities. A global admin role (`c
 Riders are `User` records, optionally with a `RiderProfile`. Account riders own requests through `RideRequest.rider`. Guests hold a signed request proof in the browser; private trip data is reached with that proof or a trip token, never with a confirmation code alone.
 
 <Cards>
-  <Card title="Getting started" href="/docs/openfront/rideshare/getting-started" description="Requirements, environment, migrations, onboarding, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/rideshare/architecture-workflows" description="Data model, dispatch and trip lifecycles, GraphQL operations, and access control." />
-  <Card title="External dashboards" href="/docs/openfront/rideshare/external-dashboard" description="Operator pages and the skill for building a custom dashboard." />
-  <Card title="External storefronts" href="/docs/openfront/rideshare/external-storefront" description="Rider routes, journeys, and the skill for building a custom storefront." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/rideshare/integrations-boundaries" description="Payment, mapping, notification, storage, email, AI, and MCP boundaries." />
-  <Card title="Current limitations" href="/docs/openfront/rideshare/limitations" description="What the current source does not do." />
+  <Card title="Getting started" href="/docs/openfront/rideshare/getting-started" description="Requirements, environment, migrations, and onboarding." />
+  <Card title="Dispatch" href="/docs/openfront/rideshare/dispatch" description="Offer requests to eligible drivers and vehicles." />
+  <Card title="Trips" href="/docs/openfront/rideshare/trips" description="Lifecycle, cancellation, payments, messages." />
+  <Card title="Services and fares" href="/docs/openfront/rideshare/services-fares" description="Areas, ride services, and fare rule versions." />
+  <Card title="Drivers and vehicles" href="/docs/openfront/rideshare/drivers" description="Onboarding, documents, eligibility, and availability." />
+  <Card title="Payment providers" href="/docs/openfront/rideshare/payment-providers" description="Stripe Checkout and manual payments." />
+  <Card title="Rider storefront" href="/docs/openfront/rideshare/storefront" description="Book, track, pay, and review a ride." />
+  <Card title="How-to guides" href="/docs/openfront/rideshare/how-to-guides/set-up-fleet" description="Task walkthroughs for fleets and dispatchers." />
+  <Card title="API reference" href="/docs/openfront/rideshare/api-reference" description="Named GraphQL operations." />
 </Cards>
 
 The application uses Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreSQL.

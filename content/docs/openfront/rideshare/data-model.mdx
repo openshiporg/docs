@@ -1,0 +1,40 @@
+---
+title: Data model
+description: The Keystone lists in Openfront Rideshare and how they relate.
+icon: Database
+---
+
+38 lists in `features/keystone/models`. Create and delete are closed on tenant lists; records are created through named mutations. Money is integer minor units.
+
+| Domain | Lists |
+|---|---|
+| Identity | `User`, `Role`, `Fleet`, `FleetMembership`, `DriverProfile`, `RiderProfile`, `FleetBrandingChange` |
+| Operations | `Vehicle`, `ComplianceDocument`, `Policy`, `PolicyEvaluation`, `ProviderConnection` |
+| Service | `ServiceArea`, `RideService`, `AvailabilityRule`, `AvailabilityException`, `FareRule`, `RideQuote` |
+| Ride | `RideRequest`, `RequestCancellationCommand`, `MatchOffer`, `Trip`, `TripEvent`, `LocationEvent`, `Cancellation` |
+| Safety | `SafetyIncident`, `SupportCase`, `Conversation`, `Message`, `Review` |
+| Finance | `PaymentProvider`, `Payment`, `Refund`, `PaymentObservation`, `LedgerEntry`, `Payout` |
+| Integration | `Notification`, `MarketplaceRegistration` |
+
+## Relationships
+
+- `Fleet` has memberships, drivers, vehicles, service areas, services, fare rules, rides, trips, policies, provider connections, and a marketplace registration.
+- `RideService` links to many `ServiceArea` rows; a `FareRule` prices one service in one area.
+- `RideQuote` snapshots the fare rule and links to one `RideRequest`.
+- `RideRequest` has many `MatchOffer` rows and at most one `Trip`.
+- An accepted `MatchOffer` creates the `Trip`, which links rider, driver, vehicle, `TripEvent`, `LocationEvent`, `Cancellation`, `Payment`, `LedgerEntry`, `SafetyIncident`, `SupportCase`, `Conversation`, and `Review`.
+- `Payment` has many `Refund`, `LedgerEntry`, and `PaymentObservation` rows.
+- `DriverProfile` and `Vehicle` have `ComplianceDocument` and `PolicyEvaluation` rows; vehicles link to many drivers.
+
+## Key statuses
+
+| List | Status values |
+|---|---|
+| `Fleet` | `setup`, `active`, `paused` |
+| `DriverProfile` | `applicant`, `pending_review`, `active`, `paused`, `ineligible`, `offboarded` |
+| `Vehicle` | `pending_review`, `active`, `maintenance`, `suspended`, `retired` |
+| `RideRequest` | `requested`, `matching`, `matched`, `cancelled`, `expired` |
+| `MatchOffer` | `offered`, `accepted`, `declined`, `expired`, `withdrawn` |
+| `Trip` | `driver_assigned`, `driver_en_route`, `driver_arrived`, `in_progress`, `completed`, `cancelled`, `no_show` |
+| `Payment` | `pending`, `authorized`, `captured`, `failed`, `partially_refunded`, `refunded`, `cancelled` |
+| `RideQuote` | `active`, `accepted`, `expired`, `void` |

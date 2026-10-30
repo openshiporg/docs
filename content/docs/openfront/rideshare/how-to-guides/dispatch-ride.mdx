@@ -1,0 +1,32 @@
+---
+title: Dispatch a ride
+description: Offer a request to an eligible driver and vehicle and get a trip.
+icon: Radio
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Confirm the fleet is dispatching
+Operations mode must be `manual`. Otherwise Dispatch shows a notice.
+</Step>
+<Step>
+### Open the request
+On Dispatch select the oldest open request. Check passengers, accessibility needs, and the scheduled time.
+</Step>
+<Step>
+### Pick a candidate
+Search the candidate list. Choose a driver and a vehicle that fits.
+</Step>
+<Step>
+### Send the offer
+Set how long the driver has to respond and send. The driver moves to `offered`.
+</Step>
+<Step>
+### Watch the response
+When the driver accepts, a trip is created with a confirmation code. If they decline or the offer expires, send it to another driver.
+</Step>
+</Steps>
+
+See [Dispatch](/docs/openfront/rideshare/dispatch).

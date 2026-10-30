@@ -1,0 +1,15 @@
+---
+title: Wagers
+description: Look up wagers, accepted terms, acceptance decisions, and cash-out offers.
+icon: ReceiptText
+---
+
+Needs `canManageSportsbook`. Routes: `/dashboard/platform/wagers`, `/wagers/[wagerId]`.
+
+Wager structures: `STRAIGHT`, `PARLAY`, `SYSTEM`, `ROUND_ROBIN`, `TEASER`, `EACH_WAY`. The detail page shows legs and parts, the quote and its immutable `CustomerQuoteTerms`, the `AcceptanceDecision`, status, cash-out offers and acceptance, exposure allocations, and tax.
+
+## Acceptance gates
+
+Tenant and player active, KYC approved, location allowed, not self-excluded or restricted, within player limits, market open, price not stale, funds available, liability within the cap. A refusal stores a code such as `KYC_REQUIRED`, `GEO_REQUIRED`, `STALE_PRICE`, or `LIMIT_EXCEEDED`.
+
+Press Open investigation (`openWagerInvestigation`) to create an `IntegrityCase` for a wager.

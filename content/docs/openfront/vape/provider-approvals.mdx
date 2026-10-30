@@ -1,0 +1,15 @@
+---
+title: Provider approvals
+description: Record which identity, payment, tax, registry, and carrier providers are approved for the merchant.
+icon: Plug
+---
+
+Routes: `/dashboard/platform/provider-approvals` and `/[id]`. Needs `canManageCompliance`.
+
+Filter by purpose and status. Edit until active; then Submit, Activate, Suspend, Revoke, or Expire.
+
+Fields: `purpose` (identity, payment, tax, registry, carrier), `providerCode`, `coveredCategories`, `coveredJurisdictionCodes`, `capabilities`, `approvalReference`, `evidenceDigest`, `effectiveAt`, `expiresAt`, `validatedAt`, and the profile. Payment approvals bind to a `PaymentProvider` and carrier approvals to a `ShippingProvider`.
+
+Lifecycle: `unconfigured` → `review` → `active` → `suspended` / `expired` / `revoked`. Active needs a profile, bounded validated evidence, non-empty categories, jurisdictions, and capabilities, and a bound provider for payment or carrier.
+
+An approval records the decision you took after your own due diligence; the checkout engine reads it as one condition of an allow.

@@ -1,0 +1,32 @@
+---
+title: Storefront
+description: "The rider booking site: browse services, get a quote, request, track, pay, and review a ride."
+icon: Store
+---
+
+The rider site is served from the app root. Routes are listed on [External storefronts](/docs/openfront/rideshare/external-storefront).
+
+## Book a ride
+
+1. Open `/` or `/book?service=ID`. The page lists active ride services with the fleet logo and colors.
+2. Choose a service, enter pickup and drop-off, passengers, accessibility needs (wheelchair), and optionally a scheduled time. The scheduled time must respect the service's `advanceBookingMinutes`.
+3. `marketplaceRideshareQuote` returns the fare breakdown, cancellation and no-show fees, the estimate, and a `quoteProof` valid for 10 minutes.
+4. Request the ride with `requestRide`. The receipt includes the request number and a `requestProof`, which the browser keeps.
+
+## Track the ride
+
+`/rides/[confirmationCode]` shows status, timeline, fare, payments, and reviews. Guests see it with their request proof. After a driver accepts, the page uses the trip token. A guest can cancel a request with `cancelRideRequest` before a driver is assigned; after assignment `cancelRide` previews the fee first.
+
+## Account
+
+`/account/signup` is available when the fleet has rider accounts `open` or `PUBLIC_SIGNUPS_ALLOWED` is `true`. `/account/rides` lists requests and trips (`myRideshareRequests`).
+
+## After the ride (signed-in riders)
+
+- **Pay by card** when Stripe is installed
+- **Rate** with `submitTripReview`
+- **Get help** with `openSupportCase`
+- **Report a safety issue** with `reportSafetyIncident`
+- **Message the driver** with `sendTripMessage`
+
+Every command sends an `idempotencyKey`, and the browser stores the original intent so a lost response is recovered with the same key.

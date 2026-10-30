@@ -4,7 +4,6 @@ description: Self-hosted pharmacy storefront and operations app with prescriptio
 icon: Pill
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Pharmacy is a self-hosted pharmacy app built on Next.js, Keystone 6, GraphQL, Prisma, and PostgreSQL. It has two parts:
@@ -12,17 +11,13 @@ Openfront Pharmacy is a self-hosted pharmacy app built on Next.js, Keystone 6, G
 - A public storefront. Customers pick a location, browse and buy over-the-counter (OTC) products, check an order's status, request refills, and send online registration, transfer, and new-prescription requests.
 - An operator dashboard at `/dashboard`. Staff handle patients, prescribers, prescription intake and review, clinical safety review, fills, dispensing with labels, refills, transfers, products, drug references, suppliers, inventory lots, recalls, orders, point of sale, payments, staff, locations, integrations, and the audit log.
 
-Live demo: [pharmacy.openship.org](https://pharmacy.openship.org). Source: [github.com/openshiporg/openfront-pharmacy](https://github.com/openshiporg/openfront-pharmacy).
-
-<Callout type="warn">
-The software does not license a pharmacy and does not give anyone pharmacist, prescribing, or dispensing authority. It does not certify legal, privacy, security, payment, or clinical compliance. Each deployment needs its own legal, clinical, privacy, security, and provider review.
-</Callout>
+Live site: [pharmacy.openship.org](https://pharmacy.openship.org). Source: [github.com/openshiporg/openfront-pharmacy](https://github.com/openshiporg/openfront-pharmacy).
 
 ## Human authority
 
 Clinical, inventory, and money records cannot be created or edited through the generic GraphQL API. They change only through named commands. Most of those commands need a signed-in user with the right permission and location scope, a written reason, and an explicit attestation. Each one writes a `HumanApproval`, an `AuditEvent`, and an `OutboxEvent` in the same transaction.
 
-The software records these decisions. It does not make them. A pharmacist still decides whether a prescription is valid, whether it is safe for the patient, and whether to dispense it.
+The pharmacist decides whether a prescription is valid, whether it is safe for the patient, and whether to dispense it. Openfront Pharmacy records that decision with the person who made it, their reason, and the evidence behind it.
 
 ## Tenancy
 
@@ -34,10 +29,13 @@ The software records these decisions. It does not make them. A pharmacist still 
 Operator queries filter by the caller's active memberships. The storefront finds its organization from the request host, matching it against `storefrontKey`, `storefrontHost`, or `slug`. If nothing matches and only one organization is active, that organization is used.
 
 <Cards>
-  <Card title="Getting started" href="/docs/openfront/pharmacy/getting-started" description="Clone, configure, migrate, create the first user, run onboarding, and deploy." />
-  <Card title="Architecture and workflows" href="/docs/openfront/pharmacy/architecture-workflows" description="Models, lifecycles, and the named GraphQL queries and mutations." />
-  <Card title="External dashboards" href="/docs/openfront/pharmacy/external-dashboard" description="Current platform pages and the custom dashboard skill." />
-  <Card title="External storefronts" href="/docs/openfront/pharmacy/external-storefront" description="Current storefront routes and the custom storefront skill." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/pharmacy/integrations-boundaries" description="Payments, eRx and insurance adapters, webhooks, outbox, and AI." />
-  <Card title="Current limitations" href="/docs/openfront/pharmacy/limitations" description="What the current code does not do." />
+  <Card title="Getting started" href="/docs/openfront/pharmacy/getting-started" description="Clone, configure, migrate, create the first user, and run onboarding." />
+  <Card title="Deployment" href="/docs/openfront/pharmacy/deployment" description="Build, migrate, and host the app." />
+  <Card title="Prescriptions" href="/docs/openfront/pharmacy/prescriptions" description="Intake, safety review, pharmacist review, fill, and dispense." />
+  <Card title="Inventory" href="/docs/openfront/pharmacy/inventory" description="Lots, receiving, adjustments, and suppliers." />
+  <Card title="Recalls" href="/docs/openfront/pharmacy/recalls" description="Quarantine lots and track patient outreach." />
+  <Card title="Storefront" href="/docs/openfront/pharmacy/storefront" description="OTC catalog, cart, checkout, order status, and the patient account." />
+  <Card title="Payment providers" href="/docs/openfront/pharmacy/payment-providers" description="Stripe, pay at pickup, and cash." />
+  <Card title="How-to guides" href="/docs/openfront/pharmacy/how-to-guides/prepare-to-dispense" description="Task walkthroughs for the pharmacy counter." />
+  <Card title="API reference" href="/docs/openfront/pharmacy/api-reference" description="The named GraphQL queries and mutations." />
 </Cards>

@@ -1,0 +1,19 @@
+---
+title: Jurisdictions and rule sets
+description: Legal places you ship to and the signed rule sets that govern each.
+icon: Landmark
+---
+
+Routes: `/dashboard/platform/jurisdictions` and `/[id]`. Needs `canManageCompliance`.
+
+## Jurisdictions
+
+A `Jurisdiction` has a unique `code` such as `US-CA` (matched as country iso2 plus province from the shipping address), `name`, `level` (`country`, `state`, `county`, `municipality`, `postal`), `postalScope`, `authoritySources`, and a parent. `draft` → `active` → `retired`; active needs at least one authority source.
+
+## Rule sets
+
+A `RegulatedRuleSet` is a signed policy version per jurisdiction: `packName`, `version`, unique `policyHash`, `authorityCitations`, `rules` (JSON), `effectiveAt`, `expiresAt`, `approvedAt`, `signatureDigest`, `reviewedBy`. The structured editor builds `rules` and the server validates them (`core/policy-validation.ts`).
+
+Lifecycle: `draft` → `approved` → `active` → `retired` or `emergency_disabled`. Active needs a reviewer, `approvedAt`, a SHA-256 signature, citations, and valid rules. Approved and active sets are immutable; use New version. The engine needs exactly one active rule set per destination.
+
+The bundled `us-ends` policy pack (`0.1.0-draft`) supplies rule vocabulary and federal templates (minimum age 21, adult signature, package marking). No jurisdiction is active by default; your counsel decides the content.

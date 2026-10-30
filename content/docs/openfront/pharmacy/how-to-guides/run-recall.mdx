@@ -1,0 +1,32 @@
+---
+title: Run a recall
+description: Quarantine recalled lots, contact exposed patients, dispose of stock, and close the recall.
+icon: TriangleAlert
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the recall
+`/dashboard/platform/recalls/open`. Enter the recall number, classification, reason, source, and source reference. Select every affected lot.
+</Step>
+<Step>
+### Quarantine
+On the recall page press Quarantine. Available stock moves to quarantined.
+</Step>
+<Step>
+### Work the exposure list
+Each patient who received the lot is listed. Call or message them, then record contact method, outcome, and status (`contacted`, `returned`, `unable_to_reach`, `resolved`).
+</Step>
+<Step>
+### Dispose of stock
+For each lot, record the full quarantined quantity with a disposition reference.
+</Step>
+<Step>
+### Close
+Close the recall. If the page shows "Exposure reconciliation incomplete", finish the open exposures or lot dispositions first.
+</Step>
+</Steps>
+
+Class I recalls are counted separately on the [Overview](/docs/openfront/pharmacy/overview).

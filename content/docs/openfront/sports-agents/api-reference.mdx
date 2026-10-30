@@ -1,0 +1,25 @@
+---
+title: API reference
+description: GraphQL operations at /api/graphql.
+icon: Code
+---
+
+## Custom
+
+| Operation | Type | Purpose |
+|---|---|---|
+| `redirectToInit` | Query | `true` when there are no users |
+
+## Auth
+
+`authenticatedItem`, `authenticateUserWithPassword`, `createInitialUser`, `createUser`, `sendUserPasswordResetLink`, `validateUserPasswordResetToken`, `redeemUserPasswordResetToken`, `endSession`.
+
+## Generated CRUD
+
+For each of `User`, `Role`, `Todo`, `TodoImage`: `users`, `user`, `usersCount`, `createUser`, `updateUser`, `deleteUser`, `deleteUsers`, and the same shape for the other lists.
+
+```graphql
+query { todos(where: { status: { equals: "in_progress" } }, take: 20) { id label priority assignedTo { name } } }
+```
+
+Dashboard queries: `KsFetchAdminMeta`, `KsFetchItem`, `GetListItems`. See `schema.graphql` for the full schema.

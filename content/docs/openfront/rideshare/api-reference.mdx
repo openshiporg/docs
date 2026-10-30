@@ -1,0 +1,45 @@
+---
+title: API reference
+description: Named GraphQL queries and mutations at /api/graphql.
+icon: Code
+---
+
+The endpoint is `/api/graphql`. Rider-facing operations take a proof (`quoteProof`, `requestProof`, or `tripToken`) or a signed-in session. Commands take an `idempotencyKey` of 12 to 200 characters.
+
+## Example: quote and request
+
+```graphql
+mutation Quote($serviceId: ID!) {
+  marketplaceRideshareQuote(serviceId: $serviceId, pickupLabel: "Airport", dropoffLabel: "Downtown", passengerCount: 2) { id quoteProof }
+}
+
+mutation Request($quoteId: ID!, $quoteProof: String!) {
+  requestRide(quoteId: $quoteId, quoteProof: $quoteProof, passengerCount: 2, riderNotes: "Two bags") { requestNumber requestProof }
+}
+```
+
+## Rider and public
+
+Queries: `marketplaceRideshareServices`, `marketplaceRideshareService`, `marketplaceRideshareServiceAreas`, `publicRideshareTrip`, `publicRideshareRequest`, `riderRequestStatus`, `myRideshareRequests`, `myRideshareTrips`, `riderTripHistory`, `riderAccountOptions`, `riderRequestCancellationPreview`, `tripCardPayment`.
+
+Mutations: `marketplaceRideshareQuote`, `requestRide`, `resolveRideRequestIntent`, `cancelRideRequest`, `startTripCardPayment`, `confirmTripCardPayment`, `submitTripReview`, `openSupportCase`, `reportSafetyIncident`, `sendTripMessage`, `authenticateUserWithPassword`, `endSession`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`.
+
+## Dispatch and trips
+
+Queries: `dispatchCandidatePage`, `dispatchQueueScope`, `operatorTripHandoff`, `myDriverWorkspace`, `tripCancellationPreview`, `rideshareCapabilities`.
+
+Mutations: `offerRideToDriver`, `respondToRideOffer`, `transitionTrip`, `cancelRide`, `recordTripLocation`, `expireRideOffers`, `expireRequestFleetOffers`, `setDriverOnline`.
+
+## Setup and operations
+
+`setupFleet`, `setupServiceArea`, `setupRideService`, `setupFareRule`, `addFleetDriver`, `addFleetVehicle`, `assignVehicleDrivers`, `addFleetMember`, `updateFleetMember`, `addComplianceDocument`, `reviewComplianceDocument`, `reviewDriver`, `reviewVehicle`, `setDriverAvailability`, `addDriverTimeOff`, `removeDriverTimeOff`, `saveFleetBranding`, `bootstrapRideshare`, `dismissRideshareOnboarding`.
+
+## Safety, reviews, and finance
+
+Queries: `safetyQueueScope`, `financeQueueScope`.
+
+Mutations: `triageSafetyIncident`, `triageSupportCase`, `moderateReview`, `initiateTripPayment`, `requestTripRefund`, `confirmManualPayment`, `confirmManualRefund`.
+
+## Generic lists
+
+Keystone also exposes list queries such as `trips`, `requestedRides`, `reviews`, and `safetyIncidents`, filtered by fleet membership. Create and delete are closed on tenant lists.

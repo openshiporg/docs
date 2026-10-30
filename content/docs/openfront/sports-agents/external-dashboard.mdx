@@ -3,25 +3,12 @@ title: External dashboards
 description: Give an LLM the Sports Agents dashboard skill to adapt the built-in dashboard or create a separate client.
 ---
 
-To create a custom Sports Agents dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell, and that Sports Agents does not yet have a `features/platform` folder with product-specific operator pages.
+To create a custom Sports Agents dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell, and where product-specific operator pages would be added under `features/platform`.
 
 After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Sports Agents codebase before proposing work.
 
 Skill file: [`/skills/openfront-sports-agents-custom-dashboard/SKILL.md`](/skills/openfront-sports-agents-custom-dashboard/SKILL.md)
 
-## Current platform pages
+## Current dashboard pages
 
-There are none. The current source has no `app/dashboard/(admin)/platform` routes and no `features/platform` folder. All dashboard work happens on the shared shell pages below.
-
-| Page | What operators do there |
-|---|---|
-| `/dashboard` | Home: cards for each visible list with item counts |
-| `/dashboard/<list-path>` | Generic list for `users`, `roles`, `todos`, `todo-images`: search, filter, sort, choose columns, paginate, bulk delete |
-| `/dashboard/<list-path>/create` | Generic create form built from the list's fields |
-| `/dashboard/<list-path>/[id]` | Generic item page: edit fields, inline relationship cards, delete |
-| `/dashboard/init` | Create the first user when the database has none |
-| `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset` | Sign in; sign up only when `PUBLIC_SIGNUPS_ALLOWED=true`; password reset |
-| `/dashboard/no-access` | Shown to signed-in users whose role lacks `canAccessDashboard` |
-| Right sidebar chat | AI chat that calls `/api/completion` with MCP tools |
-
-Any Sports Agents operator pages (for example for clients or deals) would have to be built first. The skill treats them as absent.
+All dashboard work happens on the shared shell pages. See [Dashboard overview](/docs/openfront/sports-agents/overview) for the route table.

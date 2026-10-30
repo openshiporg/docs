@@ -1,0 +1,25 @@
+---
+title: Deployment
+description: Run Social on PostgreSQL with migrations as a release step.
+icon: Rocket
+---
+
+The app needs PostgreSQL, the environment from [Getting started](/docs/openfront/social/getting-started), and, for uploads, an S3-compatible bucket.
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`railway.toml` sets the build to `keystone build --no-ui && next build` and the start command to `npm run migrate && next start`, because Railway builds cannot reach internal databases. The README also has a Vercel import button that asks for `DATABASE_URL` and `SESSION_SECRET`; run `npm run migrate` as a separate step there.
+
+## Before going live
+
+1. Back up the database and run the migration on a copy.
+2. Set `NEXT_PUBLIC_APP_URL` (or rely on `RAILWAY_PUBLIC_DOMAIN`) to the public HTTPS origin so feeds, sitemap, and share links resolve.
+3. Decide whether creator sign-up is open (`PUBLIC_SIGNUPS_ALLOWED=true`) and configure SMTP so password reset emails send.
+4. Configure the S3 bucket before creators upload images.
+5. For tips and memberships set `STRIPE_SECRET_KEY`, a publishable key, and `STRIPE_WEBHOOK_SECRET`. See [Payment providers](/docs/openfront/social/payment-providers).
+
+Sessions are stateless cookies signed with `SESSION_SECRET` (30-day max age). Rotating it signs everyone out.

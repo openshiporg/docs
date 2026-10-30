@@ -1,0 +1,25 @@
+---
+title: Roles and approvals
+description: Operator role flags, grants, two-factor, and the approval inbox.
+icon: Shield
+---
+
+## Role flags
+
+`canAccessDashboard`, `canManageOnboarding`, `canManageSportsbook`, `canTrade`, `canManageRisk`, `canManageCompliance`, `canManageFinance`, `canManageIntegrations`, `canApproveSensitiveActions`, `canReadAudit`, `canManagePeople`, `canManageRoles`.
+
+## Roles page
+
+`/dashboard/platform/roles` manages roles through request and apply pairs: `requestRoleDefinition`, `requestRoleGrant`, `requestRoleRevocation`, `requestOperatorAdmission` and their `applyApproved*` mutations. `bootstrapIndependentApprover` creates the approver. The first admin has every flag except `canApproveSensitiveActions`. Operator sign-up is closed unless `PUBLIC_SIGNUPS_ALLOWED=true`.
+
+## Two-factor
+
+`/dashboard/platform/security`: `beginOperatorMfaEnrollment`, `completeOperatorMfaEnrollment`, `verifyOperatorMfaSession`. TOTP secrets are encrypted. Every custom operator operation requires a verified session.
+
+## Approvals
+
+`/dashboard/platform/approvals` lists requests from other operators; approve or reject with `decideSensitiveApproval`.
+
+## Server checks
+
+Custom mutations call `requireTenant` with a capability, require MFA assurance, and re-read the acting user inside the transaction (`assertCurrentActor`), so a revoked role takes effect at once. Most lists allow only `query`, gated by one flag and filtered to the tenant. Customer identity lists are omitted from GraphQL. In production GraphQL errors are masked except upper-case codes like `DUAL_CONTROL_REQUIRED`.

@@ -1,0 +1,25 @@
+---
+title: Data model
+description: Keystone lists by domain.
+icon: Database
+---
+
+About 98 lists in `features/keystone/models`. The source repository's `docs/schema-map.md` documents every field and transition. One deployment serves one store, and every list has `createdAt` and `updatedAt`.
+
+| Domain | Lists |
+|---|---|
+| Catalog | `Product`, `ProductVariant`, `ProductImage`, `ProductOption`, `ProductOptionValue`, `ProductCategory`, `ProductCollection`, `ProductTag`, `ProductType`, `Measurement`, `Location`, `StockMovement`, `ShippingProfile` |
+| Pricing | `MoneyAmount`, `PriceList`, `PriceSet`, `PriceRule`, `RuleType`, `Discount`, `DiscountRule`, `DiscountCondition`, `GiftCard`, `GiftCardTransaction`, `CustomerGroup` |
+| Cart and orders | `Cart`, `LineItem`, `LineItemAdjustment`, `LineItemTaxLine`, `Order`, `OrderLineItem`, `OrderMoneyAmount`, `OrderEvent`, `DraftOrder`, `Note` |
+| Fulfillment | `Fulfillment`, `FulfillmentItem`, `FulfillmentProvider`, `ShippingLabel`, `ShippingMethod`, `ShippingMethodTaxLine`, `CustomShippingOption`, `ShippingOption`, `ShippingOptionRequirement`, `ShippingProvider` |
+| Returns | `Return`, `ReturnItem`, `ReturnReason`, `Refund`, `Swap`, `ClaimOrder`, `ClaimItem`, `ClaimImage`, `ClaimTag` |
+| Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Capture` |
+| Customers | `User`, `UserField`, `Address`, `Account`, `AccountLineItem`, `Invoice`, `InvoiceLineItem`, `BusinessAccountRequest`, `Team`, `Role`, `Invite`, `Notification`, `NotificationProvider` |
+| Regions and tax | `Store`, `Region`, `Country`, `Currency`, `TaxRate`, `TaxProvider`, `SalesChannel` |
+| Compliance authority | `Jurisdiction`, `RegulatedRuleSet`, `RegulatedMerchantProfile`, `MerchantLicense`, `ProviderApproval` |
+| Compliance product | `RegulatedProductClassification`, `ProductAuthorization` |
+| Compliance transaction | `AgeVerificationAttempt`, `RegulatedTaxQuote`, `CarrierEligibilityDecision`, `ComplianceDecision`, `ComplianceEvent` |
+| Compliance reporting | `ComplianceReportRun` |
+| Platform | `ApiKey`, `OAuthApp`, `OAuthToken`, `WebhookEndpoint`, `WebhookEvent`, `BatchJob`, `IdempotencyKey` |
+
+Compliance models live in `RegulatedAuthority.ts`, `RegulatedProduct.ts`, `RegulatedTransaction.ts`, and `RegulatedReporting.ts`. Evidence is current only between `effectiveAt` and `expiresAt`.

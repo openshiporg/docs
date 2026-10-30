@@ -1,0 +1,34 @@
+---
+title: Onboard a driver and vehicle
+description: Add a driver and vehicle, accept documents, approve eligibility, and set hours.
+icon: UserCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the driver
+On Drivers press Add driver and enter the public name and email. The profile starts `pending_review` and offline.
+</Step>
+<Step>
+### Add the vehicle
+On Vehicles add label, make, model, year, color, masked plate, capacity, and wheelchair access. Assign the driver.
+</Step>
+<Step>
+### Record documents
+Add the driver's license, insurance, and background check, and the vehicle's registration, insurance, and inspection, with issuer, masked reference, and expiry. Accept each one after you check it.
+</Step>
+<Step>
+### Review eligibility
+Press approve on the driver and the vehicle. Each records a policy evaluation and sets the status to `active`. Use `ineligible`, `paused`, or `offboarded` for drivers, and `maintenance`, `suspended`, or `retired` for vehicles.
+</Step>
+<Step>
+### Set weekly hours
+On the driver page set the time zone and the days and hours they work. Add time off for planned absences.
+</Step>
+<Step>
+### Go online
+The driver opens My driving and turns on Online.
+</Step>
+</Steps>

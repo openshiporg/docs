@@ -1,0 +1,56 @@
+---
+title: Deployment
+description: Provision PostgreSQL and S3 storage, build, migrate, and host Openfront Pharmacy.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Before you deploy
+
+1. Provision PostgreSQL and an S3-compatible bucket.
+2. Set `DATABASE_URL`, `SESSION_SECRET` (32 characters or more), and the five `S3_*` values. Outside production the S3 values fall back to placeholders. In production they are required.
+3. Add the optional groups you use: SMTP for password reset, Stripe or PayPal keys, and `OPENROUTER_API_KEY` for the dashboard AI chat. See [Getting started](/docs/openfront/pharmacy/getting-started) for the full list.
+
+## Build, migrate, start
+
+| Step | Command | Notes |
+|---|---|---|
+| Build | `npm run build` | Runs `keystone build --no-ui && next build`. It does not touch the database |
+| Migrate | `npm run migrate` or `npm run release:migrate` | Applies the checked-in Prisma migrations. Back up first |
+| Start | `npm start` | Serves the storefront at `/`, the dashboard at `/dashboard`, and GraphQL at `/api/graphql` |
+
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at, so point it at a development database.
+
+## Railway
+
+The repository includes `railway.toml`. It builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so each deploy migrates before serving. Add the Postgres plugin, set the variables above, and deploy.
+
+## Vercel
+
+The README's Vercel button imports the repository and asks for `DATABASE_URL` and `SESSION_SECRET`. Add the S3 values and provider keys in project settings, and run `npm run release:migrate` against the production database as a release step.
+
+## After the first deploy
+
+<Steps>
+<Step>
+### Create the first user
+Open `/dashboard/init`. The first account gets the `Admin` role with all 19 permissions.
+</Step>
+<Step>
+### Run onboarding
+Choose Basic Setup or Complete Setup from the dashboard cards. Onboarding stores the host you ran it from as the organization's `storefrontHost`.
+</Step>
+<Step>
+### Register webhooks
+Point Stripe at `https://<your-host>/api/payment-webhooks/<providerId>`. Point eRx and insurance providers at `https://<your-host>/api/webhooks/integrations/<providerKey>`. See [Payment providers](/docs/openfront/pharmacy/payment-providers) and [Integrations](/docs/openfront/pharmacy/integrations).
+</Step>
+<Step>
+### Complete the dispensing checklist
+Work through the checklist on `/dashboard/platform/credentials`, or follow [Prepare to dispense](/docs/openfront/pharmacy/how-to-guides/prepare-to-dispense).
+</Step>
+</Steps>
+
+## Hosts and tenants
+
+The storefront finds its organization from the request host, matching `storefrontKey`, `storefrontHost`, or `slug`. With one active organization the storefront falls back to it. Set `storefrontHost` to your production domain when you run more than one organization.

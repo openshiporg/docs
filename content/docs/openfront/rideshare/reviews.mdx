@@ -1,0 +1,11 @@
+---
+title: Reviews
+description: Moderate rider and driver ratings after a completed trip.
+icon: Star
+---
+
+`/dashboard/platform/reviews` shows Pending, Published, and Hidden reviews. Participants of a completed trip create them with `submitTripReview(tripId, rating, body, idempotencyKey)`. Rating is an integer from 1 to 5.
+
+Fields: `direction` (`rider_to_driver` or `driver_to_rider`), `rating`, `body`, and `status` (`pending`, `published`, `hidden`, `removed`). Only one review is allowed per trip and direction.
+
+Moderate with `moderateReview(reviewId, status, reason)`: publish, hide, or remove. Reviews need the safety capability to moderate.

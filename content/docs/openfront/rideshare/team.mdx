@@ -1,0 +1,17 @@
+---
+title: Team
+description: Fleet members, membership roles, invitations, and suspension.
+icon: Users
+---
+
+`/dashboard/platform/team` manages `FleetMembership` rows. Add members with `addFleetMember(fleetId, email, role)`; the person must already have an account. It needs the fleet admin capability (`owner`).
+
+| Role | Capabilities |
+|---|---|
+| `owner` | operations, drivers, finance, safety, fleet admin |
+| `dispatcher` | operations, drivers |
+| `finance` | finance |
+| `support` | safety |
+| `viewer` | none |
+
+Membership status: `invited` → `active` ⇄ `suspended`. Change a role or suspend and reactivate from the row actions; they call `updateFleetMember(membershipId, role, status)`. You cannot remove your own owner access, and a fleet always keeps at least one active owner. See [Roles and permissions](/docs/openfront/rideshare/roles-permissions).

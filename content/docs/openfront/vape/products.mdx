@@ -1,0 +1,24 @@
+---
+title: Products
+description: Products, variants, options, prices, and images, with publication evidence checks.
+icon: Package
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/products`, `/create`, `/[id]`. Needs `canManageProducts`.
+
+Products have title, handle, description, status (`draft`, `proposed`, `published`, `rejected`), options and values (Flavour, Strength), variants (SKU, barcodes, `inventoryQuantity`, `manageInventory`, `allowBackorder`, `hsCode`, origin country), prices per region and currency (`MoneyAmount`), images, measurements (weight and dimensions for carrier packages), categories, collections, tags, and a type.
+
+## Publishing rules
+
+- A regulated product cannot be created as published.
+- Publishing runs `assertProductPublicationEvidence`: each variant needs an approved [classification](/docs/openfront/vape/product-evidence) and current federal authorization.
+- While a product is published, edits to variant identity and media fields (title, SKU, barcodes, `hsCode`, origin, metadata, classification, primary image, option values) are blocked. Unpublish first, or change evidence.
+- Only published products are readable on the storefront.
+
+Onboarding seeds ten draft products.
+
+## Categories and collections
+
+`/dashboard/platform/product-categories` (tree with active and internal flags) and `/product-collections` organize the catalog. Onboarding seeds four categories and three collections.

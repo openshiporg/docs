@@ -1,0 +1,18 @@
+---
+title: Storefront
+description: The age-gated shopper experience at /[countryCode].
+icon: Store
+---
+
+Routes live under `app/(storefront)/[countryCode]/` (see [External storefronts](/docs/openfront/vape/external-storefront)). Set `NEXT_PUBLIC_DEFAULT_REGION` for the default country.
+
+## Shopper journey
+
+1. **Age gate:** a 21+ confirmation stored for 30 days in a cookie. It is self-attestation.
+2. **Browse:** home, `/store`, categories, collections, products (published only). Until sales are enabled the catalog explains why it is empty.
+3. **Bag and checkout:** address, shipping, payment, review. The compliance panel runs `evaluateActiveCartCompliance` and shows customer-readable reasons; Place order is disabled unless the decision allows.
+4. **Confirmation:** `/order/confirmed/[id]`; guests use the order `secretKey`.
+5. **Account:** sign in or up (21+ box), profile, addresses, orders, paid invoices, business invoicing, checkout link, and privacy (preferences, data download, deletion request).
+6. **Policies:** `/policies/[slug]`.
+
+`HIDE_OPENFRONT_BRANDING` hides Openfront branding. Customers sign in with a customer token (`CUSTOMER_TOKEN_MAX_AGE_DAYS`, default 90) that never carries admin permissions.

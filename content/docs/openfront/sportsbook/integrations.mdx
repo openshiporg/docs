@@ -1,0 +1,35 @@
+---
+title: Integrations
+description: Provider connections, adapter contract, webhooks, worker, email, MCP, and AI chat.
+icon: Unplug
+---
+
+## Provider connections
+
+`/dashboard/platform/providers` shows health, certification runs, trading replays, and operational state (`runAdapterCertification`, `runTradingReplay`, `setProviderOperationalState`, `mapProviderEntity`). `/dashboard/platform/integrations` (with `/[connectionId]`, `/inbox`, `/webhooks`, `/dlq`) lists connections, inbound messages, webhook endpoints and deliveries, and dead letters, with replay.
+
+`ProviderConnection.certificationStatus`: `SANDBOX`, `PENDING`, `CERTIFIED`, `SUSPENDED`. Kinds: `sports`, `results`, `kyc`, `aml`, `geo`, `payments`, `messaging`, `analytics`, `tax`, `reporting`, `integrity`, `affiliates`, `pam`. Onboarding creates a connection per kind.
+
+## Adapter contract
+
+`features/sportsbook/adapters/contracts.ts` defines `ProviderAdapter`: `manifest`, `capabilities`, `validateConfig`, `execute` (with idempotency key), `query`, `verifyWebhook`, `normalize`, `health`, `reconcile`. The bundled `SandboxAdapter` implements it for all kinds and handles verification, location, AML, prices, and results. Payment adapters live in `features/integrations/payment` (`authorizenet`, `manual`).
+
+## Inbound webhooks
+
+`/api/sandbox/webhooks/[kind]` accepts the thirteen kinds, caps the body, requires `x-sandbox-timestamp` within five minutes, verifies an HMAC with `SANDBOX_WEBHOOK_SECRET`, rate-limits by client, and records replay protection in `WebhookReplay`. Accepted messages land in `RawEnvelope` and `InboxMessage`.
+
+## Outbound webhooks
+
+`requestWebhookEndpoint` and `applyWebhookEndpoint` (dual control) create `WebhookEndpoint` rows; `testWebhookEndpoint` sends a test. The worker delivers `WebhookDelivery` rows: HTTPS only on port 443, host in `WEBHOOK_EGRESS_HOSTS` and public, signed with HMAC-SHA256 using `OUTBOUND_WEBHOOK_SECRET`. Headers: `openfront-delivery-id`, `openfront-event-type`, `openfront-event-version`, `openfront-timestamp`, `openfront-key-id`, `openfront-signature`. Attempts are stored in `IntegrationDeliveryAttempt`; failures retry then dead-letter.
+
+## Worker
+
+`npm run worker` writes a `WorkerHeartbeat`, then drains `OutboxMessage`, `InboxMessage`, and `ScheduledJob` rows with leases. Events include `settlement.requested`, `recovery.requested`, `report.generate`, `reconciliation.run`, `provider.delivery`, `ingestion.replay`, wager, cash-out, payment, promotion, result, dispute, and export events, and `audit.anchor`. Tuning: `WORKER_POLL_MS`, `WORKER_LEASE_MS`, `WORKER_BATCH_SIZE`.
+
+## Email
+
+Nodemailer with `SMTP_HOST`, `SMTP_PORT` (default 587), `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` sends operator password reset and customer recovery emails.
+
+## MCP and AI chat
+
+`/api/mcp-transport/[transport]` forwards the caller's cookie to GraphQL; tools are `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`. Most sportsbook lists deny raw writes, so write tools are refused for them. `/api/completion` is the dashboard assistant via OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`).

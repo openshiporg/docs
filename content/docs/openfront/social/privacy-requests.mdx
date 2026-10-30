@@ -1,0 +1,12 @@
+---
+title: Privacy requests
+description: Review and carry out creator access, correction, and erasure requests.
+icon: ShieldCheck
+---
+
+`/dashboard/platform/users/privacy-requests` lists the queue (`privacyRequestQueue`) for roles with `canManagePeople`.
+
+1. Open a request and choose Granted or Declined with a note. A reason is required when declining (`reviewPrivacyRequest`).
+2. For a granted erasure, press Carry out (`erasePrivacyRequest`). It deletes the creator's site, collections, items, publications, jobs, connected accounts, and media asset rows, replaces the user's name, email, and password, removes the role, and clears evidence on the creator's own events. The user row stays because consent records reference it.
+
+Only erasure requests can be carried out, and only after they are granted. Access requests are served by the creator's own export.

@@ -1,0 +1,27 @@
+---
+title: Roles and permissions
+description: The seven role flags and the access rules built on them.
+icon: Shield
+---
+
+Route: `/dashboard/roles`. Fields: `name`, `assignedTo`, and seven checkboxes. Any signed-in user can read roles; changing them needs `canManageRoles`.
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Use `/dashboard` and the shared AI chat |
+| `canManagePeople` | Create and delete users, set roles, change other users' passwords |
+| `canSeeOtherPeople` | Read other users |
+| `canEditOtherPeople` | Update other users |
+| `canManageRoles` | Create, update, delete roles |
+| `canCreateTodos` | Create todos; create, update, delete todo images |
+| `canManageAllTodos` | Read and change todos assigned to others, and set `assignedTo` |
+
+## Rules (`features/keystone/access.ts`)
+
+- Most operations need a signed-in user.
+- `rules.canReadPeople` and `rules.canUpdatePeople` limit users without the flag to their own record.
+- `rules.canReadTodos`: without `canManageAllTodos` you see your own todos. With it you also see unassigned private todos and all non-private todos.
+- `rules.canManageTodos` limits update and delete the same way.
+- Keystone's `ui.isAccessAllowed` and the route guard both require `canAccessDashboard`.
+
+The first user gets an `Admin` role with every flag on. Give other roles only what they need, because the AI chat and MCP tools act with the same permissions.

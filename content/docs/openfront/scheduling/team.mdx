@@ -1,0 +1,21 @@
+---
+title: Team
+description: Members, roles, invitations, ownership transfer, and the administration log.
+icon: Users
+---
+
+`/dashboard/platform/team`.
+
+## Roles
+
+`Member.role`: `owner`, `admin`, `host`, `viewer`. See [Roles and permissions](/docs/openfront/scheduling/roles-permissions).
+
+## Invitations
+
+`inviteTeamMember` sends an email through `TeamInvitationDelivery`. The invitee opens `/account/invitation` and `acceptTeamInvitation` creates the seat. `resendTeamInvitation`, `revokeTeamInvitation`, and `retryTeamInvitationDelivery` handle problems. A pending invitation blocks a second invite to the same email.
+
+## Managing members
+
+`manageTeamMember` with `update_profile`, `change_role`, `suspend`, `reactivate`, or `remove`. Member fields include `roundRobinWeight`, `dailyBookingCapacity`, and `publicProfileEnabled` (host page at `/team/[teamSlug]/[memberId]`).
+
+`transferTeamOwnership` hands the owner seat to another member. Every change is recorded in `TeamAdministrationEvent`.

@@ -1,0 +1,12 @@
+---
+title: AI assistant
+description: The dashboard chat sidebar, shared and local modes, and MCP tools.
+icon: Sparkles
+---
+
+The right sidebar posts to `/api/completion`.
+
+- **Shared mode:** the server uses `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS`. The caller must be signed in with `canAccessDashboard`. The key never reaches the browser.
+- **Local mode:** the user types their own OpenRouter key and model in chat settings; the browser stores them in `localStorage`.
+
+The route checks the key against OpenRouter's models endpoint, sends the last 20 messages, and allows up to 10 tool steps. Tools come from `/api/mcp-transport/http` with the caller's cookie, so the assistant can query, create, update, and delete exactly what that user can.

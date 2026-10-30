@@ -1,0 +1,15 @@
+---
+title: Trading
+description: Market prices, status, event trading state, and trader overrides.
+icon: Radio
+---
+
+Needs `canTrade`. Routes: `/dashboard/platform/trading`, `/trading/[marketId]`, `/markets/[marketId]`.
+
+- `Market.status`: `OPEN`, `SUSPENDED`, `CLOSED`, `GRADED`; period `PREMATCH` or `LIVE`.
+- **Prices:** `setMarketPrices` writes append-only `PriceSnapshot` rows. `ingestSandboxPrice` stores a raw envelope and a snapshot from the price feed adapter.
+- **Open or close:** `setMarketStatus` checks the reviewed market version. `suspendMarket` suspends quickly. Each change writes `TradingStatusChange`.
+- **Event state:** `setEventTradingState` moves an event through live, ended, and other states.
+- **Trader overrides:** `requestTraderOverride` and `applyTraderOverride` under dual control.
+
+Price age matters at acceptance: a wager is refused with `STALE_PRICE` when the price is older than `MAX_PRICE_AGE_MS` (default 30 seconds).

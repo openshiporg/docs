@@ -4,17 +4,12 @@
   "icon": "Wind",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "architecture-workflows",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront",
-    "---Integrations---",
-    "integrations-boundaries",
-    "---Advanced Features---",
-    "limitations"
+    "---Introduction---","index","getting-started","deployment",
+    "---Dashboard---","overview","compliance-center","merchant-profiles","jurisdictions","product-evidence","provider-approvals","compliance-ledger","compliance-reports","products","inventory","orders","customers","store-settings","external-dashboard",
+    "---Storefront---","storefront","external-storefront",
+    "---Integrations---","integrations","payment-providers","shipping-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","regulated-checkout","roles-permissions","data-model",
+    "---API---","api-reference","troubleshooting"
   ]
 }

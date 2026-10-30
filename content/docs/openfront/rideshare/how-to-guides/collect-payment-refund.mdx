@@ -1,0 +1,46 @@
+---
+title: Collect payment and refund
+description: Collect a fare by card or manually, and refund it.
+icon: HandCoins
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Card
+
+<Steps>
+<Step>
+### Rider pays
+A signed-in rider presses Pay on the ride page after a driver is assigned.
+</Step>
+<Step>
+### Check the payment
+On the trip page the payment shows `captured` once Checkout completes.
+</Step>
+</Steps>
+
+## Manual
+
+<Steps>
+<Step>
+### Record the charge
+On the trip press Record payment.
+</Step>
+<Step>
+### Confirm
+After you collect the fare, press Confirm payment. It becomes `captured`.
+</Step>
+</Steps>
+
+## Refund
+
+<Steps>
+<Step>
+### Request
+On a captured payment press Refund, enter the amount (up to what remains) and a reason.
+</Step>
+<Step>
+### Confirm
+For manual payments press Confirm refund after returning the money. The refund becomes `succeeded`.
+</Step>
+</Steps>

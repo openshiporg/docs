@@ -1,0 +1,32 @@
+---
+title: Handle a refill request
+description: Link a patient account, review a refill request, and dispense it.
+icon: RefreshCw
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Link the patient to their account
+A patient can only request refills once their profile is linked to their storefront user. On the patient page, use the account link (`linkPharmacyPatientAccount`).
+</Step>
+<Step>
+### The patient requests
+From `/account` the patient chooses a dispensed prescription with refills left and adds a note.
+</Step>
+<Step>
+### Review the queue
+Open `/dashboard/platform/refills`. The request is `requested`.
+</Step>
+<Step>
+### Decide
+Open the prescription, run `resolvePrescriptionRefill` with `approved` or `rejected`, a reason, and attestation. Rejecting releases the reserved refill.
+</Step>
+<Step>
+### Dispense
+Approved refills are dispensed through the prescription's dispense form. The request becomes `fulfilled` and the refills remaining count drops.
+</Step>
+</Steps>
+
+If the reservation window passes, release it and ask the patient to request again.

@@ -1,0 +1,34 @@
+---
+title: Payment providers
+description: Configure Stripe and manual payments.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters in `features/integrations/payment`: `stripe` and `manual`. Providers are managed from `/dashboard/platform/integrations`.
+
+## Stripe
+
+`configureStripePaymentProvider` stores a secret key and webhook secret, encrypted with `PAYMENT_CREDENTIALS_KEY`. Storefront payments use Stripe Checkout; captures and refunds go through the Stripe API.
+
+<Steps>
+<Step>
+### Configure
+Open Integrations, choose Stripe, enter the secret key and webhook secret.
+</Step>
+<Step>
+### Add the webhook
+In Stripe add the endpoint `https://your-host/api/payments/webhook/<providerCode>`.
+</Step>
+<Step>
+### Attach to events
+Set the provider and price with `configureEventPaymentPolicy` on each paid event type.
+</Step>
+</Steps>
+
+A provider with existing sessions cannot change adapters.
+
+## Manual
+
+Records offline payments without calling a provider. Starter onboarding creates one.

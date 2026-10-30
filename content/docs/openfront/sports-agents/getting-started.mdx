@@ -4,15 +4,7 @@ description: Install the current source, set environment variables, run migratio
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-<Callout type="info">
-The current source is the Next.js and Keystone starter with the shared Openfront dashboard. Following these steps gives you a working dashboard with `User`, `Role`, `Todo`, and `TodoImage`. It does not give you sports-agents features, because they are not in the source yet.
-</Callout>
-
-## Live demo
-
-A hosted instance runs at [sports-agents.openship.org](https://sports-agents.openship.org). Use it to look at the current dashboard. Do not put real data in it.
+Install the app, connect PostgreSQL, create the first user, and manage users, roles, and records from the Openfront dashboard.
 
 ## Requirements
 
@@ -83,7 +75,7 @@ Keep real secrets out of source control.
 
 ## Migrations
 
-The repository has seven Prisma migrations under `migrations/`, all from the starter (initial schema, todo description, more field types, image field, separate `TodoImage`, user reset token, multiselect field).
+The repository has seven Prisma migrations under `migrations/` (initial schema, todo description, more field types, image field, separate `TodoImage`, user reset token, multiselect field).
 
 ```bash
 npm run migrate
@@ -97,9 +89,7 @@ npm run migrate:gen
 
 That builds Keystone, regenerates the dashboard view order, and runs `keystone prisma migrate dev`.
 
-<Callout type="warn">
-`npm run dev` and `npm run build` both run `npm run migrate` against `DATABASE_URL`. Do not point them at a database you are not ready to migrate.
-</Callout>
+`npm run dev` and `npm run build` both run `npm run migrate` against `DATABASE_URL`.
 
 ## Run locally
 
@@ -117,22 +107,12 @@ When the `User` table is empty, the `redirectToInit` query returns `true` and ev
 
 Create other users and roles from the dashboard. A user needs a role with `canAccessDashboard` to get past `/dashboard/no-access`.
 
-## Onboarding
-
-There is no onboarding flow or seed data in the current source. There is no `features/platform/onboarding` and no seed script. After the first user, the database is empty apart from that user and the Admin role.
-
 ## Tests
 
 The `tests/` folder has two Node test files (`starter-security.test.cjs`, `shared-dashboard.test.cjs`). They cover redirect sanitizing, sign-in and sign-up errors, shared AI key handling, scoped MCP fetch, and sidebar visibility. `package.json` has no `test` script; run them with Node's built-in test runner, for example `node --test tests/`. They need the installed `typescript` package and make no network or database calls.
 
-## Deploy
+## Next steps
 
-The app runs anywhere that supports Node.js and PostgreSQL.
-
-1. Create the PostgreSQL database and S3 bucket.
-2. Set the environment variables above in your host.
-3. Build: `npm run build` (or `keystone build --no-ui && next build` if the build step cannot reach the database).
-4. Run migrations: `npm run migrate`.
-5. Start: `npm start`.
-
-`railway.toml` already does this split for Railway: the build command is `keystone build --no-ui && next build`, and the start command is `npm run migrate && next start`. The README also links Vercel and Railway deploy buttons, but they point at the original starter template.
+- [Deployment](/docs/openfront/sports-agents/deployment)
+- [Users](/docs/openfront/sports-agents/users) and [Roles and permissions](/docs/openfront/sports-agents/roles-permissions)
+- [Create the first user](/docs/openfront/sports-agents/how-to-guides/create-first-user)

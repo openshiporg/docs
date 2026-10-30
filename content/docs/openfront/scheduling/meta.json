@@ -4,17 +4,12 @@
   "icon": "CalendarClock",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "architecture-workflows",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront",
-    "---Integrations---",
-    "integrations-boundaries",
-    "---Advanced Features---",
-    "limitations"
+    "---Introduction---","index","getting-started","deployment",
+    "---Dashboard---","overview","bookings","event-types","availability","clients","payments","team","resources","routing-forms","workflows","store-settings","external-dashboard",
+    "---Storefront---","storefront","external-storefront",
+    "---Integrations---","integrations","payment-providers","webhooks-embeds",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","developer-tools","roles-permissions","data-model",
+    "---API---","api-reference","troubleshooting"
   ]
 }

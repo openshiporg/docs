@@ -1,0 +1,18 @@
+---
+title: Compliance and integrity
+description: Verification, AML, location, affordability, privacy, and integrity reviews.
+icon: ShieldCheck
+---
+
+Needs `canManageCompliance`. Route: `/dashboard/platform/compliance`.
+
+| Review | Lists | Actions |
+|---|---|---|
+| Verification | `VerificationCase`, `VerificationCheck` | `openVerificationCase`, `decideVerificationCase` |
+| AML | `AMLCase`, `ScreeningHit` | `reviewAMLCase`, `recordComplianceScreening` |
+| Location | `GeoSession`, `GeoCheck` | read |
+| Affordability | `AffordabilityAssessment` | read |
+| Privacy | `CustomerPrivacyRequest` | `transitionPrivacyRequest` |
+| Integrity | `IntegrityCase` | opened from a wager with `openWagerInvestigation` |
+
+Customer verification at registration writes `PlayerIdentity`, `VerificationCase`, and checks, approving when the entered age meets the configured minimum (default 18).

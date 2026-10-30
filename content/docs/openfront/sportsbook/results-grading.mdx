@@ -1,0 +1,28 @@
+---
+title: Results and grading
+description: Enter official results, approve them independently, and grade selections.
+icon: ClipboardCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Enter
+`ingestSandboxResult` stores a `PENDING` `ResultVersion` for an event that has started.
+</Step>
+<Step>
+### Send for approval
+`requestResultApproval` creates the approval request. `withdrawResultVersion` pulls a pending version.
+</Step>
+<Step>
+### Approve
+An independent approver decides it. `approveResultVersion` (needs `canManageRisk`) marks the version `APPROVED`, supersedes the previous approved version, and emits `settlement.requested`.
+</Step>
+<Step>
+### Grade
+`/dashboard/platform/grading` runs `gradeMarketSelection` per selection under the current house rules. `gradeMarket` always refuses with `SELECTION_RESULT_REQUIRED`.
+</Step>
+</Steps>
+
+`ResultVersion` status: `PENDING`, `APPROVED`, `REJECTED`, `SUPERSEDED`. Grades are `MarketGrade` and `LegGrade` rows.

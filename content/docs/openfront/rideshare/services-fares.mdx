@@ -1,0 +1,51 @@
+---
+title: Services and fares
+description: Service areas, ride services, and versioned fare rules.
+icon: MapPin
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/services` manages what riders can book. It needs the fleet admin capability to set up and the operations capability to view.
+
+## Service areas
+
+`setupServiceArea(fleetId, name, publicRegionLabel, countryCode, status)`. Status: `draft`, `active`, `paused`. The public region label is what riders see.
+
+## Ride services
+
+`setupRideService(fleetId, name, description, category, passengerCapacity, wheelchairAccessible, advanceBookingMinutes, serviceAreaIds, status)`.
+
+- `category`: `standard`, `comfort`, `xl`, `accessible`, `pet_friendly`, `scheduled`
+- `advanceBookingMinutes`: how far ahead a scheduled ride can be requested
+- a service links to one or more service areas
+
+## Fare rules
+
+`setupFareRule(serviceId, serviceAreaId, name, currencyCode, distanceUnit, baseFareMinor, perDistanceUnitMinor, perMinuteMinor, bookingFeeMinor, minimumFareMinor, cancellationFeeMinor, noShowFeeMinor, status)`.
+
+- `distanceUnit`: `kilometer` or `mile`
+- amounts are integer minor units, for example 250 for $2.50
+- `status`: `draft`, `active`, `retired`. Versions are numbered, and activating a new version retires the previous one
+- fare components must be non-negative integers within the supported range
+
+A quote is base fare + distance rate + minute rate + booking fee, scaled by the fare multiplier (capped by `maximumMultiplierBasisPoints`), and never below the minimum fare.
+
+## Make a service bookable
+
+<Steps>
+<Step>
+### Create an active area
+Add the area and set it `active`.
+</Step>
+<Step>
+### Create an active service
+Attach the area and set the status to `active`.
+</Step>
+<Step>
+### Activate a fare rule
+Add the rule for that service and area and activate it.
+</Step>
+</Steps>
+
+Each service reports `readiness` to the storefront. It shows as unavailable until the fleet is `active`, operations mode is `manual`, and a driver and vehicle are eligible.

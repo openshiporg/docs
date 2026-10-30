@@ -1,0 +1,20 @@
+---
+title: Storefront
+description: "The customer site: board, bet slip, wallet, limits, promotions, and disputes."
+icon: Store
+---
+
+Routes are on [External storefronts](/docs/openfront/sportsbook/external-storefront). Customer data flows through REST routes under `/api/sandbox/sportsbook/*`, not GraphQL. Commands carry an idempotency key recorded in `CustomerCommand`, and requests must come from `SANDBOX_PUBLIC_ORIGIN` when it is set.
+
+## Customer journey
+
+1. **Register** at `/account/auth` (terms required) and verify identity at `/account/profile`.
+2. **Fund** at `/account/wallet` (deposit through the active Authorize.net connection).
+3. **Browse** `/`, `/sports`, `/events/[event]`; favourites and live views.
+4. **Quote** on `/betslip` (`/quote`, `/quote-combination`). Quotes and terms expire, so re-quote on a stale price.
+5. **Place** (`/wager`, `/wager-combination`); the receipt shows the decision or a rejection code.
+6. **Manage** at `/account/bets` (cash-out offers), `/account/limits`, `/account/responsible-play`, `/account/disputes`, `/account/security` (devices and closure).
+
+## When betting opens
+
+Customer commands pass an operator readiness check per tenant: an active, unexpired licence with permitted regions, an active payment connection, an active jurisdiction policy, and a request region inside the licence. Until then the storefront shows "Betting closed" and the board still lists published sports and events. Refusal codes: `OPERATOR_NOT_LICENSED`, `PAYMENTS_NOT_CONFIGURED`, `RESPONSIBLE_GAMING_NOT_CONFIGURED`, `GEO_BLOCKED`, `ORIGIN_DENIED`.

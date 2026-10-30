@@ -1,0 +1,7 @@
+---
+title: Store settings
+description: Public booking identity, copy, logo, and theme.
+icon: Settings
+---
+
+`/dashboard/platform/store` edits the team the storefront shows: name, slug, time zone, `publicBookingEnabled`, storefront headline and copy, logo (sanitized inline SVG), and brand hue (`updateSchedulingStorefrontBrandHue`). The storefront serves the team named by `STOREFRONT_TEAM_SLUG`, or the oldest active team with public booking turned on. Team status is `active`, `paused`, or `archived`.

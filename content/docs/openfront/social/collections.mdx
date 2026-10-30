@@ -1,0 +1,19 @@
+---
+title: Collections
+description: Sections of your site, their kind, visibility, and order.
+icon: FolderOpen
+---
+
+Routes: `/dashboard/platform/site/collections`, `/[id]`, `/create`.
+
+| Field | Values |
+|---|---|
+| `title`, `description` | text |
+| `slug` | unique per site, stable after creation |
+| `kind` | `notes`, `writing`, `runs`, `projects`, `albums`, `films`, `books`, `links`, `custom` |
+| `visibility` | `public` (listed and in RSS), `unlisted` (served by link, `noindex`), `private` (not served) |
+| `position` | order on the profile |
+
+Commands: `createCollection`, `updateCollection`, `reorderCollection`, `removeEmptyCollection`. A collection can be removed only when it is empty; set it `private` to hide one that has content. Moving a collection off public cancels undispatched external requests for its items.
+
+Tabs show public, unlisted, and private counts, and each collection lists its items.

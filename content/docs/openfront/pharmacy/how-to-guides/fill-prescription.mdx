@@ -1,0 +1,44 @@
+---
+title: Fill a prescription
+description: From intake to a dispensing label and cash payment.
+icon: Pill
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need a pharmacist membership with `canReviewPrescriptions` and `canDispenseMedications`, a patient with identity evidence, and the setup from [Prepare to dispense](/docs/openfront/pharmacy/how-to-guides/prepare-to-dispense).
+
+<Steps>
+<Step>
+### Take in the prescription
+`/dashboard/platform/prescriptions/intake`: select patient, prescriber, and location. Enter the prescription number, source, written and expiry dates, and the item (product, sig, quantity, days supply, refills, substitution).
+</Step>
+<Step>
+### Record allergies and medications
+On the patient page, add allergies and current medications, or record "none known". The safety review needs one or the other.
+</Step>
+<Step>
+### Run the clinical safety review
+On the prescription page tick the seven checks, add a review reference, and pick `clear`. Choose `override` only with a written reason of 8 or more characters.
+</Step>
+<Step>
+### Review as pharmacist
+Record `approved`, `needs_information`, or `rejected` with a reason.
+</Step>
+<Step>
+### Authorize
+Press Authorize dispensing. The status becomes `ready_to_dispense`.
+</Step>
+<Step>
+### Reserve the fill
+In the fill entitlement workbench, reserve the fill. If the patient does not collect it, release it with `no_pickup`, `cancelled`, or `expired`.
+</Step>
+<Step>
+### Dispense
+Select an eligible lot, enter the quantity, auxiliary warnings, and the counseling outcome, and enter the cash received. Confirm. The label, order, payment, and inventory movement are created together.
+</Step>
+</Steps>
+
+The status becomes `dispensed`, or `partially_dispensed` if the quantity was part of the authorization. Read the label from the Dispensing labels panel. Dispense one complete item per pickup.
+
+Related: [Prescriptions](/docs/openfront/pharmacy/prescriptions), [Troubleshooting](/docs/openfront/pharmacy/troubleshooting).

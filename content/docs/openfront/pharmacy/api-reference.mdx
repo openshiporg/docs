@@ -1,0 +1,59 @@
+---
+title: API reference
+description: The named GraphQL queries and mutations at /api/graphql.
+icon: Code
+---
+
+The GraphQL endpoint is `/api/graphql`. Generic Keystone queries exist for lists that allow them. The custom operations below are registered in `features/keystone/mutations/index.ts`. Consequential mutations take `reason` and `attested`, and many take an `idempotencyKey`.
+
+## Example: dispense
+
+```graphql
+mutation Dispense($prescriptionId: ID!, $prescriptionItemId: ID!, $lotId: ID!) {
+  recordPrescriptionDispensing(
+    prescriptionId: $prescriptionId
+    prescriptionItemId: $prescriptionItemId
+    lotId: $lotId
+    quantity: 30
+    cashReceivedAmount: 1500
+    auxiliaryWarnings: ["Take with food"]
+    counselingOutcome: "offered_accepted"
+    idempotencyKey: "rx-1042-fill-1"
+    reason: "Verified label and lot"
+    attested: true
+  ) { success prescriptionId status }
+}
+```
+
+## Public and customer queries
+
+`publicPharmacyTenant`, `publicPharmacyLocations`, `publicPharmacyCatalog`, `publicPharmacyCategories`, `pharmacyCart`, `activePharmacyPaymentProviders`, `guestPharmacyOrder`, `lookupPharmacyOrder`, `pharmacyCustomerAccount`, `pharmacyCustomerOrder`, `pharmacyCustomerOrderDetails`, `pharmacyCustomerPrescriptionRequests`, `pharmacyPatientPortal`, `redirectToInit`.
+
+## Operator queries
+
+`pharmacyOperationalSummary`, `pharmacyOnboardingState`, `pharmacyOperatorLocations`, `pharmacyCatalogQueue`, `pharmacyPosCatalog`, `pharmacyPosCustomers`, `pharmacyPosCashReceipt`, `pharmacyPrescriberDirectory`, `pharmacyPrescriptionIntakeOptions`, `pharmacyPrescriptionQueue`, `pharmacyPrescriptionWorklist`, `pharmacyPrescriptionTask`, `pharmacyPrescriptionRequestQueue`, `pharmacyFillPolicy`, `pharmacyFillWorkbench`, `pharmacyFillHistory`, `pharmacyInventoryReceiptOptions`, `pharmacyInventoryReceiptProductWorklist`, `pharmacyInventoryQueue`, `pharmacyInventoryLotTask`, `pharmacyRecallOpenOptions`, `pharmacyRecallQueue`, `pharmacyRecallWorklist`, `pharmacyRecallTask`, `pharmacyOrderQueue`, `pharmacyOrderTask`, `pharmacyPatientRecordOptions`, `pharmacyPatientAccountCandidates`, `pharmacyPatientDirectory`, `pharmacyPatientSafeView`, `pharmacyCredentialReviewOptions`, `pharmacyIntegrationStatus`, `pharmacyAuditTimeline`, `pharmacyOutboxTimeline`, `pharmacyOutboxQueue`.
+
+## Mutations by area
+
+| Area | Mutations |
+|---|---|
+| Customer | `registerPharmacyCustomer`, `updateActiveUser`, `createPharmacyCart`, `addPharmacyCartItem`, `updatePharmacyCartItem`, `removePharmacyCartItem`, `initiatePharmacyPaymentSession`, `submitPharmacyOrder`, `submitPharmacyPrescriptionRequest`, `requestPrescriptionRefill` |
+| Patients | `createPharmacyPatient`, `updatePharmacyPatientContact`, `recordPharmacyPatientAllergy`, `recordPharmacyPatientMedication`, `recordPharmacyPatientNoneKnown`, `linkPharmacyPatientAccount`, `resolvePharmacyPrescriptionRequest` |
+| Prescriptions | `intakePharmacyPrescription`, `recordPrescriptionClinicalSafetyReview`, `holdPrescriptionForClinicalReReview`, `recordPrescriptionReview`, `authorizePrescriptionDispensing`, `recordPrescriptionDispensing` |
+| Fills and refills | `recordPharmacyFillPolicy`, `reservePharmacyPrescriptionFill`, `releasePharmacyPrescriptionFill`, `resolvePrescriptionRefill`, `requestPrescriptionTransfer`, `approvePrescriptionTransfer` |
+| Credentials | `recordPharmacyStaffCredentialReview`, `recordPharmacyPrescriberCredentialReview`, `recordPharmacyDrugReferenceReview` |
+| Inventory and recalls | `receivePharmacyInventoryLot`, `adjustPharmacyInventoryLot`, `openPharmacyRecall`, `quarantineRecallLots`, `recordRecallExposureAction`, `disposeRecallLot`, `closePharmacyRecall` |
+| Orders and payments | `transitionOrderFulfillment`, `submitPharmacyPosCashOrder`, `recordPharmacyCashPolicy`, `refundPharmacyPayment`, `refundPharmacyCashPayment`, `reconcilePharmacyPaymentSession`, `handlePaymentProviderWebhook` |
+| Integrations and setup | `configurePharmacyIntegrationProvider`, `validatePharmacyPrescriber`, `submitPharmacyExternalWorkflow`, `refreshPharmacyExternalWorkflow`, `ingestPharmacyIntegrationWebhook`, `replayPharmacyOutboxEvent`, `runPharmacyOnboarding`, `setPharmacyOnboardingStatus` |
+
+Patient-safe and guest projections leave out guest-token hashes, provider credentials, audit metadata, and outbox payloads. Requesting an omitted field fails at the schema.
+
+## HTTP routes
+
+| Route | Purpose |
+|---|---|
+| `POST /api/graphql` | GraphQL |
+| `POST /api/payment-webhooks/[providerId]` | Payment webhooks |
+| `POST /api/webhooks/integrations/[providerKey]` | eRx and insurance webhooks |
+| `/api/mcp-transport/[transport]` | MCP server |
+| `/api/completion` | Dashboard AI chat |

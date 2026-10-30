@@ -1,0 +1,17 @@
+---
+title: Workflows and reminders
+description: Triggered email and webhook actions, run history, and reminders.
+icon: Workflow
+---
+
+`/dashboard/platform/workflows`, `/new`, `/[id]`.
+
+## Workflows
+
+`WorkflowDefinition` triggers: `booking_created`, `booking_confirmed`, `booking_rescheduled`, `booking_cancelled`, `booking_completed`, `booking_no_show`, `before_start`, `after_end`. Steps are `WorkflowAction` rows of type `email` or `webhook`. Activate, pause, or archive a workflow. Runs appear as `WorkflowExecution` and `WorkflowActionExecution`; retry a failed step with `retryWorkflowAction`.
+
+## Reminders
+
+`WorkflowReminder` sends an email, SMS, or webhook reminder per event type. `ReminderDelivery` tracks each send. SMS posts to your own gateway (`SCHEDULING_SMS_ENDPOINT`, `SCHEDULING_SMS_TOKEN`).
+
+Outbound HTTP goes through `safeEgress.ts`, which blocks private and loopback addresses.

@@ -1,0 +1,24 @@
+---
+title: Data model
+description: The 14 Keystone lists and how they relate.
+icon: Database
+---
+
+| Domain | List | Key fields |
+|---|---|---|
+| People | `User` | name, email, password, `onboardingStatus`, `role`; owns one `PersonalSite` |
+| People | `Role` | `systemKey`, `canAccessDashboard`, `canUseStudio`, `canManageOnboarding`, `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManageRoles` |
+| Site | `PersonalSite` | unique `handle`, `displayName`, `bio`, `location`, `website`, `avatarUrl`, `isPublished`, `theme`, `logoIcon`, `logoColor`, `publishingVersion`, `minimumTipMinor`, `maximumTipMinor`; `owner` |
+| Site | `Collection` | `title`, `slug`, `description`, `kind`, `visibility`, `membersOnly`, `position`, `publishingVersion`; `site` |
+| Content | `Item` | `title`, `slug`, `summary`, `body`, `externalUrl`, `type`, `status`, dates, `contentVersion`, `publishGeneration`; `collection` |
+| Content | `MediaAsset` | `image`, `filename`; `site` |
+| Publishing | `Publication` | snapshot fields, `destination`, `status`, `revision`, consent binding; links to `Item`, `ConnectedAccount` |
+| Publishing | `PublishJob` | `status`, `attempts`, `maxAttempts`, `errorMessage`; `publication` |
+| Publishing | `ConnectedAccount` | `provider`, `accountLabel`, `status`, `publishingVersion`; `site` |
+| Evidence | `SocialEvent` | unique `eventKey`, `action`, `targetId`, evidence, `occurredAt`; actor, site |
+| Payments | `PaymentProvider` | `name`, `code`, `isInstalled`, adapter function fields; `site` |
+| Payments | `Tip` | `amountMinor`, `currency`, `supporterEmail`, `message`, `status`, `providerPaymentId`, unique `idempotencyKey` |
+| Payments | `MembershipTier` | `name`, `priceMinor`, `interval`, `providerPriceId`; `site` |
+| Payments | `Membership` | `tier`, `supporterEmail`, `user`, `status`, `providerSubscriptionId`, `currentPeriodEnd` |
+
+Relationships: `User` 1-1 `PersonalSite`; `PersonalSite` has many `Collection`, `ConnectedAccount`, `MediaAsset`, `PaymentProvider`, `Tip`, `MembershipTier`; `Collection` has many `Item`; `Item` has many `Publication`; `Publication` has many `PublishJob`; `MembershipTier` has many `Membership`.

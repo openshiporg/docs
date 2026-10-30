@@ -1,0 +1,21 @@
+---
+title: Orders
+description: Order queue, order detail, fulfillment, labels, returns, refunds, and claims.
+icon: ShoppingCart
+---
+
+Routes: `/dashboard/platform/orders`, `/create`, `/[id]`, `/[id]/fulfill`. Needs `canManageOrders`.
+
+Orders are created only by checkout (`completeActiveCart`) or admin order create (`/orders/create`, a mini storefront). Status: `pending` → `completed` once every line is fulfilled, back to `pending` if a fulfillment is cancelled, `requires_action` when a payment webhook reports a problem, and `canceled` / `archived` via `transitionOrderStatus` (cancel needs a full refund and no fulfillments; invoiced account orders are refused).
+
+## Order detail
+
+Timeline (`OrderEvent`), payments, refunds, fulfillments, labels, returns, claims, and a Compliance section with the order's decision, evidence, and the `TAX_AND_REPORTING_REVERSAL_REVIEW_REQUIRED` banner.
+
+## Fulfill
+
+`/[id]/fulfill`: get rates (`getRatesForOrder`), buy a label (`createProviderShippingLabel`), track (`trackShipment`), cancel a label (`cancelShippingLabel`, required before `cancelOrderFulfillment`), and fulfill manually (`createOrderFulfillment`). For regulated orders only labels are available. The page shows why a label is refused, plus the carrier eligibility evidence. See [Regulated checkout](/docs/openfront/vape/regulated-checkout#fulfillment).
+
+## Returns, refunds, claims
+
+Create a return and items with reasons, then `processReturnRefund`. The refund is created only after the provider confirms the exact amount; the return moves to `received`. Claims (`ClaimOrder` of type `refund` or `replace`, items with reasons `missing_item`, `wrong_item`, `production_failure`, `other`, images, tags) are created by staff on the order or at `/dashboard/platform/claims`. Customers cannot file returns or claims from the storefront.

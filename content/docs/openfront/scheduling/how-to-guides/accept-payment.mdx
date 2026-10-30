@@ -1,0 +1,25 @@
+---
+title: Accept payment for a booking
+description: Set up Stripe and require payment.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Configure Stripe
+Add the secret key and webhook secret on Integrations.
+</Step>
+<Step>
+### Require payment
+Set the event's payment policy to required with a price.
+</Step>
+<Step>
+### Test a booking
+Book at `/book/[slug]` and complete Checkout. The booking returns to `/book/payment`.
+</Step>
+<Step>
+### Refund if needed
+On the payment page use refund.
+</Step></Steps>

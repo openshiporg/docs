@@ -1,0 +1,17 @@
+---
+title: Catalog
+description: Sports, competitions, seasons, events, participants, and markets.
+icon: Trophy
+---
+
+Needs `canTrade`. Routes: `/dashboard/platform/catalog` (and `/events`), `/catalog/[eventId]`, `/catalog/reference`.
+
+## Reference data
+
+`/catalog/reference` creates and activates or deactivates sports, competitions, seasons, stages, venues, and competitors (`createCatalogSport`, `createCatalogCompetition`, `createCompetitionSeason`, `createCatalogStage`, `createCatalogVenue`, `createCatalogCompetitor`, `setCatalogReferenceStatus`).
+
+## Events
+
+`createCatalogEvent` creates an event with its first market. `Event.status`: `SCHEDULED`, `LIVE`, `ENDED`, `CANCELLED`, `SUSPENDED`. The event page shows participants (`attachEventParticipant`), schedule history (`rescheduleEvent` writes `EventScheduleChange`), venue, season, stage, and markets (`createEventMarket`).
+
+Market definitions from onboarding: match result, moneyline, spread, total. A new market starts suspended until every selection has a price. Only published sports and events appear on the storefront.

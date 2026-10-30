@@ -1,0 +1,9 @@
+---
+title: Promotions
+description: Campaigns, rule versions, budgets, redemptions, and awards.
+icon: Gift
+---
+
+Routes: `/dashboard/platform/promotions`, `/promotions/[promotionId]`.
+
+`createPromotionCampaign` creates a `Promotion`; activation is `requestPromotionActivation` then `applyPromotionActivation`. The detail page shows `PromotionRuleVersion`, `CampaignBudget`, `PromotionRedemption`, `BonusAward`, and `BonusTransaction`. Customers claim at `/promotions` and `/account/promotions`.

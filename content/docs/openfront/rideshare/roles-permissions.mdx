@@ -1,0 +1,29 @@
+---
+title: Roles and permissions
+description: Fleet membership roles, capabilities, and the global administrator.
+icon: Shield
+---
+
+`Fleet` is the tenant boundary. A user's access to a fleet's records comes from an active `FleetMembership` and its role.
+
+| Capability | Roles | Covers |
+|---|---|---|
+| operations | `owner`, `dispatcher` | Dispatch, trips, cancellations, services view |
+| drivers | `owner`, `dispatcher` | Drivers, vehicles, documents, availability |
+| finance | `owner`, `finance` | Payments, refunds, ledger |
+| safety | `owner`, `support` | Safety incidents, support cases, review moderation |
+| fleetAdmin | `owner` | Services and fares setup, team, settings |
+
+A `viewer` has none. A global role with `canManageRoles` sees every fleet. Membership status must be `active`.
+
+## Probes
+
+The dashboard calls `rideshareCapabilities`, `dispatchQueueScope`, `safetyQueueScope`, and `financeQueueScope` to decide which pages to load.
+
+## Locked fields
+
+Tenant relationships (`fleet`, `driver`, `vehicle`, `trip`) are immutable after creation. Dispatch-gating statuses (driver status, dispatch status, vehicle status) change only through review and dispatch mutations. Plate, VIN, and file references are not readable through the API.
+
+## Riders and drivers
+
+Riders are `User` records, optionally with a `RiderProfile`. Guests prove ownership with a request proof or trip token. Drivers reach their offers and trips through `myDriverWorkspace`.

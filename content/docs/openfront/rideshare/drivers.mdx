@@ -1,0 +1,24 @@
+---
+title: Drivers
+description: Driver list, onboarding, documents, eligibility review, availability, and time off.
+icon: IdCard
+---
+
+`/dashboard/platform/drivers` lists drivers with readiness and missing-document flags. `/dashboard/platform/drivers/[id]` is the driver record. Both need the drivers capability (`owner` or `dispatcher`).
+
+## Add a driver
+
+`addFleetDriver(fleetId, publicName, email, acceptsScheduled, publicBio)` creates a `DriverProfile` with status `pending_review` and dispatch status `offline`. If the email matches a user, the profile links to that account.
+
+## Driver detail
+
+- **Review track:** `reviewDriver(driverId, decision, notes)` records a `PolicyEvaluation` against the active driver eligibility policy (created on first review) and sets the status to `active`, `paused`, `ineligible`, or `offboarded`.
+- **Online toggle:** `setDriverOnline`.
+- **Documents:** `addComplianceDocument` with kind `driver_license`, `insurance`, `background_check`, `inspection`, `business_license`, or `other`; issuer, masked reference, issue and expiry dates. `reviewComplianceDocument(documentId, decision, notes)` accepts or rejects it (`accepted_evidence`, `rejected_evidence`). Document status: `submitted`, `under_review`, `accepted_evidence`, `rejected_evidence`, `expired`, `revoked`.
+- **Vehicles:** the vehicles the driver can use.
+- **Weekly hours:** `setDriverAvailability(driverId, timezone, rules)` replaces `AvailabilityRule` rows (day of week 0 to 6, start and end time).
+- **Time off:** `addDriverTimeOff(driverId, startsAt, endsAt, kind, reason)` and `removeDriverTimeOff(exceptionId)`.
+- **Eligibility checks:** the history of policy evaluations (`pending`, `eligible`, `ineligible`, `manual_review`).
+- **Trips:** the driver's trips.
+
+Dispatch only offers to drivers whose latest evaluation is `eligible`. Driver status changes only through `reviewDriver`, not by editing the record.

@@ -1,0 +1,28 @@
+---
+title: Destinations
+description: External account labels and per-item consent for X, Instagram, and Threads.
+icon: AtSign
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/dashboard/platform/destinations`, `/destinations/[id]`.
+
+A destination is a `ConnectedAccount`: `provider` (`x`, `instagram`, `threads`), `accountLabel`, and `status` (`unconfigured`, `pending_connection`, `connected`, `revoked`, `error`).
+
+<Steps>
+<Step>
+### Add a label
+`addDestination` records the account label. Edit it with `updateDestinationLabel`.
+</Step>
+<Step>
+### Record consent
+From a published item, `requestExternal` records your consent for the live version. It needs an idempotency key and the reviewed site, collection, canonical publication, and account versions. It creates a `Publication` with `not_configured` status and a `PublishJob`.
+</Step>
+<Step>
+### Cancel or revoke
+`cancelExternal` cancels one request. `revokeDestination` blocks new requests and cancels undispatched ones.
+</Step>
+</Steps>
+
+Consent records are bound to a specific revision, so later edits need new consent. See [Integrations](/docs/openfront/social/integrations).

@@ -16,7 +16,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `featur
 | Page | What operators do there |
 |---|---|
 | `/dashboard/platform` | Control room: today's queues, exceptions, exposure, latest wagers, and shortcuts into each workflow |
-| `/dashboard/platform/onboarding` | Preview and apply sandbox setup, resume a partial setup, see stage progress (needs MFA) |
+| `/dashboard/platform/onboarding` | Preview and apply setup, resume a partial setup, see stage progress (needs MFA) |
 | `/dashboard/platform/catalog`, `/events` | Create events with a first market and browse the catalog (`/events` renders the same screen) |
 | `/dashboard/platform/catalog/[eventId]`, `/events/[eventId]` | Event detail: participants, schedule history, venue, season, stage, markets; add markets, reschedule |
 | `/dashboard/platform/catalog/reference` | Sports, competitions, seasons, stages, venues, competitors: create, activate, deactivate |
@@ -32,7 +32,8 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`; slices are `featur
 | `/dashboard/platform/closures` | Account closure requests and their blockers (read-only) |
 | `/dashboard/platform/support`, `/[caseId]` | Support cases and disputes; status changes, dispute resolution proposals, dispute timeline |
 | `/dashboard/platform/notifications` | Messages sent to customers and staff (read-only) |
-| `/dashboard/platform/finance` and its detail routes | Journals, payments, adjustments; sandbox deposits and withdrawals, chargebacks, ledger adjustments |
+| `/dashboard/platform/payments` | Operator licences, payment provider connections, withdrawal queue |
+| `/dashboard/platform/finance` and its detail routes | Journals, payments, adjustments; deposits and withdrawals, chargebacks, ledger adjustments |
 | `/dashboard/platform/finance/reconciliation` and run, item, safeguarding detail | Reconciliation runs and items, safeguarding reconciliation |
 | `/dashboard/platform/finance/tax` | Tax rules and assessments on settled wagers |
 | `/dashboard/platform/promotions`, `/[promotionId]` | Create campaigns, request and apply activation; rule versions, budget, redemptions, awards |

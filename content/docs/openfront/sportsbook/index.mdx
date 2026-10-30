@@ -4,20 +4,17 @@ description: Self-hosted sportsbook operator application with a sports catalog, 
 icon: Trophy
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Sportsbook is a self-hosted sportsbook application. Operators build a sports catalog (sports, competitions, seasons, events, markets, selections), set prices, take fixed-odds wagers, enter and approve official results, grade markets, and settle wagers into a double-entry ledger. Around that core it records customer verification, location checks, AML and integrity cases, player limits and self-exclusion, support cases and disputes, promotions and bonuses, reconciliation, safeguarding, tax, audit, and provider queues.
 
-<Callout type="warn">
-Every provider adapter in the current source is a sandbox adapter. The customer API at `/api/sandbox/sportsbook/*` only answers when `SPORTSBOOK_SANDBOX=true`, and a production build additionally requires an isolated sandbox origin and database. Otherwise every storefront page shows "Betting closed". Openfront Sportsbook does not grant a gambling licence, certify any provider, or provide legal advice. Nothing in it is approval to accept real-money wagers.
-</Callout>
+The customer storefront opens for a tenant once it has an active licence, an active payment connection, and an active jurisdiction policy. Until then pages show "Betting closed". Deposits run through Authorize.net and withdrawals through an operator queue.
 
 ## Who it is for
 
 - **Operators:** traders who manage catalog, prices, and market status; risk staff who set limits and settle; compliance staff who review verification, AML, privacy, and integrity cases; finance staff who run payments, reconciliation, tax, and ledger adjustments; and an independent approver who decides sensitive requests.
-- **Customers (sandbox only):** people who register, verify, browse the board, build a bet slip, place straight and combination wagers, cash out, fund a wallet, set limits, claim promotions, and raise disputes.
-- **Developers:** teams adapting the operator dashboard or storefront, or replacing the sandbox adapters with real provider integrations.
+- **Customers:** people who register, verify, browse the board, build a bet slip, place straight and combination wagers, cash out, fund a wallet, set limits, claim promotions, and raise disputes.
+- **Developers:** teams adapting the operator dashboard or storefront, or adding provider integrations.
 
 ## Product surfaces
 
@@ -37,13 +34,13 @@ The data model is multi-tenant. `Tenant` is the operator boundary, and almost ev
 
 Operator authority comes from role flags: `canAccessDashboard`, `canManageOnboarding`, `canManageSportsbook`, `canTrade`, `canManageRisk`, `canManageCompliance`, `canManageFinance`, `canManageIntegrations`, `canApproveSensitiveActions`, `canReadAudit`, `canManagePeople`, and `canManageRoles`. Custom operations also require an operator session with verified two-factor (TOTP) assurance. Sensitive changes use dual control: one operator requests, a different operator with `canApproveSensitiveActions` decides, and the request is then applied.
 
-The storefront resolves a single operator brand: the brand matching the sandbox origin, a brand whose domain matches the host, or the only operator-owned brand. Customer sessions are separate from operator sessions and use an `openfront_customer` cookie whose digest is stored in `CustomerSession`.
+The storefront resolves a single operator brand: the brand matching the public origin, a brand whose domain matches the host, or the only operator-owned brand. Customer sessions are separate from operator sessions and use an `openfront_customer` cookie whose digest is stored in `CustomerSession`.
 
 <Cards>
-  <Card title="Getting started" href="/docs/openfront/sportsbook/getting-started" description="Requirements, environment, migrations, first operator, MFA, onboarding, worker, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/sportsbook/architecture-workflows" description="Models by domain, operator workflows, dual control, and named GraphQL operations." />
-  <Card title="External dashboards" href="/docs/openfront/sportsbook/external-dashboard" description="Skill and page map for adapting or replacing the operator dashboard." />
-  <Card title="External storefronts" href="/docs/openfront/sportsbook/external-storefront" description="Skill and route map for adapting or replacing the customer storefront." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/sportsbook/integrations-boundaries" description="Sandbox adapters, provider contract, webhooks, worker, email, MCP, and observability." />
-  <Card title="Current limitations" href="/docs/openfront/sportsbook/limitations" description="What the current source does not do, including the closed customer API outside sandbox mode." />
+  <Card title="Getting started" href="/docs/openfront/sportsbook/getting-started" description="Environment, migrations, first operator, MFA, onboarding." />
+  <Card title="Deployment" href="/docs/openfront/sportsbook/deployment" description="Web process, worker, and health endpoints." />
+  <Card title="Dashboard overview" href="/docs/openfront/sportsbook/overview" description="Workspaces and dual control." />
+  <Card title="Licences and payments" href="/docs/openfront/sportsbook/payment-providers" description="Licences, Authorize.net, withdrawals." />
+  <Card title="Integrations" href="/docs/openfront/sportsbook/integrations" description="Adapters, webhooks, worker, MCP." />
+  <Card title="API reference" href="/docs/openfront/sportsbook/api-reference" description="GraphQL mutations and customer REST routes." />
 </Cards>

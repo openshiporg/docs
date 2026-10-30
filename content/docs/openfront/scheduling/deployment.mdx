@@ -1,0 +1,31 @@
+---
+title: Deployment
+description: Host Scheduling with PostgreSQL, secrets, the outbox worker, and email.
+icon: Rocket
+---
+
+The app is one Next.js server plus PostgreSQL. Optional pieces are SMTP, S3-compatible storage, and the providers you choose.
+
+## Build and start
+
+- **Build:** `railway.toml` uses `keystone build --no-ui && next build`. The package `build` script also runs `npm run migrate`; the Railway config moves migration to start time because the build environment cannot reach the database.
+- **Start:** `railway.toml` runs `npm run migrate && next start`. Alternatively `npm run start:production` (`scripts/start-production.sh`) applies migrations, runs a scheduling outbox loop every `SCHEDULING_WORKER_INTERVAL_SECONDS` (default 30), and starts Next.js.
+- **Background work:** in production `instrumentation.ts` runs the scheduling outbox inside the Next.js server every 30 seconds. It processes webhooks, reminders, calendar writes and syncs, payments, conferencing, workflows, data jobs, invitations, analytics, and expiries. Workers claim rows with locks, so replicas can run side by side. `npm run worker:scheduling-outbox` runs a single pass.
+
+## Environment
+
+Set `DATABASE_URL`, `SESSION_SECRET`, `BOOKING_MANAGE_SECRET`, `RATE_LIMIT_SECRET`, `TEAM_INVITATION_SECRET`, `MACHINE_TOKEN_PEPPER`, `ACCOUNT_EMAIL_CHANGE_SECRET`, and `SCHEDULING_PUBLIC_URL` (HTTPS). Add `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM` (and `SMTP_USER`, `SMTP_PASSWORD`), plus `SMTP_STORE_LINK`, so invitation, reminder, and reset emails send. For integrations set the calendar, conferencing, and payment keys listed on [Integrations](/docs/openfront/scheduling/integrations). Use a different value for each secret.
+
+`features/keystone/lib/productionConfig.ts` documents the production rules (required secrets, HTTPS public URL, SMTP, storage, calendar settings). Check them against your environment before launch.
+
+## Vercel and serverless
+
+The README has a Vercel deploy button prompting for `DATABASE_URL` and `SESSION_SECRET`. On a serverless host run migrations as a separate step and run the outbox worker on a long-lived Node.js process, since the in-process loop needs a persistent server.
+
+## Database
+
+Use managed PostgreSQL with backups. Configure S3 only if you add file or image fields.
+
+## After deploy
+
+Visit `/dashboard/init`, create the first administrator, and run onboarding. See [Getting started](/docs/openfront/scheduling/getting-started).

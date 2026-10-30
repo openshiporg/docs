@@ -1,0 +1,13 @@
+---
+title: Resources
+description: Rooms, equipment, capacity pools, and managed event templates.
+icon: Armchair
+---
+
+`/dashboard/platform/resources`.
+
+- `upsertSchedulingResource` creates or edits a resource (room, equipment, or capacity pool) with a unique slug and capacity.
+- `transitionSchedulingResource` moves it between statuses, for example into maintenance.
+- `ResourceAllocation` rows are `held`, `reserved`, `released`, or `expired`. Holds reserve capacity while a customer fills the booking form.
+- Event types require units with `configureEventResourceRequirement`.
+- **Managed templates** define event settings once and apply them to many events.

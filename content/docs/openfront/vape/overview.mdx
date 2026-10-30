@@ -1,0 +1,40 @@
+---
+title: Dashboard overview
+description: The operator home, navigation groups, and what the readiness blockers mean.
+icon: LayoutDashboard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/overview` is the merchant home (`features/platform/overview`). It shows:
+
+- whether sales are enabled and, if not, each blocker with a link to fix it;
+- orders waiting to be fulfilled;
+- products blocked from publishing;
+- evidence expiring in the next 30 days;
+- today's compliance decisions.
+
+## Navigation
+
+| Group | Pages |
+|---|---|
+| Compliance | [Compliance Center](/docs/openfront/vape/compliance-center), [Merchant Profiles](/docs/openfront/vape/merchant-profiles), [Jurisdictions](/docs/openfront/vape/jurisdictions), [Product Evidence](/docs/openfront/vape/product-evidence), [Provider Approvals](/docs/openfront/vape/provider-approvals), [Compliance Ledger](/docs/openfront/vape/compliance-ledger), [Compliance Reports](/docs/openfront/vape/compliance-reports) |
+| Products | [Products](/docs/openfront/vape/products), Categories, Collections, [Inventory](/docs/openfront/vape/inventory) |
+| Orders | [Orders](/docs/openfront/vape/orders), Claims, Analytics, Markets |
+| Customers | [Customers](/docs/openfront/vape/customers), Account Requests, Business Accounts |
+| Marketing | Discounts, Price Lists, Gift Cards |
+| Integrations | [Payment Providers](/docs/openfront/vape/payment-providers), [Shipping Providers](/docs/openfront/vape/shipping-providers), Shipping Options, Apps, API Keys |
+| Store | [Store settings](/docs/openfront/vape/store-settings), System |
+
+Lists without a dedicated page (for example `Invoice`, `Role`, `Team`, `TaxRate`, `WebhookEndpoint`, `BatchJob`, `PriceSet`, `Swap`) are edited on the generic `/dashboard/<list-key>` pages. Which pages a user sees depends on [role permissions](/docs/openfront/vape/roles-permissions).
+
+## Smaller pages
+
+- **Claims** (`/dashboard/platform/claims`): claim list and status; detail opens the claim order.
+- **Discounts, Price Lists, Gift Cards:** promotions and pricing, same as the Openfront e-commerce app.
+- **Regions, Countries, Currencies, Markets:** regions and markets. `/markets` and `/regions-management` render the same region list.
+- **Shipping Options** (`/dashboard/platform/shipping-options`, `/shipping`): list and create; edit on the generic page.
+- **Business account requests** and **Business Accounts** (`/invoices`): approve credit-account applications (approval creates the `Account`) and view account status.
+- **Apps, Order Management System, API Keys:** OAuth apps, the OMS connection, and scoped API keys.
+- **Analytics:** order and revenue charts from `getAnalytics`.
+- **System:** tabs linking to store and payment settings.

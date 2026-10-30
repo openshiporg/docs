@@ -1,0 +1,11 @@
+---
+title: Publications
+description: Every published version and consent record.
+icon: History
+---
+
+Routes: `/dashboard/platform/history`, `/history/[id]`.
+
+A `Publication` is an immutable snapshot of an item (title, slug, summary, body, url, type) with `snapshotProvenance`, `destination` (`personal_site`, `x`, `instagram`, `threads`), `status` (`queued`, `published`, `not_configured`, `failed`, `cancelled`), and `revision`. The page has destination and status tabs. A detail view shows the snapshot, the consent, and `PublishJob` attempts (`status`, `attempts`, `maxAttempts`, `errorMessage`).
+
+Cancel a request that was never dispatched with `cancelExternal`. Publications for the personal site are created by `publishItem`; one canonical publication exists per item at a time.

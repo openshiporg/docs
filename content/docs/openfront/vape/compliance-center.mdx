@@ -1,0 +1,14 @@
+---
+title: Compliance Center
+description: Readiness blockers, safety controls, and recent reports.
+icon: ShieldCheck
+---
+
+Route: `/dashboard/platform/compliance`. Needs `canReadCompliance`.
+
+- **Readiness:** `regulatedCommerceReadiness` lists every blocker (profile, kill switch, launch jurisdictions, rule sets, provider authority, sellable product evidence) with counts and links to the page that fixes it. Readiness codes include `EXACTLY_ONE_ACTIVE_MERCHANT_PROFILE_REQUIRED`, `ACTIVE_REVIEWED_POLICY_REQUIRED`, `<PURPOSE>_PROVIDER_AUTHORITY_REQUIRED`, and `CURRENT_PRODUCT_AND_FEDERAL_AUTHORITY_REQUIRED`.
+- **Safety controls** (`MerchantSafetyActions`): Emergency stop (needs `canOperateComplianceKillSwitch`; give a reason of 10 to 500 characters) and Export inventory (needs `canManageComplianceReports`).
+- **Provider approval sheet:** create an approval without leaving the page.
+- **Recent reports:** the latest six `ComplianceReportRun` rows.
+
+To resume sales after a stop, open the profile in [Merchant Profiles](/docs/openfront/vape/merchant-profiles) and use Resume sales after review.

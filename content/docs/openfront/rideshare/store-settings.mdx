@@ -1,0 +1,29 @@
+---
+title: Store settings
+description: Create a fleet, go live, choose operations mode and rider accounts, and set storefront branding.
+icon: Settings
+---
+
+`/dashboard/platform/settings` combines fleet setup, go-live, and branding.
+
+## Create a fleet
+
+`setupFleet(name, publicCity, countryCode, currencyCode, timezone)` creates a fleet in status `setup` with you as `owner`.
+
+## Go live
+
+| Setting | Values | Effect |
+|---|---|---|
+| Fleet status | `setup`, `active`, `paused` | Only `active` fleets accept bookings |
+| Operations mode | `off`, `manual` | `manual` enables dispatch |
+| Rider accounts | `closed`, `open` | `open` lets riders sign up at `/account/signup` |
+
+The page shows a checklist for status, manual dispatch, and rider accounts. Other fleet fields: `publicDescription`, `publicCity`, `countryCode`, `currencyCode`, `timezone`, `supportEmail`, `supportPhone`, and `preciseLocationRetentionDays` (default 30).
+
+## Branding
+
+`saveFleetBranding(fleetId, expectedUpdatedAt, logoIcon, logoColor, idempotencyKey, expectedActorId)` sets the logo icon and color shown on the storefront. Each save is journaled in `FleetBrandingChange`, and a stale `expectedUpdatedAt` is refused with "Branding changed. Read the current settings before saving again."
+
+## Marketplace listing
+
+Each fleet has a `MarketplaceRegistration` (`draft`, `active`, `paused`, `revoked`) that lets the public `marketplaceRideshare*` queries list its services.

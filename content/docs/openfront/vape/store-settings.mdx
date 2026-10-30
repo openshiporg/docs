@@ -1,0 +1,15 @@
+---
+title: Store settings
+description: Business details, the five required policies, and regions.
+icon: Settings
+---
+
+Route: `/dashboard/platform/store`. Needs `canManageStore`-level access.
+
+`Store.metadata.business`: legal name, email, phone, address, and licence lines. `Store.metadata.policies`: shipping, returns, age verification, privacy, and terms. The storefront serves the five policies at `/policies/[slug]`. The release gate blocks sales until the legal name, one licence line, and all five policies exist (`STORE_POLICIES_REQUIRED`). Required regulatory warning copy is yours to supply.
+
+Also here: store name, homepage title and description, logo icon and color, and default currency.
+
+## Regions
+
+`/dashboard/platform/regions` (and `/countries`, `/currencies`, `/markets`). Onboarding creates region `us` with tax rate 0, which regulated carts require. Tax for regulated carts comes from the tax quote, not the generic rate.

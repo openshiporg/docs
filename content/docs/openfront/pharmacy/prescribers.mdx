@@ -1,0 +1,23 @@
+---
+title: Prescribers
+description: Prescriber directory, NPI, credential evidence, and eRx validation.
+icon: Stethoscope
+---
+
+`/dashboard/platform/prescribers` lists prescribers (`pharmacyPrescriberDirectory`). `/dashboard/platform/prescribers/[id]` shows their prescriptions, credential state, and edit form.
+
+## Fields
+
+`name`, `npi`, `phone`, `fax`, `externalIdentifier`, `verificationStatus` (`unverified`, `pending`, `validated`, `rejected`), `verificationMethod` (`not_recorded`, `organization_recorded`, `external_provider`), `credentialType`, `credentialJurisdiction`, `credentialIdentifier`, `credentialExpiresAt`, `validationReference`, and `validatedAt`.
+
+## Add and edit
+
+Use the create drawer for a new prescriber (`canManagePrescriptions`). The credential fields are not editable in the drawer. They are set by a credential review.
+
+## Record a credential review
+
+`recordPharmacyPrescriberCredentialReview` stores the credential type, jurisdiction, identifier, expiry, and verification reference, with a reason and attestation. The expiry must be in the future. A prescriber needs an NPI and a current review before their prescriptions can be approved.
+
+## Validate through eRx
+
+When an eRx provider is configured on [Integrations](/docs/openfront/pharmacy/integrations), the detail page offers Validate. `validatePharmacyPrescriber` calls the provider's prescriber path with the NPI and records the result (`externalValidationComplete`, `validatedAt`, `validationReference`).

@@ -1,0 +1,29 @@
+---
+title: Accept tips and memberships
+description: Connect Stripe and show support options.
+icon: Heart
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set environment
+Set `STRIPE_SECRET_KEY`, a publishable key, `STRIPE_WEBHOOK_SECRET`, and `PUBLIC_SITE_ORIGIN`.
+</Step>
+<Step>
+### Create the provider
+Add a `PaymentProvider` with a `pp_stripe` code in `/dashboard/payment-providers`.
+</Step>
+<Step>
+### Add the webhook
+In Stripe point an endpoint to `/api/payment-webhooks/<providerId>`.
+</Step>
+<Step>
+### Add tiers
+Create tiers at `/dashboard/membership-tiers` with a Stripe Price ID.
+</Step>
+<Step>
+### Check your profile
+Open `/<handle>` and confirm Support and membership sections show.
+</Step></Steps>

@@ -1,0 +1,20 @@
+---
+title: Store settings
+description: Store name, tagline, logo, support contact, privacy notice, and location hours.
+icon: Settings
+---
+
+`/dashboard/platform/store-settings` edits the `Organization` branding that the storefront shows.
+
+| Setting | Where it appears |
+|---|---|
+| Store name (`operatorDisplayName`) | Header, labels, and receipts |
+| Tagline (`operatorTagline`) | Storefront home |
+| Logo icon and color | Pick an icon (or paste SVG code) and a color. A live preview shows the storefront header |
+| Support email and phone | Storefront footer and order pages |
+| Privacy notice | `/privacy` and the checkout consent |
+| Location hours | Store and pharmacy-counter hours per location, shown on the storefront home and `/prescriptions` |
+
+Save with the Save button; the page reports success or the validation error.
+
+Cash tax rate and fill policy are not here. They are on [Payments](/docs/openfront/pharmacy/payment-providers) and [Credential review](/docs/openfront/pharmacy/staff-credentials) because they need an attested reason.

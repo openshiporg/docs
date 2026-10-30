@@ -1,0 +1,47 @@
+---
+title: Roles and permissions
+description: The 19 role flags, membership roles, location scope, and who can run each command.
+icon: Shield
+---
+
+Access has three layers.
+
+1. **Role flags.** A `User` has one `Role` with 19 boolean flags. Edit roles at `/dashboard/roles`.
+2. **Membership.** `OrganizationMembership` ties a user to an organization, org-wide or for one location, with a membership role. Queries filter to the caller's active memberships.
+3. **Attestation.** Consequential commands need a reason of 8 characters or more and an attestation, and the server records a `HumanApproval`.
+
+## Role flags
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Open `/dashboard`, MCP, and AI chat |
+| `canManageOrganizations` | Edit organization settings |
+| `canManageLocations` | Create and edit locations |
+| `canManageUsers` | Memberships and users |
+| `canManageRoles` | Edit roles |
+| `canManageCatalog` | Products and drug references |
+| `canManageInventory` | Lots, receiving, adjustments, suppliers |
+| `canManageRecalls` | Open and run recalls |
+| `canManagePatients` | Patient records |
+| `canViewPatientPrivateData` | Identity and contact details |
+| `canManagePrescriptions` | Intake, prescribers, requests |
+| `canReviewPrescriptions` | Pharmacist review, refill and transfer decisions |
+| `canDispenseMedications` | Reserve fills and dispense |
+| `canManageOrders` | Fulfillment transitions |
+| `canManagePayments` | Providers, refunds, reconciliation, cash policy |
+| `canManageIntegrations` | Integration providers, outbox replay |
+| `canManageOnboarding` | Onboarding cards |
+| `canViewAuditLogs` | Audit page |
+| `canApproveConsequentialActions` | Approve consequential actions |
+
+## Membership roles
+
+`owner`, `administrator`, `pharmacist`, `technician`, `cashier`, `delivery`, `read_only`. Pharmacist commands (intake, safety review, authorization, dispensing, refill decisions, transfer approval) need an active owner or pharmacist membership at the prescription's location, plus a current credential review. Only owners can add or change owners.
+
+## First user
+
+The first account at `/dashboard/init` gets the `Admin` role with all flags. Create narrower roles for the rest of the team and give each person only the flags their job needs.
+
+## Customers
+
+Storefront customers have no role. They sign in with the Keystone session, and see their own orders, prescriptions, and requests through patient-safe projections.

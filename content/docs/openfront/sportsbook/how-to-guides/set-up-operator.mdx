@@ -1,0 +1,25 @@
+---
+title: Set up the operator
+description: First admin, two-factor, onboarding, and the independent approver.
+icon: Settings
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the admin
+Visit `/dashboard/init`; the first user gets every flag except `canApproveSensitiveActions`.
+</Step>
+<Step>
+### Enrol two-factor
+At `/dashboard/platform/security` scan the code and verify.
+</Step>
+<Step>
+### Run onboarding
+At `/dashboard/platform/onboarding` preview and apply: tenant, brand, currency, jurisdiction, providers, and a starter catalog.
+</Step>
+<Step>
+### Create the approver
+At `/dashboard/platform/roles` run Bootstrap independent approver.
+</Step></Steps>

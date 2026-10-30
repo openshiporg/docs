@@ -1,0 +1,21 @@
+---
+title: Create a role and a user
+description: Give someone limited dashboard access.
+icon: Shield
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the role
+At `/dashboard/roles/create` name it and tick `canAccessDashboard` plus the flags needed.
+</Step>
+<Step>
+### Create the user
+At `/dashboard/users/create` enter name, email, password, and pick the role.
+</Step>
+<Step>
+### Test
+Sign in as that user and check which pages and buttons appear.
+</Step></Steps>

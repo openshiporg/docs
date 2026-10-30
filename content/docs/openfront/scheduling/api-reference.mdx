@@ -1,0 +1,24 @@
+---
+title: API reference
+description: Named GraphQL operations at /api/graphql.
+icon: Code
+---
+
+Endpoint: `/api/graphql`. Operator commands take `idempotencyKey`.
+
+```graphql
+query Slots($eventTypeId: ID!) {
+  storefrontAvailability(eventTypeId: $eventTypeId, from: "2026-11-02", to: "2026-11-08", timeZone: "America/New_York") { start end }
+}
+```
+
+- **Storefront:** `storefrontSettings`, `storefrontEventTypes`, `storefrontAvailability`, `storefrontRoutingForms`, `storefrontRoutingForm`, `storefrontEmbedConfigs`, `storefrontManagedBooking`, `storefrontManagedBookingSeries`, `storefrontManagedBookingAvailability`, `createStorefrontBookingHold`, `createStorefrontRecurringBookingHold`, `createStorefrontBooking`, `createStorefrontRecurringBooking`, `closeStorefrontBookingAttempt`, `manageStorefrontBooking`, `manageStorefrontBookingSeries`, `evaluateStorefrontRouting`, `recoverStorefrontBookingCommand`.
+- **Customer account:** `registerSchedulingCustomer`, `customerProfile`, `updateSchedulingCustomerProfile`, `changeSchedulingCustomerPassword`, `requestSchedulingCustomerEmailChange`, `confirmSchedulingCustomerEmailChange`, `requestSchedulingPasswordReset`, `redeemSchedulingPasswordReset`, `customerBookingHistory`, `customerBookingHistoryPage`, `customerBookingDetail`, `customerBookingAvailability`, `manageCustomerBooking`.
+- **Bookings and availability:** `transitionBooking`, `operatorBookingAcceptedEvidence`, `operatorBookingRecoveryOptions`, `manageAvailabilityOverride`.
+- **Catalog and resources:** `configureEventPaymentPolicy`, `applyManagedEventTemplate`, `detachManagedEventTemplate`, `upsertSchedulingResource`, `transitionSchedulingResource`, `configureEventResourceRequirement`.
+- **Team:** `inviteTeamMember`, `resendTeamInvitation`, `revokeTeamInvitation`, `acceptTeamInvitation`, `retryTeamInvitationDelivery`, `manageTeamMember`, `transferTeamOwnership`.
+- **Integrations and delivery:** `beginCalendarOAuth`, `completeCalendarOAuth`, `syncCalendarConnection`, `retryCalendarOperation`, `configureStripePaymentProvider`, `initiateBookingPayment`, `transitionBookingPayment`, `retryPaymentOperation`, `configureConferencingConnection`, `retryConferenceOperation`, `retryWorkflowAction`, `transitionWebhookDelivery`, `transitionNotificationSubscription`, `publishEmbedConfig`.
+- **Developers, data, analytics:** `createSchedulingApiKey`, `revokeSchedulingApiKey`, `createSchedulingOAuthClient`, `revokeSchedulingOAuthClient`, `machineViewer`, `createSchedulingDataJob`, `retrySchedulingDataJob`, `schedulingAnalytics`.
+- **Onboarding:** `bootstrapSchedulingOnboarding`, `upsertSchedulingOnboardingSampleBooking`, `upsertSchedulingOnboardingCalendarConnection`, `upsertSchedulingOnboardingPaymentProvider`, `updateSchedulingStorefrontBrandHue`.
+
+HTTP endpoints: `/api/payments/webhook/[providerCode]`, `/api/calendar/callback`, `/api/oauth/token`, `/api/embed/v1.js`, `/api/mcp-transport/http`, `/api/completion`. GraphQL uses CSRF prevention and query depth and size limits.

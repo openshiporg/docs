@@ -1,0 +1,13 @@
+---
+title: Creators
+description: The creator directory and adding creator accounts.
+icon: Users
+---
+
+`/dashboard/platform/users` is visible to roles with `canManagePeople` (and `canSeeOtherPeople` for the directory). It lists each creator with their site and content counts, up to 20 records per page (`creatorDirectory`).
+
+## Add a creator
+
+`adminCreateCreator(name, email, password)` creates a user with the `creator` role. The password must be at least 12 characters and not common. Use this when `PUBLIC_SIGNUPS_ALLOWED` is not `true`. When it is `true`, creators register themselves at `/account/signup` (`createCreatorAccount`).
+
+The `creator` role can use the studio and onboarding. It cannot see or manage other people.

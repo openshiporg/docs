@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "prepare-to-dispense",
+    "fill-prescription",
+    "receive-inventory-lot",
+    "handle-refill-request",
+    "transfer-prescription",
+    "run-recall",
+    "payment-at-pickup"
+  ]
+}

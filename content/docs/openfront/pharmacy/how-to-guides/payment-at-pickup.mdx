@@ -1,0 +1,32 @@
+---
+title: Take payment at pickup
+description: Prepare a pay-at-pickup order, hand it off, and refund if needed.
+icon: HandCoins
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Install pay at pickup
+On `/dashboard/platform/payments` confirm the "Pay at pickup" provider is installed.
+</Step>
+<Step>
+### The customer orders
+At checkout the customer chooses pickup and Pay at pickup. The order commits with a pending payment.
+</Step>
+<Step>
+### Prepare
+Open `/dashboard/platform/orders/[id]` and move the fulfillment to `preparing`, then `ready`.
+</Step>
+<Step>
+### Hand off
+Collect payment at the counter. The assigned staff member records `handed_off`. The order becomes `completed`.
+</Step>
+<Step>
+### Refund
+For a returned order, run the cash refund with the cash returned amount, a reason, and attestation. It must equal the captured amount.
+</Step>
+</Steps>
+
+For walk-in OTC sales use [Point of sale](/docs/openfront/pharmacy/pos).

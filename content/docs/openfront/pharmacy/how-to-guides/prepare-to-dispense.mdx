@@ -1,0 +1,38 @@
+---
+title: Prepare to dispense
+description: Complete the setup checklist so the first prescription can be taken in and dispensed.
+icon: ListChecks
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Dispensing is blocked until six records exist. The checklist is on `/dashboard/platform/credentials`.
+
+<Steps>
+<Step>
+### Review a pharmacist credential
+Open Staff (`/dashboard/platform/staff`), pick the pharmacist's membership, and record the credential type, jurisdiction, identifier, an expiry in the future, and your verification reference. Command: `recordPharmacyStaffCredentialReview`.
+</Step>
+<Step>
+### Add and review a prescriber
+Create the prescriber with an NPI at `/dashboard/platform/prescribers`, then record the credential review (`recordPharmacyPrescriberCredentialReview`).
+</Step>
+<Step>
+### Review the drug reference
+Open the drug at `/dashboard/platform/drug-references`, enter the source name, version, reference, marketing status `active`, and schedule `none`. Command: `recordPharmacyDrugReferenceReview`.
+</Step>
+<Step>
+### Link a product to the drug
+Create the product with `prescriptionRequirement` set to `prescription_required` and the drug reference selected, then publish it.
+</Step>
+<Step>
+### Record the cash and tax policy
+On `/dashboard/platform/payments`, enter the sales-tax rate and a policy reference. Command: `recordPharmacyCashPolicy`.
+</Step>
+<Step>
+### Record the fill policy
+On the credentials page, set version, reference, partial fills allowed, reservation minutes, and release reasons. Command: `recordPharmacyFillPolicy`.
+</Step>
+</Steps>
+
+Then receive stock ([Receive an inventory lot](/docs/openfront/pharmacy/how-to-guides/receive-inventory-lot)) and [fill a prescription](/docs/openfront/pharmacy/how-to-guides/fill-prescription).

@@ -11,7 +11,7 @@ Skill file: [`/skills/openfront-sportsbook-custom-storefront/SKILL.md`](/skills/
 
 ## Current storefront routes
 
-Routes live at the app root; logic lives in `features/storefront` (`sportsbook/screens`, `customer/*/screens`, `lib/data`). Pages render server-side, then call the customer API under `/api/sandbox/sportsbook/*`. Outside sandbox mode those calls return `SANDBOX_DISABLED` and pages show "Betting closed".
+Routes live at the app root; logic lives in `features/storefront` (`sportsbook/screens`, `customer/*/screens`, `lib/data`). Pages render server-side, then call the customer API under `/api/sandbox/sportsbook/*`. Until the tenant is ready (licence, payment connection, active policy) pages show "Betting closed".
 
 | Route | Customer journey |
 |---|---|
@@ -46,9 +46,8 @@ Routes live at the app root; logic lives in `features/storefront` (`sportsbook/s
 | `/promotions`, `/disputes` | `GET`/`POST`; `GET`/`POST`/`PUT` |
 | `/register` | `POST` |
 
-## Journey boundaries
+## Journey notes
 
 - The customer session is an `openfront_customer` cookie. Commands take an idempotency key and are recorded in `CustomerCommand`.
 - Quotes expire. A client must re-quote rather than reuse an old price, and show the server's rejection code when placement is refused.
-- Verification, location, and payments all use sandbox adapters. There is no real identity, geolocation, or payment provider behind these screens.
 - Customers cannot create raw GraphQL records; the GraphQL API serves operator sessions.

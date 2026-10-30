@@ -1,0 +1,28 @@
+---
+title: Run a trip
+description: Move a trip from assignment to completion.
+icon: Route
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Start heading to pickup
+The driver presses On my way (`start_en_route`). Scheduled trips open two hours before pickup.
+</Step>
+<Step>
+### Arrive
+Press Arrived (`arrive`). The rider sees the status on their ride page.
+</Step>
+<Step>
+### Start the trip
+Press Start trip (`start_trip`) when the rider is in the vehicle.
+</Step>
+<Step>
+### Complete
+Press Complete (`complete`). Payment can now be recorded or paid by card.
+</Step>
+</Steps>
+
+If the rider does not show, press No-show after arriving (`no_show`). The trip's timeline lists every transition.

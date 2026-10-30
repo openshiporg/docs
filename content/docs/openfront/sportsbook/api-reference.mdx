@@ -1,0 +1,37 @@
+---
+title: API reference
+description: GraphQL operations for operators and REST routes for customers.
+icon: Code
+---
+
+## GraphQL (`/api/graphql`)
+
+Operator session with verified two-factor. Query size, depth, and alias limits apply, with a 256 KB body cap. Most lists are read-only; changes use named mutations.
+
+Queries: `redirectToInit`, `operatorSessionAssured`, `fullStraightSettlementPlan`.
+
+| Area | Mutations |
+|---|---|
+| Identity | `createInitialUser`, `bootstrapOperatorAdmin`, `beginOperatorMfaEnrollment`, `completeOperatorMfaEnrollment`, `verifyOperatorMfaSession`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`, `bootstrapIndependentApprover`, `requestRoleDefinition`, `applyApprovedRoleDefinition`, `requestRoleGrant`, `applyApprovedRoleGrant`, `requestRoleRevocation`, `applyApprovedRoleRevocation`, `requestOperatorAdmission`, `applyApprovedOperatorAdmission`, `requestSensitiveApproval`, `decideSensitiveApproval` |
+| Onboarding and configuration | `previewSportsbookOnboarding`, `applySportsbookOnboarding`, `dismissOperatorOnboarding`, `requestSettingChange`, `applyApprovedSetting`, `requestLegalEntity`, `applyLegalEntity`, `createJurisdictionPolicyDraft`, `requestJurisdictionActivation`, `applyJurisdictionActivation`, `requestOperatorBrand`, `applyOperatorBrand`, `requestTenantCurrency`, `applyTenantCurrency`, `requestBrandLocale`, `applyBrandLocale`, `requestHouseRule`, `applyHouseRule`, `requestFeatureFlag`, `applyFeatureFlag` |
+| Catalog and trading | `createCatalogEvent`, `createCatalogSport`, `createCatalogCompetition`, `createCompetitionSeason`, `createCatalogStage`, `createCatalogVenue`, `createCatalogCompetitor`, `setCatalogReferenceStatus`, `attachEventParticipant`, `rescheduleEvent`, `createEventMarket`, `setEventTradingState`, `ingestSandboxPrice`, `setMarketPrices`, `setMarketStatus`, `suspendMarket`, `requestTraderOverride`, `applyTraderOverride`, `requestCorrelationRule`, `applyCorrelationRule`, `createRiskLimit` |
+| Wagers and settlement | `ingestSandboxResult`, `requestResultApproval`, `withdrawResultVersion`, `approveResultVersion`, `gradeMarket`, `gradeMarketSelection`, `settleWager`, `requestResettlementApproval`, `resettleWager`, `settleCombinationWager`, `requestCombinationResettlement`, `resettleCombinationWager`, `requestCashOutCorrection`, `correctCashOut`, `openWagerInvestigation` |
+| Finance | `sandboxPayment`, `openChargeback`, `runReconciliation`, `runSafeguardingReconciliation`, `requestTaxRule`, `applyTaxRule`, `assessSettlementTax`, `requestLedgerAdjustment`, `applyLedgerAdjustment` |
+| Customers and compliance | `openVerificationCase`, `decideVerificationCase`, `reviewAMLCase`, `recordComplianceScreening`, `transitionPrivacyRequest`, `setResponsibleGamingLimit`, `selfExclude`, `setSupportCaseStatus`, `requestDisputeResolution`, `withdrawDisputeProposal`, `applyDisputeResolution` |
+| Promotions and providers | `createPromotionCampaign`, `requestPromotionActivation`, `applyPromotionActivation`, `mapProviderEntity`, `runAdapterCertification`, `runTradingReplay`, `setProviderOperationalState`, `requestWebhookEndpoint`, `applyWebhookEndpoint`, `testWebhookEndpoint` |
+| Operations and reports | `enqueueRecovery`, `replayQueueItem`, `scheduleOperationalJob`, `openOperationalIncident`, `setIncidentStatus`, `generateComplianceReport`, `runRetentionDryRun`, `requestRetentionExecution`, `applyRetentionExecution`, `requestDataExport`, `applyApprovedDataExport` |
+
+## Customer REST (`/api/sandbox/sportsbook/*`)
+
+| Route | Methods |
+|---|---|
+| `session` | `GET`, `DELETE` |
+| `auth/register`, `auth/login`, `auth/recovery`, `auth/devices` | `GET`/`POST`, `POST`, `POST`/`PUT`, `GET`/`DELETE` |
+| `catalog`, `favorites` | `GET`; `GET`/`PUT` |
+| `quote`, `quote-combination`, `wager`, `wager-combination` | `POST` |
+| `bets`, `cashout` | `GET`; `GET`/`POST`/`PUT` |
+| `wallet`, `statements` | `GET`/`PUT`/`POST`; `GET`/`POST` |
+| `limits`, `responsible-play`, `closure` | `GET`/`POST` |
+| `profile`, `verification`, `privacy`, `privacy/export` | `GET`/`PUT`, `POST`, `GET`/`POST`, `GET` |
+| `promotions`, `disputes` | `GET`/`POST`; `GET`/`POST`/`PUT` |
+| `register` | `POST` |

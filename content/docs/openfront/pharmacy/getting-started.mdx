@@ -4,8 +4,6 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js 20 or later (`package.json` `engines` is `>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
@@ -13,9 +11,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - A PostgreSQL database you are allowed to migrate.
 - S3-compatible object storage. It is required when `NODE_ENV=production`.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [pharmacy.openship.org](https://pharmacy.openship.org). It holds sample data only. It is not a real pharmacy.
+The hosted app is at [pharmacy.openship.org](https://pharmacy.openship.org).
 
 ## Install
 
@@ -49,7 +47,7 @@ The code also reads these optional settings:
 | `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open the dashboard sign-up page (`/dashboard/signup`). Off by default |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email and links in emails |
 | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment adapter and the storefront card step |
-| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment adapter (server side only; see [integrations](/docs/openfront/pharmacy/integrations-boundaries)) |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment adapter (see [Payment providers](/docs/openfront/pharmacy/payment-providers)) |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
 | `NEXT_PUBLIC_VIEW_ORDER` | Fallback dashboard field view order when the generated file is missing |
 
@@ -65,9 +63,7 @@ npm run dev
 
 To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
 
-<Callout type="warn">
-`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 
@@ -84,7 +80,7 @@ While the database has no users, every request redirects to `/dashboard/init`. T
 
 Customer accounts are created on the storefront through `registerPharmacyCustomer`. That mutation refuses to run while no users exist, so the first user must come from `/dashboard/init`.
 
-Give other staff only the permissions their job needs. A role with dashboard access does not make someone a pharmacist. Licensure checks happen outside this software. The app only stores the evidence an operator records.
+Give other staff only the permissions their job needs. A role with dashboard access does not make someone a pharmacist. Licensure is checked by your pharmacy. The app stores the evidence an operator records.
 
 ## Onboarding
 
@@ -99,8 +95,6 @@ Onboarding also records a cash policy with a 0% tax rate, reviewed by you. It cr
 
 Onboarding runs only on a new install. It fails if you already have an active membership, or if the seed organization or location code already exists. If you already own the seed organization, it marks onboarding complete and returns the existing counts. `setPharmacyOnboardingStatus` only changes your own onboarding status.
 
-The seed records are sample data. They are not real patients, prescribers, drug references, prices, or stock.
-
 ## Before dispensing
 
 The Credential review page (`/dashboard/platform/credentials`) shows a setup checklist. Dispensing needs all of these:
@@ -112,15 +106,4 @@ The Credential review page (`/dashboard/platform/credentials`) shows a setup che
 5. A stocked prescription product.
 6. A fill policy for the organization (`recordPharmacyFillPolicy`).
 
-## Deploy
-
-1. Provision PostgreSQL and S3-compatible storage. Set `DATABASE_URL`, `SESSION_SECRET`, the five `S3_*` values, and any optional providers you use.
-2. Build with `npm run build`. It runs `keystone build --no-ui && next build` and does not migrate.
-3. Apply migrations as a separate release step with `npm run migrate` or `npm run release:migrate`. Back up existing data first.
-4. Start with `npm start`.
-
-The repository includes a `railway.toml`. It builds with `keystone build --no-ui && next build` and runs `npm run migrate && next start` at deploy time. The README's Vercel button imports the repository and asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to add the S3 values and provider settings yourself.
-
-Onboarding stores the host you ran it from as the organization's `storefrontHost` (on `localhost` it uses the seed slug). The Store settings page does not edit this field. With a single active organization the storefront falls back to it anyway. Register the payment and integration webhook URLs with your providers. See [Integrations and boundaries](/docs/openfront/pharmacy/integrations-boundaries).
-
-Read [Current limitations](/docs/openfront/pharmacy/limitations) before using real data.
+Next: [Prepare to dispense](/docs/openfront/pharmacy/how-to-guides/prepare-to-dispense), then [Deployment](/docs/openfront/pharmacy/deployment).

@@ -1,0 +1,36 @@
+---
+title: Deployment
+description: Provision PostgreSQL, set secrets, migrate, and host Openfront Rideshare.
+icon: Rocket
+---
+
+## Requirements
+
+- PostgreSQL you can migrate
+- `DATABASE_URL` and a `SESSION_SECRET` of at least 32 characters (startup throws in production otherwise)
+- Optional: S3-compatible storage (five `S3_*` variables, active when `S3_BUCKET_NAME` is set), SMTP for password reset, `STRIPE_SECRET_KEY` for rider card payments, `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` for the dashboard assistant
+
+## Build and run
+
+| Step | Command |
+|---|---|
+| Build | `npm run build` (`keystone build --no-ui && next build`, no migration) |
+| Migrate | `npm run migrate` (`prisma migrate deploy`). Back up retained data first |
+| Start | `npm start` |
+
+## Railway
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because builds cannot reach internal databases. Add Postgres, set the variables, and deploy.
+
+## Vercel
+
+The README's Deploy with Vercel button prompts for `DATABASE_URL` and `SESSION_SECRET`. Run `npm run migrate` against the production database as a release step.
+
+## After deploy
+
+1. Open `/dashboard/init` to create the first user (Admin role).
+2. Run onboarding or follow [Set up a fleet](/docs/openfront/rideshare/how-to-guides/set-up-fleet).
+3. In Settings set the fleet to `active`, operations mode to `manual`, and rider accounts to `open` or `closed`.
+4. For card payments set `STRIPE_SECRET_KEY` and install the Stripe provider. See [Payment providers](/docs/openfront/rideshare/payment-providers).
+
+Set `PUBLIC_SIGNUPS_ALLOWED=true` only if you want open dashboard and rider signup.

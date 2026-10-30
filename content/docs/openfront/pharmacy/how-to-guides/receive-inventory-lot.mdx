@@ -1,0 +1,32 @@
+---
+title: Receive an inventory lot
+description: Record a delivery from a wholesaler and correct counts later.
+icon: PackagePlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the supplier
+At `/dashboard/platform/suppliers` create the wholesaler with a name and account reference and set it to `active`.
+</Step>
+<Step>
+### Open Receive
+Go to `/dashboard/platform/inventory/receive`. Choose the product, location, and supplier.
+</Step>
+<Step>
+### Enter the lot
+Lot number, serial number if the product has one, expiration date (must be in the future), and quantity.
+</Step>
+<Step>
+### Confirm
+Add a reason and attest. The lot is created as `available` with a `receive` movement.
+</Step>
+<Step>
+### Correct a count
+Open the lot, enter the counted quantity and a reason, and attest. An `adjust` movement is written. The quantity cannot go below the quarantined amount.
+</Step>
+</Steps>
+
+Cold-chain lots cannot be received on this form. Expiring stock within 60 days shows on the [Overview](/docs/openfront/pharmacy/overview).

@@ -1,20 +1,15 @@
 {
   "title": "Openfront Social",
-  "description": "Creator-owned personal sites with collections, versioned publishing, destination consent, and privacy review",
+  "description": "Creator-owned personal sites with collections, versioned publishing, destination consent, tips, and privacy review",
   "icon": "PenLine",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "architecture-workflows",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront",
-    "---Integrations---",
-    "integrations-boundaries",
-    "---Advanced Features---",
-    "limitations"
+    "---Introduction---","index","getting-started","deployment",
+    "---Dashboard---","overview","items","collections","store-settings","publications","destinations","activity-your-data","creators","privacy-requests","external-dashboard",
+    "---Storefront---","storefront","tips-memberships","external-storefront",
+    "---Integrations---","integrations","payment-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","roles-permissions","data-model",
+    "---API---","api-reference","troubleshooting"
   ]
 }

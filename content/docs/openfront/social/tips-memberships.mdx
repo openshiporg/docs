@@ -1,0 +1,41 @@
+---
+title: Tips and memberships
+description: Accept one-off tips and recurring memberships through Stripe Checkout.
+icon: Heart
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Tips
+
+The profile page shows Support this creator with an amount and an optional email. `startTip(handle, amountMinor, currency, email, message, idempotencyKey)` creates a `Tip` (status `pending`) and a Checkout session, then sends the visitor to Stripe.
+
+- currency is `usd`
+- amount must be within the site's `minimumTipMinor` and `maximumTipMinor`
+- messages are cut at 500 characters
+- the same idempotency key cannot be used twice
+
+The webhook sets the tip to `succeeded` when the Checkout session is paid.
+
+## Memberships
+
+A `MembershipTier` has `name`, `priceMinor` (at least 50), `interval` (`month` or `year`), and `providerPriceId` (a Stripe Price ID). The profile lists tiers from `paymentTiers(handle)`. Join runs `startMembership(handle, tierId, email)` and opens a subscription Checkout. `Membership` rows hold `status`, `providerSubscriptionId`, and `currentPeriodEnd`.
+
+## Set up
+
+<Steps>
+<Step>
+### Install a provider
+Add a `PaymentProvider` at `/dashboard/payment-providers`. See [Payment providers](/docs/openfront/social/payment-providers).
+</Step>
+<Step>
+### Add tiers
+In `/dashboard/membership-tiers` create tiers with the Stripe Price ID.
+</Step>
+<Step>
+### Set tip bounds
+Adjust the minimum and maximum on the site.
+</Step>
+</Steps>
+
+Tips and memberships are read-only in the studio lists; they are written by checkout and the webhook.

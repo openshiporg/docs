@@ -1,0 +1,13 @@
+---
+title: Shipping providers
+description: Shippo, ShipEngine, and manual carriers, rates, labels, and options.
+icon: Truck
+---
+
+Routes: `/dashboard/platform/shipping-providers`, `/shipping-options`, `/shipping`.
+
+Adapters in `features/integrations/shipping`: `shippo`, `shipengine`, `manual`. They provide rates, labels, cancellation, tracking, and address validation. Credentials are stored on the `ShippingProvider` record (`accessToken` or `credentialReference`), not in environment variables, together with the from address.
+
+`ShippingOption`: `priceType` (`flat_rate`, `calculated`, `free`), amount, return and admin-only flags, and requirements (`min_subtotal`, `max_subtotal`). Onboarding seeds Standard, Express, and Return options and a manual fulfillment provider (`fp_manual`).
+
+For regulated orders, the carrier needs an active carrier [provider approval](/docs/openfront/vape/provider-approvals) bound to the `ShippingProvider`, and labels need an adult-signature eligibility decision.

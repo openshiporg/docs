@@ -1,58 +1,46 @@
 ---
 title: Openfront Sports Agents
-description: What the Sports Agents repository contains today, who it is for, its surfaces, and how ownership works.
+description: A self-hosted Openfront workspace with a role-based dashboard, user and role management, task records with images, GraphQL, AI chat, and MCP.
 icon: Trophy
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-Openfront Sports Agents is a self-hosted Openfront application built on Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The public repository is at [github.com/openshiporg/openfront-sports-agents](https://github.com/openshiporg/openfront-sports-agents).
+Openfront Sports Agents is a self-hosted Openfront application built on Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The source is at [github.com/openshiporg/openfront-sports-agents](https://github.com/openshiporg/openfront-sports-agents).
 
-<Callout type="warn">
-The sports-agents domain has not been built yet in the public source. There are no sports, athlete, agent, client, contract, or deal models. There are no Sports Agents platform pages and no customer-facing storefront. The repository today is close to the next-keystone-starter template, and its README is still the starter's README. These pages describe only what exists in the code now.
-</Callout>
+## What it contains
 
-## What exists today
+- **Dashboard** at `/dashboard`: list, create, and item pages for every Keystone list, first-user setup, sign-in, optional sign-up, password reset, and a no-access page.
+- **Users and roles:** `User` and `Role` lists with seven permission flags. The first user gets an `Admin` role with every flag on.
+- **Task records:** `Todo` (assignee, status, priority, tags, dates, budget, notes, cover image) and `TodoImage` (image library attached to tasks).
+- **AI chat:** a dashboard sidebar that calls `/api/completion` through OpenRouter.
+- **MCP endpoint:** `/api/mcp-transport/[transport]` exposes generic GraphQL tools using the caller's session.
+- **GraphQL API:** `/api/graphql`, served by GraphQL Yoga with the Keystone schema.
+- **Image storage:** `Todo.coverImage` and `TodoImage.image` use an S3-compatible bucket.
 
-- **Data models.** Four Keystone lists: `User`, `Role`, `Todo`, and `TodoImage`. `Todo` is the starter's example content model. It shows each field type (text, document, select, multiselect, integer, float, decimal, bigInt, timestamp, json, password, image, relationship).
-- **Dashboard.** The shared Openfront admin shell at `/dashboard`. It has generic list, item, and create pages for every Keystone list, plus first-user setup, sign-in, optional sign-up, password reset, and a no-access page.
-- **Roles and permissions.** A `Role` list with checkbox permission flags. The first user gets an Admin role with every flag on.
-- **AI chat.** A dashboard chat sidebar that calls `/api/completion`. It uses OpenRouter, either with server keys or with keys the user stores in their own browser.
-- **MCP endpoint.** `/api/mcp-transport/[transport]` exposes generic GraphQL tools (list models, query, create, update, delete, search). It acts with the caller's session cookie.
-- **GraphQL API.** `/api/graphql`, served by GraphQL Yoga with the Keystone schema.
-- **Image storage.** `Todo.coverImage` and `TodoImage.image` use an S3-compatible bucket.
+## Surfaces
 
-## Who it is for
-
-Right now the repository is useful to developers who want to start building the Sports Agents product on the shared Openfront stack. It is not yet useful to a sports agency as a working product.
-
-## Product surfaces
-
-| Surface | Path | Status in current source |
+| Surface | Path | Purpose |
 |---|---|---|
-| Landing page | `/` | The starter's welcome page with links to `/dashboard` and `/api/graphql` |
-| Admin dashboard | `/dashboard` | Generic Keystone list and item pages for `User`, `Role`, `Todo`, `TodoImage` |
-| Platform pages | `/dashboard/platform/...` | Not present. There is no `features/platform` folder |
-| Storefront | none | Not present. There is no `features/storefront` folder |
+| Landing page | `/` | Links to `/dashboard` and `/api/graphql` |
+| Dashboard | `/dashboard` | Home with list counts, plus generic list pages |
+| Sign-in | `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset` | Authentication |
 | GraphQL | `/api/graphql` | Keystone CRUD plus `redirectToInit` |
-| AI and MCP | `/api/completion`, `/api/mcp-transport/[transport]` | Generic, schema-driven helpers |
-
-<Cards>
-  <Card title="Getting started" href="/docs/openfront/sports-agents/getting-started" description="Requirements, environment, migrations, first user, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/sports-agents/architecture-workflows" description="Current models, access rules, dashboard flows, and GraphQL operations." />
-  <Card title="External dashboard" href="/docs/openfront/sports-agents/external-dashboard" description="Skill for building a custom dashboard, and the pages that exist today." />
-  <Card title="External storefront" href="/docs/openfront/sports-agents/external-storefront" description="There is no storefront yet. Public routes and a skill for building one." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/sports-agents/integrations-boundaries" description="S3, SMTP, OpenRouter, MCP, and their limits." />
-  <Card title="Current limitations" href="/docs/openfront/sports-agents/limitations" description="What is missing or partial in the current source." />
-</Cards>
+| AI and MCP | `/api/completion`, `/api/mcp-transport/[transport]` | Assistant and tools |
 
 ## Ownership and tenancy
 
-There is no organization, agency, or tenant model. One deployment has one database and one set of users. Access is controlled by the role attached to each user:
+One deployment has one database and one set of users. Access is controlled by the role attached to each user:
 
 - A user can always read and edit their own `User` record. Seeing or editing other people needs `canSeeOtherPeople` or `canEditOtherPeople`.
-- A `Todo` belongs to the user in `assignedTo`. Users without `canManageAllTodos` only see and change their own todos.
+- A `Todo` belongs to the user in `assignedTo`. Users without `canManageAllTodos` only see and change their own.
 - Only roles with `canAccessDashboard` can use the dashboard.
 
-If Sports Agents later needs agencies, teams, or clients as separate owners, that model has to be added.
+<Cards>
+  <Card title="Getting started" href="/docs/openfront/sports-agents/getting-started" description="Requirements, environment, migrations, first user." />
+  <Card title="Deployment" href="/docs/openfront/sports-agents/deployment" description="Hosting and release steps." />
+  <Card title="Roles and permissions" href="/docs/openfront/sports-agents/roles-permissions" description="Seven flags and access rules." />
+  <Card title="Integrations" href="/docs/openfront/sports-agents/integrations" description="S3, SMTP, OpenRouter, MCP." />
+  <Card title="Data model" href="/docs/openfront/sports-agents/data-model" description="User, Role, Todo, TodoImage." />
+  <Card title="API reference" href="/docs/openfront/sports-agents/api-reference" description="GraphQL operations." />
+</Cards>

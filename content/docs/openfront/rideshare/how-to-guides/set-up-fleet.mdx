@@ -1,0 +1,36 @@
+---
+title: Set up a fleet
+description: Create a fleet, service area, ride service, and fare, then go live.
+icon: Building2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the fleet
+In Settings, enter name, city, country, currency, and time zone. `setupFleet` creates it in status `setup` with you as owner.
+</Step>
+<Step>
+### Add a service area
+On Services add an area with a public region label and set it `active`.
+</Step>
+<Step>
+### Add a ride service
+Name it, choose a category, set passenger capacity and advance booking minutes, attach the area, and set it `active`.
+</Step>
+<Step>
+### Add a fare rule
+Choose service and area, distance unit, base fare, per-distance and per-minute rates, booking fee, minimum fare, and cancellation and no-show fees in minor units. Activate it.
+</Step>
+<Step>
+### Add staff
+On Team add dispatchers, finance, and support staff by email.
+</Step>
+<Step>
+### Go live
+In Settings set the fleet `active`, operations mode `manual`, and rider accounts `open` if you want rider signup. Then [onboard a driver and vehicle](/docs/openfront/rideshare/how-to-guides/onboard-driver-vehicle).
+</Step>
+</Steps>
+
+Onboarding with `bootstrapRideshare` (`minimal` or `full`) creates a starter fleet with all of this in one step.

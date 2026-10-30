@@ -1,0 +1,49 @@
+---
+title: Dispatch
+description: Review open ride requests, find eligible drivers and vehicles, and send offers.
+icon: Radio
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/dispatch` is the dispatcher's board. It needs the operations capability (`owner` or `dispatcher` membership) and the fleet's operations mode set to `manual`. With operations `off`, the page shows a notice and actions are disabled.
+
+## What you can do
+
+- review open `RideRequest` rows (`requested`, `matching`)
+- search eligible driver and vehicle candidates with `dispatchCandidatePage(requestId, cursor, query)`
+- send an offer with `offerRideToDriver`
+- see cancelled and expired history
+
+## Offer a ride
+
+<Steps>
+<Step>
+### Pick a request
+Select a request to see pickup, drop-off, passengers, accessibility needs, notes, and the scheduled time.
+</Step>
+<Step>
+### Choose a driver and vehicle
+Candidates are drivers whose latest `PolicyEvaluation` is `eligible`, with a vehicle that is also eligible and fits the passengers and accessibility needs. Immediate rides need the driver `available`. Scheduled rides can go to active drivers who are not currently available, as long as availability rules and time off allow the slot.
+</Step>
+<Step>
+### Send the offer
+`offerRideToDriver(requestId, driverId, vehicleId, expiresInSeconds, idempotencyKey, expectedActorId)` creates a `MatchOffer` (`offered`), reserves the driver and vehicle for the slot, and moves the driver to `offered`.
+</Step>
+<Step>
+### The driver responds
+In My driving the driver accepts or declines (`respondToRideOffer`). Accepting creates the `Trip` with status `driver_assigned`. Declining or expiry releases the reservation.
+</Step>
+</Steps>
+
+## Offer statuses
+
+`offered`, `accepted`, `declined`, `expired`, `withdrawn`. `expireRideOffers(fleetId)` and `expireRequestFleetOffers(requestId)` release stale offers.
+
+## Guards
+
+- A driver or vehicle with an overlapping active reservation is refused.
+- If eligibility changes after the offer, acceptance fails with "Driver or vehicle eligibility changed after the offer was made."
+- Every dispatch command takes an idempotency key (12 to 200 characters). A key reused for another command is refused.
+
+See [Dispatch a ride](/docs/openfront/rideshare/how-to-guides/dispatch-ride).

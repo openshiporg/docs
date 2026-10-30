@@ -1,0 +1,9 @@
+---
+title: Inventory
+description: Stock list and adjustments.
+icon: Boxes
+---
+
+Route: `/dashboard/platform/inventory`. Needs `canManageProducts`.
+
+The list shows variant stock with links to the product. Adjust stock opens a sheet with a delta or a set count; the bulk paste option applies many changes. Both call `adjustInventory` and write `StockMovement` rows (`RECEIVE` or `REMOVE`, quantity, reason, note), an append-only trail.

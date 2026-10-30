@@ -1,0 +1,18 @@
+---
+title: Payment providers
+description: Stripe, PayPal, Authorize.net, and manual providers.
+icon: CreditCard
+---
+
+Route: `/dashboard/platform/payment-providers`. Adapters are in `features/integrations/payment`.
+
+| Provider | Code | Variables |
+|---|---|---|
+| Authorize.net | `pp_authorizenet_authorizenet` | `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY`, `AUTHORIZENET_ENV` (`production` for live) |
+| Stripe | | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| PayPal | | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` |
+| Manual | `pp_system_default` | none |
+
+Each adapter provides create, capture, refund, status, payment link, and webhook functions, loaded from the `PaymentProvider` record. Webhooks arrive at `/api/payment-webhooks/[providerId]` (body capped at 1 MB) and are applied by `handlePaymentProviderWebhook`; a problem sets the order to `requires_action`.
+
+Onboarding seeds Manual and Authorize.net. The storefront refuses Manual for checkout, so enable a card provider. For regulated carts, also record an active payment [provider approval](/docs/openfront/vape/provider-approvals) bound to that provider.

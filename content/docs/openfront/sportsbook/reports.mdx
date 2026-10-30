@@ -1,0 +1,13 @@
+---
+title: Reports and retention
+description: Compliance reports, data exports, and retention.
+icon: FileChartColumn
+---
+
+Route: `/dashboard/platform/reports`.
+
+- `generateComplianceReport` creates a `ComplianceReport` with `ReportArtifact` references.
+- `requestDataExport` then `applyApprovedDataExport` produce a `DataExport` under dual control.
+- `runRetentionDryRun` previews; `requestRetentionExecution` then `applyRetentionExecution` act under dual control (`RetentionExecution`, `RetentionPolicyVersion`).
+
+Artifacts store a reference string, not an uploaded file.

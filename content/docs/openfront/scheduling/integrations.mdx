@@ -1,0 +1,42 @@
+---
+title: Integrations
+description: Calendars, conferencing, email, SMS, MCP, AI chat, and delivery.
+icon: Unplug
+---
+
+`/dashboard/platform/integrations` manages calendars, conferencing, and payment providers, and retries failed operations.
+
+## How delivery works
+
+Side effects are outbox rows (`CalendarOperation`, `ConferenceOperation`, `PaymentOperation`, `WebhookDelivery`, `ReminderDelivery`, `WorkflowActionExecution`, `TeamInvitationDelivery`) processed by `processSchedulingOutbox`. Rows move through `pending`, `processing`, `succeeded`, `retrying`, and `dead_letter`. Retry dead-lettered rows with the matching `retry*` command.
+
+## Calendars
+
+Adapters `google.ts` and `microsoft.ts`. Hosts connect with `beginCalendarOAuth`; the provider returns to `/api/calendar/callback`, which runs `completeCalendarOAuth`. `syncCalendarConnection` reads events into `CalendarBusyInterval` (Google `events.list`, Microsoft `calendarView` delta). Bookings are written back through `CalendarOperation` and tracked in `CalendarEventLink`. Tokens are encrypted with `CALENDAR_CREDENTIALS_KEY`.
+
+| Variable | Purpose |
+|---|---|
+| `GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET` | Google OAuth app |
+| `MICROSOFT_CALENDAR_CLIENT_ID`, `MICROSOFT_CALENDAR_CLIENT_SECRET` | Microsoft OAuth app |
+| `CALENDAR_OAUTH_REDIRECT_URI` | HTTPS `/api/calendar/callback` |
+| `CALENDAR_OAUTH_STATE_SECRET` | Signs OAuth state |
+| `CALENDAR_CREDENTIALS_KEY` | 32-byte base64 or 64-character hex key |
+
+## Conferencing
+
+`google_meet` links come from each host's Google Calendar connection. `microsoft_teams` and `zoom` use a `ConferenceConnection` set with `configureConferencingConnection` (access token, optional refresh token, expiry). When the token expires the connection moves to `needs_reauth`. Credentials are encrypted with `CONFERENCING_CREDENTIALS_KEY`. Retry with `retryConferenceOperation`.
+
+## Email and SMS
+
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM` (required together), `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SECURE`, `SMTP_STORE_LINK`. Email carries invitations, resets, manage links, workflow emails, and reminders. SMS posts to `SCHEDULING_SMS_ENDPOINT` with `SCHEDULING_SMS_TOKEN`.
+
+## MCP and AI chat
+
+- `/api/mcp-transport/http` is a JSON-RPC MCP endpoint using the signed-in session cookie. Tools: `listModels`, `searchModels`, `getFieldsForType`, `lookupInputType`, `queryData`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`.
+- `/api/completion` powers dashboard AI chat via OpenRouter with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (`OPENROUTER_MAX_TOKENS` optional), or a per-user key and model.
+
+Both act with the user's access. Data sent to a model leaves your deployment.
+
+## Object storage
+
+An S3 image store reads `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`.

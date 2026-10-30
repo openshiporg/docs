@@ -1,0 +1,21 @@
+---
+title: Process a withdrawal
+description: Pay or reject a customer withdrawal.
+icon: Banknote
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the queue
+At `/dashboard/platform/payments` see Withdrawal queue.
+</Step>
+<Step>
+### Send the funds
+Pay the customer outside the app.
+</Step>
+<Step>
+### Mark paid
+Enter the bank reference and press Mark paid. To refuse, press Reject; the hold is released.
+</Step></Steps>

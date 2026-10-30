@@ -1,0 +1,24 @@
+---
+title: Troubleshooting
+description: Real error messages and reason codes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+|---|---|
+| "Checkout isn't available for this store yet." | Release gate failing. Open the Overview page and fix the blockers (`STORE_POLICIES_REQUIRED`, `ACTIVE_MERCHANT_PROFILE_REQUIRED`, `KILL_SWITCH_ENABLED`, `LAUNCH_JURISDICTION_REQUIRED`) |
+| Place order disabled | The compliance decision is not `allow`. Read the reasons in the checkout panel, or in the Compliance Ledger |
+| `GENERIC_TAX_RATE_MUST_BE_ZERO_FOR_REGULATED_CART` | Set the region's tax rate to 0 |
+| `DESTINATION_JURISDICTION_UNRESOLVED` | No active jurisdiction matches `US-<state>`; add one |
+| `ACTIVE_POLICY_REQUIRED` | The destination has no single active rule set |
+| `MERCHANT_LICENSE_REQUIRED` | Rule set demands a licence; add an active verified one |
+| `FEDERAL_AUTHORIZATION_REQUIRED`, `PRODUCT_CLASSIFICATION_REQUIRED`, `MARKETING_REVIEW_REQUIRED` | Complete [product evidence](/docs/openfront/vape/product-evidence) |
+| Regulated cart denied for age, tax, or carrier evidence | Provider adapters have not recorded evidence. See [Regulated checkout](/docs/openfront/vape/regulated-checkout) |
+| "Accepted evidence is immutable…" | Create a new revision or version instead of editing |
+| "provider is unconfigured; regulated transactions remain disabled" | No adapter configured for that provider contract |
+| "Manual fulfillment is disabled for regulated orders" | Buy a label with an approved carrier |
+| Manual payment provider rejected at checkout | Enable Authorize.net, Stripe, or PayPal |
+| Order stuck in `requires_action` | A payment webhook reported a problem; check the provider |
+| Webhook events not delivered | Trigger `retryWebhookDeliveries` on a schedule |
+| App refuses to start | Needs `DATABASE_URL` and a `SESSION_SECRET` of 32+ characters; S3 values are required in production |
+| Product reverted to draft | Its evidence was suspended, delisted, or revoked, or its image was replaced |

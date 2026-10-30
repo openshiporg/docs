@@ -1,0 +1,35 @@
+---
+title: Integrations
+description: S3 storage, SMTP, OpenRouter, MCP, and the GraphQL endpoint.
+icon: Unplug
+---
+
+## S3-compatible storage
+
+Storage `my_images` (kind `s3`, type `image`) is used by `Todo.coverImage` and `TodoImage.image`. Settings: `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`. Path-style addressing is on, so most S3-compatible services work. URLs are signed with a 5000-second expiry.
+
+## SMTP
+
+`features/keystone/lib/mail.ts` (Nodemailer) sends the password reset link: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`. The link is `SMTP_STORE_LINK` + `/dashboard/reset?token=...`.
+
+## OpenRouter
+
+See [AI assistant](/docs/openfront/sports-agents/ai-assistant).
+
+## MCP
+
+`/api/mcp-transport/[transport]` is a JSON-RPC server that introspects `/api/graphql` with the caller's cookie.
+
+| Tool | What it does |
+|---|---|
+| `listModels`, `searchModels` | List or search GraphQL types |
+| `getFieldsForType`, `lookupInputType` | Show fields of a type or input |
+| `queryData` | Run a list query with chosen fields |
+| `modelSpecificSearch` | Search a model by `id` or `name`, `title`, `label`, `description`, `email` |
+| `createData`, `updateData`, `deleteData` | Run generated mutations |
+
+The endpoint has no auth of its own: it forwards the cookie, so it does what that session can do. `scopedMcpFetch.ts` sends the cookie only to the one internal MCP URL and refuses redirects. The base URL comes from `x-forwarded-host` or `host`, so make your proxy set them.
+
+## GraphQL
+
+`/api/graphql` serves the Keystone schema through GraphQL Yoga with multipart uploads. Access rules decide what each caller sees.

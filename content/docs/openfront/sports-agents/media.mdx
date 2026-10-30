@@ -1,0 +1,11 @@
+---
+title: Images
+description: The image library attached to tasks and stored in S3.
+icon: Image
+---
+
+Route: `/dashboard/todo-images`. Create, update, and delete need `canCreateTodos`; any signed-in user can read.
+
+Fields: `image`, `imagePath`, `altText`, `todos` (the tasks it is attached to), `metadata` (JSON).
+
+Images upload to the `my_images` S3 storage (`S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`). Reads are signed with a 5000-second expiry and path-style addressing. On a task, `todoImages` shows cards with image, alt text, and path, and allows inline create, inline edit, and connecting existing images.
