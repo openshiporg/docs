@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: Role capability flags and how access is checked.
+icon: Shield
+---
+
+Create roles with `upsertAccessRole` (`canManageRoles`).
+
+| Flag | Gives |
+|---|---|
+| `canManagePeople` | Staff and invitations |
+| `canManageRoles` | Roles |
+| `canAccessDashboard` | Dashboard and AI chat |
+| `canManageOnboarding` | Onboarding |
+| `canManagePractice` | Practice, catalog, storefront |
+| `canSchedule` | Appointments, schedules |
+| `canReadClients` | Client records |
+| `canManageClinical` | Clinical workflows |
+| `canManageSensitiveRecords` | Sensitive and governance records |
+| `canManageInventory` | Inventory |
+| `canManageFinance` | Payments, commissions |
+| `canManageCommunications` | Templates and messages |
+| `canViewReports` | Reports |
+| `canManageIntegrations` | Providers |
+
+Each request re-reads the user and role. Access is denied when the user is disabled, moved practice, or the role no longer grants the flag.

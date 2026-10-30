@@ -1,0 +1,22 @@
+---
+title: Quality gates
+description: Review decisions, accessibility audits, and compatibility targets across releases.
+icon: ShieldCheck
+---
+
+`/dashboard/platform/quality` summarises release quality from `uikitOperations(limit: 50)`.
+
+## Summary cards
+
+- **Approved reviews**: `ReviewWorkflow` with status `approved`, out of all reviews
+- **Passing audits**: `AccessibilityAudit` with status `passed`, out of all audits
+- **Supported targets**: `CompatibilityTarget` with `supportStatus` `supported`, out of all targets
+
+Below the cards are three searchable tables: Reviews (release, reviewer, decision), Accessibility audits, and Compatibility targets.
+
+## Record fields
+
+- **AccessibilityAudit**: title, release, status (`queued`, `passed`, `failed`, `waived`), WCAG level (`a`, `aa`, `aaa`, default `aa`), violations count, summary, audited at.
+- **CompatibilityTarget**: name, type (`browser`, `framework`, `runtime`, `package_manager`), minimum version, support status (`supported`, `experimental`, `deprecated`), release, notes.
+
+Compatibility targets and changelog entries appear on the customer's component detail page. Reading needs `canReadProducts`.

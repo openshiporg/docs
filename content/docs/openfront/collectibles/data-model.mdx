@@ -1,0 +1,37 @@
+---
+title: Data model
+description: Collectibles lists and their relationships.
+icon: Database
+---
+
+Shared commerce lists come from Openfront E-commerce. The lists below are specific to Collectibles.
+
+## Cards, sets and stock
+
+| List | Role |
+|---|---|
+| `CollectibleSet` | A set; has `cards` |
+| `CatalogItem` | A card printing or sealed product |
+| `Product` / `ProductVariant` | Sellable stock with card fields |
+| `MarketPrice` | Append-only readings per card and finish |
+| `PricingRule` | Repricing rules |
+
+## Serialized items
+
+`Specimen`, `SpecimenIdentifier`, `InventoryUnit`, `InventoryLocation`, `InventoryMovement`, `Reservation`, `Listing`. Movements and reservations refuse generic create and update.
+
+## Evidence
+
+`ConditionObservation`, `GradeObservation`, `GradingCompany`, `ProvenanceEvent`, `CustodyEvent`, `ValuationObservation`, `CollectibleMedia`. Append-only.
+
+## Buying and consignment
+
+`Buylist`, `BuylistEntry`, `TradeInSubmission`, `TradeInItem`, `ConsignmentIntake`, `ConsignmentItem`, `ConsignmentAgreement`, `ConsignmentSettlement`, `SettlementLine`, `SellerProfile`.
+
+## Operations and collectors
+
+`FulfillmentRequirement`, `ShipmentEvidence`, `DisputeCase`, `EvidenceAttachment`, `CollectorProfile`, `Binder`, `BinderCard`, `WishlistItem`, `SavedSearch`.
+
+## Amounts
+
+Money is integer minor units. Percentages are basis points.

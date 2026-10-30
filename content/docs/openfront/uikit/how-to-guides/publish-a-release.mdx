@@ -1,0 +1,35 @@
+---
+title: Publish a release
+description: Take a draft through validation, review, and publish so customers can install it.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the draft
+`createComponentDraft` takes a product code, a semantic version such as `1.0.0`, a prompt, release notes, and files. Each file has `path`, optional `target`, `fileType`, `language`, and `content`.
+</Step>
+<Step>
+### Edit in Studio
+Open `/dashboard/platform/studio/[id]`. Use the source editor to replace files. Each save needs the current revision and manifest hash and resets earlier evidence.
+</Step>
+<Step>
+### Validate
+Run validation. Fix any failed check from the stored log, save, and run it again. The draft needs at least one renderable `component`, `ui`, `block`, or `page` file.
+</Step>
+<Step>
+### Submit for review
+Submit. A review record is created with the validation evidence attached.
+</Step>
+<Step>
+### Decide
+A reviewer with `canManageProducts` approves, or requests changes with notes of 10 to 4000 bytes. Request changes sends the release back to draft.
+</Step>
+<Step>
+### Publish
+Publish the approved review. The release becomes `stable` and `publishedAt` is set. Confirm at `/r/<code>.json`.
+</Step>
+</Steps>
+
+If you change product price, license, or release notes after submission, approving fails with a message to choose Request changes. Do that, revalidate, and resubmit.

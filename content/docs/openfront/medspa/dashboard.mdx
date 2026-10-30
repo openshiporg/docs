@@ -1,0 +1,33 @@
+---
+title: Dashboard overview
+description: Navigation and the map of operator workspaces.
+icon: LayoutDashboard
+---
+
+The dashboard lives at `/dashboard`. Pages under `/dashboard/platform/**` are wrappers around `features/platform/<slice>/screens`. Navigation is in `features/platform/lib/navigation.ts`, and every page checks the user's role capabilities.
+
+| Area | Page |
+|---|---|
+| Appointments, arrivals, plans | [Appointments](/docs/openfront/medspa/appointments) |
+| Clinical treatment | [Treatment workspace](/docs/openfront/medspa/treatment) |
+| Checkout | [Checkout](/docs/openfront/medspa/checkout) |
+| Payments | [Payments and refunds](/docs/openfront/medspa/payments) |
+| Commissions | [Commissions](/docs/openfront/medspa/commissions) |
+| Clients | [Clients](/docs/openfront/medspa/clients) |
+| Waitlist, messages | [Engagement](/docs/openfront/medspa/engagement) |
+| Aftercare | [Follow-ups](/docs/openfront/medspa/follow-ups) |
+| Reviews | [Reviews](/docs/openfront/medspa/reviews) |
+| Treatments and prices | [Catalog](/docs/openfront/medspa/catalog) |
+| Memberships, packages, gift cards | [Benefits](/docs/openfront/medspa/benefits) |
+| Stock | [Inventory](/docs/openfront/medspa/inventory) |
+| Practice hub | [Administration](/docs/openfront/medspa/administration) |
+| People | [Staff](/docs/openfront/medspa/staff), [Roles](/docs/openfront/medspa/roles-permissions) |
+| Places and hours | [Locations, schedules and resources](/docs/openfront/medspa/locations-schedules-resources) |
+| Public site | [Storefront settings](/docs/openfront/medspa/storefront-settings) |
+| Forms and consent | [Forms](/docs/openfront/medspa/forms) |
+| Safety | [Safety](/docs/openfront/medspa/safety) |
+| Privacy | [Privacy](/docs/openfront/medspa/privacy) |
+| Reports | [Reports](/docs/openfront/medspa/reports) |
+| Providers | [Integrations](/docs/openfront/medspa/integrations) |
+
+The dashboard also has an AI chat sidebar (`/api/completion`, needs `canAccessDashboard`), a `/waitlist` shortcut to engagement, and generic Keystone list screens at `/[listKey]`. Most lists are write-locked there; use the workspace pages.

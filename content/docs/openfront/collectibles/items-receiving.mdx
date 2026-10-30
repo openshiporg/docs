@@ -1,0 +1,36 @@
+---
+title: Items and receiving
+description: Receive serialized items, record evidence and publish listings.
+icon: PackagePlus
+---
+
+## Receive an item
+
+`/dashboard/platform/items/receive` calls `receiveCollectibleItem` against an existing product variant. It creates the catalog entry, specimen, condition observation, inventory unit and receipt movement, and can publish a listing in the same call.
+
+| Field | Notes |
+|---|---|
+| `code`, `title`, `category` | Required. Errors: `Item code is invalid`, `Item title is required` |
+| `condition` | Required |
+| `variantSku` | Must already exist (`Create the product variant with SKU <sku> first`) |
+| `priceMinor` | Non-negative whole minor units |
+| `publish` | Publish a listing immediately |
+| `catalogItemHandle` | Attach to an imported card printing |
+| `grade` | company, grade, label, certificate, sample |
+| `consignment` | consignor and commission basis points |
+
+If the variant already has an item the call fails with `Product variant <sku> already has an item`.
+
+## Item record
+
+`/dashboard/platform/items/[id]` shows lifecycle and an evidence timeline. Add an identifier, condition, grade, provenance, custody, valuation or media. Evidence lists are append-only and each has a `publiclyVisible` flag.
+
+`Specimen.lifecycleStatus` (intake, review, available, reserved, sold, returned, withdrawn) moves only through system commands.
+
+## Listings
+
+`manageCollectibleListing` publishes, edits and withdraws. Listing price must match the variant's price in the store currency (`Listing price must match the <currency> price of <sku>`).
+
+## Custody
+
+`/dashboard/platform/collectible-inventory` shows units, holds and movements. These are system-written and read-only.

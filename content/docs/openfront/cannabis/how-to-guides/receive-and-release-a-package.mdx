@@ -1,0 +1,25 @@
+---
+title: Receive and release a package
+description: Take a package into receiving hold and release it for sale.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the product
+In `/dashboard/platform/menu` add the product with `configureCannabisProduct` if it does not exist.
+</Step>
+<Step>
+### Receive
+In `/dashboard/platform/receiving` enter package UID, production batch, lot, label version, quantity, expiry, manifest number and supplier license.
+</Step>
+<Step>
+### Record the lab result
+In `/dashboard/platform/inventory` open the package, choose **Record lab result**, pick the result and enter the COA reference.
+</Step>
+<Step>
+### Release for sale
+Choose **Release for sale** and confirm. A failure means the test, COA, label version, expiry or an active hold blocks release.
+</Step>
+</Steps>

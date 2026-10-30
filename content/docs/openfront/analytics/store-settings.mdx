@@ -1,0 +1,18 @@
+---
+title: Store settings
+description: Name, tagline, description, website, contact email, and logo shown on the public site.
+icon: Store
+---
+
+`/dashboard/platform/store-settings` edits the singleton `StoreSettings` record behind the public site.
+
+| Field | Notes |
+|---|---|
+| Name | Site title on the public pages |
+| Tagline, Description | Shown on the public home page |
+| Website | URL |
+| Contact email | Shown on the public site |
+| Colour | Hue for the brand mark |
+| Logo | Picked from the icon registry; sanitized SVG is stored |
+
+Anyone can read the settings (the public site needs them). Changes need `canManageSettings` (`createStoreSettings`, `updateStoreSettings`). Onboarding creates the record.

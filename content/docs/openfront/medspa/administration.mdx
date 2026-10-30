@@ -1,0 +1,9 @@
+---
+title: Administration
+description: Practice hub, needs-attention list and onboarding.
+icon: Settings
+---
+
+`/platform/administration` shows what needs attention across the practice. The first operator comes from `/dashboard/init`. Onboarding runs once per database and seeds the practice, default roles, a manual cash provider (`pp_manual_cash`) and a Stripe provider (`pp_stripe`).
+
+Other staff join by invitation at `/join`. Requires `canManageOnboarding` or `canManagePractice`.

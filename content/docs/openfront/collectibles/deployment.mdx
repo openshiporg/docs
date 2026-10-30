@@ -1,0 +1,48 @@
+---
+title: Deployment
+description: Environment variables, migrations, Railway and Vercel hosting, and release steps.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Environment
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL`, `SESSION_SECRET` | Required. Secret is at least 32 characters |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Required in production |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Email |
+| `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard assistant |
+| `NEXT_PUBLIC_DEFAULT_REGION`, `NEXT_PUBLIC_BACKEND_URL` | Storefront defaults and split-host GraphQL origin |
+| `CREDENTIAL_PEPPER`, `TRUSTED_PROXY_IPS`, `HIDE_OPENFRONT_BRANDING` | Hashing, proxy trust, branding |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_KEY`, `CLOUDINARY_SECRET` | Optional claim images |
+
+## Deploy
+
+<Steps>
+<Step>
+### Provision
+PostgreSQL and S3-compatible storage. Back up the database before each migration.
+</Step>
+<Step>
+### Configure secrets
+Set the variables above in the host's secret store, identical across all processes.
+</Step>
+<Step>
+### Build and migrate
+`npm run build` runs `keystone build --no-ui && next build` and does not migrate. Run `npm run migrate` (or `npm run release:migrate`) as a release step.
+</Step>
+<Step>
+### Start and onboard
+`npm start`, open `/dashboard/init`, then run the onboarding dialog.
+</Step>
+</Steps>
+
+`railway.toml` builds the same way and starts with `npm run migrate && next start`. The README links a Vercel import button that prompts for `DATABASE_URL`, `SESSION_SECRET` and the S3 variables.
+
+## Scheduled work
+
+Market price refresh and repricing are staff actions on Market & Repricing. Webhook retries run when `retryWebhookDeliveries` is called. Schedule these calls with your host's cron against `/api/graphql` using an API key if you want them automatic.

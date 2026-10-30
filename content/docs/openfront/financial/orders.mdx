@@ -1,0 +1,40 @@
+---
+title: Orders
+description: Place, approve, fill and cancel paper orders and see the trades and ledger lines they produce.
+icon: ListOrdered
+---
+
+`/dashboard/platform/orders` shows the order queue with status counts and recent fills and trades. `/orders/[id]` shows terms, fills, trades and ledger lines.
+
+## Placing an order
+
+`placeFinancialOrder` runs these checks:
+
+- The caller owns the brokerage account (`Brokerage account not found.`).
+- KYC and risk profile are in good standing; a failed or expired KYC check, or a rejected or superseded risk profile, blocks orders.
+- Margin permission, excluded symbols and the advisor's maximum position size.
+- Prices: market orders cannot have limit or stop prices (`Market orders cannot contain limit or stop prices.`); limit and stop-limit orders need a limit price (`Limit price is required for limit and stop-limit orders.`); limit orders cannot have a stop price. Side is buy or sell and quantity above zero.
+- Buying power (`Not enough buying power for this order.`) and, for sells, the position (`Insufficient <symbol> position to sell <qty>.`).
+
+The portal offers market and limit orders.
+
+## Approval
+
+If an active `ApprovalPolicy` for `order` covers the amount, the order is refused until `requestOrderApproval` creates an `ApprovalRequest` and a different person approves it. See [Approvals and tasks](/docs/openfront/financial/approvals-tasks).
+
+## Fill
+
+Market orders fill by local simulation. Open orders fill with **Simulate fill** (`simulateOrderFill`), which accepts a quantity and price.
+
+- `Fill quantity must be greater than zero and no more than remaining quantity <n>.`
+- `Fill price violates the accepted limit.`
+- `Insufficient buying power for simulated fill amount <amount>.`
+- `Order cannot be filled from <status> state.`
+
+A fill writes `OrderFill` and `Trade`, updates `Position` and posts `LedgerEntry` rows with a balanced `LedgerJournal`.
+
+## Cancel
+
+`cancelFinancialOrder` cancels an open order. Otherwise: `Order cannot be cancelled from <status> state.`
+
+Machine sessions cannot fill directly. Agents propose an `order.place` action instead.

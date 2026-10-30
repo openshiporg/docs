@@ -4,11 +4,9 @@ description: Install the source, configure PostgreSQL, sessions, and S3 storage,
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+## Hosted app
 
-## Live demo
-
-A hosted demo runs at [cannabis.openship.org](https://cannabis.openship.org). It is a shared evaluation instance; do not enter real customer, license, or payment information.
+The hosted app is at [cannabis.openship.org](https://cannabis.openship.org).
 
 ## Requirements
 
@@ -41,7 +39,7 @@ S3_ENDPOINT=https://your-s3-compatible-endpoint
 
 - `DATABASE_URL` and `SESSION_SECRET` are always required. `SESSION_SECRET` must be at least 32 characters; generate one with `openssl rand -hex 32`.
 - The five `S3_*` variables are required when `NODE_ENV=production`. Outside production the code falls back to placeholder values, so uploads only work once you set real ones.
-- Optional: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK` for password-reset email; `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS` for the dashboard AI chat. See [Integrations and boundaries](/docs/openfront/cannabis/integrations-boundaries).
+- Optional: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK` for password-reset email; `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS` for the dashboard AI chat. See [Integrations](/docs/openfront/cannabis/integrations).
 
 Never commit `.env`.
 
@@ -56,9 +54,7 @@ npm run migrate
 
 `npm run migrate` runs `prisma migrate deploy`. `npm run migrate:gen` builds the schema, regenerates the dashboard view order, and runs `prisma migrate dev`; use it only against a disposable development database.
 
-<Callout type="info">
 Neither `npm run dev` nor `npm run build` applies migrations. Run `npm run migrate` yourself before starting the app.
-</Callout>
 
 ## Run locally
 
@@ -75,13 +71,13 @@ Other scripts: `npm run typecheck`, `npm run lint`, and `npm test` (Node's test 
 ## First user and onboarding
 
 1. On an empty database, open `/dashboard/init` to create the first administrator, then sign in.
-2. The dashboard shell shows a setup launcher that opens the onboarding dialog. Choose a blank pack or the sample store.
+2. The dashboard shell shows a setup launcher that opens the onboarding dialog. Choose a blank pack or the starter store.
 3. Fill in the authority pack: organization and legal name, jurisdiction code, premises name, code, address, IANA timezone and ISO currency, license number, type, regulator and validity, owner credential, sales rules (minimum ages, operating hours, purchase limits, tax and discount rules, allowed tender types, label, return, outage, privacy and retention rules), tender configurations, and a traceability provider code.
 4. Submit. `runCannabisOnboarding` requires the `canManageOnboarding` permission and creates the `Organization`, `Premises`, `CannabisLicense`, an Owner `Role`, the owner's `StaffCredential`, a `JurisdictionRulePack`, `TenderConfiguration` records, an unconfigured traceability `IntegrationInstallation`, and `StorefrontSettings`.
 
-The dialog can also load a sample store from `features/platform/onboarding/lib/seed.json`. Its license, credential, lab, and manifest details are fictional and must be replaced before any real use. `dismissCannabisOnboarding` hides the setup prompt without installing anything.
+The dialog can also load a starter store from `features/platform/onboarding/lib/seed.json`. Replace its license, credential, lab, and manifest details with your own. `dismissCannabisOnboarding` hides the setup prompt without installing anything.
 
-After onboarding, review licenses, staff, rules, registers, products, and package inventory before selling.
+After onboarding, review licenses, staff, rules, registers, products, and package inventory.
 
 ## Deployment
 

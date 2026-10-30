@@ -1,0 +1,25 @@
+---
+title: Connect an MCP client
+description: Call the marketplace tools from your own client.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Point at the endpoint
+Use `https://your-host/api/mcp-transport/http`.
+</Step>
+<Step>
+### List tools
+Call `tools/list`.
+</Step>
+<Step>
+### Store per-store state
+Save cart IDs, proofs and tokens from `_meta.marketplace.clientAction` per store ID.
+</Step>
+<Step>
+### Send headers
+Send `x-cart-ids`, `x-cart-proofs` and the store's bearer token on later calls.
+</Step>
+</Steps>

@@ -1,0 +1,19 @@
+---
+title: Audit and outbox
+description: Read-only audit events and outgoing event records.
+icon: ScrollText
+---
+
+`/dashboard/platform/audit` shows two tables.
+
+## Audit events
+
+`AuditEvent` rows are written inside the same transaction as the action. Search by action, resource type, resource id, actor email, or outcome. Sort by newest or action. Columns: Action, Resource (with id), Outcome (`succeeded` or `failed`), Actor, Occurred.
+
+Actions written by the code include `registry_api_key.created`, `registry_api_key.revoked`, `component_draft.validation_completed`, and the release, review, refund, and revocation events.
+
+## Outbox events
+
+`OutboxEvent` rows hold `topic`, `aggregateType`, `aggregateId`, `payload`, `attempts`, `availableAt`, `processedAt`, and `lastError`, with status tabs `pending`, `processed`, `failed`. Refunds and revocations enqueue events here. The records are available to read and to feed an external consumer.
+
+Reading needs payments or orders read permission (`canReadEvidence` in `uikitOperatorAccess`).

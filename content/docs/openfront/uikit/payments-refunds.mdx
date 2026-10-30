@@ -1,0 +1,48 @@
+---
+title: Payments and refunds
+description: Review payments, issue refunds, reconcile pending refunds, and record offline settlements.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Payments
+
+`/dashboard/platform/payments` lists `Payment` records with status tabs: `pending`, `authorized`, `captured`, `failed`, `canceled`, `refunded`. Each shows amount, `amountRefunded`, provider, order, and `capturedAt`. Provider events are stored as `PaymentEvent` and a replay key keeps the same event from being applied twice.
+
+## Refunds
+
+`/dashboard/platform/refunds` lists `Refund` records with tabs `pending`, `succeeded`, `failed`.
+
+### Issue a refund
+
+<Steps>
+<Step>
+### Open the order
+From `/dashboard/platform/orders/[id]`, find the captured payment.
+</Step>
+<Step>
+### Enter amount and reason
+Amount is in the smallest currency unit. Reason is 3 to 500 characters. For Manual payments, also enter the **Offline reference**.
+</Step>
+<Step>
+### Submit
+`refundKitPayment(paymentId, amount, reason, idempotencyKey, providerReference)` reserves a refund intent, calls the provider, and records the result. A succeeded refund returns `Refund completed and local entitlement state reconciled.` A pending one returns `Refund request is pending provider completion.`
+</Step>
+<Step>
+### Reconcile if pending
+Open Refunds and run `reconcileKitRefund(refundId)` to ask the provider for the final status.
+</Step>
+</Steps>
+
+Rules enforced by the code:
+
+- Only captured payments can be refunded.
+- Amount must be a positive integer within the remaining captured amount: `Refund amount exceeds the remaining captured amount.`
+- The idempotency key is 8 to 128 characters. Repeating a key returns the original result with `replayed: true`.
+- A full refund (refunded total equals captured amount) revokes the related entitlement. Partial refunds leave access in place.
+- Needs `canManagePayments` and `canManageOrders`: `Refunds require payment and order management permission.`
+
+## Offline settlement
+
+Manual payment sessions stay pending until an operator records settlement with `settleKitOrderOffline(paymentSessionId, reference, idempotencyKey)`. The reference is 3 to 255 characters and the key is 8 to 128 characters. Only Manual sessions are accepted: `Only Manual/offline payment sessions can use operator settlement.` Amount and currency must match the payment snapshot. The mutation is available in GraphQL; the platform screens do not call it.

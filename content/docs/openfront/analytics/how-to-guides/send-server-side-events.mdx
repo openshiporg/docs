@@ -1,0 +1,25 @@
+---
+title: Send server-side events
+description: Record conversions from your backend with POST /api/track.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Build the payload
+`type: "event"`, `payload.siteId`, `name`, `url` on the site's domain, and optional `data`, `revenue`, `eventId`.
+</Step>
+<Step>
+### Forward visitor headers
+Send the visitor's `User-Agent` and `X-Forwarded-For`.
+</Step>
+<Step>
+### Make it idempotent
+Set a stable `eventId` so retries return `duplicate: true`.
+</Step>
+<Step>
+### Check the response
+200 recorded, 202 ignored, 422 revenue currency mismatch.
+</Step>
+</Steps>

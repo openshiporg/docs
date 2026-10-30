@@ -1,0 +1,55 @@
+---
+title: Tracking script
+description: Install /assets/script.js, its data attributes, custom events, and identify.
+icon: Code
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Install
+
+Copy the snippet from the site's Settings tab:
+
+```html
+<script defer src="https://your-analytics-host/assets/script.js" data-site-id="site_..."></script>
+```
+
+Hits from `localhost` are skipped unless `data-allow-localhost="true"` is set.
+
+## Attributes
+
+| Attribute | Effect |
+|---|---|
+| `data-site-id` (or `data-website-id`) | The site's `publicId`; required |
+| `data-host-url` | Collector base URL if different from the script's origin |
+| `data-auto-pageview="false"` | Turn off automatic pageviews and history tracking |
+| `data-vitals="false"` | Turn off Core Web Vitals |
+| `data-outbound-links="true"` | Send `Outbound Link: Click` for links to other hosts |
+| `data-do-not-track="true"` | Respect the browser's Do Not Track setting |
+| `data-exclude-search="true"` | Drop the query string from page URLs |
+| `data-domains` | Comma-separated hostnames; other hostnames send nothing |
+| `data-allow-localhost="true"` | Allow `localhost` and `127.*` |
+
+## Behavior
+
+- Single-page-app navigation is counted by wrapping `pushState` and `replaceState` and listening for `popstate`.
+- Global Privacy Control is always honored. Setting `localStorage` key `openfront_analytics_ignore` to `true` stops sending.
+- Web vitals are sent once when the page is hidden.
+- Requests use `text/plain` and `credentials: 'omit'`.
+
+## Custom events
+
+```js
+window.openfrontAnalytics.track('Signup', { plan: 'pro' })
+window.openfrontAnalytics.track('Purchase', { sku: 'a1', revenue: 49 })
+window.openfrontAnalytics.identify('user-123')
+window.openfrontAnalytics.pageview()
+```
+
+Or by markup: `<button data-analytics-event="Signup" data-analytics-event-plan="pro">`. `data-analytics-event-<key>` attributes become properties.
+
+`identify(id)` tags later visits with a `distinctId` so you can delete that person's data with `deleteVisitorData`.
+
+## Limits on properties
+
+At most 30 keys and 8 KB. Keys that look like `password`, `secret`, `token`, `cookie`, `card`, `cvv`, `ssn`, or `email` are refused. Revenue must be a decimal amount and its currency must match the site currency.

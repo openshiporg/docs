@@ -1,0 +1,11 @@
+---
+title: Locations, schedules and resources
+description: Addresses, hours, provider schedules, rooms and devices.
+icon: MapPin
+---
+
+- `/platform/locations`: `upsertLocation` with address, timezone and opening hours.
+- `/platform/schedules`: `upsertProviderSchedule` for weekly hours, one-off hours and time off; `setProviderScheduleAvailability`.
+- `/platform/resources`: `upsertResource`, `setResourceAvailability`, `transitionDeviceReadiness`.
+
+Availability uses the practice timezone. `ResourceScheduleBlock` blocks are read by readiness checks.

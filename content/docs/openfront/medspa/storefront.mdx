@@ -1,0 +1,23 @@
+---
+title: Client storefront
+description: Public routes, booking journey, client account and intake.
+icon: ShoppingBag
+---
+
+Routes live in `app/(storefront)/(main)/**`.
+
+| Route | Use |
+|---|---|
+| `/` | Home with featured services and providers |
+| `/services`, `/services/[id]` | Treatments |
+| `/providers`, `/team`, `/team/[id]` | Providers |
+| `/book` | Treatment, provider and slot, then `bookAppointment` |
+| `/booking/[id]` | Confirmation; guests view or cancel with a link token |
+| `/account/sign-in`, `/account/sign-up` | `registerCustomer` |
+| `/account` | Visits, aftercare, reviews (`clientPortal`) |
+| `/account/intake/[appointmentId]` | Intake forms |
+| `/reviews`, `/gallery`, `/contact`, `/gift-cards` | Reviews, gallery, hours, gift cards by contact |
+
+The storefront serves the practice pinned by `MEDSPA_PRACTICE_SLUG`, or the single published practice. Gift cards are issued by staff.
+
+When no slot fits, `requestWaitlistSpot`. Cancel with `cancelGuestAppointment` (guests) or from the account.

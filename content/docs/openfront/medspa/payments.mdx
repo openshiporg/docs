@@ -1,0 +1,16 @@
+---
+title: Payments and refunds
+description: Settled payments, refunds and tip distribution.
+icon: Banknote
+---
+
+`/platform/payments` lists settled `Payment` records; `/platform/payments/[id]` shows one with its refunds and tips.
+
+## Actions
+
+- **Refund a manual deposit session:** `refundPayment`.
+- **Distribute a tip:** `distributeTip` to providers.
+
+Amounts are integer cents. Actions take an idempotency key.
+
+Requires `canManageFinance`.

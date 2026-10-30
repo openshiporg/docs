@@ -1,0 +1,21 @@
+---
+title: Configure shared AI
+description: Offer a shared OpenRouter key to every buyer.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set variables
+Set `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` and optionally `OPENROUTER_MAX_TOKENS`.
+</Step>
+<Step>
+### Lock to shared
+Set `MARKETPLACE_DISABLE_LOCAL_AI=true` to hide bring-your-own-key.
+</Step>
+<Step>
+### Restart
+New buyers see Global in the setup dialog.
+</Step>
+</Steps>

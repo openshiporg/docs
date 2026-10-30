@@ -1,0 +1,34 @@
+---
+title: Staff
+description: People, roles, credentials and activities at /dashboard/platform/staff.
+icon: Users
+---
+
+The staff page lists each person with their role, permission chips, activity chips and credential status.
+
+## Add a staff member
+
+`provisionStaffAuthority` creates a `User`, a single-purpose `Role` and a `StaffCredential` together. You choose:
+
+- Name, email and a temporary password.
+- Role name and the permission flags the person needs.
+- Credential type and reference. The reference must contain at least 16 characters (`Credential evidence reference must contain at least 16 characters`).
+- Allowed activities, from `authority`, `eligibility`, `inventory`, `sale`, `cash`, `state_reporting`, `incident`.
+- Approval limit in cents. It cannot exceed your own (`Approval limit cannot exceed your own`).
+- Effective and expiry dates.
+
+A premises assignment is required (`A premises assignment is required`).
+
+## Temporary passwords
+
+`setStaffTemporaryPassword` sets a new password for a person at your premises. Roles are immutable after creation, so to change permissions, provision a new staff member or credential.
+
+## Suspend or terminate
+
+`revokeStaffCredential` moves a credential from `active` to `suspended` or `terminated`. A credential in another state is refused with `A <status> credential cannot be <next>`. Without an active credential a person can still sign in but every controlled command fails with `Current staff credential does not authorize this activity`.
+
+## Premises scope
+
+People management is premises-scoped. You can only see and change people at your own premises.
+
+See [Roles and permissions](/docs/openfront/cannabis/roles-permissions) for what each flag allows.

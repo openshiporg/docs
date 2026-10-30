@@ -1,0 +1,21 @@
+---
+title: Income and reporting
+description: Dividends, tax lots, statements, snapshots and the monthly CSV export.
+icon: FileChartColumn
+---
+
+## Income
+
+`/dashboard/platform/income` shows dividends, open and closed tax lots, and account statements.
+
+## Reporting
+
+`/dashboard/platform/reporting` shows portfolio snapshots and ledger activity.
+
+## Export a month
+
+`GET /api/platform/statements?month=YYYY-MM` exports ledger entries and snapshots as CSV for one month, up to 1000 rows. The reporting page links to it.
+
+## Investors
+
+Investors read their statements, dividends and tax lots at `/statements`, and ledger entries at `/activity`.

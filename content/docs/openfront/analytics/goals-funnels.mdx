@@ -1,0 +1,45 @@
+---
+title: Goals, funnels, and segments
+description: Define conversions, ordered funnels, and saved filter sets.
+icon: Target
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Goals
+
+`/dashboard/platform/sites/[siteId]/goals` shows conversions, conversion rate, and revenue per goal (`siteGoals`) and lets you add and delete goals (`createGoal`, `deleteGoal`). Two types:
+
+- `pageview` with a `pathPattern` that starts with `/`. `*` matches anything, for example `/blog/*`.
+- `event` with an `eventName` that matches a custom event.
+
+Deleting a goal also deletes funnel steps that use it. To change a goal, edit it on the generic `/dashboard/goal` page.
+
+## Funnels
+
+`/funnels` shows step counts and drop-off (`siteFunnel`). A funnel is an ordered list of goals from the same site, with each `FunnelStep` carrying a `position`. Visits count toward a step only if they reached the earlier steps in order within one visit.
+
+<Steps>
+<Step>
+### Create the goals first
+At least two goals on the site.
+</Step>
+<Step>
+### New funnel
+Name it and pick goals in order. `createFunnel` then `createFunnelSteps`. A step must use a goal from the funnel's own site.
+</Step>
+<Step>
+### Read the drop-off
+Each step shows visits reached and the fall-off from the step before.
+</Step>
+</Steps>
+
+Delete a funnel with `deleteFunnel` and `deleteFunnelSteps`.
+
+## Segments
+
+A `Segment` is a named saved list of filters (`dimension`, `operator`, `value`). Create one from the filter bar (`createSegment`); it needs at least one valid filter. Delete with `deleteSegment`.
+
+## Revenue
+
+Custom events can carry a decimal `revenue`. Its currency must match the site's currency or the collector returns 422. Revenue appears per goal when the goal is an event goal.

@@ -1,0 +1,51 @@
+---
+title: API reference
+description: GraphQL endpoint, queries, mutations, errors and the payment webhook.
+icon: Code
+---
+
+## Endpoint
+
+`POST /api/graphql`, authenticated by the session cookie.
+
+## Queries
+
+| Query | Use |
+|---|---|
+| `publicCannabisMenu` | Public released, in-stock products |
+| `publicCannabisStorefrontSettings` | Public store identity |
+| `cannabisOperationsWorkspace(section, options)` | All dashboard page reads |
+| `cannabisStorefrontSettingsWorkspace` | Store settings page |
+| `cannabisCartPreparation`, `cannabisCartAllocationQuote` | Cart prep and priced lines |
+
+## Mutations
+
+Every mutation takes `input: JSON!` and returns `JSON!`.
+
+| Area | Mutations |
+|---|---|
+| Setup | `runCannabisOnboarding`, `dismissCannabisOnboarding` |
+| Authority | `renewCannabisAuthority`, `amendCannabisRulePack`, `amendCannabisPremisesDetails` |
+| Staff | `provisionStaffAuthority`, `setStaffTemporaryPassword`, `revokeStaffCredential` |
+| Catalog | `configureCannabisProduct`, `amendCannabisProduct`, `configureCannabisStorefrontSettings` |
+| Inventory | `receiveCannabisPackage`, `recordPackageLabResult`, `releaseCannabisPackage`, `placePackageHold`, `releasePackageHold` |
+| Recalls | `openRecallCase`, `advanceRecallCase` |
+| Customers | `checkInCannabisCustomer` |
+| Sales | `createPosCannabisCart`, `addCannabisCartLine`, `transitionCannabisCartPreparation`, `cancelCannabisCart`, `finalizeCannabisSale`, `refundCannabisSale` |
+| Cash | `configureRegister`, `amendRegister`, `openRegisterShift`, `closeRegisterShift`, `approveCashVariance` |
+| Payments | `linkTenderPaymentProvider` |
+| Incidents | `recordComplianceIncident`, `transitionComplianceIncident` |
+| Reporting | `retryStateOutboxEvent` |
+| Closed by capability | `submitCannabisCustomerIntake`, `recordEligibilityDecision`, `createCustomerPickupCart`, `postCannabisInventoryEvent`, `activateIntegrationInstallation`, `recordStateInboxEvent`, `recordReconciliationRun`, `approveReconciliationRun` |
+
+## Idempotency
+
+Controlled commands need an idempotency key of 8 to 200 characters. Repeating the same key replays the first result.
+
+## Errors
+
+Plain rule errors up to 300 characters are returned with code `BAD_USER_INPUT`. Other errors are masked as `Unexpected error.`
+
+## Webhook
+
+`POST /api/payment-webhooks/[providerId]`. See [Payment providers](/docs/openfront/cannabis/payment-providers).

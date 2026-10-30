@@ -1,0 +1,43 @@
+---
+title: Deployment
+description: Build, migrate, and run Analytics behind a proxy that sets client IP and country headers.
+icon: Rocket
+---
+
+## Scripts
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run lint` | ESLint |
+| `npm test` | Node test runner over `tests/*.test.ts` and `tests/*.test.cjs` |
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel deploy button.
+
+## Requirements
+
+- PostgreSQL. Reports use PostgreSQL SQL directly and the collector uses `pg_advisory_xact_lock`.
+- Every app process shares the same `DATABASE_URL` and `SESSION_SECRET`.
+- In production, the five S3 variables: `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`.
+
+## Proxy headers
+
+The collector reads the client IP from the first `X-Forwarded-For` value, then `X-Real-IP`. Run it behind a proxy that overwrites these headers.
+
+Country comes from the first valid header among `cf-ipcountry`, `x-vercel-ip-country`, `cloudfront-viewer-country`, `fly-client-country`, `x-country-code`. If none is set it is guessed from the browser timezone the script sends. Region and city are filled only on imported visits.
+
+## SESSION_SECRET
+
+It signs dashboard sessions, derives the daily visitor salt, and signs shared-link unlock tokens. Changing it signs everyone out, invalidates unlocked shared-link cookies, and gives each visitor a new hash for the rest of that day.
+
+## Data retention
+
+Visits and events stay until you delete them. Delete a site with its data from its Settings tab, or a person's visits with `deleteVisitorData`.

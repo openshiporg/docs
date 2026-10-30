@@ -1,0 +1,27 @@
+---
+title: Publish a dashboard
+description: Show a site on the public home page or share it through a link.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Public dashboard
+In the site's Settings tab turn on **Public dashboard**. It appears at `/` and `/sites/<slug>`.
+</Step>
+<Step>
+### Or a private link
+Create a shared link with a name and a password of at least 8 characters.
+</Step>
+<Step>
+### Send the URL
+`/share/<slug>`. Viewers enter the password once; the unlock lasts 30 days.
+</Step>
+<Step>
+### Control it
+Turn the link off, or delete it, at `/dashboard/platform/shared-links`.
+</Step>
+</Steps>
+
+You need `canManageSharedLinks`.

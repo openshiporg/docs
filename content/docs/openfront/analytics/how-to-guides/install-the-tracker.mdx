@@ -1,0 +1,25 @@
+---
+title: Install the tracker
+description: Add a site and verify the first hit arrives.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the site
+At `/dashboard/platform/sites` add name, domain, timezone, and currency.
+</Step>
+<Step>
+### Copy the snippet
+Open the site's Settings tab, Install section.
+</Step>
+<Step>
+### Paste it in the head
+Put `<script defer src=".../assets/script.js" data-site-id="site_...">` in every page's head.
+</Step>
+<Step>
+### Verify
+Visit the site, open the **Realtime** tab, and confirm one active visitor. If nothing appears, see [Troubleshooting](/docs/openfront/analytics/troubleshooting).
+</Step>
+</Steps>

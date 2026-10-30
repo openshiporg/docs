@@ -1,0 +1,43 @@
+---
+title: Roles and permissions
+description: The eleven Role flags, the credential activity layer, and second-person approvals.
+icon: ShieldCheck
+---
+
+Access is checked in two layers: the `Role` flags and the person's `StaffCredential`.
+
+## Role flags
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Enter the dashboard and read Role records |
+| `canManageOnboarding` | Run `runCannabisOnboarding` |
+| `canManageAuthority` | Renew authority, edit premises details |
+| `canManagePeople` | Staff and customer identities, credential revoke |
+| `canManageRoles` | Manage roles |
+| `canManageCompliance` | Eligibility, rules, holds, recalls, incidents |
+| `canManageInventory` | Receive packages, lab results, release for sale |
+| `canManageSales` | Carts, POS, fulfillment |
+| `canManageFinance` | Tenders, refunds, shifts, cash |
+| `canManageIntegrations` | Provider queues and payment providers |
+| `canViewReports` | Audit log and reconciliation |
+
+Roles cannot be created, updated or deleted through generic GraphQL.
+
+## Credential activities
+
+A credential lists `allowedActivities`. Each command names the activity it needs: `inventory`, `sale`, `cash`, `eligibility`, `state_reporting`, `incident` or `authority`. A missing activity returns `Current staff credential does not authorize this activity`.
+
+## Second-person approvals
+
+Some commands need an independent approver who re-enters their own password for that one command:
+
+| Command | Approver needs |
+|---|---|
+| `releasePackageHold` | `canManageCompliance` (error: `Hold release requires an independent compliance approver`) |
+| `advanceRecallCase` when closing | Compliance |
+| `closeRegisterShift` | Finance |
+| `approveCashVariance` | Independent finance actor (`An independent finance actor must approve this variance-review shift`) |
+| `refundCannabisSale` | Finance |
+
+The approver cannot be the person acting.

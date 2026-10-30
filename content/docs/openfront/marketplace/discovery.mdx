@@ -1,0 +1,16 @@
+---
+title: Product and menu discovery
+description: How the chat finds products and menus across admitted stores.
+icon: Search
+---
+
+1. The model calls `getAvailableStores`.
+2. For retail it calls `discoverProducts`. For food it calls `discoverRestaurantMenus`.
+3. A discovery card shows matches grouped by store.
+4. Opening one calls `getProduct` and shows variants.
+
+`getAvailableCountries` and `getAvailableRegions` give the shipping destinations. The Openfront adapter uses the store's `regions` query to resolve a country to a region.
+
+If nothing matches the app answers `No <vertical> results matched the requested items, location, and country.` If no store of that vertical is admitted: `No admitted <vertical> sources match this request.`
+
+Retail discovery uses `SearchProducts` and `GetProduct`. Restaurant discovery uses `MarketplaceRestaurantMenu` and `MarketplaceMenuItem`. See [GraphQL operations](/docs/openfront/marketplace/graphql-operations).

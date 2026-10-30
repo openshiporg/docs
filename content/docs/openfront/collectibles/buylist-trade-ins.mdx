@@ -1,0 +1,24 @@
+---
+title: Buylist and trade-ins
+description: Set buylist terms, publish offers and process customer sell lists through payment.
+icon: HandCoins
+---
+
+## Buylist
+
+`/dashboard/platform/buylist` shows the active `Buylist` and its entries. Terms: cash and credit percentages, per-condition shares, minimum offer and public notes. Each `BuylistEntry` targets a card printing with minimum condition, hotlist flag, stock cap, quantity bought, and NM cash and credit offers.
+
+## Trade-ins
+
+Customers submit a sell list at `/[countryCode]/trade-in` with `submitTradeIn`. Staff work it at `/dashboard/platform/trade-ins` and `/trade-ins/[id]`.
+
+Statuses: `draft` → `submitted` → `received` → `inspecting` → `quoted` → `accepted` → `paid`. From `submitted` or `quoted` it can be `declined`, then `returned`.
+
+### Process a submission
+
+1. Mark it `received` when the cards arrive.
+2. Move to `inspecting` and record the inspected condition on each `TradeInItem`. Quotes prefill from the buylist.
+3. Move to `quoted`, then `accepted` when the customer agrees.
+4. **Mark paid** when you have paid cash or issued credit. This records the status and the customer's choice as `disposition`.
+
+Quotes and inspections change only while `received` or `inspecting`. Errors the customer can see include `A buylist item exceeds the quantity the shop is buying` and `A selected buylist item is no longer being bought`.

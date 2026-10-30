@@ -1,0 +1,35 @@
+---
+title: Install a component
+description: Pull a free or purchased component into a project with the Openfront CLI.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set the registry and key
+`export OPENFRONT_REGISTRY_URL=https://your-domain` and `export OPENFRONT_TOKEN=ofui_...`. Free items work without a key; paid items need one from an account that owns them.
+</Step>
+<Step>
+### Find the item
+`openfront-ui search button` or `openfront-ui list`. `openfront-ui view <code>` shows files and dependencies.
+</Step>
+<Step>
+### Preview
+`openfront-ui add <code> --dry-run` prints the files it would write.
+</Step>
+<Step>
+### Add
+`openfront-ui add <code> --out ./my-app`. Files are written to their `target` paths after SHA-256 verification.
+</Step>
+<Step>
+### Install dependencies
+The CLI prints a package-manager plan and does not run it. Run it yourself.
+</Step>
+<Step>
+### Update later
+`openfront-ui update <code> --diff` compares your files with the latest stable release. Add `--yes` to overwrite changed files.
+</Step>
+</Steps>
+
+A 402 response means the signed-in account has not purchased the item; the response includes the checkout URL.

@@ -1,0 +1,89 @@
+---
+title: GraphQL API
+description: Authentication and the named GraphQL operations in Openfront UIKit.
+icon: Braces
+---
+
+GraphQL is served at `/api/graphql`. Custom roots are registered in `features/keystone/mutations/index.ts`; the checked-in `schema.graphql` is the reference for a revision. Authentication is the Keystone session cookie. Registry file delivery uses the REST endpoints in [Registry and CLI](/docs/openfront/uikit/registry-cli) with a registry key.
+
+Most raw list queries and writes are denied. Use the operations below.
+
+## Queries
+
+| Query | Purpose |
+|---|---|
+| `publicBrand` | Studio identity for the storefront |
+| `publicCatalog(code, slug, details, limit)` | Active, visible products with stable releases; at most 24 |
+| `viewerAccessSummary` | Products the signed-in user owns |
+| `uikitOperations(limit)` | Bounded operator inventory: products, releases, reviews, audits, orders, payments, refunds, access, keys, audit and outbox |
+| `uikitOperatorAccess` | The caller's operator permissions |
+| `uikitProductEditor(id)` | Product with editor state |
+| `uikitDesignSystemEditor` | Design systems and tokens |
+| `uikitBrandSettings` | Brand settings for the Store page |
+| `componentDraftAuthoringContext(releaseId)` | Files, revision, and manifest hash for the editor |
+| `componentDraftReviewContext(releaseId)` | Diff, validation evidence, and checks for the reviewer |
+| `redirectToInit` | Whether the first admin has been created |
+
+```graphql
+query Catalog {
+  publicCatalog(limit: 24) {
+    code
+    slug
+    name
+    accessType
+    price
+    currencyCode
+  }
+}
+```
+
+## Customer mutations
+
+```graphql
+mutation Checkout($code: String!, $provider: String!, $key: String) {
+  createKitCheckoutSession(productCode: $code, providerCode: $provider, idempotencyKey: $key) {
+    __typename
+  }
+}
+```
+
+| Mutation | Arguments |
+|---|---|
+| `createKitCheckoutSession` | `productCode`, `providerCode`, `idempotencyKey` |
+| `completeKitOrder` | `paymentSessionId` |
+| `createStorefrontRegistryApiKey` | `name` (returns `token` once) |
+| `revokeStorefrontRegistryApiKey` | `id` |
+| `updateActiveUser` | `data` |
+
+## Release mutations
+
+| Mutation | Arguments |
+|---|---|
+| `createComponentDraft` | `productCode`, `version`, `prompt`, `releaseNotes`, `isBreaking`, `authoringContext`, `files` |
+| `saveComponentDraft` | `releaseId`, `expectedRevision`, `expectedManifestSha256`, `prompt`, `releaseNotes`, `isBreaking`, `authoringContext`, `patch` |
+| `validateComponentDraft` | `releaseId`, `expectedRevision`, `expectedManifestSha256` |
+| `submitComponentReleaseForReview` | `id` |
+| `decideComponentReview` | `reviewId`, `decision` (`approved` or `changes_requested`), `notes`, `expectedManifestSha256`, `expectedValidationArtifactSha256` |
+| `publishComponentRelease` | `id` |
+| `deprecateComponentRelease` | `id`, `reason` |
+
+## Catalog and studio mutations
+
+`createUIKitProduct(data)`, `updateUIKitProduct(id, data)`, `createUIKitDesignSystem(data)`, `updateUIKitDesignSystem(id, data)`, `createUIKitDesignToken(data)`, `updateUIKitDesignToken(id, data)`, `updateUIKitBrandSettings(data)`, `runUIKitOnboarding(template, brand)`.
+
+## Commerce mutations
+
+| Mutation | Arguments | Result |
+|---|---|---|
+| `refundKitPayment` | `paymentId`, `amount`, `reason`, `idempotencyKey`, `providerReference` | `success`, `replayed`, `id`, `status`, `amount`, `currencyCode`, `paymentId`, `orderId`, `providerRefundId`, `message` |
+| `reconcileKitRefund` | `refundId` | same |
+| `revokeKitAccess` | `accessId`, `reason`, `idempotencyKey` | `success`, `replayed`, `id`, `status`, `message` |
+| `settleKitOrderOffline` | `paymentSessionId`, `reference`, `idempotencyKey` | `success`, `order` |
+
+## Webhooks
+
+Provider webhooks are REST: `POST /api/payment-providers/<providerCode>/webhook`. They verify the signature against the raw body and require a verified event id and type.
+
+## AI assistant
+
+`/api/completion` (OpenRouter) and `/api/mcp-transport/<transport>` expose generic data tools over the signed-in user's session; they follow the same access rules as GraphQL.

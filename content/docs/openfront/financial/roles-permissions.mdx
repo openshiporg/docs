@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: Role flags, approvals by a second person and machine credential limits.
+icon: ShieldCheck
+---
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Enter the dashboard |
+| `canViewFinancialOperations` | Read the console |
+| `canOperateFinancial` | Fill orders, settle transfers |
+| `canApproveFinancial` | Approval policies and decisions |
+| `canManageIntegrations` | Assets, connections, sync |
+| `canManageMachineCredentials` | API keys for agents |
+| `canManageOnboarding` | `runFinancialOnboarding` |
+| `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManageRoles` | Users and roles |
+
+The first user gets an `Admin` role with every flag. Create other operators with only the flags their job needs.
+
+## Second person
+
+An approval or review cannot be decided by the user who requested it. Transfer completion needs an approver who is neither requester nor settler.
+
+## Machine sessions
+
+A machine credential cannot fill orders, settle transfers or process recommendations directly. It proposes actions, a human approves, then `executeApprovedAgentProposal` runs `order.place`, `transfer.process` or `provider.import`.

@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Host Marketplace on any Node.js platform with the registry built into the artifact.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Requirements
+
+- Node.js 20.9 or later.
+- Outbound HTTPS from the server to every listed store and the AI provider.
+- A proxy that sets `x-forwarded-host` (or `host`) and `x-forwarded-proto`. The completion route calls its own `/api/mcp-transport/http` using those headers.
+
+## Environment
+
+| Variable | Effect |
+|---|---|
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | Enable shared AI mode when both are set |
+| `OPENROUTER_MAX_TOKENS` | Output cap, default 4000, must be a positive whole number |
+| `MARKETPLACE_DISABLE_LOCAL_AI` | `true`, `1`, `yes` or `on` forces shared mode and disables `/api/ai-models` |
+| `MARKETPLACE_CUSTOM_AI_ORIGINS` | Comma-separated allowlist for custom AI endpoints |
+
+All are optional. With none set each buyer brings their own key.
+
+## Deploy
+
+<Steps>
+<Step>
+### Review the registry
+Edit `marketplace.config.json` with the stores you trust.
+</Step>
+<Step>
+### Set secrets
+Add the AI variables to your host's secret store.
+</Step>
+<Step>
+### Build and start
+`npm run build`, then `npm start`. The README has Vercel and Railway buttons.
+</Step>
+<Step>
+### Verify
+Open `GET /api/mcp-transport/http` and confirm the admitted store list.
+</Step>
+</Steps>
+
+## Checks before release
+
+`npm test`, `npm run test:security`, `npm run test:platform`, `npm run typecheck`, `npm run lint`, `npm run build`.

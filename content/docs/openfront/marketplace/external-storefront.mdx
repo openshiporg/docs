@@ -17,7 +17,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 | `POST /api/mcp-transport/http` | `app/api/mcp-transport/[transport]/route.ts` | MCP JSON-RPC: `initialize`, `tools/list`, `tools/call`. Card buttons call this directly. |
 | `GET /api/mcp-transport/http` | same | Status and admitted store list. |
 | `POST /api/ai-models` | `app/api/ai-models/route.ts` | Lists models for a custom OpenAI-compatible endpoint. |
-| `GET /api/marketplace/catalog` | `app/api/marketplace/catalog/route.ts` | Bundled mock catalog (`liveCommerce: false`). Not used by the chat. |
+| `GET /api/marketplace/catalog` | `app/api/marketplace/catalog/route.ts` | Bundled sample catalog (`liveCommerce: false`). Not used by the chat. |
 
 There are no product, cart, checkout, or account pages. All shopping happens in MCP UI cards with these resource URIs: `ui://marketplace/discover-products`, `ui://marketplace/product/...`, `ui://marketplace/cart/...`, `ui://marketplace/login`, `ui://marketplace/email-conflict`, and `ui://marketplace/payment-error`.
 

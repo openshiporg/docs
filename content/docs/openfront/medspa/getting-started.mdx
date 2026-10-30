@@ -4,11 +4,9 @@ description: Install the source, configure PostgreSQL, sessions, and S3 storage,
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+## Hosted app
 
-## Live demo
-
-A hosted demo runs at [medspa.openship.org](https://medspa.openship.org). It is a shared evaluation instance with sample data; do not enter real client or clinical information.
+The hosted app is at [medspa.openship.org](https://medspa.openship.org).
 
 ## Requirements
 
@@ -56,7 +54,7 @@ Optional variables used by the code:
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI assistant completion route |
 | `CLINICAL_ASSET_KMS_KEY_ID`, `CLINICAL_ASSET_REGION` | Recorded on clinical asset upload intents; intents are marked fail-closed when no key is configured |
 
-See [Integrations and boundaries](/docs/openfront/medspa/integrations-boundaries) for what each provider does today.
+See [Integrations](/docs/openfront/medspa/integrations) for what each provider does today.
 
 ## Migrations
 
@@ -69,9 +67,7 @@ npm run migrate
 
 `npm run migrate` runs `prisma migrate deploy`. `npm run migrate:gen` builds Keystone, regenerates Prisma and the dashboard view order, then runs `prisma migrate dev`; use it only against a disposable database when you change the schema.
 
-<Callout type="info">
 `npm run dev` and `npm run build` do not apply migrations. Apply them explicitly before starting the app.
-</Callout>
 
 ## Run locally
 
@@ -120,4 +116,4 @@ Before a real deployment:
 3. Configure the Stripe webhook endpoint (`/api/payments/webhooks/<provider code>`) if you use Stripe.
 4. Set `MEDSPA_INTAKE_MAX_AGE_DAYS` if the practice will run consultation, plan, and treatment workflows.
 5. Review roles so each person only has the capabilities their job needs.
-6. Read [Current limitations](/docs/openfront/medspa/limitations).
+6. Read [Troubleshooting](/docs/openfront/medspa/troubleshooting).

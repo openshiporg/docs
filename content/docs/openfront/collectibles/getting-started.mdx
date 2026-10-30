@@ -4,11 +4,9 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+## Hosted app
 
-## Live demo
-
-A hosted demo runs at [https://collectibles.openship.org](https://collectibles.openship.org). It is the "Eighth Street Cards" shop created by the normal **Complete card shop** onboarding. Its slab certificate numbers are labelled samples (`SAMPLE-…`) and never link to a grader lookup.
+The hosted app is at [https://collectibles.openship.org](https://collectibles.openship.org). It is the "Eighth Street Cards" shop created by the **Complete card shop** onboarding.
 
 ## Requirements
 
@@ -57,7 +55,7 @@ Optional settings used by the code:
 | `TRUSTED_PROXY_IPS` | Proxies whose forwarded client IP is trusted for API-key IP restrictions |
 | `HIDE_OPENFRONT_BRANDING` | Hide Openfront branding in the storefront |
 
-Provider details are on [Integrations and boundaries](/docs/openfront/collectibles/integrations-boundaries). Never commit `.env`.
+Provider details are on [Integrations](/docs/openfront/collectibles/integrations). Never commit `.env`.
 
 ## Migrations
 
@@ -78,10 +76,6 @@ npm run dev
 
 The `dev` script runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`, so it applies migrations to the database in `DATABASE_URL`.
 
-<Callout type="warn">
-Do not point `npm run dev` at a shared or production database. It applies migrations before starting.
-</Callout>
-
 Then open:
 
 - Storefront: `/[countryCode]`, for example `/us`
@@ -93,9 +87,9 @@ Then open:
 1. Visit `/dashboard/init` on an empty database to create the first administrator, then sign in.
 2. Open the onboarding dialog from the dashboard sidebar and choose a template: **Complete card shop**, **Starter shop**, or **Custom setup**.
 3. Onboarding creates the store, regions and countries, payment providers (Stripe and a bank-transfer manual provider), shipping options, categories, collections, card sets with market readings (via `importCardCatalog`), singles, slabs, and sealed products, then pricing rules and a buylist.
-4. Review **Payment Providers** before taking real orders. Stripe needs its keys; the bank-transfer provider creates orders with a pending payment that a manager confirms with `confirmManualPayment`.
+4. Review **Payment Providers**. Stripe needs its keys; the bank-transfer provider creates orders with a pending payment that a manager confirms with `confirmManualPayment`.
 
-The seed data is evaluation data. Remove or replace it before running a real shop.
+Replace the starter catalog, prices, and shop details with your own.
 
 ## Deployment
 

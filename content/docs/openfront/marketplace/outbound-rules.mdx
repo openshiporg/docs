@@ -1,0 +1,18 @@
+---
+title: Outbound request rules
+description: How Marketplace limits and validates every request to a store or AI endpoint.
+icon: ShieldCheck
+---
+
+Every store request goes through `createTrustedFetch` in `lib/remote-endpoint.ts`.
+
+- Only origins in `marketplace.config.json` are allowed.
+- HTTPS only, with no credentials in the URL.
+- Every DNS answer must be a public address. Private and reserved IPv4 and IPv6 ranges are refused.
+- The checked address is pinned to the socket; TLS hostname checks stay on.
+- Redirects are refused.
+- 8 second timeout per store call. GraphQL responses are capped at 2 MiB (8 MiB for introspection).
+
+The marketplace's own cookies are never forwarded. A bearer token is attached only for the store named in the tool call.
+
+Tool arguments are checked against the tool's input schema before any store request. Errors name the failing argument paths and never echo values.

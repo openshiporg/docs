@@ -1,0 +1,13 @@
+---
+title: Catalog
+description: Treatments, categories, variants, prices, online booking and required rooms.
+icon: Tags
+---
+
+`/platform/catalog` and `/platform/catalog/[id]`. `Service`, `ServiceCategory`, `ServiceVariant` and `MedSpaImage` allow direct CRUD with `canManagePractice`.
+
+## Service fields
+
+Duration, price, deposit, cleanup buffer, online booking flag, required resource, and gates: `requiresConsultation`, `requiresIntakeReview`, `staffAuthorizationRequired`, `requiresLotTraceability`.
+
+Checkout and clinical checks use an immutable snapshot of these gates taken at booking.

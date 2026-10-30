@@ -1,0 +1,34 @@
+---
+title: What is Openfront Financial
+description: A paper-trading brokerage with an investor portal, an operator console, a double-entry ledger, approvals and compliance review.
+icon: Landmark
+---
+
+Openfront Financial is a self-hostable brokerage and portfolio application. Investors check markets, trade, fund accounts and read statements in the portal. The firm's operators work orders, transfers, the ledger, approvals and compliance in the dashboard.
+
+## Who uses it
+
+| Audience | Surface | Work |
+|---|---|---|
+| Investor | Portal at `/` | Quotes, watchlist, orders, portfolio, funding, activity, statements |
+| Operations | `/dashboard/platform/orders`, `/transfers`, `/transactions`, `/ledger` | Fill and cancel orders, settle transfers, reconcile imports |
+| Compliance and advisory | `/compliance`, `/approvals`, `/advisory` | KYC, risk profiles, cases, approval policies, recommendations |
+| Administrator | `/tasks`, `/store-settings`, `/accounts` | Connections, machine credentials, firm identity |
+
+## Paper trading
+
+Orders are filled by a local simulation, and transfers change recorded cash balances when an operator settles them. The portal shows the paper-trading statement from `PlatformSettings`. The Alpaca paper adapter reads accounts, positions and activity through `syncInstitutionConnection`.
+
+## Recorded values
+
+Every balance is a recorded snapshot with an as-of time and coverage state. The portal never implies a live quote.
+
+## How it is built
+
+Next.js (App Router), Keystone 6 with GraphQL at `/api/graphql`, Prisma and PostgreSQL. There are 53 Keystone lists. Lifecycle modules in `features/keystone/lib` post balanced ledger journals for every change.
+
+## Writes use named mutations
+
+Nearly every financial list denies generic create, update and delete. A client calls named mutations such as `placeFinancialOrder` and `processFinancialTransfer`. See [API reference](/docs/openfront/financial/api-reference).
+
+Next: [Getting started](/docs/openfront/financial/getting-started), then the [Dashboard overview](/docs/openfront/financial/dashboard).

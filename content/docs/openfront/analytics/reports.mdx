@@ -1,0 +1,41 @@
+---
+title: Reports
+description: Overview, realtime, visits, events, and performance reports with periods and filters.
+icon: ChartLine
+---
+
+Every report takes a period in the site's timezone and up to ten filters.
+
+## Periods
+
+`today`, `yesterday`, `24h`, `7d`, `30d` (default), `month`, `last_month`, `6mo`, `12mo`, or `custom` with `from` and `to`.
+
+## Filters
+
+Dimensions: `page`, `entry_page`, `exit_page`, `hostname`, `event`, `source`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `country`, `region`, `city`, `browser`, `os`, `device`, `screen`, `language`. Operators: `is`, `is_not`, `contains`. In the dashboard, clicking a row adds a filter. Save the current filters as a segment from the filter bar (see [Goals, funnels, and segments](/docs/openfront/analytics/goals-funnels)).
+
+## Overview
+
+`/dashboard/platform/sites/[siteId]`. Headline totals with the previous period: visitors, visits, pageviews, views per visit, bounce rate, and visit duration. A traffic chart, and panels for pages, entry and exit pages, sources and UTM campaigns, countries and languages, browsers, operating systems, and devices. Calls: `siteOverview`, `siteBreakdown`.
+
+A breakdown returns the top values of one dimension, up to 100 rows per page, with optional search.
+
+## Realtime
+
+`/realtime`. Visitors active in the last five minutes and pageviews per minute for the last thirty. The page refreshes every 15 seconds (`siteRealtime`).
+
+## Visits
+
+`/sessions` is a paged list of visits for the period (`siteSessions`). `/sessions/[sessionId]` shows one visit's details and event timeline (`siteSession`). Visit lists and timelines are never available on public dashboards.
+
+## Events
+
+`/events` lists custom events. Select an event to see the values of its properties (`siteEventProperties`).
+
+## Performance
+
+`/performance` shows p75 LCP, INP, CLS, FCP, and TTFB overall and per page (`siteVitals`). Vitals are sent by the tracker once when a page is hidden.
+
+## Visit definition
+
+A visit stays open until 30 minutes of inactivity. A visitor is a hash of a daily salt, the site, the IP, and the User-Agent, so the same person has a new hash each UTC day and on each device or browser.

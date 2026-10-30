@@ -1,0 +1,45 @@
+---
+title: What is Openfront Cannabis
+description: The product, who uses it, how the operator dashboard and public menu fit together, and how regulated writes are controlled.
+icon: Leaf
+---
+
+Openfront Cannabis runs a licensed dispensary. Staff use the operator dashboard at `/dashboard/platform` for authority records, staff, inventory custody, recalls, counter sales, cash and reconciliation. Customers see an age-gated public menu at `/`.
+
+## Who uses what
+
+| Audience | Surface | Typical work |
+|---|---|---|
+| Owner, compliance lead | Authority, Staff, Compliance, Recalls, Incidents | Renew licenses, add staff, place holds, open recalls |
+| Inventory manager | Receiving, Inventory, Menu | Receive packages, record lab results, release for sale, edit products |
+| Budtender | POS, Customers, Sales | Check in a customer, build a cart, take payment |
+| Finance | Cash, Payment providers, Reconciliation | Open and close shifts, approve variances, retry state reports |
+| Customer | Public menu | Browse released, in-stock products and find the store |
+
+## How it is built
+
+- Next.js App Router and React for the dashboard and menu.
+- Keystone 6 for the data model and the GraphQL API at `/api/graphql`.
+- Prisma on PostgreSQL. File storage uses S3-compatible object storage.
+- Platform pages live in `features/platform/*`. They read through one resolver, `cannabisOperationsWorkspace(section, options)`, and write through named mutations.
+
+## Writes go through commands
+
+Every Keystone list uses immutable access, so generic GraphQL create, update and delete are denied. Each change is a named mutation such as `receiveCannabisPackage` or `finalizeCannabisSale`. Most run through `runControlledOperation`, which requires:
+
+- A current role permission (for example `canManageInventory`).
+- A current staff credential whose `allowedActivities` cover the activity.
+- A current `CannabisLicense` for the premises.
+- An idempotency key, stored as an `IdempotencyKey` receipt.
+
+Each command writes an `AuditEvent`, and state-reported actions also write an `OutboxEvent`. Hold release, shift close, refunds and recall close need a second person who re-enters their own password for that one command.
+
+## Tenancy
+
+`Organization` is the licensed business and `Premises` is the licensed store. Users, roles, credentials and most records carry both. Operator reads are scoped to the signed-in user's organization and premises. The public menu serves one scope and shows an unavailable state until exactly one active organization with one active premises exists.
+
+## Next steps
+
+- [Getting started](/docs/openfront/cannabis/getting-started) to install and onboard.
+- [Dashboard overview](/docs/openfront/cannabis/dashboard) for the operator pages.
+- [Data model](/docs/openfront/cannabis/data-model) for every list.

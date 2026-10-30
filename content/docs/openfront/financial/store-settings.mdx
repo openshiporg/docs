@@ -1,0 +1,9 @@
+---
+title: Store settings
+description: Firm name, tagline, logo, colour, currency and the paper-trading flag.
+icon: Palette
+---
+
+`/dashboard/platform/store-settings` edits `PlatformSettings` through `upsertPlatformSettings`: firm name, tagline, logo, colour, currency and the paper-trading flag.
+
+The portal reads these through `publicFinancialIdentity`. Until settings exist the portal shows an unconfigured screen. The paper-trading disclosure on the portal comes from this record.

@@ -1,0 +1,13 @@
+---
+title: Staff
+description: Providers, invitations, credentials and treatment authority.
+icon: UserCog
+---
+
+`/platform/staff` and `/platform/staff/[id]`.
+
+- `inviteStaff`, then the invitee uses `acceptStaffInvitation` at `/join`.
+- `createProviderProfile`, `updateProviderProfile`.
+- Credentials and authorization (`ProviderCredential`, `ProviderAuthorization`) decide which treatments a provider may perform.
+
+Requires `canManagePeople`.

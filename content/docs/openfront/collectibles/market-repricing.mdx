@@ -1,0 +1,36 @@
+---
+title: Market and repricing
+description: Refresh TCGplayer readings, preview pricing rules, apply them, and review large moves.
+icon: TrendingUp
+---
+
+`/dashboard/platform/pricing` is the Market & Repricing page.
+
+## Refresh market prices
+
+`refreshMarketPrices` (`canManageCatalog`) fetches `https://tcgcsv.com/tcgplayer/3/<groupId>/prices` for every set with a `tcgplayerGroupId`. It appends `MarketPrice` rows (low, mid, high, market in minor units, source, `observedAt`) and updates buylist entries whose `pricingMode` is `market`. Failures are reported per set and old readings stay. No API key is needed.
+
+Prices are per card and finish, not per condition.
+
+## Pricing rules
+
+`PricingRule` fields:
+
+| Field | Meaning |
+|---|---|
+| `appliesTo` | Stock kind: raw, graded, sealed |
+| `condition` | Empty for every condition |
+| `basis` | market, low or mid |
+| `percentBasisPoints` | 10000 is 100% of the basis, range 0 to 100000 |
+| `minimumMinor` | Price floor (default 25) |
+| `maximumChangeBasisPoints` | Largest move applied automatically (default 3000) |
+| `rounding` | none, ninety_nine (up to .99), quarter, whole |
+| `priority`, `active` | Rule order and switch |
+
+## Preview and apply
+
+1. Run `repriceInventory` with `apply: false` to preview.
+2. Review each variant. Results are `priced`, `review` (move exceeds the maximum change and is not applied) or `skipped`.
+3. Apply. The base price updates, other currencies scale proportionally, and `lastRepricedAt` is stamped.
+
+Only variants with `pricingMode: market` on products linked to a catalog card are considered. Handle `review` rows by editing the price on the product.

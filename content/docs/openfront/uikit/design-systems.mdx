@@ -1,0 +1,22 @@
+---
+title: Design systems
+description: Group products under a design system and ship named tokens with them.
+icon: Palette
+---
+
+`/dashboard/platform/design-systems` manages `DesignSystem` and `DesignToken` records.
+
+## Design system fields
+
+Name, Slug, Namespace (both unique), Homepage, Status (`draft`, `active`, `archived`), Default active system (`isDefault`), and Description. Create with `createUIKitDesignSystem`, edit with `updateUIKitDesignSystem`. Products attach through their Design system field.
+
+## Tokens
+
+Each token has a stable lowercase `code`, a design system, a Name, a Type (`color`, `typography`, `spacing`, `radius`, `shadow`, `motion`, `breakpoint`, `other`), a Mode (`base`, `light`, `dark`), a Value, and a Description. Create with `createUIKitDesignToken`, edit with `updateUIKitDesignToken`.
+
+Tokens marked `isPublic` are snapshotted into a release when it is submitted for review (at most 100). Validation checks that the exact snapshot submitted is the one used. Changing public tokens after submission forces the reviewer to choose **Request changes** and revalidate.
+
+## Notes
+
+- Token codes must be lowercase and bounded: `Design token code must be a lowercase, bounded stable identity.`
+- Onboarding creates a "Studio Design System" with starter tokens and does not overwrite tokens you changed.

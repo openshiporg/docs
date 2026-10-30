@@ -1,0 +1,51 @@
+---
+title: Sites
+description: Create sites, read the site list, and manage each site's settings.
+icon: Globe
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/sites` lists every readable site with 30-day visitors, a sparkline, live visitors, and a status dot (from `siteSummaries`).
+
+## Site fields
+
+| Field | Notes |
+|---|---|
+| `name` | Required |
+| `domain` | Required, unique hostname the tracker runs on; subdomains are included |
+| `slug` | Used in the public dashboard address; defaults from the domain |
+| `publicId` | Generated `site_...` id used by the tracker; read-only |
+| `timezone` | IANA name, default `UTC`; reports use it for day boundaries |
+| `currency` | Three-letter code, default `USD`; revenue must match it |
+| `status` | `active`, `paused`, `archived`. Hits for sites that are not `active` are ignored |
+| `isPublic` | Show the dashboard on the public site; needs `canManageSharedLinks` |
+| `description` | Optional |
+
+Goals, funnels, segments, shared links, visits, and events are read-only relationships from the site; create them against the site.
+
+## Create a site
+
+<Steps>
+<Step>
+### Open Sites and add one
+Enter name, domain (for example `example.com`), timezone, and currency. Needs `canManageSites`.
+</Step>
+<Step>
+### Copy the snippet
+Open the site's **Settings** tab and copy the tracking snippet.
+</Step>
+<Step>
+### Install and verify
+Add it to every page's head, visit the site, and check **Realtime**.
+</Step>
+</Steps>
+
+## Settings tab
+
+- **Install**: the tracking snippet, a custom event example, and a server-side example.
+- **Details**: name, domain, timezone, currency, status.
+- **Public dashboard**: toggle `isPublic`.
+- **Shared links**: create links with a name and optional password of at least 8 characters.
+- **Visitor data**: delete everything recorded for an identifier sent with `identify()`.
+- **Delete site**: removes the site with its events, visits, funnel steps, funnels, goals, segments, and shared links in one transaction. You type the site name to confirm.

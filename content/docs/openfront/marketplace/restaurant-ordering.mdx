@@ -1,0 +1,13 @@
+---
+title: Restaurant ordering
+description: Menus, modifiers, pickup and delivery through Openfront Restaurant stores.
+icon: UtensilsCrossed
+---
+
+1. `discoverRestaurantMenus` lists menus. Cart buttons appear only if the store exposes `createActiveCart` and `addActiveCartItem`.
+2. `addToCart` accepts `modifierIds`, `specialInstructions` and `orderType` (`pickup` or `delivery`, default pickup).
+3. `setRestaurantFulfillment` saves details. Pickup needs name, email and phone. Delivery also needs street, city, postal code and a two-letter country code.
+4. Before payment the app checks for an empty cart, missing contact, missing delivery address and an unmet delivery minimum (`Restaurant cart is not ready for payment`).
+5. Pay with `initiatePaymentSession` and `completeCart`.
+
+Restaurant requests send the cart proof in `X-Restaurant-Cart-Proof` and the `_restaurant_cart_id` cookie.

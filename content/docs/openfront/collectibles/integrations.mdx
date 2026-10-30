@@ -1,0 +1,33 @@
+---
+title: Integrations
+description: Shipping, card data, storage, email, MCP, API keys, OAuth apps and webhooks.
+icon: Unplug
+---
+
+## Shipping
+
+`features/integrations/shipping` has `shippo`, `shipengine` and `manual` adapters behind one contract: `getRatesForOrder`, `createProviderShippingLabel`, `validateShippingAddress`, `trackShipment`, `cancelShippingLabel`. Credentials are set on `ShippingProvider` records at `/platform/shipping-providers`. Onboarding seeds the options "Tracked bubble mailer", "Insured, signature required" and "Return shipping".
+
+## Card data and prices
+
+- Checklists: bundled JSON built from Pokémon TCG API data. Images load from `images.pokemontcg.io` and `images.scrydex.com`.
+- Prices: TCGCSV, see [Market and repricing](/docs/openfront/collectibles/market-repricing).
+- Grading: `GradingCompany` lookup templates for PSA and CGC.
+
+## Storage
+
+S3-compatible storage via the five `S3_*` variables. Claim images can use Cloudinary.
+
+## Email
+
+SMTP for password reset and order emails.
+
+## MCP and assistant
+
+`/api/mcp-transport/[transport]` forwards the caller's session cookie to `/api/graphql`, so tools run with the caller's permissions. Tools: `listModels`, `searchModels`, `getFieldsForType`, `lookupInputType`, `queryData`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`, and storefront tools (`searchProducts`, `getProduct`, cart, address, shipping, payment, `placeOrder`, `getOrder`, `getCheckoutLink`). The dashboard assistant at `/api/completion` uses OpenRouter.
+
+## API keys, OAuth, webhooks
+
+- API keys: `of_` bearer tokens with scopes, expiry and IP restrictions. Set `TRUSTED_PROXY_IPS` behind a proxy.
+- OAuth apps: `/api/oauth/authorize` and `/api/oauth/token`.
+- Webhooks: `WebhookEndpoint` and `WebhookEvent`.

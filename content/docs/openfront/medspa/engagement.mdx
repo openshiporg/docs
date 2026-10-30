@@ -1,0 +1,13 @@
+---
+title: Engagement
+description: Waitlist board, message templates and message log.
+icon: MessagesSquare
+---
+
+`/platform/engagement` (also `/waitlist`).
+
+- **Waitlist** (`medspaWaitlistBoard`): add with `joinWaitlist`, then `transitionWaitlistEntry` to `notified`, `converted` or `removed`.
+- **Templates:** `MessageTemplate` has direct CRUD for `canManageCommunications`.
+- **Log:** `MessageLog` (`medspaMessageLog`) records messages.
+
+Email is sent for password reset, appointment request receipts and gift cards when SMTP is set.

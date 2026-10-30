@@ -1,0 +1,24 @@
+---
+title: Ledger
+description: Chart of accounts, balanced journals and reversals.
+icon: BookOpen
+---
+
+`/dashboard/platform/ledger` shows the chart of accounts with balances and journals by type and status. `/ledger/[id]` shows postings and linked reversals.
+
+## Structure
+
+- `LedgerAccount`: an account in the chart. Inactive or different-currency accounts are refused (`Ledger account is inactive or uses a different currency.`).
+- `LedgerJournal`: a balanced double-entry record.
+- `LedgerPosting`: one debit or credit line.
+- `LedgerEntry`: the client-facing activity line shown in the portal.
+
+## Rules
+
+- 2 to 100 postings per journal.
+- Debits equal credits; one currency (`Ledger journal postings must be balanced: total debits must equal total credits.`).
+- Amounts are positive decimals with at most four fractional digits.
+- Direction is `debit` or `credit`; currency is a three-letter ISO code.
+- `Journal occurredAt must be a valid timestamp.`
+
+Every lifecycle mutation posts through `ledgerLifecycle`. A reversal links to the original journal.

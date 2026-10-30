@@ -1,0 +1,45 @@
+---
+title: Store settings
+description: Studio name, mark, logo, accent hue, and contact details shown on the public storefront.
+icon: Store
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/store` edits the single `BrandSettings` record. The storefront home shows a "not configured" page, and `/r/registry.json` returns 503 (`The public studio identity is not configured.`), until it exists.
+
+## Fields
+
+| Field | Notes |
+|---|---|
+| Store Name | Up to 200 characters, required |
+| Text mark | 1 to 4 letters or numbers, shown when no logo icon is set |
+| Logo Icon | Picked from an icon grid, or edit the SVG code |
+| Logo Color | Hue slider or preset |
+| Copyright name | Defaults to the store name |
+| Public email | Required |
+| Website | Required URL |
+| Tagline, Description | Shown on the home page |
+
+Saving calls `updateUIKitBrandSettings(data)` (`GetStoreSettings` loads it). It needs `canManageProducts`.
+
+## Set up the studio identity
+
+<Steps>
+<Step>
+### Open Store
+Go to `/dashboard/platform/store`, or run onboarding to fill it in.
+</Step>
+<Step>
+### Choose a mark and logo
+Enter the text mark, pick an icon and a hue.
+</Step>
+<Step>
+### Add contact details
+Set the public email and website. The registry catalog uses the brand when building shadcn registry metadata.
+</Step>
+<Step>
+### Save
+Reload the storefront home to see the change.
+</Step>
+</Steps>

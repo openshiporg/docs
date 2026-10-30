@@ -1,0 +1,21 @@
+---
+title: Issue an agent key
+description: Create a scoped machine credential for an automation.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set the pepper
+Set `FINANCIAL_MACHINE_CREDENTIAL_PEPPER`.
+</Step>
+<Step>
+### Issue
+In Tasks, API keys, issue a credential with scopes. Copy the token; it is shown once.
+</Step>
+<Step>
+### Call
+Send `Authorization: Bearer <token>` to `/api/financial/agent`.
+</Step>
+</Steps>

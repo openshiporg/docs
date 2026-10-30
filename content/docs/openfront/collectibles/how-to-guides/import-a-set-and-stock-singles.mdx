@@ -1,0 +1,25 @@
+---
+title: Import a set and stock singles
+description: Bring in a checklist, create variants by condition and price them.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Import
+Run `importCardCatalog` for the set. The checklist appears in Cards & Sets.
+</Step>
+<Step>
+### Create the product
+Create a product linked to the card with one variant per condition and finish.
+</Step>
+<Step>
+### Price by rule
+Set `pricingMode` to `market` and run a repricing preview.
+</Step>
+<Step>
+### Add stock
+Use `adjustInventory` with a reason.
+</Step>
+</Steps>

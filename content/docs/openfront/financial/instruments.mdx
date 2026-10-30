@@ -1,0 +1,17 @@
+---
+title: Instruments
+description: The asset catalog, quotes and price history.
+icon: ChartCandlestick
+---
+
+`/dashboard/platform/instruments` lists assets with type tabs and search. `/instruments/[id]` shows the quote, fundamentals, price history, holdings, dividends and alerts.
+
+## Manage assets
+
+With `canManageIntegrations` you can create or edit an `Asset` and turn trading on or off. A trading-off asset cannot be ordered.
+
+## Quotes
+
+Quotes are the values stored on each `Asset`. `PriceHistory` feeds the charts. `recordBrokerSyncRun` records a `MarketDataSyncRun` against a `BrokerAdapter` with its status. The portal reads quotes through `publicMarketQuotes` and `publicMarketQuote`, and `Asset` through `publicMarketAssets` and `publicMarketAsset`.
+
+Update quotes by editing the asset or writing `PriceHistory` rows, which both allow generic writes for `canManageIntegrations`.

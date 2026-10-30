@@ -1,0 +1,53 @@
+---
+title: POS and sales
+description: Check in a customer, build a cart, take payment, cancel, and review receipts and refunds.
+icon: ReceiptText
+---
+
+## POS
+
+`/dashboard/platform/pos` is the counter screen. You need an open register shift ([Cash](/docs/openfront/cannabis/cash)).
+
+1. **Check in** the customer. See [Customers](/docs/openfront/cannabis/customers). This calls `checkInCannabisCustomer` and creates a cart with `createPosCannabisCart`.
+2. **Price and add** a product and quantity. The server quotes the line (`cannabisCartAllocationQuote`), choosing the package. You review the price, then `addCannabisCartLine` reserves stock. If the quote changed you see `Reviewed quote changed; retain the original command and review a separate...`.
+3. **Prepare** the order if needed with `transitionCannabisCartPreparation`: reserved, picking, staged.
+4. **Take payment** with `finalizeCannabisSale`. The button reads `Complete sale · <total>` and asks for confirmation.
+5. **Cancel** with `cancelCannabisCart` to return reserved items to stock.
+
+### Payment fields
+
+| Tender | Field |
+|---|---|
+| Cash | Cash received. Tendered less change must equal the applied amount |
+| Debit, ACH, wallet, other | Terminal approval code (`providerReference`) |
+
+Caregiver sales ask for a second authority check at payment.
+
+### Cart statuses
+
+draft, preliminarily_eligible, reserved, picking, staged, final_verification, completed, expired, cancelled, rejected.
+
+### Limits applied on every line
+
+Purchase limits, tax rule and discount rules from the active rule pack. A breach returns, for example, `Configured <window> purchase limit exceeded for <category>`. A sale also needs exactly one active traceability installation (`Exactly one externally validated active traceability installation is required before sale`).
+
+## Sales
+
+`/dashboard/platform/sales` lists receipts with status tabs and search. `/sales/[id]` shows lines, tenders, state-reporting state and refunds.
+
+Sale statuses: finalized, state_queued, state_accepted, state_rejected, reconciled, reversal_pending, reversed, partially_refunded, refunded.
+
+### Refund
+
+On the receipt page choose **Refund**.
+
+| Field | Notes |
+|---|---|
+| Original payment | The tender to refund against |
+| Amount | Up to the remaining refundable total |
+| Reason code | Lowercase code such as `damaged_product` |
+| Returned product | Nothing returned, Quarantine, Waste, Returned to the authority |
+| Terminal refund reference | Non-cash only |
+| Approver email and password | A second finance person |
+
+`refundCannabisSale` needs `canManageFinance`.

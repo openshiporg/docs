@@ -1,0 +1,21 @@
+---
+title: Refund a sale
+description: Refund against the original payment with a second approver.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the receipt
+Go to `/dashboard/platform/sales` and open the sale.
+</Step>
+<Step>
+### Fill the refund
+Choose **Refund**, pick the original payment, enter the amount, a reason code like `damaged_product`, and the returned product disposition.
+</Step>
+<Step>
+### Approve
+For card or bank payments enter the terminal refund reference. A finance colleague enters their email and password.
+</Step>
+</Steps>

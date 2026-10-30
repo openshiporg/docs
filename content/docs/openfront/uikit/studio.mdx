@@ -1,0 +1,47 @@
+---
+title: Studio
+description: Author, validate, review, and publish component drafts.
+icon: Sparkles
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/studio` lists releases in `draft` or `review`. `/dashboard/platform/studio/[id]` is the working page for one release.
+
+## What the detail page does
+
+- **Human source editor**: replaces the complete set of files using the exact revision and manifest hash shown. Each file has `path`, `target`, `fileType`, `language`, and `content`. Saving invalidates earlier validation and review evidence.
+- **Validation**: runs `validateComponentDraft` and shows each check, log, and screenshots.
+- **Review actions**: submit for review, approve, request changes, publish.
+- **Source diff** against the previous release.
+
+## Draft rules
+
+- `createComponentDraft(productCode, version, prompt, releaseNotes, isBreaking, authoringContext, files)` needs source files. Versions must be semantic: `Release version must be valid semantic versioning, for example 1.2.3 or 2.0.0-beta.1.`
+- `saveComponentDraft` takes `expectedRevision` and `expectedManifestSha256`. If another save landed first: `Component draft changed during save. Refresh before retrying.`
+- Only drafts can be edited or validated: `Only draft component releases can be edited.`
+- A draft must keep at least one file.
+- File hashes (`sourceHash`) and `sizeBytes` are computed for you.
+
+## Validation
+
+`validateComponentDraft(releaseId, expectedRevision, expectedManifestSha256)` stores a `ComponentValidation` record. It checks the file manifest, imports and dependencies, license and design-token terms, then runs isolated tests, a production build, and browser render with accessibility checks and mobile and desktop screenshots in an isolated environment with no network. Draft validation needs at least one renderable `component`, `ui`, `block`, or `page` file, and evidence supports at most 12 renderable files per release. A failed run records the checks and log so you can fix the draft.
+
+## Review and publish
+
+<Steps>
+<Step>
+### Submit for review
+`submitComponentReleaseForReview(id)` requires at least one component file and passing stored validation evidence that matches the current manifest. It creates a `ReviewWorkflow`.
+</Step>
+<Step>
+### Decide
+`decideComponentReview(reviewId, decision, notes, expectedManifestSha256, expectedValidationArtifactSha256)` with decision `approved` or `changes_requested`. Notes must be 10 to 4000 bytes. Request changes returns the release to draft.
+</Step>
+<Step>
+### Publish
+`publishComponentRelease(id)` makes the approved release `stable`. It fails if product terms or release notes changed after approval and tells you to request changes and revalidate.
+</Step>
+</Steps>
+
+Every step writes an `AuditEvent`. See [Publish a release](/docs/openfront/uikit/how-to-guides/publish-a-release).

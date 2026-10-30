@@ -1,0 +1,60 @@
+---
+title: Troubleshooting
+description: Messages returned by UIKit and what to do about each.
+icon: LifeBuoy
+---
+
+## Sign-in and setup
+
+| Symptom | Cause and fix |
+|---|---|
+| Every page redirects to `/dashboard/init` | No admin exists yet. Create the first user. |
+| `/dashboard/no-access` | The user's role lacks `canAccessDashboard`. |
+| App throws on start | `DATABASE_URL` or `SESSION_SECRET` missing, or secret under 32 characters. |
+| Storefront shows "not configured" or `/r/registry.json` returns 503 | Fill in [Store settings](/docs/openfront/uikit/store-settings) or run onboarding. |
+| No password reset email | `SMTP_HOST` is unset. |
+| `Your session was issued before the latest password recovery. Sign in again.` | Sign out and in, then retry. |
+
+## Releases
+
+| Message | Fix |
+|---|---|
+| `Component draft changed during save. Refresh before retrying.` | Reload Studio to get the new revision and manifest hash. |
+| `Only draft component releases can be edited.` | The release already moved on; create a new version. |
+| `Release version must be valid semantic versioning, for example 1.2.3 or 2.0.0-beta.1.` | Fix the version. |
+| `Draft validation needs at least one renderable component, ui, block, or page source file.` | Add a renderable file. |
+| `Component drafts require stored executable validation evidence before human review.` | Run validation on the current revision. |
+| `Draft manifest evidence is stale. Save or reload the draft before review.` | Revalidate after the last save. |
+| `Human review notes must contain 10-4000 UTF-8 bytes.` | Lengthen or shorten the notes. |
+| `Registry product terms changed after review submission. Choose Request changes...` | Request changes, revalidate, resubmit. |
+| `Release notes changed after approval. Choose Request changes, then revalidate and resubmit.` | Same. |
+| `Executable accessibility evidence supports at most 12 renderable source files per release...` | Split the release. |
+| `A pinned Chromium headless shell is required for executable draft validation.` | Install the Playwright Chromium headless shell on the validation host. |
+
+## Checkout and payments
+
+| Message | Fix |
+|---|---|
+| `Stripe is not available for checkout.` / `PayPal is not available for checkout.` | Set the provider environment variables. |
+| `Registry product has no integrity-evidenced stable release to license.` | Publish a stable release first. |
+| `This account already owns an active entitlement for the selected product.` | Nothing to buy; the customer already has access. |
+| `This account has revoked access for this product. Contact the studio...` | Reinstating requires an operator; revocations are not reversed by new payments. |
+| `Webhook signature verification failed.` | Wrong `STRIPE_WEBHOOK_SECRET` or `PAYPAL_WEBHOOK_ID`, or the body was altered by a proxy. |
+| `Order total does not match the payment snapshot.` | Price changed during checkout; start a new checkout. |
+| `Payment replay key is already bound to different evidence.` | A reused idempotency key; use a fresh one. |
+| `The previous hosted checkout has completed at the provider and is awaiting settlement...` | Wait for the webhook or call `completeKitOrder`. |
+
+## Refunds and keys
+
+| Message | Fix |
+|---|---|
+| `Refunds require payment and order management permission.` | Needs both `canManagePayments` and `canManageOrders`. |
+| `Only captured payments can be refunded.` | The payment is not `captured`. |
+| `Refund amount exceeds the remaining captured amount.` | Reduce the amount. |
+| `Workflow reason must contain between 3 and 500 characters.` | Fix the reason. |
+| `Workflow idempotency key must be an 8-128 character stable identity.` | Fix the key. |
+| `This account already has 5 active registry keys. Revoke one before creating another.` | Revoke a key. |
+
+## Registry responses
+
+401 means not signed in, 402 means signed in without the purchase, 409 means integrity or commercial-term verification failed on the stored release. Republish the release if 409 persists.

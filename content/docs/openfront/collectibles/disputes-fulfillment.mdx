@@ -1,0 +1,19 @@
+---
+title: Disputes and high-value fulfillment
+description: Dispute cases with evidence, and shipping requirements for expensive orders.
+icon: ShieldCheck
+---
+
+## Disputes
+
+`/dashboard/platform/disputes` and `/disputes/[id]`. Statuses: `open` → `evidence_requested` → `review` → `resolved` → `closed`. Assign an owner, record the resolution and attach `EvidenceAttachment` files.
+
+## High-value fulfillment
+
+`/dashboard/platform/high-value-fulfillment` is a queue of paid orders. Open `/[orderId]` to:
+
+1. Set or replace the `FulfillmentRequirement`: declared value, signature, insurance, packaging.
+2. Pack and create the fulfillment from the order.
+3. Record `ShipmentEvidence` for the parcel.
+
+Rates, labels and tracking come from the shipping providers in [Integrations](/docs/openfront/collectibles/integrations).

@@ -1,0 +1,46 @@
+---
+title: Dashboard overview
+description: The operator dashboard at /dashboard/platform, its sixteen pages, and how reads and writes work.
+icon: LayoutDashboard
+---
+
+The operator dashboard lives under `/dashboard/platform`, inside the shared Keystone dashboard shell. The sidebar group is **Dispensary operations**.
+
+## Pages
+
+| Page | Route | Guide |
+|---|---|---|
+| Control room | `/platform` | This page |
+| Authority | `/platform/authority` | [Authority](/docs/openfront/cannabis/authority) |
+| Staff | `/platform/staff` | [Staff](/docs/openfront/cannabis/staff) |
+| Compliance | `/platform/compliance` | [Compliance and incidents](/docs/openfront/cannabis/compliance-incidents) |
+| Customers | `/platform/customers` | [Customers](/docs/openfront/cannabis/customers) |
+| Recalls | `/platform/recalls` | [Recalls](/docs/openfront/cannabis/recalls) |
+| Inventory | `/platform/inventory` | [Inventory and receiving](/docs/openfront/cannabis/inventory-receiving) |
+| Receiving | `/platform/receiving` | [Inventory and receiving](/docs/openfront/cannabis/inventory-receiving) |
+| Menu | `/platform/menu` | [Menu and products](/docs/openfront/cannabis/menu-products) |
+| Store settings | `/platform/store-settings` | [Store settings](/docs/openfront/cannabis/store-settings) |
+| POS | `/platform/pos` | [POS and sales](/docs/openfront/cannabis/pos-sales) |
+| Sales | `/platform/sales` | [POS and sales](/docs/openfront/cannabis/pos-sales) |
+| Cash | `/platform/cash` | [Cash](/docs/openfront/cannabis/cash) |
+| Payment providers | `/platform/payment-providers` | [Payment providers](/docs/openfront/cannabis/payment-providers) |
+| Reconciliation | `/platform/reconciliation` | [Reconciliation](/docs/openfront/cannabis/reconciliation) |
+| Incidents | `/platform/incidents` | [Compliance and incidents](/docs/openfront/cannabis/compliance-incidents) |
+| Audit log | `/platform/audit` | [Audit log](/docs/openfront/cannabis/audit) |
+
+## Control room
+
+The control room summarises today's stock, open incidents and authority status, so an owner can see whether a license or credential is close to expiry.
+
+## Reads and writes
+
+- Pages read through the `cannabisOperationsWorkspace(section, options)` query. The response is validated client-side by `features/platform/workspaces/lib/contract.ts`.
+- Writes use named mutations. Destructive or approval-bound actions show a browser confirmation (for example `Release PKG for sale?`).
+- Forms mark themselves dirty on change and show field errors returned by the command.
+- Rule messages up to 300 characters are returned to the form as `BAD_USER_INPUT`. Anything else is masked as an unexpected error.
+
+## What you see depends on your role
+
+Navigation and actions follow the role flags in [Roles and permissions](/docs/openfront/cannabis/roles-permissions). A user without `canAccessDashboard` cannot enter the dashboard.
+
+For custom clients see [External dashboards](/docs/openfront/cannabis/external-dashboard).

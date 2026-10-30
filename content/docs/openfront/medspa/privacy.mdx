@@ -1,0 +1,9 @@
+---
+title: Privacy
+description: Patient rights requests, legal holds, retention and break-glass access.
+icon: Lock
+---
+
+`/platform/privacy` and `/privacy/requests/[id]`.
+
+`requestPatientRights`, `appendPatientRightsAction`, `placeLegalHold`, `releaseLegalHold`, `publishRetentionPolicy`, `openBreakGlass`. Clinical photos use `grantPhotoConsent`, `withdrawPhotoConsent`, `createClinicalAssetIntent`, `markClinicalAssetReady`, `authorizeClinicalAssetAccess`, `releaseClinicalAsset`, `tombstoneClinicalAsset`. Requires `canManageSensitiveRecords`.

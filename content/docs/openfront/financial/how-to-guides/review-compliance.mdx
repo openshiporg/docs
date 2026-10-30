@@ -1,0 +1,21 @@
+---
+title: Review compliance
+description: Move a KYC check and a risk profile through review.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the record
+In Compliance choose a KYC check in `pending`.
+</Step>
+<Step>
+### Transition
+Move it to `manual_review`, then `passed` or `failed`, with a reason.
+</Step>
+<Step>
+### Risk profile
+Move `submitted` to `approved`, setting options and margin.
+</Step>
+</Steps>

@@ -1,0 +1,61 @@
+---
+title: Deployment
+description: Host Openfront Cannabis on Railway, Vercel, or your own Node host with PostgreSQL and S3-compatible storage.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## What you need
+
+- Node.js 20 or later (Node 22 is recommended for Next.js 16).
+- PostgreSQL you are allowed to migrate.
+- S3-compatible object storage.
+- A secret store for environment variables.
+
+## Environment variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | Always | PostgreSQL connection string |
+| `SESSION_SECRET` | Always | At least 32 characters; generate with `openssl rand -hex 32` |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | When `NODE_ENV=production` | Keystone file storage |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Optional | Password-reset email |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional | Dashboard AI chat |
+| `AEROPAY_API_KEY`, `AEROPAY_API_SECRET`, `AEROPAY_MERCHANT_ID`, `AEROPAY_ENV`, `AEROPAY_BANK_ACCOUNT_ID`, `AEROPAY_WEBHOOK_SECRET` | Optional | Aeropay bank payments, see [Payment providers](/docs/openfront/cannabis/payment-providers) |
+
+## Deploy
+
+<Steps>
+<Step>
+### Provision services
+Create the PostgreSQL database and the storage bucket. Back up the database before every upgrade.
+</Step>
+<Step>
+### Set variables
+Set `NODE_ENV=production` and the variables above in your host's secret store. Never commit `.env`.
+</Step>
+<Step>
+### Build and migrate
+The build is `keystone build --no-ui && next build`. Run `npm run migrate` (`prisma migrate deploy`) as a deploy or start step. Neither `npm run dev` nor `npm run build` applies migrations.
+</Step>
+<Step>
+### Start
+Run `npm start`. Open `/dashboard/init` to create the first administrator, then complete [onboarding](/docs/openfront/cannabis/getting-started).
+</Step>
+</Steps>
+
+## Railway
+
+`railway.toml` is included. Build is `keystone build --no-ui && next build`. Start is `npm run migrate && next start`, so migrations run on every start once the database is reachable.
+
+## Vercel
+
+The README has a deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET` and the S3 credentials. Add `S3_ENDPOINT` as well, and run `npm run migrate` against the production database.
+
+## Upgrades
+
+1. Back up the database.
+2. Pull the new source and run `npm ci`.
+3. Run `npx keystone build --no-ui` and `npm run migrate`.
+4. Restart. Use `npm run migrate:gen` only on a disposable development database.

@@ -4,14 +4,11 @@ description: Self-hosted Pokémon trading card shop with set checklists, singles
 icon: Layers
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Collectibles is a self-hosted shop for Pokémon trading cards. It sells singles stocked per card, printing, language, and condition; graded slabs as single serialized items; and sealed product, including pre-orders with an allocation and a per-customer limit. It also runs a buylist for buying cards from customers, takes items in on consignment, stores market price readings, and applies repricing rules. Collectors get a binder and a want list in their account.
 
-<Callout type="info">
-Card data and image URLs come from Pokémon TCG API data bundled in the repository. Market prices come from TCGplayer readings mirrored by TCGCSV. Neither is a live partnership or an official data feed, and slab grades are recorded observations, not a grading-company guarantee.
-</Callout>
+Card data and image URLs come from Pokémon TCG API data bundled in the repository. Market prices come from TCGplayer readings mirrored by TCGCSV. Slab grades are recorded observations.
 
 ## What the codebase contains
 
@@ -36,7 +33,7 @@ The schema extends the shared Openfront E-commerce commerce lists (products, var
 - **Evidence and operations:** condition, grade, provenance, custody, and valuation observations; `FulfillmentRequirement`, `ShipmentEvidence`, `DisputeCase`, `SellerProfile`, and `CollectorProfile`.
 - **Collector records:** `Binder`, `BinderCard`, `WishlistItem` (the want list), and `SavedSearch`.
 
-See [Architecture and workflows](/docs/openfront/collectibles/architecture-workflows) for relationships and lifecycles.
+See [Data model](/docs/openfront/collectibles/data-model) for relationships and lifecycles.
 
 ## Operator surfaces
 
@@ -48,7 +45,7 @@ The customer storefront is country-scoped under `/[countryCode]`. It shows each 
 
 ## Onboarding
 
-The dashboard onboarding dialog offers three templates: **Complete card shop** (19 sets imported as checklists with market readings, singles, graded slabs with labelled sample certificates, sealed product including pre-orders, pricing rules, and a buylist), **Starter shop** (two modern sets, a few singles and sealed boxes, one region, bank transfer), and **Custom setup** (the starter data as editable JSON per section). The seed shop, "Eighth Street Cards", is fictional.
+The dashboard onboarding dialog offers three templates: **Complete card shop** (19 sets imported as checklists with market readings, singles, graded slabs, sealed product including pre-orders, pricing rules, and a buylist), **Starter shop** (two modern sets, a few singles and sealed boxes, one region, bank transfer), and **Custom setup** (the starter data as editable JSON per section). The starter shop is "Eighth Street Cards".
 
 ## Ownership and tenancy
 
@@ -58,7 +55,7 @@ Staff access is controlled by role permissions such as `canManageCatalog`, `canM
 
 <Cards>
   <Card title="Getting started" href="/docs/openfront/collectibles/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/collectibles/architecture-workflows" description="Data model, operator workflows, GraphQL commands, and access control." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/collectibles/integrations-boundaries" description="Payments, shipping, price data, storage, MCP, and webhooks." />
-  <Card title="Current limitations" href="/docs/openfront/collectibles/limitations" description="What the current code does not do." />
+  <Card title="Data model" href="/docs/openfront/collectibles/data-model" description="Data model, operator workflows, GraphQL commands, and access control." />
+  <Card title="Integrations" href="/docs/openfront/collectibles/integrations" description="Payments, shipping, price data, storage, MCP, and webhooks." />
+  <Card title="Dashboard" href="/docs/openfront/collectibles/dashboard" description="Every operator page with step-by-step flows." />
 </Cards>

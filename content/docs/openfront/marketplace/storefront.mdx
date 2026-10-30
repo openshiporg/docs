@@ -1,0 +1,37 @@
+---
+title: Chat storefront
+description: The buyer chat at /, setup dialog, thread tabs, store editor and cart dropdown.
+icon: MessageCircle
+---
+
+| Route | Purpose |
+|---|---|
+| `/` | Chat screen with thread tabs, store editor, cart dropdown, AI settings and MCP UI cards |
+| `/ethos` | Static page about the open marketplace idea |
+
+There are no product, cart, checkout or account pages. All shopping happens in cards.
+
+## First visit
+
+The setup dialog asks for:
+
+1. Marketplace name (default "Common Goods") and a theme: `clay`, `forest` or `midnight`.
+2. AI mode: Global or Local.
+3. A risk confirmation before chat is enabled.
+
+## Buying
+
+1. Ask for a product or a meal.
+2. Open a discovery card, pick a variant, add to cart.
+3. Review the cart card, change quantities, enter an address and shipping.
+4. Pay in the chat, or follow the store's checkout link.
+
+See [Cart and checkout](/docs/openfront/marketplace/cart-checkout) and [Restaurant ordering](/docs/openfront/marketplace/restaurant-ordering).
+
+## Card URIs
+
+`ui://marketplace/discover-products`, `ui://marketplace/product/...`, `ui://marketplace/cart/...`, `ui://marketplace/login`, `ui://marketplace/email-conflict`.
+
+## Button safety
+
+The browser checks every card action against the card it came from (`lib/mcp-action-policy.ts`). A cart card for one store and cart can only call cart tools for that store and cart.

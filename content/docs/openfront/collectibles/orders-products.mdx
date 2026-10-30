@@ -1,0 +1,29 @@
+---
+title: Orders and products
+description: Shared commerce pages for orders, products, inventory, returns, discounts and regions.
+icon: ShoppingCart
+---
+
+| Page | Route |
+|---|---|
+| Orders | `/platform/orders`, `/orders/[id]`, `/orders/[id]/fulfill`, `/orders/create` |
+| Products | `/platform/products`, `/products/[id]`, `/products/create` |
+| Categories, collections | `/platform/product-categories`, `/product-collections` |
+| Inventory | `/platform/inventory` |
+| Returns and claims | `/platform/claims` |
+| Analytics | `/platform/analytics` |
+| Regions, countries, currencies | `/platform/markets`, `/regions`, `/countries`, `/currencies` |
+| Discounts, price lists, gift cards | `/platform/discounts`, `/price-lists`, `/gift-cards` |
+| Invoices, business accounts | `/platform/invoices`, `/business-account-requests` |
+
+## Product card fields
+
+Variants carry `stockKind`, `cardCondition`, `cardFinish`, `cardLanguage`, `pricingMode`, `lastRepricedAt` and the three pre-order fields.
+
+## Order operations
+
+- `transitionOrderStatus(orderId, status, reason)`.
+- `confirmManualPayment(orderId, reference)` for bank-transfer orders.
+- `createOrderFulfillment` and `cancelOrderFulfillment`.
+- `processReturnRefund(returnId, paymentId, idempotencyKey)`.
+- `adjustInventory(variantId, delta, reason)` and `importInventory`.

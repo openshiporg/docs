@@ -1,0 +1,29 @@
+---
+title: Integrations
+description: GraphQL API keys, MCP, the dashboard AI chat, email, and storage.
+icon: Unplug
+---
+
+## API keys
+
+Scoped bearer keys call `/api/graphql`. See [API keys](/docs/openfront/analytics/api-keys).
+
+## MCP
+
+`/api/mcp-transport/[transport]` is a JSON-RPC MCP server. It forwards the caller's `Cookie` header to `/api/graphql`, so tools run with the signed-in user's permissions. The schema tools are `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`.
+
+## Dashboard AI chat
+
+`/api/completion` needs a signed-in user with `canAccessDashboard`. It uses OpenRouter with `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (or a key supplied in the browser), `OPENROUTER_MAX_TOKENS` defaulting to 4000, and talks to the MCP endpoint through a fetch that forwards the cookie to that URL only.
+
+## Email
+
+Password reset email through `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK` (base URL for reset links). Without `SMTP_HOST` the reset page says no mail transport is configured. If `MAIL_USER` contains `ethereal.email` the mailer logs a preview link.
+
+## Storage
+
+Keystone is configured with an S3 image store (`S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT`; path-style is chosen from the endpoint). Outside production these fall back to placeholders; production requires them.
+
+## Server-side events and imports
+
+See [Collector API](/docs/openfront/analytics/collector-api).

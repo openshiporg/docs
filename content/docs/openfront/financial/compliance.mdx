@@ -1,0 +1,27 @@
+---
+title: Compliance
+description: KYC checks, risk profiles, cases, alerts and the review history.
+icon: ShieldCheck
+---
+
+`/dashboard/platform/compliance` shows KYC checks, risk profiles, cases, alerts and audit history.
+
+## Transitions
+
+`transitionComplianceRecord` moves a record with a reason and appends a `ComplianceReview`.
+
+| Record | Transitions |
+|---|---|
+| `KycCheck` | `pending` → `manual_review`, `passed`, `failed`; `manual_review` → `passed`, `failed` |
+| `RiskProfile` | `draft` → `submitted`; `submitted` → `approved` or `rejected`; `approved` or `rejected` → `superseded` |
+| `ComplianceCase` | `open` → `investigating` (with assignee) → `closed` |
+
+Approving a risk profile can set options and margin permissions.
+
+## Effect on trading
+
+A failed or expired KYC check, or a rejected or superseded risk profile, blocks new orders.
+
+## Four eyes
+
+The reviewer cannot be the user who requested the change.

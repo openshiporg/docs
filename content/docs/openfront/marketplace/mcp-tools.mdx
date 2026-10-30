@@ -1,0 +1,18 @@
+---
+title: MCP tools
+description: Every tool in tools/list, grouped by job.
+icon: Wrench
+---
+
+| Group | Tools |
+|---|---|
+| Stores and regions | `getAvailableStores`, `getAvailableCountries`, `getAvailableRegions` |
+| Discovery | `discoverProducts` (retail), `discoverRestaurantMenus` (restaurant), `getProduct` |
+| Cart | `getOrCreateCart`, `createCart` (deprecated), `viewCart`, `getCart`, `addToCart`, `updateCartItem`, `removeCartItem` |
+| Fulfillment | `setShippingAddress`, `setShippingMethod`, `setRestaurantFulfillment` |
+| Checkout | `validateCartForCheckout`, `getCheckoutLink`, `getAvailablePaymentMethods`, `initiatePaymentSession`, `completeCart` |
+| Accounts | `loginUser`, `authenticateUser` |
+
+Messages: `Invalid tool request`, `Invalid arguments for <name>`, `Method not found`, `This action requires the customer interface.`, `A store must be admitted in marketplace.config.json before it can be connected`.
+
+Tool definitions are in `app/api/mcp-transport/tools/**`.

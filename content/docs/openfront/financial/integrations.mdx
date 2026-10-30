@@ -1,0 +1,46 @@
+---
+title: Integrations
+description: Alpaca paper adapter, provider imports, signed webhooks, outbox, machine credentials and MCP.
+icon: Unplug
+---
+
+## Brokerage adapter
+
+`features/brokerages/registry.ts` registers `alpaca`. The adapter in `features/brokerages/alpaca/adapter.ts` uses Alpaca's paper API and refuses credentials not marked paper. It reads accounts, positions, activity and quotes.
+
+`syncInstitutionConnection` needs `canManageIntegrations`, an active connection, consent covering `accounts:read`, `positions:read` and `transactions:read`, a credential reference and the `alpaca-paper` provider.
+
+## Credentials
+
+Connections store `env://ALPACA_PAPER` or `env://ALPACA_PAPER_<NAME>`, resolved to `<PREFIX>_API_KEY` and `<PREFIX>_API_SECRET`. Use one prefix per connection.
+
+## Institution providers
+
+Onboarding creates `alpaca-paper`, `open-banking-import`, `custodian-import` and `digital-asset-import`. The import providers take data through `importProviderSnapshot` and the observation mutations.
+
+## Signed webhooks
+
+`POST /api/webhooks/financial` reads headers `x-financial-provider`, `x-financial-connection`, `x-financial-event-id`, `x-financial-event-type`, `x-financial-timestamp`, `x-financial-signature`; body up to 256 KB.
+
+- HMAC-SHA256 over `timestamp.provider.connection.eventId.eventType.body` with `FINANCIAL_WEBHOOK_SECRET_<PROVIDER>`.
+- Timestamps more than five minutes off are rejected.
+- Duplicate event IDs return the original event; conflicting duplicates are rejected.
+- The payload hash is stored, with a `WebhookEvent` and an outbox event.
+
+`recordWebhookProcessing` marks an event processed or failed.
+
+## Agent endpoint
+
+`/api/financial/agent` takes a bearer machine credential. `GET` (`operations:read`) returns recent proposals, approvals, imports and journals. `POST` takes `action`: `propose` (`proposals:write`), `provider_import` (`imports:write`), `claim_outbox` and `ack_outbox` (`delivery:write`).
+
+## Outbox
+
+`claimOutboxEvents` leases events and `recordOutboxDelivery` acknowledges them. Bring your own consumer.
+
+## Chat and MCP
+
+`/api/completion` streams dashboard chat via OpenRouter. `/api/mcp-transport/[transport]` offers `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch` with the caller's session.
+
+## Email
+
+SMTP for password reset.

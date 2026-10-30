@@ -1,0 +1,22 @@
+---
+title: Access and keys
+description: Entitlements, registry API keys, and revoking either.
+icon: KeyRound
+---
+
+## Access
+
+`/dashboard/platform/access` lists `KitAccess` entitlements with status tabs (`active`, `revoked`). Each row links a user to a product through an order and payment, with source `free`, `purchase`, or `admin`. There is one row per user and product.
+
+To revoke, open the row and enter a reason of 3 to 500 characters. This calls `revokeKitAccess(accessId, reason, idempotencyKey)`. It needs `canManageOrders`, is idempotent by key, and writes audit and outbox events. A revoked customer cannot start a new payment for the product: `This account has revoked access for this product. Contact the studio before starting another payment.` Revocation cannot be undone by settlement.
+
+## API keys
+
+`/dashboard/platform/api-keys` lists all `RegistryApiKey` records with status tabs (`active`, `revoked`), name, prefix, owner, `lastUsedAt`. Operators can revoke any key with `revokeStorefrontRegistryApiKey(id)`.
+
+Customers manage their own keys at `/account/token`:
+
+- `createStorefrontRegistryApiKey(name)` returns the token once. Names are trimmed to 80 characters.
+- Tokens look like `ofui_<8 hex>_<secret>`, are stored as a SHA-256 hash, have scope `registry_read`, and expire after 90 days.
+- A customer can hold at most 5 active keys: `This account already has 5 active registry keys. Revoke one before creating another.`
+- A session issued before the latest password recovery cannot create keys.

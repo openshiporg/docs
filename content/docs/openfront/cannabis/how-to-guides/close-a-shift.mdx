@@ -1,0 +1,21 @@
+---
+title: Close a shift
+description: Blind count the drawer and resolve variances.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Count
+In Cash open the shift and choose **Count and close**. Enter the counted cash.
+</Step>
+<Step>
+### Approve
+A second finance person enters their credentials.
+</Step>
+<Step>
+### Review variance
+If the shift is in `variance_review`, record a variance reason code with `approveCashVariance`.
+</Step>
+</Steps>

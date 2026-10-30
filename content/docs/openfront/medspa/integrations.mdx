@@ -1,0 +1,31 @@
+---
+title: Integrations
+description: Payment providers, webhooks, email, storage, AI chat and the event outbox.
+icon: Unplug
+---
+
+`/platform/integrations` shows payment methods, email status, event log and webhooks. `PaymentProvider` has direct CRUD for `canManageIntegrations`.
+
+## Payment adapters
+
+`features/integrations/payment/index.ts` loads a code-owned adapter by the provider's `adapter` field.
+
+| Adapter | Config | Use |
+|---|---|---|
+| `manual` | none | Operator-recorded cash at checkout |
+| `stripe` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Payment intents, refunds and signed webhooks |
+
+## Webhooks
+
+`POST /api/payments/webhooks/[provider]` takes `pp_...` codes, rejects bodies over 1 MB, verifies `stripe-signature` and records each event in `PaymentWebhookEvent` under a replay key.
+
+## Email, storage, AI
+
+- SMTP sends reset, receipts and gift card emails. Configured when `SMTP_HOST` and `SMTP_FROM` are set.
+- `MedSpaImage` uses S3-compatible storage with 5-minute signed URLs.
+- The AI sidebar uses `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`, or a key the user supplies.
+- `/api/mcp-transport/[transport]` returns HTTP 503 until an owner-approved data and tool policy exists.
+
+## Events
+
+`DomainEvent` is written by appointment, payment and gift card workflows with a replay policy. `OutboxEvent` states: `pending`, `processing`, `delivered`, `dead_letter`.

@@ -1,0 +1,49 @@
+---
+title: Dashboard overview
+description: The operator workspace at /dashboard/platform, its pages, and how they are grouped.
+icon: LayoutDashboard
+---
+
+Operators work under `/dashboard/platform/*`. Screens live in `features/platform/<slice>`, and the sidebar groups come from `features/platform/lib/navigation.ts`. The generic Keystone list pages (`/dashboard/<listKey>`) remain for lists without a dedicated screen such as `User`, `Role`, `PaymentEvent`, `ChangelogEntry`, and `IntegrationRecipe`; many of those are read-only because raw lists deny direct writes.
+
+## Pages
+
+| Page | Route | Guide |
+|---|---|---|
+| Orders | `/dashboard/platform/orders` | [Orders](/docs/openfront/uikit/orders) |
+| Store | `/dashboard/platform/store` | [Store settings](/docs/openfront/uikit/store-settings) |
+| Products | `/dashboard/platform/catalog` | [Catalog](/docs/openfront/uikit/catalog) |
+| Components | `/dashboard/platform/components` | [Catalog](/docs/openfront/uikit/catalog) |
+| Design systems | `/dashboard/platform/design-systems` | [Design systems](/docs/openfront/uikit/design-systems) |
+| Studio | `/dashboard/platform/studio` | [Studio](/docs/openfront/uikit/studio) |
+| Releases | `/dashboard/platform/releases` | [Releases](/docs/openfront/uikit/releases) |
+| Quality gates | `/dashboard/platform/quality` | [Quality gates](/docs/openfront/uikit/quality-gates) |
+| Access | `/dashboard/platform/access` | [Access and keys](/docs/openfront/uikit/access-keys) |
+| Payments | `/dashboard/platform/payments` | [Payments and refunds](/docs/openfront/uikit/payments-refunds) |
+| Refunds | `/dashboard/platform/refunds` | [Payments and refunds](/docs/openfront/uikit/payments-refunds) |
+| Payment providers | `/dashboard/platform/payment-providers` | [Payment providers](/docs/openfront/uikit/payment-providers) |
+| API keys | `/dashboard/platform/api-keys` | [Access and keys](/docs/openfront/uikit/access-keys) |
+| Audit and outbox | `/dashboard/platform/audit` | [Audit](/docs/openfront/uikit/audit) |
+
+`/dashboard/platform/settings` redirects to Store, `/dashboard/platform/registry` redirects to Products, and `/dashboard/brand-settings/*` redirects to Store.
+
+## Other dashboard routes
+
+`/dashboard/init` (first admin), `/signin`, `/signup`, `/reset`, `/no-access`.
+
+## Onboarding
+
+Users with `canManageOnboarding` see onboarding cards in the sidebar. The dialog asks for studio name, brand mark, accent hue, email, website, tagline, and description, then calls `runUIKitOnboarding(template, brand)`. It needs `canManageOnboarding` and `canManageProducts`.
+
+- `full`: brand settings, the "Studio Design System" with tokens, eight products (free: Status Badge, Copy Button, Stat Card, Empty State; paid: Pricing Table, Dusk Launch Kit, Mist Dashboard Kit, Quartz Checkout Kit), and Stripe, PayPal, and Manual provider records.
+- `minimal`: brand settings, the design system, Status Badge, Pricing Table, Stripe, and Manual.
+
+Each seeded product gets a release that is submitted, approved, and published, so it ends `stable`. The run is a single serializable transaction. Running it again adds missing records and does not overwrite tokens you edited. Replace the seeded products with your own before launch.
+
+## List screens
+
+Platform lists share one layout: status tabs with counts, a search box, sort and filter controls, and pagination from URL search params.
+
+## AI assistant
+
+The dashboard chat sends requests to `/api/completion`, which uses OpenRouter and the MCP tools described on the [overview](/docs/openfront/uikit#integrations).

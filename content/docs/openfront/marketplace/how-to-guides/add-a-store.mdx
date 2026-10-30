@@ -1,0 +1,25 @@
+---
+title: Add a store
+description: Admit an Openfront store to the registry.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Edit the registry
+Add `{ "baseUrl": "https://store.example.com", "platform": "openfront" }` to `marketplace.config.json`.
+</Step>
+<Step>
+### Deploy
+Build and deploy. The registry is read from the artifact.
+</Step>
+<Step>
+### Verify
+`GET /api/mcp-transport/http` should list the store with its derived `id`.
+</Step>
+<Step>
+### Re-add in browsers
+Buyers who removed the store can re-add it in the store editor.
+</Step>
+</Steps>

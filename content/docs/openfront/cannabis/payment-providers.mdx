@@ -1,0 +1,34 @@
+---
+title: Payment providers
+description: Pay at pickup (cash or debit) and Aeropay bank payments, with the webhook route and idempotent reconciliation.
+icon: CreditCard
+---
+
+`/dashboard/platform/payment-providers` lists `PaymentProvider` records and links them to tender configurations. Visa, Mastercard, Stripe and PayPal are not available for cannabis sales.
+
+## Providers
+
+| Code | Name | Notes |
+|---|---|---|
+| `pp_manual_pickup` | Pay at pickup: cash or debit | Created at onboarding. Cash at the counter, debit on a PIN terminal |
+| `pp_aeropay_aeropay` | Aeropay | Created uninstalled. Needs merchant credentials |
+
+Adapters are loaded from `features/integrations/payment` (`manual`, `aeropay`).
+
+## Install and link
+
+1. Use the toggle on the provider row to install it (`isInstalled`).
+2. Link it to a tender with `linkTenderPaymentProvider`. An unlinked tender shows `Not linked`.
+3. A tender whose provider is not ready fails with `Configured payment provider is not installed or configured`.
+
+## Aeropay
+
+Set `AEROPAY_API_KEY`, `AEROPAY_API_SECRET` and `AEROPAY_MERCHANT_ID`. `AEROPAY_ENV=production` selects the live API, otherwise the Aeropay test API is used. `AEROPAY_BANK_ACCOUNT_ID` is the default bank account, and a provider credential `bankAccountId` overrides it.
+
+The adapter supports create (pre-authorisation), capture, refund (reverse), status lookup, and webhooks. Amounts are integer cents in USD (`Aeropay requires non-negative integer cents in USD`). Capture must match the amount (`Aeropay capture amount mismatch`).
+
+## Webhook
+
+`POST /api/payment-webhooks/[providerId]` accepts bodies up to 1,000,000 bytes (413 otherwise). Signature header: `x-aeropay-signature`, HMAC-SHA256 of the raw body with `AEROPAY_WEBHOOK_SECRET`.
+
+Reconciliation matches exactly one `Tender` by provider reference and amount. It stores an `IdempotencyKey` with scope `payment-webhook`, so a replay returns `duplicate: true` and a conflicting replay is rejected. A `transaction_completed`, `captured` or `succeeded` event sets the tender to `captured`. Any failure returns `{"error":"Webhook rejected"}` with status 400.

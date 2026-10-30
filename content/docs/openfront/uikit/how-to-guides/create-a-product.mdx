@@ -1,0 +1,29 @@
+---
+title: Create a product
+description: Add a free or paid component to the catalog with a design system and license terms.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create a design system (optional)
+At `/dashboard/platform/design-systems` add a system with a slug and namespace, set Status to `active`, and add tokens.
+</Step>
+<Step>
+### Open Products and choose New
+At `/dashboard/platform/catalog/new` fill Name, Slug (for example `alert-dialog`), Registry code, Entitlement key, and Registry type.
+</Step>
+<Step>
+### Set access and license
+On the Access tab choose Free or Paid. Paid needs a price of at least 1 in minor units. Fill License name, Seats, and Usage.
+</Step>
+<Step>
+### Save
+`createUIKitProduct` creates the record. The product does not appear publicly until a stable release exists.
+</Step>
+<Step>
+### Add the first draft
+Open the product at `/dashboard/platform/catalog/[id]`, go to Files, paste the source files as JSON, and create the draft. Continue with [Publish a release](/docs/openfront/uikit/how-to-guides/publish-a-release).
+</Step>
+</Steps>

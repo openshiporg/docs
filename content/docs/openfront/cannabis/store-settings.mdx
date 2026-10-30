@@ -1,0 +1,19 @@
+---
+title: Store settings
+description: Store name, tagline, description, logo, brand colour and publication.
+icon: Palette
+---
+
+`/dashboard/platform/store-settings` edits `StorefrontSettings` through `configureCannabisStorefrontSettings`.
+
+| Field | Notes |
+|---|---|
+| `businessName`, `tagline`, `description` | Shown on the public menu |
+| `brandHue` | Integer 0 to 359 (`Brand hue must be an integer between 0 and 359`) |
+| `logoIcon`, `logoColor` | Store logo |
+| `publicationStatus` | `draft` or `published` |
+| `storefrontMode` | Public layout mode |
+
+There is one settings record per organization and premises pair. The public menu reads it through `publicCannabisStorefrontSettings`.
+
+Store address, phone and hours on `/visit` come from the premises and the sales rules, edited in [Authority](/docs/openfront/cannabis/authority).

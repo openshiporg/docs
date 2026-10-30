@@ -1,0 +1,23 @@
+---
+title: Data model
+description: "Where Marketplace keeps data: the registry file, connected stores and browser storage."
+icon: Database
+---
+
+Marketplace has no database or Keystone schema.
+
+| Where | What |
+|---|---|
+| `marketplace.config.json` | Admitted stores |
+| Connected stores | Products, prices, carts, accounts, payment sessions, orders |
+| Browser `localStorage` | Buyer state |
+
+## localStorage keys
+
+| Key | Content |
+|---|---|
+| `openfront_marketplace_chat_threads` | Chat threads, text only, version 2 |
+| `openfront_marketplace_carts` | Cart IDs and proofs by store ID |
+| `openfront_marketplace_sessions` | Store login tokens by store ID |
+| `openfront_marketplace_config` | Store selection, order and names |
+| `openfront_marketplace_profile` | Marketplace name and theme |

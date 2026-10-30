@@ -1,0 +1,54 @@
+---
+title: Storefront
+description: The customer journey from browsing to unlocking and installing a component.
+icon: ShoppingBag
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes live under `app/(storefront)`. Screens are in `features/storefront/screens`.
+
+| Route | What it does |
+|---|---|
+| `/` | Home: studio name, about, component list |
+| `/components` | Catalog of active, visible products (up to 24) |
+| `/components/[slug]` | Files (locked if paid and not owned), usage examples, screenshots, compatibility, changelog, install command |
+| `/components/[slug]/checkout` | Unlock a free item, or pay with Stripe or PayPal |
+| `/kits`, `/kits/[slug]` | Redirect to the matching `/components` route |
+| `/docs/registry` | How to use the registry and CLI |
+| `/account` | Name, email, and owned products |
+| `/account/signin`, `/account/signup`, `/account/reset` | Account forms |
+| `/account/token` | Create and revoke registry API keys |
+
+`/v1`, `/v2`, and `/v2/components/*` redirect permanently to `/` and `/components`.
+
+## Buy a paid component
+
+<Steps>
+<Step>
+### Open the item
+Visit `/components/<slug>`. Paid files show as locked.
+</Step>
+<Step>
+### Sign in
+Checkout needs an account. Guests are sent to `/account/signin` or `/account/signup`.
+</Step>
+<Step>
+### Choose a provider
+Only providers with full environment configuration are shown. `createKitCheckoutSession(productCode, providerCode, idempotencyKey)` returns the redirect.
+</Step>
+<Step>
+### Return and unlock
+On return, `completeKitOrder` finishes the order if the webhook has not already. Files unlock, and the page shows the install command.
+</Step>
+</Steps>
+
+Free items skip payment: checkout creates a `KitAccess` with source `free` immediately.
+
+## Checkout rules
+
+- A product needs a stable release with a manifest hash before it can be sold: `Registry product has no integrity-evidenced stable release to license.`
+- There is no cart; each checkout is one product.
+- An account that already owns an active entitlement gets `This account already owns an active entitlement for the selected product.`
+- A free unlock is blocked while an earlier paid checkout is unresolved.
+- Passwords are reset through `RequestCustomerPasswordReset` and `ResetCustomerPassword`, which send email through SMTP.

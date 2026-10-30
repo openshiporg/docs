@@ -1,0 +1,21 @@
+---
+title: Data model
+description: The Keystone lists grouped by area.
+icon: Database
+---
+
+| Area | Lists |
+|---|---|
+| Market data | `Asset`, `PriceHistory`, `BrokerAdapter`, `MarketDataSyncRun` |
+| Connections | `InstitutionProvider`, `BrokerageConnection`, `ConnectionConsentEvent`, `ProviderImportRun`, `FinancialTransaction`, `WebhookEvent` |
+| Accounts | `BrokerageAccount`, `Position`, `PortfolioSnapshot`, `BankAccount` |
+| Trading | `Order`, `OrderFill`, `Trade` |
+| Funding | `Transfer` |
+| Ledger | `LedgerEntry`, `LedgerAccount`, `LedgerJournal`, `LedgerPosting` |
+| Income | `Dividend`, `TaxLot`, `AccountStatement` |
+| Approvals | `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `AgentProposal`, `ExecutionEvidence`, `OutboxEvent`, `MachineCredential`, `MachineCredentialEvent` |
+| Compliance | `KycCheck`, `RiskProfile`, `ComplianceCase`, `ComplianceReview`, `PortfolioAlert`, `FinancialAuditLog` |
+| Advisory | `TradeRecommendation`, `AIAdvisorConfig`, `PublicProfileSettings`, `FollowedTrader`, `FollowedTrade`, `Watchlist` |
+| Shell | `User`, `Role`, `PlatformSettings` |
+
+Decisions, evidence, consent events and compliance reviews are append-only. Journals are balanced double-entry. Money uses exact decimals.

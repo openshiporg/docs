@@ -1,0 +1,25 @@
+---
+title: Releases
+description: All releases by status, integrity checks, and deprecating a stable release.
+icon: Rocket
+---
+
+`/dashboard/platform/releases` lists every `ComponentRelease` with status tabs (`draft`, `review`, `stable`, `deprecated`), product, version, file count, `publishedAt`, `isBreaking`, manifest SHA-256, and an integrity status with message.
+
+## Lifecycle
+
+| From | To | How |
+|---|---|---|
+| draft | review | `submitComponentReleaseForReview` |
+| review | stable | `publishComponentRelease` after approval |
+| stable | deprecated | `deprecateComponentRelease(id, reason)` |
+
+Other transitions are refused. Customers always receive the latest `stable` release of a product, or a specific one with `?version=`.
+
+## Integrity
+
+Publishing stores a registry snapshot with the commercial terms (access type, price, license) and a manifest of file hashes. On every delivery the service re-verifies the snapshot and the files. A mismatch returns 409: `Stable registry release failed integrity verification.` or `Stable registry release failed commercial-term verification.`
+
+## Deprecate a release
+
+Use the Deprecate form on a stable row and give a reason. Deprecated releases stop being delivered as the current version; publish a new stable release to replace them.

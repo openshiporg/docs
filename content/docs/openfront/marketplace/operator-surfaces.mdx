@@ -1,0 +1,26 @@
+---
+title: Operator controls
+description: "Where an operator manages Marketplace: the registry file, environment, MCP status endpoint, logs and the in-app settings."
+icon: SlidersHorizontal
+---
+
+Marketplace has no sign-in or admin screens. The operator works through these controls.
+
+| Control | Location | Purpose |
+|---|---|---|
+| Store registry | `marketplace.config.json` | Server allowlist of stores |
+| Environment | `.env` or host secrets | AI keys, model, token cap, custom AI origins |
+| Status endpoint | `GET /api/mcp-transport/http` | Count of admitted stores with `id`, `platform` and `baseUrl` |
+| Server logs | Host logs | Tool name, store ID, operation name and error name |
+| Store editor | `/` settings | Per-buyer remove, re-add and rename |
+| Setup dialog | `/` first visit | Name, theme, AI mode |
+
+## Logs
+
+Tool and source failures log the tool name, store ID, operation name and error name. Arguments, tokens and cart proofs are never logged.
+
+## Change the registry
+
+See [Store registry](/docs/openfront/marketplace/store-registry). Registry edits take effect on the next deploy.
+
+For a custom operator UI see [External dashboards](/docs/openfront/marketplace/external-dashboard).

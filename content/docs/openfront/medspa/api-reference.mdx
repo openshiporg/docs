@@ -1,0 +1,28 @@
+---
+title: API reference
+description: Custom GraphQL queries, mutations and HTTP routes.
+icon: Code
+---
+
+## Storefront queries
+
+`publicStorefrontSettings`, `storefrontServices`, `storefrontProviders`, `storefrontProvider`, `checkAvailability`, `storefrontReviews`, `storefrontAppointment`, `clientPortal`, `clientIntakeForms`.
+
+## Operator queries
+
+`medspaOperationsWorkspace`, `medspaAppointmentSchedule`, `medspaAppointmentClinicalHeader`, `medspaPlanJourney`, `medspaConsultationQueue`, `medspaClientDirectory`, `medspaClientRecord`, `medspaWaitlistBoard`, `medspaMessageLog`, `medspaReviewBoard`, `calculateCommission`.
+
+## Mutations by area
+
+- **Staff:** `upsertAccessRole`, `inviteStaff`, `acceptStaffInvitation`, `createProviderProfile`, `updateProviderProfile`.
+- **Setup:** `upsertLocation`, `upsertResource`, `setResourceAvailability`, `transitionDeviceReadiness`, `upsertProviderSchedule`, `setProviderScheduleAvailability`, `scheduleAppointmentResources`, `publishStorefrontSettings`.
+- **Booking:** `bookAppointment`, `transitionAppointment`, `cancelGuestAppointment`, `joinWaitlist`, `requestWaitlistSpot`, `transitionWaitlistEntry`.
+- **Clinical:** see [Treatment workspace](/docs/openfront/medspa/treatment).
+- **Money:** `completeAppointmentCheckout`, `refundPayment`, `distributeTip`, `payoutCommissions`.
+- **Benefits, inventory, safety, privacy:** see the matching dashboard pages.
+
+Auth: `registerCustomer` and Keystone password authentication and reset.
+
+## HTTP
+
+`POST /api/payments/webhooks/[provider]`, `/api/completion`, `/api/mcp-transport/[transport]` (503 until a tool policy is approved).

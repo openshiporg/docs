@@ -1,0 +1,19 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Symptom | Fix |
+|---|---|
+| Store missing from the chat | Check `marketplace.config.json`; `id` must match the derived ID; confirm in `GET /api/mcp-transport/http` |
+| `Unsupported platform` | Use `openfront` or `openfront-restaurant` |
+| `A store must be admitted in marketplace.config.json before it can be connected` | Add it and redeploy |
+| Shared AI not offered | Set both `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` |
+| `Shared AI token budget is misconfigured` | `OPENROUTER_MAX_TOKENS` must be a positive whole number |
+| `Custom AI endpoint is invalid` | Use a public HTTPS origin listed in `MARKETPLACE_CUSTOM_AI_ORIGINS` |
+| Store calls fail | The host must resolve to a public address, answer within 8 seconds, and not redirect |
+| Cart buttons missing on a restaurant | The store must expose `createActiveCart` and `addActiveCartItem` |
+| `Restaurant cart is not ready for payment` | Add contact, delivery address or meet the minimum |
+| Completion cannot reach MCP | Set `x-forwarded-host` and `x-forwarded-proto` on the proxy |
+| Saved cart lost | Store URL or platform changed, so the store ID changed |

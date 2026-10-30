@@ -1,0 +1,26 @@
+---
+title: GraphQL operations
+description: Named operations each adapter sends to a store.
+icon: Braces
+---
+
+## Openfront E-commerce
+
+| Operation | Use |
+|---|---|
+| `SearchProducts`, `GetProduct` | Discovery and detail |
+| `regions` query | Resolve country to region |
+| `CreateActiveCart` | Guest cart with `id` and `proof` |
+| `AddToCart`, `UpdateActiveCart`, `RemoveCartItem`, `UpdateLineItem` | Cart changes |
+| `GetCart` | `activeCart` and `activeCartShippingOptions` |
+| `AddShippingMethod` | `addActiveCartShippingMethod` |
+| `CheckEmail`, `CreateGuestUser`, `AuthenticateGuestUser`, `CreateAddress` | Guest checkout |
+| `AuthenticateUser`, `Me` | Login |
+| `ListPaymentProviders`, `InitiatePaymentSession`, `CompleteActiveCart` | Payment |
+| `GetStore` | Name, logo, publishable keys |
+
+## Openfront Restaurant
+
+`MarketplaceRestaurantMenu`, `MarketplaceMenuItem`, `MarketplaceRestaurantCartCapability`, `MarketplaceCreateRestaurantCart`, `MarketplaceRestaurantCart`, `MarketplaceAddRestaurantItem`, `MarketplaceUpdateRestaurantItem`, `MarketplaceRemoveRestaurantItem`, `MarketplaceUpdateRestaurantFulfillment`, `MarketplaceSetRestaurantDelivery`, `MarketplaceRestaurantLogin`, `MarketplaceConnectRestaurantCart`, `MarketplaceRestaurantPaymentMethods`, `MarketplaceInitiateRestaurantPayment`, `MarketplaceCompleteRestaurantCart`, `MarketplaceRestaurantInfo`, `MarketplaceRestaurantLegacyFulfillmentInfo`, `MarketplaceRestaurantLegacyInfo`, `MarketplaceRestaurantCountry`.
+
+Legacy queries support older restaurant schemas.

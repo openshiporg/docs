@@ -4,8 +4,6 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js matching `package.json` `engines` (`>=20.0.0`). The README recommends Node.js 22 for Next.js 16.
@@ -13,9 +11,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - A PostgreSQL database you are allowed to migrate.
 - S3-compatible object storage in production. Keystone's image storage is configured from the `S3_*` variables.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [financial.openship.org](https://financial.openship.org). It is a demonstration instance with seeded paper data. No orders reach an exchange and no money moves.
+The hosted app is at [financial.openship.org](https://financial.openship.org). It runs in paper mode: no orders reach an exchange and no money moves.
 
 ## Install
 
@@ -65,9 +63,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
 
-<Callout type="warn">
-Both `npm run dev` and `npm run build` apply migrations to whatever `DATABASE_URL` points at. Do not point them at a shared or production database you have not backed up.
-</Callout>
+Both `npm run dev` and `npm run build` apply migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 
@@ -85,18 +81,18 @@ Create other operators with only the flags their job needs. Approvals and compli
 
 Open the onboarding dialog from the dashboard sidebar. It calls `runFinancialOnboarding`, which needs `canManageOnboarding`. The run is idempotent and holds a database lock so two runs cannot race. It loads `features/platform/onboarding/lib/seed.json` and creates, for the signed-in operator:
 
-- store settings for a demo firm ("Meridian Invest") with paper trading on;
-- four sandbox institution providers (`alpaca-paper`, `open-banking-import`, `custodian-import`, `digital-asset-import`) and an `alpaca-paper` broker adapter;
+- store settings for a starter firm ("Meridian Invest") with paper trading on;
+- four institution providers (`alpaca-paper`, `open-banking-import`, `custodian-import`, `digital-asset-import`) and an `alpaca-paper` broker adapter;
 - 15 assets, 2 verified bank accounts, 1 paper Alpaca connection, 3 brokerage accounts, and 17 positions;
 - orders, trades, transfers, balanced ledger journals, 90 days of portfolio snapshots, dividends, three months of statements, watchlists, portfolio alerts, two trade recommendations, advisor rules, and public-profile settings;
 - a KYC check, a risk profile, and a compliance case;
 - two approval policies: orders of 25,000 or more and transfers of 10,000 or more need approval.
 
-All seeded records are synthetic and tagged with onboarding provenance. Store settings can be changed later at `/dashboard/platform/store-settings`. The storefront shows an "unconfigured" screen until store settings exist.
+All seeded records are tagged with onboarding provenance. Store settings can be changed later at `/dashboard/platform/store-settings`. The storefront shows an "unconfigured" screen until store settings exist.
 
 ## Checks
 
-`package.json` defines `npm test`, `npm run lint`, and a set of `test:financial-*` integration scripts. In the current checkout `tests/unit` and `tests/integration` are empty, so those scripts have nothing to run. See [Current limitations](/docs/openfront/financial/limitations).
+`package.json` defines `npm test`, `npm run lint`, and a set of `test:financial-*` integration scripts.
 
 ## Deployment
 

@@ -1,0 +1,25 @@
+---
+title: Add an adapter
+description: Support a new store platform.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Register the platform
+Add the name to `SourcePlatform` in `lib/source-identity.ts` and its API path in `types/store-config.ts`.
+</Step>
+<Step>
+### Implement
+Create a folder under `app/api/mcp-transport/adapters/` implementing `PlatformAdapter`.
+</Step>
+<Step>
+### Wire it
+Register it in `adapters/index.ts`. Add cart proof handling in `tools/utils.ts` if the platform uses guest proofs.
+</Step>
+<Step>
+### Test
+Add tests for store IDs, cart proofs and wrong-store requests.
+</Step>
+</Steps>

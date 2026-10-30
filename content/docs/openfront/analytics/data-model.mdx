@@ -1,0 +1,21 @@
+---
+title: Data model
+description: Every Analytics list, its fields, and how they relate.
+icon: Database
+---
+
+Lists live in `features/keystone/models`.
+
+| List | Fields |
+|---|---|
+| `Site` | `name`, `domain` (unique), `slug`, `publicId`, `timezone`, `currency`, `status` (`active`, `paused`, `archived`), `isPublic`, `description`; relationships to `goals`, `funnels`, `segments`, `sharedLinks`, `sessions`, `events` |
+| `AnalyticsSession` | One visit: hashed `visitorId`, optional `distinctId`, hostname, entry and exit path, referrer, five UTM fields, browser, OS, device, screen class, language, country, region, city, `pageviews`, `customEvents`, `durationSeconds`, `isBounce`, `startedAt`, `lastSeenAt` |
+| `AnalyticsEvent` | `type` (`pageview`, `custom`, `vitals`), `name`, path, title, referrer, `properties` JSON, `revenueAmount`, `revenueCurrency`, `lcp`, `inp`, `cls`, `fcp`, `ttfb`, `occurredAt`, unique `eventKey` |
+| `Goal` | `type` `pageview` with `pathPattern`, or `event` with `eventName` |
+| `Funnel`, `FunnelStep` | Ordered goals from the same site; steps carry `position` |
+| `Segment` | Name and saved filters (`dimension`, `operator`, `value`) |
+| `SharedLink` | `slug`, bcrypt `password`, `isActive`, `expiresAt`, `viewCount`, `lastViewedAt`, `createdBy`, virtual `isUsable` |
+| `StoreSettings` | Singleton: name, tagline, description, website, contact email, SVG logo |
+| `User`, `Role`, `ApiKey` | People, permission checkboxes, scoped keys (`scopes`, `status`, `expiresAt`, `restrictedToIPs`, `lastUsedAt`) |
+
+Site relationships are read-only from the site side; create the child records against the site.

@@ -1,0 +1,17 @@
+---
+title: Public site
+description: The public home page, public dashboards, and shared links viewers can open.
+icon: Globe
+---
+
+Analytics has no shop. The public site at `app/(storefront)/(main)` shows read-only dashboards.
+
+| Route | What a viewer sees |
+|---|---|
+| `/` | Store name, tagline, and description from `StoreSettings`, then every public, non-archived site with 30-day visitors and a sparkline (`publicSites`). "No public dashboards yet." when empty |
+| `/sites/[slug]` | A public site's overview, panels, period picker, and filters, through `publicDashboard` |
+| `/share/[slug]` | A shared link's dashboard. A password form appears first when the link has one; the unlock token is stored in an httpOnly cookie for that path. `noindex` |
+
+The public pages reuse the operator `SiteDashboard` component with a public data loader (`features/storefront/lib/data/dashboards.ts`). Viewers get aggregate reports only. See [Shared links](/docs/openfront/analytics/shared-links) for how to publish a site.
+
+Change the brand shown here in [Store settings](/docs/openfront/analytics/store-settings).

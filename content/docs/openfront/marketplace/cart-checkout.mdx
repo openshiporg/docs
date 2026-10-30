@@ -1,0 +1,32 @@
+---
+title: Cart and checkout
+description: Retail carts, guest addresses, shipping, in-chat payment and store checkout links.
+icon: ShoppingCart
+---
+
+## Cart
+
+`addToCart` reuses or creates a cart. An Openfront cart is created with `createActiveCart`, which returns an `id` and a `proof`. The browser saves both per store ID. The cart card lets the buyer change quantities (`updateCartItem`) or remove items (`removeCartItem`).
+
+- `Quantity must be greater than 0` (use `removeCartItem` to remove)
+- `Quantity cannot exceed <MAX_QUANTITY> items per line`
+
+## Address and shipping
+
+`setShippingAddress` creates a guest user if needed. If the email already has an account, an email conflict card offers login, a different email, or the store checkout. `setShippingMethod` picks a shipping option from the store.
+
+## Pay in the chat
+
+1. `validateCartForCheckout`.
+2. `getAvailablePaymentMethods`.
+3. `initiatePaymentSession` for Stripe or PayPal.
+4. The browser renders Stripe elements or PayPal buttons with the store's publishable key.
+5. `completeCart` turns the cart into an order.
+
+## Checkout link
+
+`getCheckoutLink` returns `<baseUrl>/<country>/account/checkout-link?cartId=...` on the store. Restaurant links are `<baseUrl>/checkout?cart_id=...`.
+
+## Login
+
+`loginUser` shows a login form card. The form calls `authenticateUser`. The session token is saved per store ID.

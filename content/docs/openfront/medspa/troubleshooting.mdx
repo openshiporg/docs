@@ -1,0 +1,19 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Fix |
+|---|---|
+| `Current reviewed intake policy is unavailable` | Set `MEDSPA_INTAKE_MAX_AGE_DAYS` |
+| `Required intake template changed after the clinical order was issued` | Re-collect intake on the current template version |
+| `Appointment version changed; review the current state` | Reload and retry |
+| `Controlled checkout currently supports operator-recorded cash only` | Record the payment as cash |
+| `Clinical services require a completed authorized consultation before checkout` | Complete the [treatment workspace](/docs/openfront/medspa/treatment) |
+| `Idempotency key was already used for another ...` | Use a new key for different details |
+| App fails at startup | All five `S3_*` variables are required |
+| Storefront shows nothing | Publish [storefront settings](/docs/openfront/medspa/storefront-settings); set `MEDSPA_PRACTICE_SLUG` if several practices are published |
+| Stripe webhook rejected | Set `STRIPE_WEBHOOK_SECRET`; the route needs the raw body and `stripe-signature` |
+| AI chat has no tools | The MCP endpoint returns 503 until a tool policy exists |
+| Time-based items do not advance | There is no background runner; expiry changes when an operator acts |

@@ -1,0 +1,32 @@
+---
+title: What is Openfront Analytics
+description: Cookieless web analytics for your own sites, with public dashboards and an API.
+icon: Info
+---
+
+Openfront Analytics records pageviews, custom events, revenue, and Core Web Vitals from a small script, and turns them into traffic, source, location, device, goal, funnel, realtime, and performance reports.
+
+## Privacy model
+
+- No cookies and no browser storage for tracking.
+- A visitor is `sha256(daily salt, site, IP, User-Agent)`. The salt comes from `SESSION_SECRET` and the UTC date. The IP is never stored.
+- Global Privacy Control is always honored. Bots are ignored by User-Agent.
+- Hits are accepted only from the site's domain and its subdomains.
+- A visit closes after 30 minutes of inactivity.
+
+## Who uses it
+
+- **Site owners and teams** read reports and manage sites, goals, funnels, shared links, and keys.
+- **Public viewers** open a public dashboard or a shared link and see aggregate reports only.
+- **Developers** send server-side events, import historical visits, call GraphQL, or build their own dashboard.
+
+## Surfaces
+
+| Surface | Location |
+|---|---|
+| Tracking script | `/assets/script.js` |
+| Collector | `POST /api/track` |
+| Operator dashboard | `/dashboard/platform/*` |
+| Public site | `/`, `/sites/<slug>`, `/share/<slug>` |
+| GraphQL | `/api/graphql` |
+| MCP and AI chat | `/api/mcp-transport/[transport]`, `/api/completion` |

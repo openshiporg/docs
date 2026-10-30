@@ -1,0 +1,25 @@
+---
+title: Connect a paper broker
+description: Provision an Alpaca paper connection and sync it.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set credentials
+Set `ALPACA_PAPER_API_KEY` and `ALPACA_PAPER_API_SECRET`.
+</Step>
+<Step>
+### Provision
+In Tasks, Connections, provision with the `alpaca-paper` provider, scopes and reference `env://ALPACA_PAPER`.
+</Step>
+<Step>
+### Consent and sync
+Grant consent, then sync.
+</Step>
+<Step>
+### Reconcile
+Match imported rows in Transactions.
+</Step>
+</Steps>

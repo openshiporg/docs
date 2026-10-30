@@ -1,0 +1,40 @@
+---
+title: Roles and permissions
+description: The twelve role flags, live permission checks, and who can do what.
+icon: ShieldCheck
+---
+
+`Role` has twelve boolean flags. The first user created at `/dashboard/init` gets an Admin role with all of them. Signed-in users without `canAccessDashboard` are sent to `/dashboard/no-access`.
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Open the dashboard |
+| `canReadProducts` / `canManageProducts` | View or change products, releases, design systems, brand settings, onboarding |
+| `canReadOrders` / `canManageOrders` | View or change orders; refund, reconcile, and revoke entitlements need manage |
+| `canReadPayments` / `canManagePayments` | View or change payments and payment providers |
+| `canReadUsers` / `canManageUsers` | View or change users |
+| `canReadRoles` / `canManageRoles` | View or change roles |
+| `canManageOnboarding` | See and run onboarding (also needs `canManageProducts`) |
+
+## Which mutation needs what
+
+| Operation | Needs |
+|---|---|
+| `refundKitPayment`, `reconcileKitRefund` | `canManagePayments` and `canManageOrders` |
+| `revokeKitAccess` | `canManageOrders` |
+| `settleKitOrderOffline` | `canManagePayments` and `canManageOrders` |
+| `createComponentDraft`, `saveComponentDraft`, `validateComponentDraft` | `canManageProducts` |
+| `submitComponentReleaseForReview`, `decideComponentReview`, `publishComponentRelease`, `deprecateComponentRelease` | `canManageProducts` |
+| `runUIKitOnboarding` | `canManageOnboarding` and `canManageProducts` |
+
+## Live checks
+
+Consequential mutations call `requireLivePermissions`, which reads the role from the database. Removing a flag takes effect on the next call even if the user's session cookie still carries the old role.
+
+## Raw lists
+
+Most raw Keystone lists deny direct GraphQL reads and writes (`denyAllOperations`). Operator screens read through bounded queries (`uikitOperations`, `uikitOperatorAccess`) and write through named mutations. `uikitOperatorAccess` returns `canReadProducts`, `canManageProducts`, `canReadOrders`, `canManageOrders`, `canReadPayments`, `canManagePayments`, `canManageOnboarding`, and `canReadEvidence` for the current user.
+
+## Customers
+
+Customers are `User` records with no dashboard access. They create accounts at `/account/signup`. The dashboard sign-up page at `/dashboard/signup` is closed unless `PUBLIC_SIGNUPS_ALLOWED=true`.

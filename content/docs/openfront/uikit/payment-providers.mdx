@@ -1,0 +1,50 @@
+---
+title: Payment providers
+description: Configure Stripe, PayPal, and the manual provider, and set up webhooks.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/payment-providers` lists `PaymentProvider` records. Edit a provider to change its Name, Installed flag, and the six function fields: Create payment, Capture payment, Refund payment, Get payment status, Generate payment link, Handle webhook. Calls are `UpdatePaymentProvider` and `UpdatePaymentProviderStatus`.
+
+A provider record alone does not enable checkout. Checkout offers a provider only when its environment variables are set.
+
+| Provider | Code | Requires | Flow |
+|---|---|---|---|
+| Stripe | `pp_stripe_stripe` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Hosted Checkout Session |
+| PayPal | `pp_paypal_paypal` | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | Orders v2 redirect; `NEXT_PUBLIC_PAYPAL_SANDBOX` selects the test or live endpoint |
+| Manual | manual | none | Operator records payment; never offered to customers |
+
+If a provider is missing configuration, checkout fails with `Stripe is not available for checkout.` or `PayPal is not available for checkout.`
+
+## Connect Stripe
+
+<Steps>
+<Step>
+### Set variables
+Add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` and redeploy.
+</Step>
+<Step>
+### Add the webhook
+In Stripe, create an endpoint at `https://<your-domain>/api/payment-providers/pp_stripe_stripe/webhook` for `payment_intent.succeeded` and `checkout.session.async_payment_succeeded`.
+</Step>
+<Step>
+### Install the provider
+In Payment providers, turn on Installed for Stripe.
+</Step>
+<Step>
+### Test
+Buy a paid item with test credentials and confirm the order moves to `paid` and a `KitAccess` row is created.
+</Step>
+</Steps>
+
+## Connect PayPal
+
+Set the three PayPal variables, add a webhook to `/api/payment-providers/pp_paypal_paypal/webhook` for `PAYMENT.CAPTURE.COMPLETED`, and install the provider.
+
+## Settlement checks
+
+Before granting access the code compares order total, currency, and provider with the stored payment snapshot. Mismatches throw `Order total does not match the payment snapshot.`, `Order currency does not match the payment snapshot.`, or `Settlement provider does not match the order snapshot.` Webhook signature failures throw `Webhook signature verification failed.`
+
+If a customer retries checkout while a hosted session is still open, the earlier session is expired first. If the earlier one already completed at the provider, no replacement is created and the order is left to settle.

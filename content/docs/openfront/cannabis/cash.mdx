@@ -1,0 +1,31 @@
+---
+title: Cash
+description: Registers, shifts, the drawer ledger, blind count and close, variance approval and payment types.
+icon: Banknote
+---
+
+`/dashboard/platform/cash` manages the tills.
+
+## Registers
+
+`configureRegister` adds a register with a code and name. `amendRegister` edits it or changes status between `active`, `maintenance` and `inactive`.
+
+## Open a shift
+
+`openRegisterShift` takes a register and a **Counted opening float**. Shift statuses: scheduled, open, count_pending, counted, variance_review, closed, deposited. An operator can only own one open shift (`Actor must own an open register shift`).
+
+## Drawer ledger
+
+Each shift shows `CashEvent` lines: opening_float, sale, refund, paid_in, paid_out, safe_drop, count, deposit.
+
+## Count and close
+
+Choose **Count and close** and enter **Cash counted in the drawer**. A second finance person enters their email and password. `closeRegisterShift` records expected, actual and variance. A shift with a variance moves to `variance_review`.
+
+## Approve a variance
+
+`approveCashVariance` needs a reason code and an independent finance actor (`An independent finance actor must approve this variance-review shift`).
+
+## Payment types
+
+Accepted payment types (`TenderConfiguration`: `cash`, `debit`, `ach`, `wallet`, `other`) are changed through the sales-rules amendment in [Authority](/docs/openfront/cannabis/authority). Choose at least one (`Choose at least one payment type: cash, debit, ach, wallet or other`).

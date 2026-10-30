@@ -1,0 +1,49 @@
+---
+title: Data model
+description: Keystone lists grouped by authority, inventory, commerce and operations.
+icon: Database
+---
+
+Every list is immutable through generic GraphQL. Writes use [named commands](/docs/openfront/cannabis/api-reference).
+
+## Authority
+
+| List | Purpose |
+|---|---|
+| `User` | Staff login; `status`, `onboardingStatus` |
+| `Role` | Eleven `can*` flags |
+| `Organization` | Licensed business; `jurisdictionCode`, status |
+| `Premises` | Licensed store; `premisesCode`, `addressSnapshot`, timezone, `currencyCode` |
+| `StorefrontSettings` | Public identity; unique per organization and premises |
+| `CannabisLicense` | License number, type, `authorizedActivities`, dates |
+| `StaffCredential` | `allowedActivities`, `approvalLimitCents`, dates |
+| `JurisdictionRulePack` | Versioned ages, hours, limits, tax, discounts, tenders, policies |
+| `Customer`, `EligibilityEvidence` | Buyer and ID or registry check result |
+
+## Inventory
+
+| List | Purpose |
+|---|---|
+| `Product` | Menu item |
+| `InventoryPackage` | Tracked package: quantities in microunits, `testStatus`, COA, `expiresAt`, `version` |
+| `PackageHold` | quarantine, test_hold, recall, discrepancy, authority, expiry |
+| `RegulatedManifest` | Transfer or receipt manifest |
+| `InventoryEvent` | Append-only custody ledger |
+| `RecallCase` | Seven-stage recall |
+
+## Commerce
+
+| List | Purpose |
+|---|---|
+| `Register`, `RegisterShift`, `CashEvent` | Tills, sessions, drawer ledger |
+| `TenderConfiguration`, `PaymentProvider` | Accepted payments and adapters |
+| `Cart`, `CartLine` | Reserved quantities |
+| `Sale`, `SaleLine`, `Tender`, `Refund` | Receipt and payments |
+
+## Operations
+
+`AuditEvent`, `IdempotencyKey`, `OutboxEvent`, `StateEventInbox`, `IntegrationInstallation`, `ReconciliationRun`, `ComplianceIncident`.
+
+## Quantities and money
+
+Quantities are integer microunits. Money is integer minor units (cents). `Currency must be a three-letter ISO 4217 code with two decimal places` applies at onboarding.

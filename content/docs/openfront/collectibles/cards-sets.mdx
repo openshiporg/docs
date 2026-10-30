@@ -1,0 +1,30 @@
+---
+title: Cards and sets
+description: Import set checklists, see stock against every card, and manage catalog entries.
+icon: Layers
+---
+
+## Pages
+
+- `/dashboard/platform/cards`: every imported set with card count, stock and release status.
+- `/dashboard/platform/cards/[handle]`: one set's checklist, showing which cards and conditions are stocked with links to each product.
+- `/dashboard/platform/catalog`: Catalog Desk queues for catalog items, specimens and categories.
+
+## Records
+
+`CollectibleSet` has name, code, series, printed and total counts, release date, `releaseStatus` (`released`, `preorder`, `announced`) and `tcgplayerGroupId`. `CatalogItem` is one card printing (number, rarity, supertype, energy types, HP, artist, image URLs, `tcgplayerProductId`) or one sealed product (`kind: sealed` with a `sealedFormat`).
+
+## Import a set
+
+`importCardCatalog` (permission `canManageCatalog`) imports one bundled checklist per call. It creates the `CollectibleSet`, its `CatalogItem` cards and initial market readings. It can also create an upcoming set and its sealed products.
+
+Errors:
+- `No bundled checklist for <set>`
+- `Import set <set> before its sealed product`
+- `Import catalog entry <handle> first`
+
+Onboarding imports 19 English sets with the **Complete card shop** template. To add a set, add its JSON to `features/keystone/lib/pokemon/checklists`.
+
+## Stock a card
+
+Create a product linked to the catalog card and add one variant per condition and finish (`cardCondition`, `cardFinish`, `cardLanguage`, `stockKind: raw`). Set `pricingMode: market` to let repricing manage the price. See [Market and repricing](/docs/openfront/collectibles/market-repricing).

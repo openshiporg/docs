@@ -1,0 +1,25 @@
+---
+title: Reconciliation
+description: The state-reporting outbox, inbound events, integrations and reconciliation runs.
+icon: Scale
+---
+
+`/dashboard/platform/reconciliation` has four areas.
+
+## State-reporting outbox
+
+Every state-reported command writes an `OutboxEvent` with topic, aggregate, status, attempts and errors. A queued event means the action is recorded locally. `retryStateOutboxEvent` requeues events that are `rejected`, `retryable` or `dead_letter`. It needs `canManageIntegrations`.
+
+## Integrations
+
+`IntegrationInstallation` shows the traceability provider (`providerCode`, `providerType`, `status`, `capabilities`). Onboarding creates it as `unconfigured`. `activateIntegrationInstallation` is closed by runtime capability until a code-owned adapter verifies the provider.
+
+## Inbound state events
+
+`StateEventInbox` holds regulator events (`providerCode`, `providerEventId`, status received, verified, processed, rejected). `recordStateInboxEvent` is closed by runtime capability until signatures can be verified.
+
+## Reconciliation runs
+
+`ReconciliationRun` records inventory, sales, cash or outbox runs with discrepancies. `recordReconciliationRun` and `approveReconciliationRun` are closed by runtime capability.
+
+Read access needs `canViewReports`.

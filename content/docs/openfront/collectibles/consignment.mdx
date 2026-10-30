@@ -1,0 +1,30 @@
+---
+title: Consignment
+description: Intakes, items, agreements and settlements for consigned cards.
+icon: Handshake
+---
+
+## Pages
+
+- `/dashboard/platform/consignments` and `/consignments/[id]`: intakes.
+- `/dashboard/platform/consignment`: the Consignment Payouts desk with settlement queues.
+
+## Lifecycles
+
+| Record | Flow |
+|---|---|
+| Intake | `submitted` → `received` → `inspecting` → `offered` → `accepted` or `declined` → `returned` |
+| Item | `pending` → `accepted` → `listed` → `sold`; any active item → `return_requested` → `returned` |
+| Agreement | `draft` → `sent` → `accepted`, `expired` or `terminated` |
+
+## Agreement terms
+
+`ConsignmentAgreement` stores commission in basis points (0 to 10000, `Commission must be 0 to 10000 basis points`), a fixed fee, pricing authority and a terms snapshot. Consignors are `SellerProfile` records.
+
+## Take a consignment
+
+1. Create an intake for a consignor.
+2. Add items with condition and asking price.
+3. Create the agreement and send it.
+4. Mark items accepted and list them. Items can also be taken in at receiving with a consignor name and commission.
+5. Review `ConsignmentSettlement` and `SettlementLine` records on the consignment and seller pages.

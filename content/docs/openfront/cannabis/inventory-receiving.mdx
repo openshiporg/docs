@@ -1,0 +1,46 @@
+---
+title: Inventory and receiving
+description: Receive packages against manifests, record lab results, release for sale, and place or release holds.
+icon: Boxes
+---
+
+## Receiving
+
+`/dashboard/platform/receiving` receives packages against transfer manifests. `receiveCannabisPackage` needs `canManageInventory` and the `inventory` activity.
+
+| Field | Notes |
+|---|---|
+| Product | An active product at this premises |
+| Package UID | Unique; reuse is refused |
+| Production batch, lot, label version | Required |
+| Quantity | Positive integer in microunits |
+| Expiry | Calendar date (`YYYY-MM-DD`), interpreted in the premises timezone |
+| Manifest number, source license | Required |
+| Regulator manifest ID, lab name, lab result reference, manufactured date | Optional |
+
+The command creates a `RegulatedManifest` in `receiving_hold`, an `InventoryPackage` with status `receiving_hold` and `testStatus: unknown`, and a `receive` `InventoryEvent`. Evidence is stored with `origin: manual_entry_unverified`.
+
+## Inventory
+
+`/dashboard/platform/inventory` shows stock and custody history per package.
+
+### Package statuses
+
+expected_inbound, receiving_hold, quarantined, saleable, reserved, staged, transfer_allocated, in_transit, waste_pending, recalled, depleted, destroyed.
+
+### Actions on a package
+
+| Action | Mutation | Notes |
+|---|---|---|
+| Record lab result | `recordPackageLabResult` | Result such as passed; needs COA reference and label version |
+| Release for sale | `releaseCannabisPackage` | Requires passed test, COA, label version, unexpired date and no active holds |
+| Place a hold | `placePackageHold` | Type: quarantine, test_hold, recall, discrepancy, authority, expiry |
+| Release a hold | `releasePackageHold` | Second compliance approver |
+
+A package is saleable only after release. Packages are chosen for carts by the server, not by the cashier.
+
+## Custody ledger
+
+Every change appends an `InventoryEvent` with quantity before, after and delta. Event types: receive, release, reserve, release_reservation, sale, return_quarantine, transfer_out, transfer_in, count, adjustment, waste, destruction, recall_hold, recall_release. The ledger is append-only.
+
+`postCannabisInventoryEvent` (transfers, waste, destruction, counts, adjustments) is registered but closed by runtime capability.

@@ -1,0 +1,22 @@
+---
+title: MCP server
+description: The MCP endpoint, headers an external client sends, and tool list.
+icon: Network
+---
+
+`POST /api/mcp-transport/http` is a JSON-RPC server (`initialize`, `tools/list`, `tools/call`). `GET` returns the admitted store list.
+
+## Headers
+
+| Header | Content |
+|---|---|
+| `x-cart-ids` | JSON map of store ID to cart ID |
+| `x-cart-proofs` | JSON map of store ID to cart proof |
+| `x-marketplace-config` | Optional JSON array of selected stores, up to 20 |
+| `Authorization: Bearer <token>` | Session token for the store named in the call only |
+
+Results may carry `_meta.marketplace.clientAction` of type `saveCartId` or `saveSessionToken`. Store them per store ID.
+
+Product, cart and checkout cards need a client that renders MCP UI resources.
+
+See [MCP tools](/docs/openfront/marketplace/mcp-tools).

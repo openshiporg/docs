@@ -1,0 +1,63 @@
+---
+title: Collector API
+description: POST /api/track for server-side events, with response codes and header requirements.
+icon: Send
+---
+
+`POST /api/track` accepts JSON:
+
+```json
+{
+  "type": "event",
+  "payload": {
+    "siteId": "site_...",
+    "name": "Signup",
+    "url": "https://example.com/signup",
+    "data": { "plan": "pro" },
+    "revenue": 49,
+    "eventId": "optional-idempotency-id"
+  }
+}
+```
+
+`type` is `pageview`, `event` (custom when `name` is set), or `vitals` / `performance`. Umami-style aliases are accepted (`website`, `websiteId`, `props`, `uuid`).
+
+## Processing
+
+1. Bodies over 32 KB are rejected (413) and non-JSON bodies get 400.
+2. Bots are ignored by User-Agent. An empty User-Agent counts as a bot.
+3. The site is found by `publicId`. If the request has an `Origin` header, its hostname must be the site's domain or a subdomain.
+4. Hits for sites that are not `active`, or whose URL hostname is outside the domain, are accepted and ignored.
+5. Inside a transaction with an advisory lock per visitor, an open visit (last seen within 30 minutes) is extended or a new one is created with attribution, device, language, and country.
+6. One `AnalyticsEvent` is written. A repeat `eventId` returns `duplicate: true` and writes nothing.
+
+## Responses
+
+| Status | Meaning |
+|---|---|
+| 200 | Recorded or duplicate |
+| 202 | Ignored: bot, inactive site, or hostname not in the site |
+| 400 | Invalid body |
+| 403 | `Origin is not part of this site` |
+| 404 | `Unknown site` |
+| 413 | `Body is too large` |
+| 422 | Revenue currency does not match the site |
+| 500 | `Tracking failed` |
+
+## From a server
+
+Send the visitor's `User-Agent` and `X-Forwarded-For` so each visitor hashes separately:
+
+```bash
+curl -X POST https://your-host/api/track \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: Mozilla/5.0" \
+  -H "X-Forwarded-For: 203.0.113.9" \
+  -d '{"type":"event","payload":{"siteId":"site_...","name":"Signup","url":"https://example.com/signup"}}'
+```
+
+The endpoint takes no authentication; the public site id and domain check are the gates.
+
+## Importing history
+
+`importSiteSessions(siteId, sessions)` takes 1 to 500 visits per call, each with a `key`, `startedAt`, visit fields, and 1 to 50 events. It needs `canManageSites`. Ids derive from the site and key, so re-sending the same keys is skipped. Convert other tools' exports into this shape first.

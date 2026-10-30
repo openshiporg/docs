@@ -4,18 +4,15 @@ description: Conversational product and menu discovery across independently oper
 icon: Store
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
-[Repository](https://github.com/openshiporg/marketplace) · [Product page](https://openship.org/products/marketplace) · [Live demo](https://marketplace.openship.org)
+[Repository](https://github.com/openshiporg/marketplace) · [Product page](https://openship.org/products/marketplace) · [Live site](https://marketplace.openship.org)
 
 Openfront Marketplace is a chat interface for shopping across several independent stores. A buyer asks for something. The app searches the stores in its registry, shows product or menu cards in the chat through MCP UI, and builds a cart on the chosen store.
 
 The marketplace has no database. It does not use Keystone, Prisma, or PostgreSQL. Products, prices, carts, customer accounts, orders, and payments live in the connected stores. The browser keeps chat threads, cart IDs, cart proofs, store session tokens, the store selection, and the AI settings in `localStorage`.
 
-<Callout type="info">
-Current source has two working adapters: `openfront` (Openfront E-commerce) and `openfront-restaurant` (Openfront Restaurant). The platform names `shopify`, `bigcommerce`, and `woocommerce` exist in the type list, but no adapter is implemented for them. A store with one of those platforms fails with an "Unsupported platform" error.
-</Callout>
+There are two adapters: `openfront` (Openfront E-commerce) and `openfront-restaurant` (Openfront Restaurant). Other platform names fail with an "Unsupported platform" error.
 
 ## How it works
 
@@ -40,7 +37,7 @@ Marketplace sits in front of database-backed Openfront products such as [Openfro
 
 <Cards>
   <Card title="Getting started" href="/docs/openfront/marketplace/getting-started" description="Requirements, install, environment, store registry, first run, and deploy." />
-  <Card title="Architecture and workflows" href="/docs/openfront/marketplace/architecture-workflows" description="Routes, MCP tools, browser state, and the buyer workflow." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/marketplace/integrations-boundaries" description="Adapters, named GraphQL operations, egress rules, AI providers, and payments." />
-  <Card title="Current limitations" href="/docs/openfront/marketplace/limitations" description="What the code does not do yet." />
+  <Card title="MCP tools" href="/docs/openfront/marketplace/mcp-tools" description="Routes, MCP tools, browser state, and the buyer workflow." />
+  <Card title="Adapters" href="/docs/openfront/marketplace/adapters" description="Adapters, named GraphQL operations, egress rules, AI providers, and payments." />
+  <Card title="Store registry" href="/docs/openfront/marketplace/store-registry" description="Admit stores and understand store IDs." />
 </Cards>

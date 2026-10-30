@@ -1,0 +1,32 @@
+---
+title: Dashboard overview
+description: The operator console at /dashboard/platform and how pages read and write.
+icon: LayoutDashboard
+---
+
+| Page | Route | Guide |
+|---|---|---|
+| Orders | `/platform/orders`, `/[id]` | [Orders](/docs/openfront/financial/orders) |
+| Portfolio | `/platform/portfolio` | [Accounts and portfolio](/docs/openfront/financial/accounts-portfolio) |
+| Accounts | `/platform/accounts`, `/[id]` | [Accounts and portfolio](/docs/openfront/financial/accounts-portfolio) |
+| Instruments | `/platform/instruments`, `/[id]` | [Instruments](/docs/openfront/financial/instruments) |
+| Transfers | `/platform/transfers`, `/[id]` | [Transfers](/docs/openfront/financial/transfers) |
+| Transactions | `/platform/transactions` | [Reconciliation](/docs/openfront/financial/reconciliation) |
+| Ledger | `/platform/ledger`, `/[id]` | [Ledger](/docs/openfront/financial/ledger) |
+| Income | `/platform/income` | [Income and reporting](/docs/openfront/financial/income-reporting) |
+| Reporting | `/platform/reporting` | [Income and reporting](/docs/openfront/financial/income-reporting) |
+| Approvals | `/platform/approvals` | [Approvals and tasks](/docs/openfront/financial/approvals-tasks) |
+| Tasks | `/platform/tasks` | [Approvals and tasks](/docs/openfront/financial/approvals-tasks) |
+| Compliance | `/platform/compliance` | [Compliance](/docs/openfront/financial/compliance) |
+| Advisory | `/platform/advisory` | [Advisory](/docs/openfront/financial/advisory) |
+| Store settings | `/platform/store-settings` | [Store settings](/docs/openfront/financial/store-settings) |
+
+## Scope
+
+There is no firm or tenant model. Records belong to a user, and pages read through the operator's session. An operator sees their own connections, accounts, orders and transfers. KYC checks, risk profiles and compliance cases are visible across users.
+
+## Writes
+
+Pages call named mutations; each refuses with a message you can show to the operator. Generic lists such as `User`, `Role`, `Watchlist` and `PriceHistory` open at `/dashboard/<list-key>`.
+
+See [Roles and permissions](/docs/openfront/financial/roles-permissions).

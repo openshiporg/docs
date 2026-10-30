@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Environment variables, scripts, Railway start command and delivery workers.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Environment
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Required |
+| `SESSION_SECRET` | At least 32 characters; required in production |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Required in production |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` lets anyone create a portal user |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email; link must be HTTPS in production |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard chat |
+| `ALPACA_PAPER_API_KEY`, `ALPACA_PAPER_API_SECRET` | Credentials for `env://ALPACA_PAPER` |
+| `FINANCIAL_WEBHOOK_SECRET_<PROVIDER>` | HMAC secret, 32+ characters |
+| `FINANCIAL_MACHINE_CREDENTIAL_PEPPER` | Needed to issue machine credentials |
+| `NEXT_PUBLIC_BACKEND_URL` | Portal GraphQL origin when hosted apart |
+
+## Deploy
+
+<Steps>
+<Step>
+### Provision
+PostgreSQL and S3 storage. Back up before upgrades.
+</Step>
+<Step>
+### Secrets
+Set the variables in the host's secret store.
+</Step>
+<Step>
+### Build
+`npm run build` runs `keystone build --no-ui`, `prisma migrate deploy` and `next build`. Both `dev` and `build` apply migrations to `DATABASE_URL`.
+</Step>
+<Step>
+### Start and onboard
+`npm start`, then `/dashboard/init` and the onboarding dialog.
+</Step>
+</Steps>
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`.
+
+## Workers
+
+Outbox delivery and webhook processing are driven by callers: an operator in `/dashboard/platform/tasks`, or a machine credential calling `/api/financial/agent` with `claim_outbox` and `ack_outbox`. Run your consumer on a schedule with a credential holding the `delivery:write` scope.

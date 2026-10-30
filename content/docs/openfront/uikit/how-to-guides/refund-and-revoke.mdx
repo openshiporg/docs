@@ -1,0 +1,29 @@
+---
+title: Refund and revoke access
+description: Refund a captured payment and withdraw the customer's entitlement.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Find the order
+Search at `/dashboard/platform/orders` and open it.
+</Step>
+<Step>
+### Refund
+Enter the amount in minor units and a reason, then submit. For a full refund the entitlement is revoked automatically. For a partial refund it stays active.
+</Step>
+<Step>
+### Reconcile
+If the refund shows `pending`, open `/dashboard/platform/refunds` and reconcile it once the provider finishes.
+</Step>
+<Step>
+### Revoke manually (optional)
+At `/dashboard/platform/access`, open the entitlement and revoke with a reason of at least 3 characters. This applies to refunds you handled outside UIKit, or to abuse.
+</Step>
+<Step>
+### Check the audit trail
+`/dashboard/platform/audit` lists the refund and revocation events.
+</Step>
+</Steps>

@@ -1,0 +1,52 @@
+---
+title: Deployment
+description: Build, migrate, and run UIKit, including the webhook URLs and the validation host.
+icon: Rocket
+---
+
+## Build and start
+
+The repo includes `railway.toml`:
+
+- build: `keystone build --no-ui && next build`
+- start: `npm run migrate && next start`
+
+Migrations run when the container starts. On other hosts use the same order:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+`npm run migrate` runs `prisma migrate deploy` against `DATABASE_URL`. Use `npm run migrate:gen` only against a development database.
+
+## Required variables
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection. The app throws on start without it. |
+| `SESSION_SECRET` | At least 32 characters. The app throws on start without it. |
+
+Everything else is optional per feature: `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX`; `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`; `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`; `PUBLIC_SIGNUPS_ALLOWED`; `S3_ENDPOINT` (allows that image host in `next/image`).
+
+## Webhooks
+
+Point provider webhooks at your public origin:
+
+| Provider | URL |
+|---|---|
+| Stripe | `/api/payment-providers/pp_stripe_stripe/webhook` |
+| PayPal | `/api/payment-providers/pp_paypal_paypal/webhook` |
+
+Stripe events that settle an order: `payment_intent.succeeded` and `checkout.session.async_payment_succeeded`. PayPal settles on `PAYMENT.CAPTURE.COMPLETED`. Signatures are verified; a failed check returns `Webhook signature verification failed.`
+
+## Draft validation host
+
+`validateComponentDraft` runs the draft with `/usr/bin/sandbox-exec` and a Playwright Chromium headless shell under `~/Library/Caches/ms-playwright`. Run validation from a host that provides both. If the runner is missing, validation fails and the draft cannot reach review. Releases created by onboarding are already stable and do not need it.
+
+## Before selling paid kits
+
+1. Back up the database and test a restore.
+2. Run a paid checkout with test provider credentials, a webhook replay, a refund, and an entitlement revocation.
+3. Create a registry key, pull a paid item with the CLI, revoke the key, and confirm the pull fails.

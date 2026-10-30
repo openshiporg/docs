@@ -1,0 +1,55 @@
+---
+title: Data model
+description: Every UIKit list, its key fields, relationships, and status values.
+icon: Database
+---
+
+The model registry is `features/keystone/models/index.ts`.
+
+| Area | Lists |
+|---|---|
+| People and roles | `User`, `Role` |
+| Studio identity | `BrandSettings` |
+| Catalog | `KitProduct`, `DesignSystem`, `DesignToken` |
+| Releases | `ComponentRelease`, `ComponentFile`, `ComponentValidation`, `ReviewWorkflow`, `ChangelogEntry`, `PackageExport` |
+| Quality and docs | `AccessibilityAudit`, `CompatibilityTarget`, `Screenshot`, `UsageExample`, `IntegrationRecipe` |
+| Commerce | `Order`, `OrderItem`, `Payment`, `PaymentEvent`, `PaymentProvider`, `PaymentSession`, `Refund` |
+| Access | `KitAccess`, `RegistryApiKey` |
+| Records | `AuditEvent`, `OutboxEvent`, `RequestRateLimit` |
+
+## Catalog and releases
+
+- **KitProduct**: `name`, `slug`, `code`, `kitKey`, `description`, `registryType`, `accessType`, `price` (minor units), `currencyCode`, `isVisible`, `isActive`, `sortOrder`, `metadata` (tagline, audience, preview fields, dependencies, install command, license name, seats, usage). Belongs to a `designSystem`; has `orderItems` and `kitAccesses`.
+- **ComponentRelease**: `name`, `version` (semantic version), `status`, `product`, `releaseNotes`, `publishedAt`, `publishedBy`, `fileCount`, `isBreaking`, `authoringPrompt`, `authoringContext`, `draftRevision`.
+- **ComponentFile**: `path`, `target`, `fileType` (`ui`, `block`, `component`, `hook`, `lib`, `page`, `file`, `theme`, `style`, `test`, `story`, `doc`), `language`, `content`, `sourceHash`, `sizeBytes`, `release`. Hash and size are computed on save.
+- **ComponentValidation**: `validationKey`, `release`, `draftRevision`, `status`, `validatorVersion`, `checksJson`, `filesJson`, `dependenciesJson`, `diffJson`, `screenshotsJson`, `resourceUsageJson`, `sandboxJson` (isolation evidence), `log`, `validatedBy`, `startedAt`, `completedAt`.
+- **ReviewWorkflow**: `title`, `release`, `reviewer`, `status`, `checklistJson`, `decisionNotes`, `decidedAt`.
+- **DesignSystem**: `name`, `slug`, `namespace`, `description`, `homepage`, `status` (`draft`, `active`, `archived`), `isDefault`, with `products` and `tokens`.
+- **DesignToken**: `code`, `name`, `tokenType` (`color`, `typography`, `spacing`, `radius`, `shadow`, `motion`, `breakpoint`, `other`), `mode` (`base`, `light`, `dark`), `value`, `description`, `isPublic`.
+- **AccessibilityAudit**: `title`, `release`, `status`, `wcagLevel`, `violationsCount`, `summary`, `auditedAt`.
+- **CompatibilityTarget**: `name`, `targetType`, `minimumVersion`, `supportStatus`, `release`, `notes`.
+- **UsageExample**: `title`, `slug`, `exampleType`, `code`, `release`, `product`, `isFeatured`. **IntegrationRecipe**: `title`, `slug`, `framework`, `summary`, `installCommand`, `codeSample`, `product`.
+
+## Commerce and access
+
+- **Order**: `displayId`, `status`, `email`, `currencyCode`, `subtotal`, `total`, `providerCode`, `user`, with `items`, `payments`, `paymentEvents`, `paymentSessions`, `kitAccesses`.
+- **Payment**: `status`, `amount`, `amountRefunded`, `currencyCode`, `providerCode`, `data`, `capturedAt`, `canceledAt`, `idempotencyKey`, `order`, `user`.
+- **Refund**: `idempotencyKey`, `status`, `amount`, `currencyCode`, `providerCode`, `providerRefundId`, `reason`, `payloadHash`, `requestedById`, `processedAt`, `order`, `payment`.
+- **PaymentProvider**: `name`, `code`, `isInstalled`, `credentials`, and six function fields (`createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction`, `handleWebhookFunction`).
+- **KitAccess**: `kitKey`, `status`, `source`, `grantedAt`, `notes`, `user`, `product`, `order`, `payment`.
+- **RegistryApiKey**: `name`, `prefix`, `tokenHash` (SHA-256), `status`, `scope`, `lastUsedAt`, `revokedAt`, `user`.
+- **AuditEvent**: `eventKey`, `action`, `resourceType`, `resourceId`, `outcome`, `actorId`, `actorEmail`, `occurredAt`, `metadata`. **OutboxEvent**: `eventKey`, `topic`, `aggregateType`, `aggregateId`, `status`, `payload`, `attempts`, `availableAt`, `processedAt`, `lastError`.
+- **BrandSettings**: name, mark, hue, logo icon and color, tagline, description, email, website, copyright name.
+
+## Status values
+
+| Field | Values |
+|---|---|
+| `ComponentRelease.status` | `draft`, `review`, `stable`, `deprecated`. Only draft to review, review to stable, stable to deprecated are allowed. |
+| `ReviewWorkflow.status` | `requested`, `in_review`, `approved`, `changes_requested` |
+| `Order.status` | `pending`, `awaiting_payment`, `paid`, `failed`, `cancelled`, `refunded` |
+| `Payment.status` | `pending`, `authorized`, `captured`, `failed`, `canceled`, `refunded` |
+| `Refund.status` | `pending`, `succeeded`, `failed` |
+| `KitAccess.status` / `source` | `active`, `revoked` / `free`, `purchase`, `admin` |
+| `RegistryApiKey.status` / `scope` | `active`, `revoked` / `registry_read` |
+| `OutboxEvent.status` | `pending`, `processed`, `failed` |

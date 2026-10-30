@@ -1,0 +1,26 @@
+---
+title: Sealed and pre-orders
+description: Sealed product by format, street dates, allocation and per-customer limits.
+icon: Package
+---
+
+`/dashboard/platform/sealed` shows sealed stock, pre-order street dates, allocations and units sold.
+
+## Formats
+
+Booster pack, sleeved booster, booster bundle, booster box, Elite Trainer Box, premium collection, tin, blister, case, other.
+
+## Pre-order fields
+
+On the `ProductVariant`: `preorder`, `preorderReleaseDate` and `preorderLimitPerCustomer`. A set with `releaseStatus: preorder` can exist before its card list.
+
+## Limits at the cart
+
+The per-customer limit counts the current cart plus the customer's earlier uncancelled orders. Guests are limited per cart. Pre-orders are paid in full at checkout.
+
+## Set up a pre-order
+
+1. Import the upcoming set and its sealed products with `importCardCatalog`.
+2. Open the product variant and enable pre-order, set the street date and per-customer limit.
+3. Set the price and stock allocation with `adjustInventory`.
+4. Check the Sealed page for allocation against units sold.

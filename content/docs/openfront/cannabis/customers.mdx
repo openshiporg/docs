@@ -1,0 +1,32 @@
+---
+title: Customers
+description: Counter ID check-in, eligibility evidence and the customer directory.
+icon: IdCard
+---
+
+## Directory
+
+`/dashboard/platform/customers` lists customers with status tabs and search. `/customers/[id]` shows eligibility evidence, carts and purchases.
+
+Customer `capacity` is `adult_use`, `patient` or `caregiver`. Status moves from `pending_verification` to `eligible`, `ineligible`, and evidence can become `expired` or `revoked`.
+
+## Check-in at the counter
+
+`checkInCannabisCustomer` records an ID check and starts a sale. It is launched from POS as **Check in and start sale**. Fields:
+
+| Field | Notes |
+|---|---|
+| Register | An open shift |
+| Buyer | Adult-use, plus Patient and Caregiver when medical sales are enabled in the rules |
+| ID type | Driver's license, State ID, Passport, Military ID, Tribal ID |
+| ID number, date of birth, ID expires | Required |
+| Registry, card number, card expires | For patient and caregiver |
+| Patient's registry number | Caregiver only |
+
+Confirmations are required: `Confirm you checked the ID in person`, `Confirm you checked the registry card`, and `Confirm the caregiver is authorised for this patient`.
+
+ID and card numbers are stored only as one-way hashes. The buyer must meet the configured age requirement (`Buyer does not meet the configured age requirement`).
+
+## Online intake
+
+`submitCannabisCustomerIntake` and `recordEligibilityDecision` are registered but closed by runtime capability, so every customer today is checked in at the counter. See [Roles and permissions](/docs/openfront/cannabis/roles-permissions) and [Storefront](/docs/openfront/cannabis/storefront).

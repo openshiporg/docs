@@ -1,0 +1,37 @@
+---
+title: Store registry
+description: marketplace.config.json, store identity and the rules the server enforces.
+icon: ListChecks
+---
+
+`marketplace.config.json` in the repository root is the server allowlist. The server only talks to stores in it.
+
+```json
+[
+  { "baseUrl": "https://store.example.com", "platform": "openfront" },
+  { "baseUrl": "https://restaurant.example.com", "platform": "openfront-restaurant" }
+]
+```
+
+## Fields
+
+| Field | Rule |
+|---|---|
+| `baseUrl` | HTTPS, no username, password, query or fragment |
+| `platform` | `openfront` or `openfront-restaurant` |
+| `id` | Optional; must equal the derived ID or the entry is skipped |
+| `name` | Optional; overrides the store name shown in the UI |
+
+Duplicates are skipped. The GraphQL endpoint is `baseUrl` + `/api/graphql`.
+
+## Store ID
+
+The ID is derived from platform and base URL, for example `source-v2-openfront-https_3A_2F_2Fstore.example.com`. Cart IDs, proofs and session tokens are keyed by it, so one store's credentials are never sent to another. Changing the URL or platform changes the ID and buyers' saved carts do not carry over.
+
+## Buyer selection
+
+Buyers send their store selection in the `x-marketplace-config` header, up to 20 entries. The server accepts it only when every entry matches an admitted store. Unknown, stale or duplicate entries fail the whole request.
+
+## Local development
+
+In non-production builds, `.local` and `.localhost` stores listed in the config are allowed over HTTP.

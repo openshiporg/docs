@@ -1,0 +1,34 @@
+---
+title: Troubleshooting
+description: Exact error messages and what to do about each.
+icon: LifeBuoy
+---
+
+| Message | Cause and fix |
+|---|---|
+| `Current staff credential does not authorize this activity` | Credential lacks the activity or is suspended. Renew or re-provision |
+| `Exactly one active license must authorize this premises activity` | License expired or missing the activity. Renew in Authority |
+| `An approved effective jurisdiction rule pack is required` | No effective rule pack. Amend rules |
+| `Hold release requires an independent compliance approver` | Approver is the same user or lacks `canManageCompliance` |
+| `Customer is not currently eligible` | Check the customer in again |
+| `Exact package reservation is insufficient for sale` | Reservation expired or stock moved. Cancel the cart and start again |
+| `Cart reservation expired` | Start a new cart |
+| `Reviewed quote changed; ...` | Price the line again |
+| `Configured payment provider is not installed or configured` | Install and link the provider |
+| `Exactly one externally validated active traceability installation is required before sale` | The traceability installation must be active |
+| `Authority pack must explicitly include <activity>` | Add the activity to license and credential |
+| `Check-in is unavailable on this server` | The server cannot accept counter check-in right now; check the runtime capability list |
+| `Webhook rejected` (400) | Signature, provider or tender match failed |
+| `Unexpected error.` | Server-side failure. Check the server log and the audit trail |
+
+## Menu is empty
+
+A product appears only if it has a released, lab-passed, unexpired, unheld package with free quantity. Check Inventory.
+
+## Menu says unavailable
+
+Exactly one active organization with one active premises is required.
+
+## Migrations
+
+Run `npm run migrate` before `npm start`.

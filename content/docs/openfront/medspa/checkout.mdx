@@ -1,0 +1,34 @@
+---
+title: Checkout
+description: Treatment tickets, retail add-ons, benefits, tip, tax and cash settlement.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/platform/checkout` and `/platform/checkout/[id]`.
+
+<Steps>
+<Step>
+### Open the ticket
+Pick a `confirmed` or `in_progress` appointment.
+</Step>
+<Step>
+### Apply benefits
+Membership discounts, package credits and manual discounts. Discretionary discounts need practice-manager authority and a reason.
+</Step>
+<Step>
+### Add retail and tip
+Retail lines write `InventoryMovement` records. Tip is split later with `distributeTip`.
+</Step>
+<Step>
+### Settle in cash
+`completeAppointmentCheckout` records the `MedSpaTransaction`, `Payment` and `PaymentSession`, writes `Commission` records, and sets the appointment to `completed`.
+</Step>
+</Steps>
+
+Checkout supports `paymentMethod: "cash"` recorded by the operator. Tax is a single rate from `Practice.taxRate` or `TAX_RATE`.
+
+## Errors
+
+`Appointment is not eligible for checkout`, `Appointment is already checked out`, `Clinical services require a completed authorized consultation before checkout`, `Each restricted service requires matching completed treatment evidence before checkout`, `Discounts and benefits cannot exceed the service subtotal`, `Controlled checkout currently supports operator-recorded cash only`, `Idempotency key was already used for another checkout request`.

@@ -1,0 +1,42 @@
+---
+title: Orders
+description: Review kit orders, their payments, refunds, and entitlements.
+icon: Ticket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/orders` lists orders with status tabs and counts: `pending`, `awaiting_payment`, `paid`, `failed`, `cancelled`, `refunded`. `/dashboard/platform/orders/[id]` shows one order.
+
+## Order detail
+
+- Items (`OrderItem`, each linked to a kit product)
+- Payments with status, amount, and `amountRefunded`
+- Refunds and their statuses
+- Entitlements (`KitAccess`) granted by the order
+- Provider code and customer email
+
+From the detail page you can refund a captured payment (`refundKitPayment`), reconcile a pending refund (`reconcileKitRefund`), and revoke an entitlement (`revokeKitAccess`). See [Payments and refunds](/docs/openfront/uikit/payments-refunds).
+
+## How an order is created
+
+<Steps>
+<Step>
+### Customer starts checkout
+`createKitCheckoutSession(productCode, providerCode, idempotencyKey)` creates an `Order` with one `OrderItem`, a `Payment`, and a `PaymentSession`. The order starts `awaiting_payment`.
+</Step>
+<Step>
+### Provider confirms
+The webhook (or `completeKitOrder(paymentSessionId)` on the customer's return) verifies amount, currency, and provider against the stored payment snapshot.
+</Step>
+<Step>
+### Order settles
+The order becomes `paid`, the payment `captured`, and a `KitAccess` row with source `purchase` is created.
+</Step>
+</Steps>
+
+Each checkout is for one product. Replaying a webhook with the same event id is recognised and does not grant access twice.
+
+## Permissions
+
+Reading needs `canReadOrders`. Refunds, reconciliation, and revocation need `canManageOrders` (and `canManagePayments` for refunds).

@@ -1,0 +1,18 @@
+---
+title: Platform adapters
+description: The openfront and openfront-restaurant adapters and the PlatformAdapter contract.
+icon: Plug
+---
+
+Adapters load from `app/api/mcp-transport/adapters/index.ts`.
+
+| Platform | Folder |
+|---|---|
+| `openfront` | `adapters/openfront` |
+| `openfront-restaurant` | `adapters/openfront-restaurant` |
+
+Each implements `PlatformAdapter` (`adapters/types.ts`): product search and detail, cart create, read and update, shipping options, address, login and cart connect, checkout link, payment methods, payment session, cart completion, store info, countries and optional MCP UI generators.
+
+Guest cart requests send the cart proof in `X-Openfront-Cart-Proof` (retail) or `X-Restaurant-Cart-Proof` (restaurant).
+
+A store whose platform has no adapter fails with `Unsupported platform`. To add one see [Add an adapter](/docs/openfront/marketplace/how-to-guides/add-an-adapter).

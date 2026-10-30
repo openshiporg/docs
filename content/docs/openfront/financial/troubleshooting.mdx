@@ -1,0 +1,32 @@
+---
+title: Troubleshooting
+description: Error messages and how to resolve them.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| `Not enough buying power for this order.` | Fund the account or lower the size |
+| `Insufficient <symbol> position to sell <qty>.` | Check positions |
+| `Margin trading isn...` | Approve margin on the risk profile |
+| `Fill price violates the accepted limit.` | Use a price within the limit |
+| `Order cannot be filled from <status> state.` | Only open orders fill |
+| `Not enough cash for this withdrawal.` | Reduce the amount |
+| `Only completed transfers can be reversed...` | Complete first |
+| `An action-bound reversal approval is required...` | Reversal needs its own approval |
+| `Current active connection consent is required.` | Grant consent |
+| `A stable idempotency key is required.` | Send one |
+| `Ledger journal postings must be balanced...` | Debits must equal credits |
+| `Asset <symbol> was not found.` | Create the asset |
+
+## Portal shows unconfigured
+
+Add settings in Store settings.
+
+## Cannot issue a credential
+
+Set `FINANCIAL_MACHINE_CREDENTIAL_PEPPER`.
+
+## Webhook rejected
+
+Check the secret length (32+), timestamp (within five minutes) and header set.

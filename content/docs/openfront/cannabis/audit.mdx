@@ -1,0 +1,13 @@
+---
+title: Audit log
+description: The append-only trail of who did what, by record type and action.
+icon: ScrollText
+---
+
+`/dashboard/platform/audit` shows `AuditEvent` records. Filter by record-type track and search by action.
+
+Each event stores `action`, `resourceType`, `resourceId`, the acting user, `reasonCode` and `evidence`. Events are created by controlled commands and cannot be edited.
+
+Pair it with the `IdempotencyKey` receipt (scope, status `processing`, `succeeded` or `failed`) to see whether a retried command ran once.
+
+Access needs `canViewReports`.

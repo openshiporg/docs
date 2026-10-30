@@ -1,0 +1,14 @@
+---
+title: API reference
+description: HTTP routes served by Marketplace.
+icon: Code
+---
+
+| Route | Purpose |
+|---|---|
+| `POST /api/completion` | Built-in AI chat, streamed. Errors: `Invalid completion request`, `Request body too large` |
+| `GET, POST /api/mcp-transport/[transport]` | MCP server at `/api/mcp-transport/http` |
+| `POST /api/ai-models` | Lists models for a custom OpenAI-compatible endpoint; off when local AI is disabled |
+| `GET /api/marketplace/catalog` | Bundled sample catalog with `liveCommerce: false`; the chat does not use it |
+
+See [MCP tools](/docs/openfront/marketplace/mcp-tools) and [GraphQL operations](/docs/openfront/marketplace/graphql-operations).

@@ -1,0 +1,39 @@
+---
+title: Dashboard overview
+description: The operator workspace at /dashboard/platform, its pages, and setup with onboarding.
+icon: LayoutDashboard
+---
+
+Operators work under `/dashboard/platform/*`. Slices are in `features/platform/<slice>`, and sidebar items come from `features/platform/lib/navigation.ts`. The dashboard home `/dashboard` is the shared Openfront home screen.
+
+## Pages
+
+| Page | Route | Guide |
+|---|---|---|
+| Sites | `/dashboard/platform/sites` | [Sites](/docs/openfront/analytics/sites) |
+| Site tabs | `/dashboard/platform/sites/[siteId]/...` | [Reports](/docs/openfront/analytics/reports), [Goals, funnels, and segments](/docs/openfront/analytics/goals-funnels) |
+| Shared Links | `/dashboard/platform/shared-links` | [Shared links](/docs/openfront/analytics/shared-links) |
+| Store Settings | `/dashboard/platform/store-settings` | [Store settings](/docs/openfront/analytics/store-settings) |
+| API Keys | `/dashboard/platform/api-keys` | [API keys](/docs/openfront/analytics/api-keys) |
+
+Lists without a dedicated page (`User`, `Role`, `Goal`, `Funnel`, `Segment`, `AnalyticsSession`, `AnalyticsEvent`, and others) are at the generic `/dashboard/<list-key>` pages. `FunnelStep` is hidden from navigation. Users and roles are managed there.
+
+## Onboarding
+
+Users with `canManageOnboarding` see a **Get started** card. It offers:
+
+| Template | Loads |
+|---|---|
+| Complete Setup | Store settings, three sites, nine goals, three funnels, three segments, two shared links, 60 days of traffic per site |
+| Basic Setup | Store settings and the Northwind Coffee site with 14 days of traffic |
+| Custom Setup | Your own JSON in the shape of `features/platform/onboarding/lib/seed.json` |
+
+Each record goes through `ensureOnboardingRecord`, which reuses an existing record with the same natural key (for example the site domain) and never overwrites it. Traffic is generated in the browser and sent through `importSiteSessions` with stable keys, so re-running skips visits already imported. Two sample sites are public and one shared link has a password; change or delete those to suit your instance.
+
+## Site shell
+
+All site pages share one shell with a tab bar (Overview, Realtime, Visits, Goals, Funnels, Events, Performance, Settings), a period picker, and a filter bar.
+
+## AI assistant
+
+The dashboard chat at `/api/completion` uses OpenRouter and the MCP endpoint. See [Integrations](/docs/openfront/analytics/integrations).

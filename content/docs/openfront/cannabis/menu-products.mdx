@@ -1,0 +1,26 @@
+---
+title: Menu and products
+description: Manage products, categories from the rule pack, package readiness and what appears on the public menu.
+icon: ShoppingBasket
+---
+
+`/dashboard/platform/menu` lists products and what is ready to sell. `/menu/[id]` shows facts, packages with readiness and recent sales.
+
+## Product fields
+
+`sku`, `name`, `brand`, `form`, `categoryCode`, `taxCategoryCode`, `unitOfMeasure`, increment, equivalency, `price`, `channels`, `status` (`draft`, `active`, `inactive`), `publicDescription` and `publicImageUrl`.
+
+Categories come from the active rule pack, so tax and purchase limits can resolve for every product.
+
+## Commands
+
+- `configureCannabisProduct` creates a product. Duplicate SKUs are refused with a message naming the existing product.
+- `amendCannabisProduct` edits a product.
+
+Both need `canManageInventory`.
+
+## What reaches the public menu
+
+`publicCannabisMenu` lists only products with a released, lab-passed, unexpired, unheld package and free quantity, each re-checked by `assertPackageSaleable`. An inactive product or one without sellable stock does not appear.
+
+See [Storefront](/docs/openfront/cannabis/storefront).

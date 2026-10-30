@@ -1,0 +1,48 @@
+---
+title: Shared links and public dashboards
+description: Publish a site's aggregate reports, or share a private link with an optional password.
+icon: Link2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Public dashboard
+
+Turn on `isPublic` in a site's **Settings** tab (needs `canManageSharedLinks`). The site then appears on the public home page `/` and at `/sites/<slug>`. Archived sites are never shown.
+
+## Shared links
+
+A `SharedLink` is a private read-only link to one site.
+
+| Field | Notes |
+|---|---|
+| `slug` | Generated secret; the link is `/share/<slug>` |
+| `password` | Optional, at least 8 characters, stored as a bcrypt hash |
+| `isActive` | Turn a link off without deleting it |
+| `expiresAt` | Optional; set on the generic `SharedLink` page or through GraphQL |
+| `viewCount`, `lastViewedAt` | Updated each time the link opens |
+| `createdBy` | The user who made it |
+| `isUsable` | Virtual: active and not expired |
+
+`/dashboard/platform/shared-links` lists every link across sites with status, password marker, views, and last viewed. Turn links on or off and delete them there.
+
+<Steps>
+<Step>
+### Create the link
+In a site's Settings tab, add a name and optionally a password (`createSharedLink`).
+</Step>
+<Step>
+### Send the URL
+Share `/share/<slug>`. Pages are marked `noindex`.
+</Step>
+<Step>
+### Unlock
+With a password, `unlockSharedLink` checks it and returns an HMAC token. The public site stores it in an httpOnly cookie scoped to `/share/<slug>` for 30 days. Changing the password invalidates the token.
+</Step>
+</Steps>
+
+## What viewers see
+
+`publicDashboard` serves aggregate reports only: `site`, `overview`, `breakdown`, `realtime`, `goals`, `funnels`, `funnel`, `vitals`. It runs with elevated access on the server but is limited to the one site the slug or link points to. Visit lists and timelines are not served. Each `site` call through a shared link adds one to `viewCount`.
+
+A link without a password opens for anyone who has the URL.

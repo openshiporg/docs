@@ -1,0 +1,29 @@
+---
+title: Troubleshooting
+description: Error messages and what to do about each.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| `No bundled checklist for <set>` | Add the JSON file to `features/keystone/lib/pokemon/checklists` |
+| `Import set <set> before its sealed product` | Import the set first |
+| `Create the product variant with SKU <sku> first` | Create the variant, then receive |
+| `Product variant <sku> already has an item` | One serialized item per variant |
+| `PSA does not grade 9.5` | Use a valid grade |
+| `Grading company must be PSA, BGS or CGC` | Use one of the three |
+| `Certificate number is invalid` | Letters, digits and dashes only |
+| `Listing price must match the <currency> price of <sku>` | Make both prices equal |
+| `Add a <currency> price to <sku> before listing it` | Set the variant price |
+| `Commission must be 0 to 10000 basis points` | 100% is 10000 |
+| `Idempotency key must be between 8 and 200 characters` | Use a longer key |
+| `Price source answered <status>` | TCGCSV is unavailable; retry later |
+| Commands refuse to run | Exactly one `Store` record must exist |
+
+## Prices did not change
+
+Only variants with `pricingMode: market` and a linked catalog card are repriced. Moves over the maximum change are marked `review`.
+
+## Migrations
+
+`npm run dev` applies migrations. `npm run build` does not, so run `npm run migrate` on release.

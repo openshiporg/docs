@@ -1,0 +1,15 @@
+---
+title: Inventory
+description: Products, vendors, purchase orders, receiving, lots and movements.
+icon: Boxes
+---
+
+`/platform/inventory` and `/platform/inventory/purchase-orders/[id]`. Requires `canManageInventory`.
+
+- **Products:** `upsertProduct`.
+- **Vendors:** direct CRUD.
+- **Purchase orders:** `draftPurchaseOrder`, `transitionPurchaseOrder` (`draft`, `submitted`, `partially_received`, `received`, `cancelled`), `receivePurchaseOrder` creates `GoodsReceipt` and `InventoryLot` records.
+- **Lots:** `dispositionInventoryLot`, `returnRetailLot`.
+- **Adjustments:** `adjustMedSpaInventory`.
+
+`StockMovement` is lot-level and `InventoryMovement` is product-level.

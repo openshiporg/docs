@@ -1,0 +1,25 @@
+---
+title: Track custom events and revenue
+description: Send named events with properties and revenue, then read them in Events and Goals.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Send an event
+`window.openfrontAnalytics.track('Signup', { plan: 'pro' })`, or add `data-analytics-event="Signup"` to a button.
+</Step>
+<Step>
+### Add revenue
+Include a decimal `revenue` in the data object. Its currency must match the site's currency.
+</Step>
+<Step>
+### Read the properties
+Open the **Events** tab, select `Signup`, and view the values of `plan`.
+</Step>
+<Step>
+### Make it a goal
+On **Goals** add an `event` goal with `eventName` `Signup` to see conversions, rate, and revenue.
+</Step>
+</Steps>

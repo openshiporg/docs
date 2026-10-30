@@ -1,0 +1,43 @@
+---
+title: Appointments
+description: Day sheet, front-desk booking, appointment detail, consultation queue and plans.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+| Route | Use |
+|---|---|
+| `/platform/appointments` | Day sheet, arrivals, status transitions |
+| `/platform/appointments/new` | Front-desk booking with client picker |
+| `/platform/appointments/[id]` | Detail, reservations, status |
+| `/platform/appointments/plans`, `/plans/[consultationId]` | Consultation queue and treatment plans |
+
+## Book for a client
+
+<Steps>
+<Step>
+### Open New
+Go to `/platform/appointments/new`.
+</Step>
+<Step>
+### Pick client, treatment, provider
+Providers listed are those who perform the treatment.
+</Step>
+<Step>
+### Pick a slot
+Slots come from `checkAvailability` using published hours, schedules, time off and reservations.
+</Step>
+<Step>
+### Submit
+`bookAppointment` creates a `pending` appointment.
+</Step>
+</Steps>
+
+## Statuses
+
+`pending`, `confirmed`, `in_progress`, `completed`, `cancelled`, `no_show`. Changes use `transitionAppointment` with a stable key and the current revision. Common errors: `Appointment version changed; review the current state`, `A stable appointment transition key is required`, `Documented clinical or financial evidence requires a reviewed correction workflow before cancellation`.
+
+## Related mutations
+
+`bookAppointment`, `transitionAppointment`, `scheduleAppointmentResources`, `medspaAppointmentSchedule` query.

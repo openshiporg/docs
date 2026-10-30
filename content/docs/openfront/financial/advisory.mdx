@@ -1,0 +1,14 @@
+---
+title: Advisory
+description: Trade recommendations, advisor rules, public profile and followed traders.
+icon: Lightbulb
+---
+
+`/dashboard/platform/advisory` has:
+
+- **Recommendations:** `processTradeRecommendation` approves (which places an order) or rejects. `Recommendation needs a suggested quantity before execution.` and `Recommendation cannot be processed from <status> state.` apply.
+- **Advisor rules:** edit `AIAdvisorConfig`, including the maximum position size that `placeFinancialOrder` enforces.
+- **Public profile:** edit `PublicProfileSettings`. When enabled, `/api/public/trades?userId=...&since=...` returns filled paper orders after the profile's trade delay.
+- **Followed traders:** pause, resume or remove `FollowedTrader` records.
+
+Requires `Current human advisory-operation permission is required.`

@@ -1,0 +1,18 @@
+---
+title: Payments
+description: Stripe and PayPal through the store's own providers.
+icon: CreditCard
+---
+
+Stores provide payment. Marketplace:
+
+1. Reads the store's payment providers and publishable keys (`GetStore`, `ListPaymentProviders`).
+2. Starts a payment session on the store (`initiatePaymentSession`).
+3. Renders Stripe card elements or PayPal buttons in the browser with the store's publishable key.
+4. Calls `completeCart` so the store creates the order.
+
+Card data goes from the browser to Stripe or PayPal. Marketplace takes no fee.
+
+Restaurant stores use `MarketplaceRestaurantPaymentMethods`, `MarketplaceInitiateRestaurantPayment` and `MarketplaceCompleteRestaurantCart`.
+
+Alternatively `getCheckoutLink` sends the buyer to the store's own checkout.

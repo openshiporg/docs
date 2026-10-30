@@ -1,0 +1,9 @@
+---
+title: Clients
+description: Client directory and record.
+icon: Users
+---
+
+`/platform/clients` is the directory (`medspaClientDirectory`). `/platform/clients/[id]` is the record (`medspaClientRecord`) with appointments, intake, notes, memberships, packages and messages.
+
+Edit contact and profile data with `updateClientProfile`. Needs `canReadClients`; clinical notes need `canManageClinical` or `canManageSensitiveRecords`.

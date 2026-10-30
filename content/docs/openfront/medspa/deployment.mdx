@@ -1,0 +1,44 @@
+---
+title: Deployment
+description: PostgreSQL, S3-compatible storage, SMTP, migrations and Railway.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Needs
+
+- PostgreSQL you are allowed to migrate.
+- S3-compatible storage. `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` and `S3_ENDPOINT` are required at startup.
+- SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK`) for reset, receipt and gift card emails.
+- Optional: `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`.
+
+## Settings that change behavior
+
+| Variable | Effect |
+|---|---|
+| `MEDSPA_PRACTICE_SLUG` | Practice the storefront serves when several are published |
+| `TAX_RATE` | Checkout tax as a fraction from 0 to 1; overrides `Practice.taxRate` |
+| `MEDSPA_INTAKE_MAX_AGE_DAYS` | Maximum age of reviewed intake accepted for clinical work. Unset: clinical plan and readiness checks that need intake evidence fail |
+| `CLINICAL_ASSET_KMS_KEY_ID`, `CLINICAL_ASSET_REGION` | Recorded on clinical asset intents |
+
+## Deploy
+
+<Steps>
+<Step>
+### Set the environment
+Add the variables above to the host.
+</Step>
+<Step>
+### Migrate
+`npm run migrate` runs `prisma migrate deploy`. `railway.toml` does this at start. Use `npm run migrate:gen` only on a disposable database.
+</Step>
+<Step>
+### Build and start
+`keystone build --no-ui && next build`, then `next start`.
+</Step>
+<Step>
+### First operator and onboarding
+Open `/dashboard/init`, then complete [onboarding](/docs/openfront/medspa/administration).
+</Step>
+</Steps>

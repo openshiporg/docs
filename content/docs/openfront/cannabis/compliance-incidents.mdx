@@ -1,0 +1,35 @@
+---
+title: Compliance and incidents
+description: The compliance queue and the incident register with notification deadlines.
+icon: ClipboardCheck
+---
+
+## Compliance queue
+
+`/dashboard/platform/compliance` brings customer verification, active package holds and recalls into one queue so a compliance lead can clear them in order. Each row links to the customer, package or recall page.
+
+## Incidents
+
+`/dashboard/platform/incidents` is the incident register (`ComplianceIncident`).
+
+| Field | Values |
+|---|---|
+| `type` | refusal_of_sale, identity, patient_registry_outage, traceability_outage, payment_ambiguity, inventory_discrepancy, theft, loss, diversion, recall, privacy, security, system_outage, offline_attempt |
+| `severity` | low, medium, high, critical |
+| `status` | open, contained, investigating, reported, resolved, closed |
+| `outageMode` | none, fail_closed, approved_degraded |
+
+Also recorded: occurred, detected, notification due and reported times, `affectedPackageUids`, `description`, an owner and the acting user.
+
+### Record an incident
+
+`recordComplianceIncident` needs `canManageCompliance` and the `incident` activity. Describe what happened, choose type and severity, and enter the notification deadline from your regulator's rules.
+
+### Move it forward
+
+`transitionComplianceIncident` advances status in order. An out-of-order move is refused with `An incident cannot move from <status> to <status>`.
+
+## Related
+
+- [Recalls](/docs/openfront/cannabis/recalls)
+- [Audit log](/docs/openfront/cannabis/audit)

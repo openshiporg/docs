@@ -1,0 +1,15 @@
+---
+title: Sellers and collectors
+description: Approve consignors and view collector profiles.
+icon: Users
+---
+
+## Sellers
+
+`/dashboard/platform/sellers` and `/sellers/[id]` manage `SellerProfile` records.
+
+`applicant` → `active` (approve) or `closed` (decline); `active` ⇄ `paused`; `suspended` → `active` (reinstate); any → `closed`. Set identity evidence state separately on the seller.
+
+## Collectors
+
+`/dashboard/platform/collectors` lists `CollectorProfile` records. Customers own their binders, want lists and saved searches, which are filtered to the signed-in user.

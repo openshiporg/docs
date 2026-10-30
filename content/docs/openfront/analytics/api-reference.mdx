@@ -1,0 +1,53 @@
+---
+title: GraphQL API
+description: Authentication and the custom report, public, and data operations in Openfront Analytics.
+icon: Braces
+---
+
+GraphQL is served at `/api/graphql`. Authenticate with the session cookie or `Authorization: Bearer of_...` (see [API keys](/docs/openfront/analytics/api-keys)). Report results are returned as `JSON`, so validate the shape in your client.
+
+## Report queries
+
+All take `period`, `from`, `to`, and `filters` (JSON) as described in [Reports](/docs/openfront/analytics/reports) and need `canReadSites`.
+
+| Query | Purpose |
+|---|---|
+| `siteOverview(siteId, period, from, to, filters)` | Totals, previous period, time series |
+| `siteBreakdown(siteId, dimension, ..., limit, offset, search)` | Top values of one dimension |
+| `siteRealtime(siteId)` | Live visitors and per-minute pageviews |
+| `siteSessions(siteId, ..., limit, offset)` | Visit list |
+| `siteSession(siteId, sessionId)` | One visit's timeline |
+| `siteGoals(siteId, ...)` | Conversions and revenue |
+| `siteFunnel(funnelId, ...)` | Steps and drop-off |
+| `siteVitals(siteId, ...)` | p75 Core Web Vitals |
+| `siteEventProperties(siteId, eventName, ...)` | Property values for a custom event |
+| `siteSummaries` | Every readable site with 30-day visitors and live visitors |
+
+```graphql
+query Overview($id: ID!) {
+  siteOverview(siteId: $id, period: "7d", filters: [{ dimension: "country", operator: "is", value: "US" }])
+}
+```
+
+## Public queries
+
+| Query | Purpose |
+|---|---|
+| `publicSites` | Public sites with 30-day visitors |
+| `publicDashboard(siteSlug, shareSlug, token, report, dimension, funnelId, ...)` | Aggregate report. `report` is `site`, `overview`, `breakdown`, `realtime`, `goals`, `funnels`, `funnel`, or `vitals` |
+| `redirectToInit` | True when no users exist |
+
+## Mutations
+
+| Mutation | Needs |
+|---|---|
+| `importSiteSessions(siteId, sessions)` | `canManageSites` |
+| `deleteVisitorData(siteId, distinctId)` | `canManageSites`; returns the number of visits deleted |
+| `deleteSiteWithData(siteId)` | `canManageSites` |
+| `unlockSharedLink(shareSlug, password)` | public; returns a token |
+| `ensureOnboardingRecord(entity, data)` | `canManageOnboarding` plus the domain permission |
+| `updateActiveUser(data)` | signed-in user |
+
+## Generated CRUD
+
+The dashboard uses Keystone operations `createSite`, `updateSite`, `createGoal`, `deleteGoal`, `createFunnel`, `createFunnelSteps`, `deleteFunnel`, `deleteFunnelSteps`, `createSegment`, `deleteSegment`, `createSharedLink`, `updateSharedLink`, `deleteSharedLink`, `createStoreSettings`, `updateStoreSettings`, and the `ApiKey` operations. List access is in [Roles and permissions](/docs/openfront/analytics/roles-permissions).

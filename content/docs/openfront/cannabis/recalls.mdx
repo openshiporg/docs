@@ -1,0 +1,24 @@
+---
+title: Recalls
+description: Open a recall, hold matching packages, advance stages, and close with release or destruction.
+icon: ShieldAlert
+---
+
+`/dashboard/platform/recalls` shows recall cases (`RecallCase`) with an open, closed or all filter and held-package counts.
+
+## Stages
+
+`suspected` → `hold` → `scope_confirmed` → `active` → `monitoring` → `disposition` → `regulator_closed`.
+
+## Open a recall
+
+`openRecallCase` needs `canManageCompliance`. Enter a reference, the authority reference, a reason, and at least one package UID or production batch (`Enter at least one package UID or production batch`). A list can contain up to the maximum recall packages. Every matching package gets an active `PackageHold` of type `recall` and its status becomes `recalled`.
+
+## Move to the next stage
+
+`advanceRecallCase` moves the case one stage. The final move needs a **Held packages** disposition, `release` or `destroy` (`Disposition must be release or destroy`), and a second compliance approver.
+
+- `release` lifts the recall holds and records `recall_release` events.
+- `destroy` removes all remaining physical quantity (`Destruction must remove all remaining physical package quantity`).
+
+See [Handle a recall](/docs/openfront/cannabis/how-to-guides/handle-a-recall).

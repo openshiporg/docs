@@ -1,0 +1,19 @@
+---
+title: Reconciliation
+description: Match imported provider transactions and review provider observations.
+icon: GitCompare
+---
+
+`/dashboard/platform/transactions` lists imported `FinancialTransaction` rows. Imported transactions start unmatched.
+
+## Reconcile
+
+For each row choose **matched** or **needs review**, enter a reason, and submit. `reconcileProviderTransaction` stores the decision and returns an immutable receipt.
+
+## Provider observations
+
+`providerObservation` shows what a provider reported. `admitProviderObservation` puts it in for review and `reviewProviderObservation` applies or rejects it. `previewProviderObservationCommand` shows the effect first. Each import is a `ProviderImportRun` with an idempotency key and observation time.
+
+## Imports
+
+`importProviderSnapshot` takes accounts, positions and transactions as structured input. Use it for the `open-banking-import`, `custodian-import` and `digital-asset-import` providers.

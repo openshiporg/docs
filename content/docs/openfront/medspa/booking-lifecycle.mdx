@@ -1,0 +1,15 @@
+---
+title: Booking to checkout
+description: The appointment lifecycle from request to completed visit and aftercare.
+icon: Workflow
+---
+
+1. **Book.** `bookAppointment` checks availability, creates the `Client` and `User` if needed, a `pending` `Appointment`, `AppointmentLineItem` snapshots, and room, device and supervisor reservations. No payment is taken. Guests get a link token for `storefrontAppointment` and `cancelGuestAppointment`.
+2. **Waitlist.** `joinWaitlist` (staff) and `requestWaitlistSpot` (storefront). Entries go `active`, `notified`, then `converted` or `removed` (`transitionWaitlistEntry`).
+3. **Confirm.** `transitionAppointment`: `pending` to `confirmed`, `cancelled` or `no_show`; `confirmed` to `in_progress`, `cancelled` or `no_show`; `in_progress` to `cancelled`. Revision-checked.
+4. **Intake.** Client uses `submitIntake`; clinical staff `reviewIntake` (`submitted`, `in_review`, `reviewed`, `superseded`).
+5. **Treat.** See [Treatment workspace](/docs/openfront/medspa/treatment).
+6. **Check out.** `completeAppointmentCheckout` on a `confirmed` or `in_progress` appointment. See [Checkout](/docs/openfront/medspa/checkout).
+7. **Aftercare.** `scheduleFollowUp`; client `submitFollowUpResponse` and `submitAppointmentReview`; staff `moderateReview`.
+
+Mutations that change money or clinical state take an idempotency key and, where relevant, a record revision, and many run in serializable transactions.

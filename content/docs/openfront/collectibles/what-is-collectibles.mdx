@@ -1,0 +1,40 @@
+---
+title: What is Openfront Collectibles
+description: A Pokémon card shop platform covering singles by condition, graded slabs, sealed product, market repricing, buylist, consignment and collector accounts.
+icon: Layers
+---
+
+Openfront Collectibles is a self-hosted shop for Pokémon trading cards. Every set is a full checklist with the shop's stock ticked and a market reading on each card.
+
+## Who uses it
+
+| Audience | Surface | Typical work |
+|---|---|---|
+| Collector | Storefront under `/[countryCode]` | Look a card up by set and number, compare condition and price, buy, pre-order, sell to the shop, keep a binder and want list |
+| Merchant | Dashboard under `/dashboard/platform` | Import sets, refresh market prices, reprice by rule, receive slabs, run the buylist, trade-ins and consignment, fulfil orders |
+
+## Stock kinds
+
+| Kind | How it is stocked |
+|---|---|
+| Single (`raw`) | A quantity on a `ProductVariant` with `cardCondition`, `cardFinish` and `cardLanguage` |
+| Graded slab (`graded`) | One serialized `InventoryUnit` with a `Specimen` and `GradeObservation` (company, grade, certificate) |
+| Sealed (`sealed`) | A quantity per `sealedFormat`, with optional pre-order settings |
+
+Conditions are NM, LP, MP, HP and DMG. Finishes are normal, holofoil, reverse holofoil, 1st edition holofoil, 1st edition, unlimited holofoil and unlimited.
+
+## How it is built
+
+Next.js (App Router, React 19), Keystone 6 with GraphQL at `/api/graphql`, Prisma and PostgreSQL. The commerce core (products, carts, orders, payments, fulfillment, returns, regions, discounts, gift cards) is shared with Openfront E-commerce. The Pokémon-specific lists are in `features/keystone/models/Collectible*.ts`.
+
+## Data sources
+
+- Card data and image URLs come from Pokémon TCG API data bundled as JSON in `features/keystone/lib/pokemon/checklists`.
+- Market prices are TCGplayer readings fetched from TCGCSV when staff run a refresh.
+- Slab grades and certificates are recorded observations.
+
+## One shop per deployment
+
+Collectibles commands look up the single `Store` record and run once exactly one exists.
+
+Continue with [Getting started](/docs/openfront/collectibles/getting-started) or the [Dashboard overview](/docs/openfront/collectibles/dashboard).

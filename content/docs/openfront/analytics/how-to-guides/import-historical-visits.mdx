@@ -1,0 +1,21 @@
+---
+title: Import historical visits
+description: Load past traffic with importSiteSessions.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Convert your data
+Each visit needs a unique `key`, `startedAt`, and 1 to 50 events with type `pageview`, `custom`, or `vitals`. Events cannot precede their visit.
+</Step>
+<Step>
+### Batch
+Send up to 500 visits per call with an API key that has `write_sites`.
+</Step>
+<Step>
+### Re-run safely
+Visits with keys already imported are skipped.
+</Step>
+</Steps>

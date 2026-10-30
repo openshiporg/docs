@@ -1,0 +1,52 @@
+---
+title: Troubleshooting
+description: Why a site records nothing, why reports look wrong, and what each error means.
+icon: LifeBuoy
+---
+
+## No data is recorded
+
+| Check | Fix |
+|---|---|
+| Site `status` | Only `active` sites record. Others return 202 and are ignored. |
+| Page hostname | It must be the site's domain or a subdomain, otherwise 202. A browser `Origin` outside it returns 403 `Origin is not part of this site`. |
+| `localhost` | Skipped unless `data-allow-localhost="true"`. |
+| Do Not Track, GPC | GPC is always honored; DNT only with `data-do-not-track="true"`. |
+| `openfront_analytics_ignore` | Remove the `localStorage` key if set to `true`. |
+| User-Agent | Empty or bot-like agents are ignored. Server calls must send one. |
+| Site id | 404 `Unknown site` means `data-site-id` does not match a `publicId`. |
+
+## Wrong numbers
+
+| Symptom | Cause |
+|---|---|
+| Every server event is one visitor | Missing `User-Agent` or `X-Forwarded-For` on server calls |
+| Visitors reset at midnight UTC | The visitor hash uses a daily salt |
+| Country is Unknown | No edge country header and no usable timezone; see [Deployment](/docs/openfront/analytics/deployment) |
+| Region and city empty | The collector does not fill them; only imported visits carry them |
+| Revenue rejected (422) | Revenue currency differs from the site's currency |
+| Duplicate events | Reuse of the same `eventId` is skipped on purpose |
+
+## GraphQL and dashboard
+
+| Message | Meaning |
+|---|---|
+| `Not allowed to read site analytics` | Missing `canReadSites` (or key scope `read_analytics`) |
+| `Not allowed to import site data` / `Not allowed to delete sites` | Missing `canManageSites` |
+| `Site not found` | Wrong id or no access |
+| `Unknown dimension` / `Unknown report` | Invalid dimension or public report name |
+| `Funnel not found` | Funnel is on a different site |
+| `Send between 1 and 500 visits per import` | Batch the import |
+| `Each visit needs 1 to 50 events` | Fix the import payload |
+| `Imported events cannot precede their visit` | Fix timestamps |
+| `Enter the visitor identifier to delete` | `distinctId` empty |
+| `Shared link passwords need at least 8 characters` | Use a longer password |
+| `Scopes must be known capabilities currently granted to the key owner` | The owner's role lacks what the scope maps to |
+
+## Sign-in
+
+Every page redirects to `/dashboard/init` until the first user exists. If password reset says no mail transport is configured, set `SMTP_HOST`.
+
+## Shared links
+
+A link is not found when it is off, expired, or its site is archived. After changing a link's password, viewers must unlock again.

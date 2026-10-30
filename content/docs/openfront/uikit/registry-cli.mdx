@@ -1,0 +1,60 @@
+---
+title: Registry and CLI
+description: Registry endpoints, key authentication, response codes, and the Openfront CLI.
+icon: Terminal
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Endpoints
+
+| Endpoint | Returns |
+|---|---|
+| `/r/registry.json` | shadcn registry index for the catalog (cached 60 seconds) |
+| `/r/<code>.json` | Stable release manifest for one item. Accepts `?version=` and `?includeLockedMetadata=1` |
+| `/api/registry/<code>` | Same manifest service |
+| `/openfront-ui.js` | The CLI, with an `X-Openfront-CLI-SHA256` header |
+| `/api/validation-artifacts/<validationId>/screenshots/<name>` | Screenshots, only for passed validations of stable releases |
+
+## Authentication
+
+Send `Authorization: Bearer <token>` or `x-openfront-token`. Without a header the browser session is used.
+
+| Status | Meaning |
+|---|---|
+| 200 | Manifest with files |
+| 400 | `Invalid registry item name.` or an invalid version |
+| 401 | Paid item, not signed in: `Authentication or purchase required to download protected registry files.` Includes public metadata and a sign-in link |
+| 402 | Signed in without a purchase; includes a `next.checkoutUrl` |
+| 404 | `Registry item not found.` or `Stable published registry release not found.` |
+| 409 | Integrity or commercial-term verification failed |
+| 503 | `The public registry origin is invalid.` or studio identity not configured |
+
+## Get a key
+
+<Steps>
+<Step>
+### Sign in and open `/account/token`
+</Step>
+<Step>
+### Create a key
+Give it a name. Copy the token; it is shown once.
+</Step>
+<Step>
+### Export it
+`export OPENFRONT_TOKEN=ofui_...` and `export OPENFRONT_REGISTRY_URL=https://your-domain`.
+</Step>
+</Steps>
+
+## CLI
+
+```bash
+openfront-ui list
+openfront-ui search <query>
+openfront-ui view <code>
+openfront-ui add <code> --out ./my-app
+openfront-ui update <code> --diff
+openfront-ui config
+```
+
+Options: `--registry <url>`, `--out <dir>`, `--token <token>`, `--version <semver>`, `--dry-run`, `--diff`, `--yes`, `--json`. The CLI rejects unsafe paths in manifests (absolute paths or `..`), verifies SHA-256 hashes, asks before overwriting changed files unless `--yes`, and prints a package-manager plan. It never installs packages or runs downloaded code.

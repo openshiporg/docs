@@ -1,0 +1,50 @@
+---
+title: Authority
+description: Licenses, staff credentials, premises details and versioned sales rules at /dashboard/platform/authority.
+icon: BadgeCheck
+---
+
+Authority is the set of records that lets the software act for a licensed business. Every controlled command checks it before it writes.
+
+## What the page shows
+
+- **Licenses** (`CannabisLicense`): license number, type, regulator, `authorizedActivities`, effective and expiry dates, status.
+- **Staff credentials** (`StaffCredential`): credential type and reference, `allowedActivities`, `approvalLimitCents`, effective and expiry dates, status.
+- **Premises**: name, premises code, address and phone, timezone and currency.
+- **Sales rule versions** (`JurisdictionRulePack`): the effective version and superseded history.
+
+## Activities
+
+A license and a credential both list activities. Onboarding requires all seven on both: `authority`, `eligibility`, `inventory`, `sale`, `cash`, `state_reporting` and `incident`. The error is `Authority pack must explicitly include <activity>` when one is missing.
+
+## Commands
+
+| Action | Mutation | Permission |
+|---|---|---|
+| Renew a license or credential | `renewCannabisAuthority` | `canManageAuthority` |
+| Amend sales rules | `amendCannabisRulePack` | `canManageCompliance` |
+| Edit address and phone | `amendCannabisPremisesDetails` | `canManageAuthority` |
+| Suspend or terminate a credential | `revokeStaffCredential` | `canManagePeople` |
+
+### Renew
+
+Choose a license or credential (`Choose a license or credential to renew` appears if you do not) and enter a new period. The period must end in the future (`Enter a valid period that ends in the future`) and the effective date must precede expiry.
+
+### Amend sales rules
+
+An amendment creates a new `JurisdictionRulePack` version and marks the previous one `superseded`. The pack holds:
+
+- Minimum ages.
+- Operating hours.
+- Purchase limits by capacity, category and window. At least one is required and duplicates are refused.
+- Tax rules. At least one is required.
+- Discount rules. An empty list prohibits discounts.
+- Allowed tender types: `cash`, `debit`, `ach`, `wallet`, `other`.
+- Policies for labels, returns, outages, privacy and retention.
+
+`TenderConfiguration` records are kept in step with the allowed tender types, and every configuration must be allowed by the pack.
+
+## Related
+
+- [Staff](/docs/openfront/cannabis/staff)
+- [Roles and permissions](/docs/openfront/cannabis/roles-permissions)

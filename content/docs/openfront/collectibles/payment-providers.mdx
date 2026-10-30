@@ -1,0 +1,27 @@
+---
+title: Payment providers
+description: Stripe, PayPal and bank transfer adapters, and how to connect them to a region.
+icon: CreditCard
+---
+
+Adapters live in `features/integrations/payment` (`stripe`, `paypal`, `manual`) and are selected by function name on each `PaymentProvider`.
+
+| Provider | Code | Variables |
+|---|---|---|
+| Stripe | `pp_stripe_stripe` | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| Bank transfer | `pp_system_default` | None |
+| PayPal | not seeded | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` |
+
+## Connect
+
+1. Open `/dashboard/platform/payment-providers`.
+2. Install the provider and add its keys.
+3. Connect it to the region customers check out in.
+
+## Bank transfer
+
+Checkout creates the order with a pending payment. When funds arrive, a manager records them with `confirmManualPayment(orderId, reference)`.
+
+## Webhooks
+
+Providers post to `/api/payment-webhooks/[providerId]`, handled by `handlePaymentProviderWebhook`. Register your own outbound endpoints with `registerWebhookEndpoint` and retry with `retryWebhookDeliveries`.

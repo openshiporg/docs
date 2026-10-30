@@ -1,0 +1,31 @@
+---
+title: Transfers
+description: Deposits and withdrawals, operator settlement, approvals and reversals.
+icon: ArrowLeftRight
+---
+
+`/dashboard/platform/transfers` is the transfer queue. `/transfers/[id]` shows the bank, brokerage account, timeline and ledger lines.
+
+## Flow
+
+1. The investor links a bank with `linkOwnedBankAccount` and verifies it with `verifyOwnedBankAccount`.
+2. `requestFinancialTransfer` creates a pending deposit or withdrawal between an owned active bank and a brokerage account.
+3. An operator with `canOperateFinancial` settles it with `processFinancialTransfer` as `complete`, `fail` or `reverse`.
+
+Settlement posts ledger entries and journals and changes the recorded cash balance.
+
+## Rules and messages
+
+- `Only paper-bank transfer records can be processed.`
+- `Not enough cash for this withdrawal.` and `Completing this withdrawal would create a negative cash balance.`
+- `Only completed transfers can be reversed. Current state: <status>.`
+- `An action-bound reversal approval is required. Completion approval cannot authorize reversal.`
+- `Current human settlement authority is required.`
+
+## Approvals
+
+When an active `transfer` policy covers the amount, completion needs an approved, unexpired `ApprovalRequest` decided by someone other than the requester and the settling operator. Create it with `requestTransferApproval`.
+
+## Idempotency
+
+Mutations need a stable idempotency key of 120 characters or fewer.

@@ -1,0 +1,37 @@
+---
+title: API reference
+description: GraphQL queries, mutations and HTTP routes.
+icon: Code
+---
+
+Endpoint `POST /api/graphql`.
+
+## Queries
+
+Public: `publicFinancialIdentity`, `publicMarketAssets`, `publicMarketAsset`, `publicMarketQuotes`, `publicMarketQuote`.
+
+Owned: `ownedBrokerageConnections`, `ownedBrokerageAccounts`, `ownedBankAccounts`, `ownedPortfolio`, `ownedOrders`, `ownedTransfers`, `ownedLedgerEntries`, `ownedStatements`, `ownedProviderImports`, `ownedFinancialTransactions`, `ownedAgentProposals`, `ownedApprovalRequests`, `ownedLedgerJournals`, `providerObservation`.
+
+## Mutations
+
+| Area | Mutations |
+|---|---|
+| Account | `updateActiveUser`, `updateActiveUserPassword`, `upsertPlatformSettings`, `runFinancialOnboarding` |
+| Banks | `linkOwnedBankAccount`, `verifyOwnedBankAccount`, `deactivateOwnedBankAccount`, `setActiveUserPrimaryBankAccount`, `changeOwnedWatchlistSymbol` |
+| Orders | `placeFinancialOrder`, `simulateOrderFill`, `cancelFinancialOrder`, `processTradeRecommendation` |
+| Transfers | `requestFinancialTransfer`, `processFinancialTransfer` |
+| Connections | `provisionInstitutionConnection`, `recordConnectionConsent`, `rotateInstitutionCredential`, `syncInstitutionConnection`, `importProviderSnapshot`, `admitProviderObservation`, `reviewProviderObservation`, `reconcileProviderTransaction`, `recordBrokerSyncRun` |
+| Approvals | `upsertApprovalPolicy`, `requestOrderApproval`, `requestTransferApproval`, `decideApprovalRequest`, `proposeAgentAction`, `decideAgentProposal`, `executeApprovedAgentProposal`, `recoverAgentProposal` |
+| Delivery | `claimOutboxEvents`, `recordOutboxDelivery`, `ingestSignedFinancialWebhook`, `recordWebhookProcessing`, `recoverDeliveryEvent` |
+| Credentials | `issueMachineCredential`, `rotateMachineCredential`, `revokeMachineCredential` |
+| Compliance | `transitionComplianceRecord` |
+
+## HTTP
+
+- `GET /api/platform/statements?month=YYYY-MM`
+- `GET /api/public/trades?userId=&since=`
+- `POST /api/webhooks/financial`
+- `GET, POST /api/financial/agent`
+- `/api/completion`, `/api/mcp-transport/[transport]`
+
+Idempotency keys are 120 characters or fewer.

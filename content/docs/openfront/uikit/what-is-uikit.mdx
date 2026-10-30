@@ -1,0 +1,32 @@
+---
+title: What is Openfront UIKit
+description: Who UIKit is for, what a studio sells, and how customers receive source files.
+icon: Info
+---
+
+UIKit lets a design studio sell and distribute React component source the way shadcn registries do, with accounts, payments, and licensing built in.
+
+## What a studio sells
+
+A **product** (`KitProduct`) is one installable item. Its `registryType` is one of `ui`, `block`, `component`, `hook`, `lib`, `page`, `file`, `theme`, `style`, `base`, or `item`. Its `accessType` is `free` or `paid`. Each product has a stable `code` (the registry name used in URLs and the CLI), a `slug` (the storefront path), and a `kitKey` (the entitlement identity).
+
+Source files live on a **release** (`ComponentRelease`) with a semantic version. Only the latest `stable` release is delivered to customers. Each file records `path`, optional `target` (for example `@ui/`, `@components/`, `@lib/`, `@hooks/` placeholders), `fileType`, `language`, `content`, `sourceHash`, and `sizeBytes`.
+
+Products can belong to a **design system** with named **tokens**, so a kit's colors, spacing, and radii ship with it.
+
+## What customers get
+
+- A public catalog at `/components` with per-item pages showing files, usage examples, screenshots, compatibility, and changelog.
+- Free items unlock after sign-in. Paid items unlock after a successful payment.
+- A `KitAccess` entitlement per user and product. One row per pair.
+- Registry API keys (`ofui_...`) that authorize `shadcn add` and the Openfront CLI.
+
+## What operators get
+
+- Draft authoring, isolated validation, review, publish, and deprecate.
+- Order, payment, refund, entitlement, and key management.
+- An audit trail of consequential actions.
+
+## What is not included
+
+UIKit stores files and manifests in its own database. It does not publish to npm and has no CDN. A manifest hash proves delivered files match the stored release.

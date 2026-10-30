@@ -4,8 +4,6 @@ description: Install the app, set AI environment variables, list trusted stores,
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Try the hosted copy first: [marketplace.openship.org](https://marketplace.openship.org).
 
 ## Requirements
@@ -15,9 +13,7 @@ Try the hosted copy first: [marketplace.openship.org](https://marketplace.opensh
 - Outbound HTTPS access to the stores you list and to your AI provider.
 - At least one public HTTPS Openfront E-commerce or Openfront Restaurant store.
 
-<Callout type="info">
 Marketplace has no database. Unlike most Openfront products, current source does not read `DATABASE_URL`, `SESSION_SECRET`, or any `S3_*` variable. There are no migrations to run and no first admin user to create. If you see empty `features/keystone`, `features/platform`, `migrations`, or `app/dashboard` folders in a local checkout, they hold no files and nothing in the app uses them.
-</Callout>
 
 ## Install
 

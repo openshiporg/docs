@@ -1,0 +1,29 @@
+---
+title: Accounts and portfolio
+description: Connections, brokerage accounts, positions, snapshots and stale-account flags.
+icon: Wallet
+---
+
+## Portfolio
+
+`/dashboard/platform/portfolio` shows holdings and account balances with stale-account flags. Values are recorded snapshots with an as-of time and coverage state.
+
+## Accounts
+
+`/dashboard/platform/accounts` shows connections, brokerage balances, funding sources, broker adapters and market-data sync runs. `/accounts/[id]` shows balances, positions, orders, transfers, statements and ledger lines, plus provider observation review.
+
+## Records
+
+- `BrokerageAccount` and `Position` carry virtual live-value fields.
+- `PortfolioSnapshot` stores history for charts.
+- `BankAccount` holds funding sources.
+- `BrokerageConnection` stores an opaque `credentialReference` that GraphQL never returns.
+
+## Connect a provider
+
+1. In Tasks, **Connections**, use `provisionInstitutionConnection` with scopes and a consent policy version.
+2. Grant consent with `recordConnectionConsent`.
+3. Store the paper credentials in the environment and set the reference to `env://ALPACA_PAPER`.
+4. Run `syncInstitutionConnection` (needs `canManageIntegrations`).
+
+The sync reads accounts, positions and 90 days of activity and calls `importProviderSnapshot`. See [Integrations](/docs/openfront/financial/integrations).

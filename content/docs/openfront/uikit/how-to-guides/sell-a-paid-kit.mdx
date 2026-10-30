@@ -1,0 +1,29 @@
+---
+title: Sell a paid kit
+description: Connect Stripe, price a product, and confirm a customer can buy and install it.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Configure Stripe
+Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, and add the webhook at `/api/payment-providers/pp_stripe_stripe/webhook`. See [Payment providers](/docs/openfront/uikit/payment-providers).
+</Step>
+<Step>
+### Install the provider
+At `/dashboard/platform/payment-providers`, set Stripe to Installed.
+</Step>
+<Step>
+### Price the product
+Set Access type to Paid, price in minor units, and currency. Publish a stable release so the commercial terms are snapshotted.
+</Step>
+<Step>
+### Buy it as a customer
+Sign up at `/account/signup`, open `/components/<slug>`, choose checkout, and pay with a test card.
+</Step>
+<Step>
+### Verify
+The order at `/dashboard/platform/orders` should be `paid`, the payment `captured`, and an Access row with source `purchase` should be `active`.
+</Step>
+</Steps>

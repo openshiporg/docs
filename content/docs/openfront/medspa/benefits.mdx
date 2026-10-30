@@ -1,0 +1,15 @@
+---
+title: Benefits
+description: Membership plans, client memberships, packages and gift cards.
+icon: Gift
+---
+
+`/platform/benefits`.
+
+| Item | Mutations |
+|---|---|
+| Membership plans | `upsertMembershipPlan`, `enrollClientMembership`, `acceptMembershipAgreement`, `transitionMembership` |
+| Packages | `upsertServicePackage`, `sellClientPackage`, `redeemClientPackage`, `reverseClientPackageUsage` |
+| Gift cards | `issueGiftCard`, `applyGiftCardBalance` |
+
+Checkout applies membership and package benefits. Operators issue gift cards here.

@@ -1,0 +1,27 @@
+---
+title: Public menu
+description: The age-gated menu, product pages and visit page.
+icon: Store
+---
+
+| Route | Screen | Content |
+|---|---|---|
+| `/` | `MenuPage` | Age gate, then the menu with form filter, adult-use or medical filter, search and sort |
+| `/menu/[id]` | `ProductPage` | A released, in-stock product |
+| `/visit` | `VisitPage` | Address, directions, today's hours and open-now, phone, minimum ages, accepted payment types |
+
+## Age gate
+
+Minimum ages come from the active sales rules. Confirmation is stored in a cookie. It is a notice, and ID is checked at the counter.
+
+## Data
+
+Two public queries feed the pages: `publicCannabisMenu` and `publicCannabisStorefrontSettings`, loaded in `features/storefront/lib/data/menu.ts`.
+
+## Scope
+
+The menu serves one organization with one active premises. Otherwise it shows an unavailable state. Customers buy in store.
+
+## Customise
+
+Edit [Store settings](/docs/openfront/cannabis/store-settings) and [Menu and products](/docs/openfront/cannabis/menu-products), or build your own client: [External storefronts](/docs/openfront/cannabis/external-storefront).

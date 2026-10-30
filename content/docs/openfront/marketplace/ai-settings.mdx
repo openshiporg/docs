@@ -1,0 +1,33 @@
+---
+title: AI settings
+description: Shared OpenRouter mode, bring-your-own-key mode and custom OpenAI-compatible endpoints.
+icon: Bot
+---
+
+## Modes
+
+| Mode | Who pays | Setup |
+|---|---|---|
+| Global (shared) | Operator | Set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` |
+| Local | Buyer | Buyer picks a provider, model, key and token limit in the setup dialog |
+
+Shared mode is offered only when both variables are set. Set `MARKETPLACE_DISABLE_LOCAL_AI=true` to hide Local and block `/api/ai-models`.
+
+## Providers
+
+- **OpenRouter**
+- **Custom**: any OpenAI-compatible endpoint. It uses the same outbound rules as stores. Limit origins with `MARKETPLACE_CUSTOM_AI_ORIGINS`.
+
+Local keys stay in the buyer's browser and travel with each `/api/completion` request.
+
+## What the model sees
+
+Only discovery tools: `getAvailableStores`, `getAvailableCountries`, `getAvailableRegions`, `discoverProducts`, `discoverRestaurantMenus`, `getProduct`. Results are reduced to safe summaries. HTML, metadata, cart IDs, proofs, tokens and addresses are kept out. Replayed chat history is text only.
+
+## Routing
+
+The route forces `getAvailableStores` on the first step. If the text names retail or restaurant words it forces the matching discovery tool next. It stops when a tool returns a UI card, and after 10 steps.
+
+## Errors
+
+`Choose exactly one AI configuration mode`, `API key is required`, `Model is required`, `Unsupported AI provider`, `Custom AI endpoint is invalid`, `Local AI configuration is disabled for this deployment`, `Invalid max token budget`, `Shared AI token budget is misconfigured`.

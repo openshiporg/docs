@@ -1,0 +1,30 @@
+---
+title: Storefront
+description: Set checklists, card pages, search, buylist, cart, checkout and the collector account.
+icon: Store
+---
+
+The storefront is country-scoped under `/[countryCode]`.
+
+## Browse
+
+- Home shows a set checklist with stock, market prices and add buttons.
+- `/sets` and `/sets/[handle]` show the full checklist (`publicCardSets`, `publicSetChecklist`).
+- `/cards/[id]` shows the market reading and history (`publicCardMarket`) and stocked conditions.
+- `/products/[handle]` is the product page for a single, slab or sealed product.
+- `/store`, `/categories/[...category]`, `/collections/[handle]` are shelves.
+- `/search` supports saved searches for signed-in customers.
+
+## Sell to us
+
+`/trade-in` lists buylist offers per condition (`publicBuylist`). The customer builds a sell list, chooses cash or credit and submits.
+
+## Cart and checkout
+
+Cart and checkout enforce pre-order limits. Payment is Stripe, PayPal or bank transfer, depending on installed providers. Confirmation is at `/order/confirmed/[id]`.
+
+## Account
+
+Under `/account`: orders, binder (`activeBinder`, `addToBinder`, `removeFromBinder`), want list (`activeWantList`, `toggleWantList`), saved searches, trade-ins (`activeTradeIns`), profile, addresses, business-account invoices.
+
+The shop states it is independent and not affiliated with Pokémon's owners.

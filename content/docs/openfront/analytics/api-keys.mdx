@@ -1,0 +1,36 @@
+---
+title: API keys
+description: Create scoped keys for the GraphQL API and read their status.
+icon: Key
+---
+
+`/dashboard/platform/api-keys` creates and lists `ApiKey` records. The token is generated in the browser as `of_` plus 32 random characters, shown once, and stored as a bcrypt hash with a short preview.
+
+## Create a key
+
+Enter a name, choose one or more scopes (at least one is required), and optionally an expiry date. Restricted IPs can be set through the generic `ApiKey` page (`restrictedToIPs`).
+
+| Scope | Allows | Needs on owner |
+|---|---|---|
+| `read_analytics` | Read sites and their reports | `canReadSites` |
+| `write_sites` | Read and manage sites, goals, funnels, segments, visits, events; import or delete data | `canReadSites`, `canManageSites` |
+| `write_shared_links` | Read sites; manage shared links and public visibility | `canReadSites`, `canManageSharedLinks` |
+
+Scopes must already be granted by the owner's current role: `Scopes must be known capabilities currently granted to the key owner`.
+
+## Use a key
+
+```bash
+curl https://your-host/api/graphql \
+  -H "Authorization: Bearer of_..." \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ siteSummaries }"}'
+```
+
+A key works only when it is `active`, not expired, has valid scopes, and, if `restrictedToIPs` is set, the request IP matches. `lastUsedAt` is updated on use.
+
+## Revoke
+
+Set the key to revoked on the generic `ApiKey` page. Revoked keys cannot be turned back on. A signed-in human manages only their own keys; API-key sessions cannot manage keys.
+
+The MCP endpoint forwards the session cookie only, so keys are for GraphQL.

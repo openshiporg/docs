@@ -1,0 +1,37 @@
+---
+title: API reference
+description: GraphQL queries and mutations for Collectibles.
+icon: Code
+---
+
+Endpoint: `POST /api/graphql`, using the session cookie or an `of_` API key.
+
+## Public queries
+
+`publicCardSets`, `publicSetChecklist`, `publicCardMarket`, `publicBuylist`, `publicCollectiblesDiscovery`, `marketplaceCollectiblesCapabilities`, `getProductsSortedByPrice`.
+
+`publicCollectiblesDiscovery` limits: limit 1 to 24, offset 0 up to the maximum.
+
+## Customer operations
+
+`activeBinder`, `addToBinder`, `removeFromBinder`, `activeWantList`, `toggleWantList`, `activeWishlist`, `toggleWishlistListing`, `activeTradeIns`, `submitTradeIn`, plus account, address, order, invoice and privacy operations.
+
+## Staff commands
+
+| Mutation | Permission |
+|---|---|
+| `importCardCatalog(input)` | `canManageCatalog` |
+| `refreshMarketPrices(input)` | `canManageCatalog` |
+| `repriceInventory(input)` | `canManageProducts` |
+| `receiveCollectibleItem(input)` | Listing and inventory permissions |
+| `manageCollectibleListing(input)` | Listing permissions |
+
+Commands that take an idempotency key require 8 to 200 characters.
+
+## Shared commerce
+
+Cart and checkout (`createActiveCart`, `updateActiveCart`, `updateActiveCartLineItem`, `addActiveCartShippingMethod`, `initiatePaymentSession`, `completeActiveCart`), `transitionOrderStatus`, `confirmManualPayment`, fulfillment, shipping labels and rates, `processReturnRefund`, invoices, `adjustInventory`, `importInventory`, `registerWebhookEndpoint`, `retryWebhookDeliveries`.
+
+## Not yet released
+
+`placeCollectibleBid` and `submitCollectibleOffer` return an error until the auction and offer lifecycles are released (`AUCTION_LIFECYCLE_RELEASED`, `OFFER_LIFECYCLE_RELEASED`).

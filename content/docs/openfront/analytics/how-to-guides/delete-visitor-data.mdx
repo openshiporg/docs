@@ -1,0 +1,23 @@
+---
+title: Delete a visitor's data
+description: Remove everything recorded for an identified person.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Identify visitors
+Call `openfrontAnalytics.identify('user-123')` in your app so visits carry a `distinctId`.
+</Step>
+<Step>
+### Delete
+In the site's Settings tab, Visitor data, enter the identifier. This calls `deleteVisitorData` and returns the number of visits removed.
+</Step>
+<Step>
+### Confirm
+Their visits and events no longer appear in **Visits**.
+</Step>
+</Steps>
+
+Visits recorded without a `distinctId` cannot be looked up by person.

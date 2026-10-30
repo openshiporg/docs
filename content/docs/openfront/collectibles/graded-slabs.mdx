@@ -1,0 +1,30 @@
+---
+title: Graded slabs
+description: Slabs as serialized items with grading company, grade, label and certificate.
+icon: Award
+---
+
+`/dashboard/platform/graded` lists serialized slabs with company, grade, label and certificate.
+
+## How a slab is stored
+
+A slab is a product with one `graded` variant tied to an `InventoryUnit`. The unit points to a `Specimen` holding a `GradeObservation` (company, grade, label, certificate, verification state) and a certificate `SpecimenIdentifier`.
+
+## Rules checked on receipt
+
+`receiveCollectibleItem` validates:
+
+| Rule | Message |
+|---|---|
+| Company is PSA, BGS or CGC | `Grading company must be PSA, BGS or CGC` |
+| Grade 1 to 10 in half steps | `Grade must be 1 to 10 in half steps` |
+| PSA has no 9.5 | `PSA does not grade 9.5` |
+| Certificate is letters, digits and dashes | `Certificate number is invalid` |
+
+## Certificate lookup
+
+`GradingCompany` stores a lookup URL template. PSA uses `https://www.psacard.com/cert/{cert}` and CGC uses `https://www.cgccards.com/certlookup/{cert}/`. BGS has none. The storefront slab view shows a "Verify with" link when a template exists and the certificate is not flagged as a sample (`grade.sample`).
+
+## Selling
+
+A listing publishes one unit. `manageCollectibleListing` moves it between draft, published and withdrawn. See [Items and receiving](/docs/openfront/collectibles/items-receiving).

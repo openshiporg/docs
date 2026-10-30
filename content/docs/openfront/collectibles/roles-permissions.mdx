@@ -1,0 +1,36 @@
+---
+title: Roles and permissions
+description: Role permissions, API key scopes and customer ownership rules.
+icon: ShieldCheck
+---
+
+Access combines a session (cookie or `of_` bearer API key) with role permissions defined in `features/keystone/models/fields.ts`.
+
+## Collectibles permissions
+
+| Permission | Allows |
+|---|---|
+| `canReadCollectibles` | Read collectible records |
+| `canManageCatalog` | `importCardCatalog`, `refreshMarketPrices` |
+| `canManageProducts` | `repriceInventory`, products |
+| `canManageListings` | Listings |
+| `canManageAuctions` | Auction desk |
+| `canManageConsignments` | Consignment records |
+| `canManageEvidence` | Condition, grade, provenance, custody evidence |
+| `canManageCollectibleCustomers` | Collector records |
+| `canManageRisk` | Risk records |
+| `canManageIntegrations` | Provider connections |
+
+The shared product, inventory, order, payment, fulfillment, return, discount, gift card, user, role and webhook permissions also apply.
+
+## API keys
+
+Effective access is the intersection of the key's scopes and its owner's role. Keys can have expiry and IP restrictions.
+
+## Customer ownership
+
+Binders, want-list items and saved searches are created against the signed-in user and filtered to that user on read, update and delete.
+
+## Locked lists
+
+Inventory units, movements, reservations and listings refuse generic GraphQL create and update. They change through commands.

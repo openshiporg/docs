@@ -4,16 +4,11 @@ description: Self-hosted medical-aesthetics booking, treatment authority, consen
 icon: Sparkles
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Medspa is a self-hosted booking and practice-operations application for medical-aesthetics practices. Clients browse treatments and providers, request appointments, complete intake, and manage visits on a public storefront. Practice staff run the day sheet, consultations, treatment plans, clinical orders, consent, treatment sessions, checkout, inventory, memberships, packages, gift cards, commissions, safety cases, and privacy requests from the operator dashboard.
 
-The source lives at [github.com/openshiporg/openfront-medspa](https://github.com/openshiporg/openfront-medspa). A hosted demo runs at [medspa.openship.org](https://medspa.openship.org).
-
-<Callout type="warn">
-Openfront Medspa does not license a practice, credential providers, grant prescribing or treatment authority, or provide regulatory approval. It is not documented as HIPAA compliant or certified for any medical-records, payment, or device standard. Recorded credentials, authorizations, consents, and readiness checks are application records; the practice remains responsible for verifying them and for every clinical decision.
-</Callout>
+The source lives at [github.com/openshiporg/openfront-medspa](https://github.com/openshiporg/openfront-medspa). The hosted app is at [medspa.openship.org](https://medspa.openship.org).
 
 ## What the codebase contains
 
@@ -25,11 +20,11 @@ Openfront Medspa does not license a practice, credential providers, grant prescr
 
 <Cards>
   <Card title="Getting started" href="/docs/openfront/medspa/getting-started" description="Requirements, environment, migrations, first operator, onboarding, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/medspa/architecture-workflows" description="Data model, booking-to-checkout lifecycle, clinical gates, GraphQL operations, and roles." />
+  <Card title="Booking to checkout" href="/docs/openfront/medspa/booking-lifecycle" description="Data model, booking-to-checkout lifecycle, clinical gates, GraphQL operations, and roles." />
   <Card title="External dashboard" href="/docs/openfront/medspa/external-dashboard" description="Platform pages and the skill for building a custom operator dashboard." />
   <Card title="External storefront" href="/docs/openfront/medspa/external-storefront" description="Customer routes, journeys, and the skill for building a custom storefront." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/medspa/integrations-boundaries" description="Payment adapters, webhooks, SMTP, S3 storage, AI, and MCP status." />
-  <Card title="Current limitations" href="/docs/openfront/medspa/limitations" description="What the current source does not do." />
+  <Card title="Integrations" href="/docs/openfront/medspa/integrations" description="Payment adapters, webhooks, SMTP, S3 storage, AI, and MCP status." />
+  <Card title="Troubleshooting" href="/docs/openfront/medspa/troubleshooting" description="What the current source does not do." />
 </Cards>
 
 ## Ownership and tenancy

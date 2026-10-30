@@ -4,16 +4,13 @@ description: A self-hosted paper brokerage with a client portal, an operator con
 icon: Landmark
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Openfront Financial is a self-hosted portfolio and brokerage-operations application. Investors browse markets, keep watchlists, place orders, fund accounts, and read activity and statements. Operators work orders, transfers, reconciliation, the ledger, income records, approvals, compliance reviews, and provider connections.
 
 It runs in paper mode. Orders placed through the app are recorded and filled by a local simulation. Transfers move recorded balances, not money. The one provider adapter in the source, Alpaca, accepts paper-trading credentials only and is used to read accounts, positions, and activity.
 
-<Callout type="warn">
-Openfront Financial is not a broker-dealer, custodian, bank, or investment adviser, and it does not give you any license or registration. The storefront shows this disclosure from source: "Paper trading only. Orders are not sent to an exchange and no real money moves. Quotes may be delayed. Not investment advice." Keep it visible.
-</Callout>
+The portal shows a paper-trading notice from source: "Paper trading only. Orders are not sent to an exchange and no real money moves. Quotes may be delayed."
 
 ## Who it is for
 
@@ -30,11 +27,11 @@ Openfront Financial is not a broker-dealer, custodian, bank, or investment advis
 
 <Cards>
   <Card title="Getting started" href="/docs/openfront/financial/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
-  <Card title="Architecture and workflows" href="/docs/openfront/financial/architecture-workflows" description="Models, operator workflows, and the named GraphQL operations." />
+  <Card title="Data model" href="/docs/openfront/financial/data-model" description="Models, operator workflows, and the named GraphQL operations." />
   <Card title="External dashboards" href="/docs/openfront/financial/external-dashboard" description="Current operator pages and the custom-dashboard skill." />
   <Card title="External storefronts" href="/docs/openfront/financial/external-storefront" description="Current client-portal routes and the custom-storefront skill." />
-  <Card title="Integrations and boundaries" href="/docs/openfront/financial/integrations-boundaries" description="Alpaca paper adapter, webhooks, machine credentials, AI, and MCP." />
-  <Card title="Current limitations" href="/docs/openfront/financial/limitations" description="What the source does not do yet." />
+  <Card title="Integrations" href="/docs/openfront/financial/integrations" description="Alpaca paper adapter, webhooks, machine credentials, AI, and MCP." />
+  <Card title="Dashboard" href="/docs/openfront/financial/dashboard" description="Every operator page with step-by-step flows." />
 </Cards>
 
 ## Ownership and tenancy

@@ -1,0 +1,20 @@
+---
+title: Data model
+description: Lists by domain and which are directly writable.
+icon: Database
+---
+
+98 lists scoped to `Practice`. See `docs/schema-map.md` in the repository for key fields.
+
+- **Practice and access:** `Practice`, `Location`, `StorefrontSetting`, `WidgetConfiguration`, `User`, `Role`, `StaffInvitation`, `PracticeMembership`, `Provider`, `AuditEvent`.
+- **Catalog:** `ServiceCategory`, `Service`, `ServiceVariant`, `MedSpaImage`, `Resource`, `ResourceScheduleBlock`, `DeviceReadinessEvent`.
+- **Booking:** `ProviderSchedule`, `Client`, `Appointment`, `AppointmentLineItem`, `AppointmentResourceReservation`, `AppointmentSupervisorReservation`, `WaitlistEntry`.
+- **Clinical:** `IntakeForm`, `FormTemplate`, `FormSubmission`, `IntakeReviewAction`, `Consultation`, `ContraindicationFinding`, `ContraindicationDecision`, `TreatmentPlan`, `TreatmentPlanItem`, `ClinicalOrder`, `ClinicalOrderAction`, `ConsentTemplateVersion`, `ConsentRecord`, `ConsentAction`, `TreatmentSession`, `TreatmentAdministration`, `AdministrationLot`, `ClientNote`, `ClientAsset`, `AssetAccessEvent`, `PhotoConsent`, `PhotoConsentAction`, `ProviderCredential`, `ProviderAuthorization`.
+- **Money:** `MedSpaTransaction`, `MedSpaTransactionLineItem`, `Payment`, `PaymentSession`, `Refund`, `PaymentProvider`, `PaymentWebhookEvent`, `WebhookInbox`, `Commission`, `GiftCard`, `GiftCardTransaction`, `Membership`, `ClientMembership`, `MembershipAgreement`, `MembershipLedgerEntry`, `ServicePackage`, `ClientPackage`, `ClientPackageUsage`, `ClientPackageAdjustment`.
+- **Inventory:** `Product`, `Vendor`, `PurchaseOrder`, `PurchaseOrderLine`, `GoodsReceipt`, `GoodsReceiptLine`, `InventoryLot`, `StockMovement`, `InventoryMovement`.
+- **Safety and governance:** `Incident`, `IncidentAction`, `RecallCase`, `RecallExposure`, `RecallAction`, `PatientRightsRequest`, `PatientRightsAction`, `LegalHold`, `RetentionPolicy`, `BreakGlassEvent`.
+- **Communications:** `MessageTemplate`, `MessageLog`, `Review`, `DomainEvent`, `OutboxEvent`.
+
+## Direct CRUD
+
+`Service`, `ServiceCategory`, `ServiceVariant`, `MedSpaImage`, `WidgetConfiguration` (`canManagePractice`); `Vendor` (`canManageInventory`); `MessageTemplate` (`canManageCommunications`); `PaymentProvider` (`canManageIntegrations`). `Practice` and `User` allow updates only. Everything else is written by named mutations.

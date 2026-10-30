@@ -1,0 +1,32 @@
+---
+title: Roles and permissions
+description: Role checkboxes, list-level access, and how API keys and public pages are scoped.
+icon: ShieldCheck
+---
+
+The first user created at `/dashboard/init` gets an `Admin` role with every box checked. Add others from the generic `User` list (or `/dashboard/signup` when `PUBLIC_SIGNUPS_ALLOWED=true`) and give them a `Role`.
+
+| Permission | Allows |
+|---|---|
+| `canAccessDashboard` | Open the dashboard |
+| `canReadSites` | Read sites and every report, visit, and event |
+| `canManageSites` | Create, update, delete sites, goals, funnels, segments; import and delete data |
+| `canManageSharedLinks` | `Site.isPublic` and all of `SharedLink` |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople` | See and edit other users; role and active status need `canManagePeople` |
+| `canManageRoles` | Edit roles |
+| `canManageSettings` | Edit store settings |
+| `canManageOnboarding` | Run onboarding (default on) |
+
+## Tenancy
+
+One deployment holds one set of sites. There is no organization, team, or per-site membership, and sites have no owner field. Anyone with `canReadSites` reads every site and anyone with `canManageSites` changes every site.
+
+## List access
+
+- `Site`, `AnalyticsSession`, `AnalyticsEvent`, `Goal`, `Funnel`, `FunnelStep`, `Segment`: read with `canReadSites`; create, update, delete with `canManageSites`.
+- `StoreSettings` and `Role`: anyone can read. Changes need `canManageSettings` and `canManageRoles`.
+- `User`: signed-in users see themselves, or everyone with `canSeeOtherPeople`.
+- `ApiKey`: owners only.
+- Custom report queries check `canReadSites` and load the site through list access. `publicDashboard`, `publicSites`, and `unlockSharedLink` are public and use elevated access internally.
+
+Every list and custom operation checks permissions on the server, independent of what the dashboard shows.

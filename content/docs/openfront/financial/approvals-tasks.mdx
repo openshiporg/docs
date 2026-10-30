@@ -1,0 +1,39 @@
+---
+title: Approvals and tasks
+description: Approval policies, requests, agent proposals, delivery retries and machine credentials.
+icon: ClipboardCheck
+---
+
+## Policies
+
+`/dashboard/platform/approvals` lists policies and request history. `upsertApprovalPolicy` (needs `canApproveFinancial`) sets:
+
+| Field | Notes |
+|---|---|
+| `policyKey` | Unique |
+| `operation` | `order`, `transfer` or `agent_action` |
+| `minimumAmount` | Decimal, default 0 |
+| `currency` | Default USD |
+| `requiredApprovals` | 1 |
+
+Activate or deactivate a policy from the same page. Onboarding creates two: orders of 25,000 or more and transfers of 10,000 or more.
+
+## Decide a request
+
+`requestOrderApproval` and `requestTransferApproval` create an `ApprovalRequest`. Another person approves with `decideApprovalRequest`. Decisions are append-only.
+
+## Tasks
+
+`/dashboard/platform/tasks` has tabs:
+
+| Tab | Work |
+|---|---|
+| Approvals | Pending requests |
+| Agent proposals | `proposeAgentAction`, `decideAgentProposal`, `executeApprovedAgentProposal`, `recoverAgentProposal` |
+| Delivery | Re-queue failed outbox or webhook events with `recoverDeliveryEvent` |
+| Connections | Provision, consent, rotate credential, sync |
+| API keys | Issue, rotate and revoke machine credentials |
+
+## Machine credentials
+
+`issueMachineCredential`, `rotateMachineCredential` and `revokeMachineCredential` need `canManageMachineCredentials`. The token is shown once. Scopes: `operations:read`, `proposals:write`, `imports:write`, `delivery:write`. A key never exceeds its owner's role.

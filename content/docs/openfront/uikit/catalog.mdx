@@ -1,0 +1,54 @@
+---
+title: Catalog
+description: Create and edit kit products, set pricing and visibility, and browse component files.
+icon: Package
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Products
+
+`/dashboard/platform/catalog` lists `KitProduct` records alongside their latest stable release. `/dashboard/platform/catalog/new` creates one (`createUIKitProduct`). `/dashboard/platform/catalog/[id]` edits it (`updateUIKitProduct`).
+
+### New product tabs
+
+| Tab | Fields |
+|---|---|
+| Basics | Name, Slug, Registry code, Entitlement key, Registry type, Design system, Description, Tagline, Audience, Preview title, eyebrow, description, Dependencies (one per line), Install command, Preview image path |
+| Access | Access type (free or paid), Price in minor units, Currency (default `usd`), License name, Seats, Usage |
+| Release | Sort order, Active, Visible. These flags do not publish source; the catalog still needs a stable release |
+
+Paid products require a price of at least 1. Free products are stored with price 0. `slug` is the storefront path, `code` is the registry name used by `shadcn add` and the CLI, and `kitKey` is the stable lowercase entitlement identity.
+
+### Editor tabs
+
+The product editor has Basics, Preview, Files, and License tabs. The Files tab creates a release draft from JSON source files (`createComponentDraft`). A public-preview check shows whether the product appears in the public catalog (`publicCatalog`).
+
+## Visibility
+
+A product shows in the storefront only when `isActive` and `isVisible` are both on and it has a stable release. The public catalog returns at most 24 items.
+
+## Components
+
+`/dashboard/platform/components` browses component files, package exports (`PackageExport`), and usage examples (`UsageExample`) across releases.
+
+## Create a product
+
+<Steps>
+<Step>
+### Open Products and choose New
+Fill Basics: name, slug, code, entitlement key, and registry type.
+</Step>
+<Step>
+### Set access
+Pick free or paid. For paid, enter the price in minor units (for example 4900 for 49.00) and the currency.
+</Step>
+<Step>
+### Add license terms
+Enter license name, seats, and usage. These are snapshotted into each release when it is reviewed.
+</Step>
+<Step>
+### Add source and publish
+Create a draft, validate it, and publish. See [Publish a release](/docs/openfront/uikit/how-to-guides/publish-a-release).
+</Step>
+</Steps>

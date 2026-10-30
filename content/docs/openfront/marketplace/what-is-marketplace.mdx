@@ -1,0 +1,37 @@
+---
+title: What is Openfront Marketplace
+description: A chat storefront that searches several independent Openfront stores and builds carts on the store the buyer picks.
+icon: Store
+---
+
+Openfront Marketplace is a chat interface for shopping across independent stores. The buyer asks for something. The app searches the stores in its registry, shows product or menu cards inside the chat through MCP UI, and builds the cart on the chosen store.
+
+## Who uses it
+
+| Audience | Surface | Work |
+|---|---|---|
+| Buyer | Chat at `/` | Ask, compare, add to cart, pay |
+| Operator | `marketplace.config.json` and environment | Admit stores, configure AI, deploy |
+| MCP client developer | `/api/mcp-transport/http` | Call discovery, cart and checkout tools |
+| Store owner | Their own Openfront store | Catalog, prices, orders, payments |
+
+## What it does not hold
+
+Marketplace keeps no database. Products, prices, carts, accounts, orders and payments live in the connected stores. The browser keeps chat threads, cart IDs, cart proofs, store session tokens, store selection and AI settings in `localStorage`.
+
+## Supported stores
+
+| Platform | Adapter | Store |
+|---|---|---|
+| `openfront` | `adapters/openfront` | Openfront E-commerce |
+| `openfront-restaurant` | `adapters/openfront-restaurant` | Openfront Restaurant |
+
+## Who owns what
+
+- **Operator:** store registry, AI keys, deployment.
+- **Buyer:** browser state and optionally their own AI key.
+- **Store:** catalog, inventory, carts, accounts, payment sessions, orders, fulfillment.
+
+Card data never touches the marketplace. Stripe and PayPal elements load in the browser with the store's publishable key.
+
+Next: [Getting started](/docs/openfront/marketplace/getting-started).

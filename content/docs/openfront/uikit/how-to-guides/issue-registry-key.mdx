@@ -1,0 +1,25 @@
+---
+title: Issue and revoke a registry key
+description: Create a key for a customer workflow and revoke it when it is no longer needed.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Sign in as the customer
+Keys belong to the signed-in user. Open `/account/token`.
+</Step>
+<Step>
+### Create
+Enter a name (up to 80 characters). The token `ofui_...` is shown once. Keys expire after 90 days and each account can hold five active keys.
+</Step>
+<Step>
+### Use it
+Send it as `Authorization: Bearer <token>` or set `OPENFRONT_TOKEN` for the CLI.
+</Step>
+<Step>
+### Revoke
+Revoke from the same page, or as an operator at `/dashboard/platform/api-keys`. A revoked key is refused on the next request.
+</Step>
+</Steps>

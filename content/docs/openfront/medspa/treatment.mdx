@@ -1,0 +1,50 @@
+---
+title: Treatment workspace
+description: Consultation, contraindications, plan, order, consent, session, administration and signed notes.
+icon: Syringe
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Open `/platform/appointments/[id]/treatment`. Requires `canManageClinical`.
+
+<Steps>
+<Step>
+### Consultation
+`recordConsultation`: candidacy `candidate`, `deferred`, `declined` or `referred`.
+</Step>
+<Step>
+### Contraindications
+`recordContraindicationFinding`, then `decideContraindication` for the clinician's disposition.
+</Step>
+<Step>
+### Plan
+`approveTreatmentPlan` creates the `TreatmentPlan` and items. States: `draft`, `active`, `paused`, `completed`, `cancelled`.
+</Step>
+<Step>
+### Order
+`issueClinicalOrder` authorizes a performer. `transitionClinicalOrder` moves it through `active`, `partially_fulfilled`, `fulfilled`, `held`, `revoked`, `expired` or `entered_in_error`.
+</Step>
+<Step>
+### Consent
+`signTreatmentConsent` against a published template; `withdrawTreatmentConsent` withdraws.
+</Step>
+<Step>
+### Session
+`prepareTreatmentSession` then `startTreatmentSession`: `planned`, `ready`, `in_progress`.
+</Step>
+<Step>
+### Administration
+`recordTreatmentAdministration` records what was given and, for lot-traced products, the `AdministrationLot` and `StockMovement`.
+</Step>
+<Step>
+### Note
+`appendSignedClinicalNote` adds an append-only, supersedable `ClientNote`.
+</Step>
+</Steps>
+
+## Readiness gate
+
+Before a session runs, `clinicalExecutionReadiness` checks that: the exact approved plan, item and consultation still authorize the encounter; a current order and matching consent exist; current reviewed intake covers every required template version; no contraindication review blocks; the session is inside the appointment window; and no required resource has a maintenance or unavailable block. The check confirms records exist and match. Clinical appropriateness remains the clinician's judgment.
+
+Intake evidence must be newer than `MEDSPA_INTAKE_MAX_AGE_DAYS`. If a template changes after an order, treatment is refused with `Required intake template changed after the clinical order was issued`.
