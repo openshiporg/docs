@@ -1,0 +1,55 @@
+---
+title: API reference
+description: Custom GraphQL queries and mutations served at /api/graphql.
+icon: Code
+---
+
+Declared in `features/keystone/mutations/index.ts`. Every mutation takes an input object with `businessId`, usually `storeId`, and an `idempotencyKey`; it returns `OperationResult`. Money is integer cents.
+
+## Queries
+
+ `storefrontCatalog`, `storefrontBasket`, `storefrontHistory`, `storefrontRewards`, `conveniencePublicStorefront`, `conveniencePlatformProjection`, `conveniencePlatformNavigation`, `convenienceReportingSummary`, `posSaleReceipt`, `posOperationOutcome`, `downloadExportArtifact`, `assistantCapability`, `redirectToInit`.
+
+## Mutations
+
+| Area | Mutations |
+|---|---|
+| Setup and brand | `onboardConvenienceBusiness`, `configureBusinessBrand`, `configureRegister`, `configureInventoryLocation` |
+| Staff and sessions | `setOwnPosPin`, `openEmployeeShift`, `closeEmployeeShift`, `revokeCurrentUserSessions` |
+| Tills | `openRegisterSession`, `recordCashMovement`, `closeRegisterSession` |
+| POS | `createPosCart`, `addPosCartLine`, `updatePosCartLine`, `removePosCartLine`, `transitionPosCart`, `applyPromotionToCart`, `completePosSale`, `refundPosSale`, `voidCompletedPosSale` |
+| Catalog and pricing | `configureCatalogItem`, `setRetailPrice`, `configureStoreTaxRate`, `configurePromotion` |
+| Restricted sales | `configureAgeRestrictionPolicy`, `verifyRestrictedSaleAge`, `transitionComplianceIncident` |
+| Loyalty | `configureLoyaltyProgram`, `enrollLoyaltyAccount`, `adjustLoyaltyPoints`, `applyLoyaltyRedemptionToCart`, `expireLoyaltyPoints` |
+| Purchasing | `configureVendor`, `configureVendorItem`, `draftPurchaseOrder`, `transitionPurchaseOrder`, `receivePurchaseOrder` |
+| Inventory | `startInventoryCount`, `recordInventoryCountLine`, `postInventoryAdjustment`, `transitionInventoryCount`, `approveInventoryCount`, `draftInventoryTransfer`, `transitionInventoryTransfer` |
+| Prepared food | `configurePreparedFoodRecipe`, `startPrepBatch`, `completePrepBatch`, `recordWasteEvent` |
+| Fuel | `configureFuelTopology`, `setFuelPrice`, `recordFuelTankReading`, `recordFuelDelivery`, `authorizeFuelPayment`, `cancelFuelPaymentAuthorization`, `completeFuelTransaction`, `generateFuelReconciliation`, `approveFuelReconciliation` |
+| Store day | `generateStoreDayReconciliation`, `approveStoreDayReconciliation`, `prepareBankDeposit`, `transitionBankDeposit` |
+| Exports | `configureExportDestination`, `generateDailyAccountingExport`, `transitionExportBatch` |
+| Alerts | `evaluateOperationalAlerts`, `transitionOperationalAlert`, `recordOperationalHeartbeat` |
+| Lottery | `configureLotteryGame`, `receiveLotteryPack`, `activateLotteryPack`, `recordLotteryPackSale`, `closeLotteryPack`, `generateLotterySettlement`, `approveLotterySettlement` |
+| Money services | `configureMoneyServiceProvider`, `recordExternalMoneyServiceTransaction`, `voidExternalMoneyServiceTransaction`, `generateMoneyServiceSettlement`, `approveMoneyServiceSettlement` |
+| Payments | `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation` |
+| Offline and outbox | `registerOfflineDevice`, `transitionOfflineDevice`, `recordOfflineReplayBatch`, `claimOutboxEvents`, `completeOutboxEvent`, `replayOutboxEvent` |
+| API keys | `createBusinessApiKey`, `revokeBusinessApiKey` |
+| Storefront | `updateStorefrontBasket` |
+
+## Example: open a drawer
+
+```graphql
+mutation {
+  openRegisterSession(input: {
+    businessId: "..."  storeId: "..."  registerId: "..."
+    employeeId: "..."  openingCashCents: 20000
+    idempotencyKey: "open-reg1-2026-10-30"
+  }) { __typename }
+}
+```
+
+## Key inputs
+
+- `completePosSale`: `cartId`, `tenders[]` (`method`, `amountCents`, `tenderedCents`, `paymentProviderId`, `providerPaymentId`, `providerAuthority`, `cardBrand`, `cardLast4`)
+- `refundPosSale`: `saleId`, `registerSessionId`, `employeeId`, `reason`, `lines[]`, `tenderAllocations[]`, `managerPin`
+- `receivePurchaseOrder`: `purchaseOrderId`, `locationId`, `employeeId`, `lines[]`
+- `startInventoryCount`: `locationId`, `type`, `variantIds`

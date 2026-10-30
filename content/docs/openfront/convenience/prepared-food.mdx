@@ -1,0 +1,28 @@
+---
+title: Prepared food
+description: Recipes, prep batches, and waste at /dashboard/platform/foodservice.
+icon: Sandwich
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Define the recipe
+`configurePreparedFoodRecipe` with ingredients (`RecipeIngredient`) and an output product.
+</Step>
+<Step>
+### Start a batch
+`startPrepBatch`: planned, in_progress.
+</Step>
+<Step>
+### Complete
+`completePrepBatch` consumes ingredients and creates an output lot with an expiry (valid ISO timestamp).
+</Step>
+<Step>
+### Record waste
+`recordWasteEvent` for expired or discarded output.
+</Step>
+</Steps>
+
+Batch statuses: planned, in_progress, completed, discarded, cancelled.

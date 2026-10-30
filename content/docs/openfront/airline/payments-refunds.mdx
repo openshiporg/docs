@@ -1,0 +1,40 @@
+---
+title: Payments and refunds
+description: Record money received, approve evidence, mark bookings paid, and process refunds.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Payments live in two desks. `/dashboard/platform/payments` (and `/[id]`) lists evidence awaiting approval and payment records. `/dashboard/platform/refunds` (and `/[id]`) lists refunds by status. Both are read only: the actions run from the booking row on [Bookings](/docs/openfront/airline/offers-bookings).
+
+## Manual settlement (maker-checker)
+
+<Steps>
+<Step>
+### Record money received
+On the booking, use **Received**. Choose Payment received (or Refund sent), the method (bank transfer, card terminal, cash, other), the bank or receipt reference (6 to 200 characters), and when the money moved. It cannot be in the future. `recordReceivedPayment` creates a `ManualPaymentEvidence` record with status `submitted`.
+</Step>
+<Step>
+### A different user approves
+`approveManualPaymentEvidence` must be run by a different authorized user than the one who recorded it. `rejectManualPaymentEvidence` needs a reason. Evidence statuses: submitted, approved, rejected, consumed.
+</Step>
+<Step>
+### Mark paid
+**Mark paid** calls `captureBookingPayment` with the approved reference. Evidence becomes `consumed`, a `Payment` is created as `captured`, and the booking becomes paid.
+</Step>
+</Steps>
+
+Errors: "Approved manual settlement evidence is required.", "Cancelled bookings can't be paid.", "Booking already has an authoritative airfare payment record.", "Evidence must be current, booking-eligible, and approved once by a different authorized user."
+
+## Refunds
+
+Use **Refund** on a paid or partially refunded booking: amount, reference, and reason (customer_request, disruption, schedule_change, duplicate, fraud, other). The refund needs approved refund evidence first (record "Refund sent" and have a second user approve it). `processBookingRefund` creates a `Refund`.
+
+Refund statuses: requested, approved, processing, succeeded, failed, cancelled. Payment statuses: pending, authorized, captured, partially_refunded, refunded, failed, cancelled.
+
+Checks: "Refund amount exceeds the remaining captured amount." and "Refund amount must be a positive minor-unit integer."
+
+## Stripe Checkout payments
+
+If the carrier has an active Stripe provider, travelers pay on Manage booking and the return from Stripe records the payment. See [Payment providers](/docs/openfront/airline/payment-providers).

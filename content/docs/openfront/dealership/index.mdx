@@ -4,17 +4,13 @@ description: Vehicle inventory, CRM, deals, finance and F&I records, delivery, s
 icon: Car
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-dealership) · [Live demo](https://dealership.openship.org) · [Catalog](https://openship.org/products/openfront-dealership)
+[Source](https://github.com/openshiporg/openfront-dealership) · [Live site](https://dealership.openship.org) · [Catalog](https://openship.org/products/openfront-dealership)
 
 Openfront Dealership is a self-hostable vehicle storefront and dealership operations app. Shoppers browse and compare vehicles and send sales, test-drive, trade-in, financing, and service requests. Staff work those requests through inventory, CRM, deal, finance, delivery, service, parts, payment, and accounting desks.
 
 It is built with Next.js 16, React 19, Keystone 6 (GraphQL), PostgreSQL through Prisma, and Tailwind CSS. Start with [Getting started](/docs/openfront/dealership/getting-started).
 
-<Callout type="warn">
-Financing in this source is intake and record keeping. It does not pull credit, send applications to lenders, sign contracts, or file anything with a government agency. Lender decisions, compliance checks, contract status, and accounting postings are entered by staff as evidence.
-</Callout>
+Financing is intake and record keeping. Lender decisions, compliance checks, contract status, and accounting postings are entered by staff.
 
 ## Code layout
 
@@ -41,7 +37,7 @@ Financing in this source is intake and record keeping. It does not pull credit, 
 
 | Area | Lists |
 |---|---|
-| Organization | User, Role, DealerGroup, Rooftop, DealerGroupMembership, RooftopMembership, MembershipAuditEvent, DealershipProfile, ApiKey, AuthenticationThrottle (unused, not in GraphQL) |
+| Organization | User, Role, DealerGroup, Rooftop, DealerGroupMembership, RooftopMembership, MembershipAuditEvent, DealershipProfile, ApiKey, AuthenticationThrottle |
 | Inventory | Make, Model, Vehicle, VehicleImage, VehicleConditionReport, VehicleHistory, PriceHistory, InventoryAcquisition, InventoryAcquisitionEvent, InventoryStock, InventoryStockEvent, InventoryReconWorkItem, InventoryMerchandisingVersion, InventoryFeedRun, InventoryFeedError |
 | CRM | Customer, CustomerMergeEvent, CustomerHousehold, CustomerContactPreferenceEvent, Lead, LeadAssignmentEvent, LeadRoutingRule, CustomerInteraction, Task, SalesVisit, TestDrive, TradeIn |
 | Deals and finance | Deal, DealApproval, FinancingApplication, LenderSubmission, LenderDecision, FinanceProduct, FinanceProductQuote, FinanceMenuVersion, FinanceComplianceCheck, FinanceContractPackage, FinanceFundingCase, FinanceProductCancellation |
@@ -92,25 +88,11 @@ Lists that are not command-only (for example Make, Model, ServicePackage, Role, 
 
 | Boundary | What the code does |
 |---|---|
-| Payments | `features/integrations/payment` has `stripe` and `manual` adapters. Stripe creates Checkout Sessions, refunds, and verifies webhooks with `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Webhooks arrive at `POST /api/payment-webhooks/{providerCode}`. The manual adapter does not accept webhooks. |
-| Financing | Only the `operator-recorded` adapter exists. Queuing an application sends no external request. |
-| Inventory channels | `public-inventory-feed` (built in) and `manual-marketplace-export` (operator-recorded). Neither sends an external request. `GET /api/inventory-feed` returns listed vehicles as JSON for the served rooftop. |
-| Accounting | Mappings and batches accept only the `operator-recorded` provider. No GL system is called. |
+| Payments | `features/integrations/payment` has `stripe` and `manual` adapters. Stripe creates Checkout Sessions, refunds, and verifies webhooks with `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Webhooks arrive at `POST /api/payment-webhooks/{providerCode}`. The manual adapter records payments staff take. |
+| Financing | Only the `operator-recorded` adapter exists. Queuing an application records it for the finance desk, which enters lender decisions. |
+| Inventory channels | `public-inventory-feed` (built in) and `manual-marketplace-export` (operator-recorded). Both are operator-driven. `GET /api/inventory-feed` returns listed vehicles as JSON for the served rooftop. |
+| Accounting | Mappings and batches accept only the `operator-recorded` provider. Staff record posting results. |
 | Email | SMTP through nodemailer for password reset and customer email verification. |
 | File storage | S3-compatible storage for vehicle images. |
 | AI assistant | `/api/completion` uses OpenRouter and calls the app's own MCP endpoint at `/api/mcp-transport/http` with the user's session cookie. MCP tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`. |
 
-No credit bureau, lender network, DMS, OEM, e-signature, identity-verification, or vehicle-history provider adapter exists in the source.
-
-## Limitations
-
-- The storefront serves one rooftop: the oldest active rooftop in an active dealer group. Public submissions and the feed reject any other rooftop slug.
-- Customers cannot buy, reserve, or pay a deposit online. `createPaymentCheckout` is staff-only.
-- `[...slug]` storefront pages always return not found. There is no CMS list.
-- `DomainOutboxEvent` rows are written as `pending`. No dispatcher in this repository delivers them.
-- Queued report runs are processed only when someone runs them. There is no background worker.
-- Retention policies can be configured, but nothing reads them to delete data.
-- F&I product cancellations record a refund amount. The money refund is a separate payment refund; no field links the two.
-- Seeded payment providers include Stripe marked as installed. It fails until Stripe keys are set.
-- Onboarding adds lists, catalogs, and inventory only. Leads, deals, applications, appointments, and payments start empty.
-- The repository has no license file and no `test` npm script. Test files under `tests/` use Node's test runner.

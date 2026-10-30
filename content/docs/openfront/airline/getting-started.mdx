@@ -4,9 +4,7 @@ description: Install Openfront Airline, configure PostgreSQL and storage, apply 
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-You can try the app first on the live demo at [airline.openship.org](https://airline.openship.org). The storefront is at `/` and the operator dashboard at `/dashboard`.
+The hosted app is at [airline.openship.org](https://airline.openship.org). The storefront is at `/` and the operator dashboard at `/dashboard`.
 
 ## Requirements
 
@@ -80,9 +78,7 @@ The repository has checked-in Prisma migrations under `migrations/`. Review them
 npm run migrate
 ```
 
-<Callout type="warn">
-`npm run dev` builds the Keystone schema, runs `npm run migrate`, and then starts Next.js. It changes whatever database `DATABASE_URL` points to. Do not run it against a shared or production database by accident.
-</Callout>
+`npm run dev` builds the Keystone schema, runs `npm run migrate`, and then starts Next.js. It migrates whatever database `DATABASE_URL` points to.
 
 Start development:
 
@@ -107,7 +103,7 @@ Two script alternatives exist:
 
 After sign-in, the dashboard shows an onboarding dialog with two templates:
 
-- **Full demo network.** Avante Air from New York JFK with four nonstop city pairs (Boston, Chicago, Miami, Los Angeles), both directions, daily for 14 days. It also sets storefront branding and contact details and turns on direct sales. Each step calls the same commands an operator would use (`updateCarrierStorefrontSettings`, `completeCarrierOnboarding`, `provisionDatedFlight`), so a rerun only fills gaps.
+- **Full network.** Avante Air from New York JFK with four nonstop city pairs (Boston, Chicago, Miami, Los Angeles), both directions, daily for 14 days. It also sets storefront branding and contact details and turns on direct sales. Each step calls the same commands an operator would use (`updateCarrierStorefrontSettings`, `completeCarrierOnboarding`, `provisionDatedFlight`), so a rerun only fills gaps.
 - **Custom launch.** Enter your carrier identity and first sellable flight: carrier name and code, currency (USD, EUR, GBP, CAD, or AUD), timezone, origin and destination, flight number, date, times, capacity, and fare.
 
 The same form is at `/dashboard/onboarding`. `completeCarrierOnboarding` creates or reuses airports from a built-in catalog of 45 airports, a route, a schedule, an Economy cabin, a Standard fare brand with one checked bag, a dated flight with inventory and seats, a station assignment for you at the origin, a manual payment provider, and a local settlement-import connection.
@@ -132,28 +128,3 @@ npm test
 
 `npm run test:integration` runs database tests. Point it only at a disposable database.
 
-## Deploy
-
-Build, migrate as a separate release step, then start:
-
-```bash
-npm run build
-npm run migrate
-npm start
-```
-
-`npm run build` does not apply migrations. Back up existing data before migrating.
-
-Run the worker as its own process:
-
-```bash
-npm run worker
-```
-
-The repository includes `railway.toml` (web: migrate then `next start`) and `railway.worker.toml` (worker). The README has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. You still need `S3_ENDPOINT` and the rest of the production configuration.
-
-In production the worker runs a runtime check before starting. It requires the full list of production variables above, HTTPS for the public URLs, and a storefront carrier that has finished onboarding with two payment operators, an evidence-only manual provider, and a settlement-import credential and connection. Set `ALLOW_INCOMPLETE_LAUNCH_SETUP=true` to relax the carrier checks while you set up. Public sales stay closed while it is on.
-
-<Callout type="warn">
-In current code the production runtime check refuses any active payment provider that is not `manual`. If you activate a Stripe provider, the production worker will not start. Test this on your own deployment before relying on online card payment.
-</Callout>

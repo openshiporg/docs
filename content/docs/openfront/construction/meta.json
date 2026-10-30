@@ -4,12 +4,12 @@
   "icon": "HardHat",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront"
+    "---Introduction---","index","getting-started","deployment","setup","roles-permissions","troubleshooting",
+    "---Dashboard---","portfolio-projects","master-data","pipeline","service-requests","preconstruction","financials","contracts-changes","procurement","rfis-submittals","field-operations","schedule","quality-safety","documents","billing","approvals","reports","team","audit-agents","store-settings",
+    "---Storefront---","external-storefront","project-portal",
+    "---Integrations---","external-dashboard","integrations","payment-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","data-model",
+    "---API---","api-reference"
   ]
 }

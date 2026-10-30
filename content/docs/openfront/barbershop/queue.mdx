@@ -1,0 +1,28 @@
+---
+title: Walk-in queue
+description: Run the walk-in line at /dashboard/platform/queue.
+icon: Users
+---
+
+The walk-in line holds guests without a booking. Customers can join from `/queue` on the storefront or staff add them here (`platformQueue`).
+
+## Add a walk-in
+
+`createStaffQueueEntry` takes `customerName`, optional `phone`, `partySize` (1 to 8), `requestedServiceId`, `requestedBarberId`, `notes`, and `quotedWaitMinutes` (0 to 480).
+
+## Work the line
+
+| Action | Command | Notes |
+|---|---|---|
+| Assign service and barber | `assignWalkInQueueEntry` | Only waiting guests can be reassigned |
+| Mark texted | `transitionQueueEntry` to `texted` | A status marker set by staff |
+| Seat | `seatWalkInQueueEntry` | Creates an appointment and puts the guest in the chair |
+| Served or left | `transitionQueueEntry` | `served`, `left` |
+
+States: `waiting`, `texted`, `in_chair`, `served`, `left`. Waiting entries from earlier days close as `left`.
+
+Seating requires a service ("Service needed to seat") and a free barber who provides it. If nobody is working: "No active barber is available for this walk-in."
+
+## Public view
+
+`getPublicQueue` feeds the now-serving board. A guest who joins gets a ticket at `/queue` (`getPublicQueueEntry`) and the access token is kept in the `sf_queue_<id>` cookie for 2 days.

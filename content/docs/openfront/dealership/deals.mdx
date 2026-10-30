@@ -1,0 +1,30 @@
+---
+title: Deals
+description: Pencil, worksheet, lender offer, trade-in, approval, and status.
+icon: Handshake
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/deals` (`dealDeskWorkspace`), `/deals/create`, `/deals/[id]` (`dealWorkspace`).
+
+<Steps>
+<Step>
+### Start the pencil
+`createDealPencil` from a lead, with an optional trade-in. Tax and doc fee come from the dealership profile.
+</Step>
+<Step>
+### Build the worksheet
+`saveDealWorksheet` for cash, finance, or lease. "Lease structures require term, residual, and money factor". `presentDealWorksheet`, then `acceptDealWorksheet`. `reopenDealWorksheet` returns it.
+</Step>
+<Step>
+### Pick a lender offer
+`dealLenderOffers`, `selectDealLenderOffer` for finance or lease.
+</Step>
+<Step>
+### Move the deal
+`transitionDeal`: pencil, submitted, approved, financed, delivered, cancelled. "A vehicle is required before deal submission". Submitting reserves the vehicle. Approval is recorded as `DealApproval`.
+</Step>
+</Steps>
+
+Only pencil deals can be deleted. "Deal status changes must use transitionDeal".

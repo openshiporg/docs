@@ -4,11 +4,9 @@ description: Clone the source, configure PostgreSQL, sessions, and storage, appl
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+## Hosted app
 
-## Live demo
-
-A hosted demo runs at [dealership.openship.org](https://dealership.openship.org). It uses demo data. Use it to look around before you install.
+The hosted app is at [dealership.openship.org](https://dealership.openship.org).
 
 ## Requirements
 
@@ -71,9 +69,7 @@ The repository has 47 checked-in Prisma migrations. Apply them with:
 npm run migrate
 ```
 
-<Callout type="warn">
-`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database in `DATABASE_URL`. Do not point it at a shared or production database. `npm run migrate:gen` creates new migrations and is for development databases only.
-</Callout>
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It migrates the database in `DATABASE_URL`. `npm run migrate:gen` creates new migrations and is for development databases.
 
 One migration inserts a default dealer group (`sams-motor-company`) and rooftop (`SAM-MAIN`, slug `main`) with no members. Onboarding adopts this rooftop instead of creating a second one.
 
@@ -110,26 +106,4 @@ Each record is saved through `ensureDealershipOnboardingRecord`. The `Dealership
 
 If a run fails part-way, your status stays `in_progress` and a retry reuses saved records. A store that is already set up refuses a new run.
 
-Onboarding creates no leads, customers, deals, applications, appointments, repair orders, or payments. Seeded names, addresses, and prices are sample data. Replace them before going live.
-
-## Deploy
-
-`npm run build` runs `keystone build --no-ui && next build`. It does not migrate. `railway.toml` builds the same way and starts with `npm run migrate && next start`.
-
-1. Provision PostgreSQL and an S3-compatible bucket.
-2. Set `DATABASE_URL`, `SESSION_SECRET`, and the five `S3_*` variables, plus SMTP and Stripe if you use them.
-3. Back up any existing database.
-4. Build, apply migrations, then start:
-
-```bash
-npm run build
-npm run migrate
-npm start
-```
-
-5. If you use Stripe, point its webhook at `/api/payment-webhooks/pp_stripe_stripe` (or the code of your provider record).
-6. Create the first user at `/dashboard/init` and run onboarding.
-
-The README's Vercel button imports the repository and asks for the database, session, and S3 values. It does not provision a database or storage, and it does not run migrations.
-
-See the [overview](/docs/openfront/dealership) for workflows, operations, and limitations.
+Onboarding creates no leads, customers, deals, applications, appointments, repair orders, or payments. Replace the seeded names, addresses, and prices with your own.

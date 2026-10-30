@@ -1,0 +1,22 @@
+---
+title: Rosters and bookings
+description: Per-session rosters, waitlist promotion, and attendance.
+icon: ClipboardList
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/rosters` lists sessions by state (`rosterSessions`). `/rosters/[id]` shows confirmed, waitlist, and other bookings (`rosterDetail`).
+
+<Steps>
+<Step>
+### Promote from the waitlist
+`promoteFromWaitlist`. Cancelling a confirmed booking can also promote the next member.
+</Step>
+<Step>
+### Mark attendance
+`markClassAttendance`. "Attendance can only be marked for a confirmed booking". Rows go to `AttendanceRecord`.
+</Step>
+</Steps>
+
+Booking itself is by the member (`bookClass`, `cancelClassBooking`). See [Storefront](/docs/openfront/gym/external-storefront).

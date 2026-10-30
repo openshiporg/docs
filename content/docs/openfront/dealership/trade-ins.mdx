@@ -1,0 +1,26 @@
+---
+title: Trade-ins
+description: Appraisals, walk-in trade-ins, and sending a unit to inventory.
+icon: Repeat
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/trade-ins` and `/trade-ins/[id]`.
+
+<Steps>
+<Step>
+### Capture
+Web requests arrive from `/trade-in` (`submitTradeIn`) with a preliminary estimate range. Walk-ins use `createWalkInTradeIn`.
+</Step>
+<Step>
+### Appraise
+`recordTradeInAppraisal`.
+</Step>
+<Step>
+### Attach or stock
+`setDealTradeIn` attaches it to a deal. `startInventoryAcquisition` sends it to inventory.
+</Step>
+</Steps>
+
+`domainTimeline` shows the history.

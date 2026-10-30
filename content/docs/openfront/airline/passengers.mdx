@@ -1,0 +1,21 @@
+---
+title: Passengers and service
+description: Passenger profiles with their bookings, check-ins, and bags at /dashboard/platform/passengers.
+icon: Users
+---
+
+`/dashboard/platform/passengers` lists `Passenger` records for the carrier. `/dashboard/platform/passengers/[id]` shows one profile.
+
+## What you see
+
+- Name, contact, and date of birth
+- Counts of bookings, service requests, check-ins, and bags
+- Travel documents and their verification state
+
+Passenger fields: `title`, `givenName`, `middleNames`, `familyName`, `suffix`, `dateOfBirth`, `genderMarker`, `nationalityCode`, `email`, `phone`, `preferredLanguage`, `status`, `loyaltyPrograms`, `preferences`.
+
+## Travel documents
+
+Document numbers are not stored in clear text. `TravelDocument` keeps `documentNumberToken`, `documentNumberHash` (SHA-256), `encryptedPayload`, `issuingCountryCode`, `nationalityCode`, `expiresAt`, and `status`. Tokens use `TRAVEL_DOCUMENT_TOKENIZATION_KEY`. A rejected, expired, or revoked document cannot be reactivated. Registering and verifying documents happens at the departure station: see [Departures](/docs/openfront/airline/departures).
+
+Editing `Passenger` records beyond the list needs `canManagePassengers`. Reading secure passenger data needs `canManageSecurePassengerData`.

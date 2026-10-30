@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-convenience-custom-storefront/SKILL.md`](/skills/openfront-convenience-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Route files are thin. Screens live in `features/storefront/screens` (`StorefrontPage.tsx`, `ShopPages.tsx`), loaders in `features/storefront/lib`, and server actions in `features/storefront/actions.ts`.
 
@@ -18,7 +18,7 @@ Route files are thin. Screens live in `features/storefront/screens` (`Storefront
 | `/` | Store home: name, tagline, address with a directions link, phone, opening hours, fuel prices if the store has fuel, and the first three aisles. Shows "Coming soon" when no storefront is published |
 | `/shop` | Aisles and products. Search with `q`, filter with `category`, 48 products per page |
 | `/shop/[productId]` | Product detail: photo, description, sizes with price, and "In stock" or "Ask at counter" for tracked items |
-| `/basket`, `/checkout` | Redirect to `/shop`. The site has no online ordering |
+| `/basket`, `/checkout` | Redirect to `/shop` |
 | `/account` | Signed out: links to sign in or create an account. Signed in: profile, sign out, rewards balance and recent points, and receipts |
 | `/account/signin`, `/account/signup` | Customer sign-in and sign-up (`[mode]` route) |
 | `/account/receipts/[saleId]` | One receipt: lines, total, time. Signed-in customers only |
@@ -34,14 +34,14 @@ Route files are thin. Screens live in `features/storefront/screens` (`Storefront
 | `storefrontRewards` | The signed-in customer's own loyalty accounts and last 10 points entries |
 | `createUser`, `authenticateUserWithPassword` | Customer sign-up and sign-in (generic Keystone auth) |
 | `revokeCurrentUserSessions`, `endSession` | Sign out |
-| `storefrontBasket`, `updateStorefrontBasket` | Guest or customer basket by cart ID and token. Defined, but no current page calls it |
+| `storefrontBasket`, `updateStorefrontBasket` | Guest or customer basket by cart ID and token. Guest or customer basket API |
 
-## Journey boundaries
+## Journey rules
 
 - The public site shows one business: the one with `storefrontStatus` set to published. If more than one business is published, the site shows nothing.
 - Staff publish or unpublish the site from `/dashboard/platform/store-settings`, or during onboarding.
 - Products with any restricted-sale type (alcohol, tobacco, lottery, OTC medicine, other) never appear. Only active products with an active unit-sold variant are listed.
 - Prices come from the store's default price book, falling back to the variant default price.
 - Receipts and rewards show only records linked to the signed-in user. They are never matched by email. A customer sees a receipt only if staff attached them to the sale at the register.
-- There is no payment, pickup, or delivery flow. A storefront basket cannot be turned into a sale.
+- The storefront is a catalog, rewards, and receipts site. Sales are rung at the register.
 - Customer sign-up is always open on the public site. `PUBLIC_SIGNUPS_ALLOWED` controls only the dashboard sign-up page.

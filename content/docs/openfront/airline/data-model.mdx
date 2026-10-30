@@ -1,0 +1,37 @@
+---
+title: Data model
+description: The Keystone lists, their relationships, and the lifecycles that drive Openfront Airline.
+icon: Database
+---
+
+The registry in `features/keystone/models/index.ts` registers 59 lists. Money is stored as integer minor units with a currency code. Offers, booking lines, segments, and tickets keep snapshots of the commercial facts at creation.
+
+## Key relationships
+
+- `Carrier` owns users, roles, routes, schedules, flight instances, bookings, provider connections, station assignments, machine credentials, and onboarding steps.
+- `Route` (origin and destination `Airport`) has many `FlightSchedule`; a schedule has many `FlightInstance`.
+- `FlightInstance` has `InventoryBucket` (cabin, fare brand, capacity, authorized, sold, held, blocked, prices), `SeatMap` with `Seat`, and its segments, check-ins, bags, and disruptions.
+- `Offer` has `OfferItem` and `InventoryHold`, and becomes one `Booking`.
+- `Booking` has `BookingPassenger`, `Journey`, `BookingSegment`, `BookingLineItem`, `Ticket`, `ServiceObligation`, `PaymentSession`, `Payment`, `Refund`, `CheckIn`, `Bag`, `Reaccommodation`, and `ManualPaymentEvidence`.
+- `Ticket` has `TicketCoupon`, one per segment; `TicketCouponLineage` links parent and child coupons.
+- `CheckIn` has `BoardingPass` and a `SeatAssignment`.
+- `Bag` has `BagEvent`.
+- `Disruption` has `Reaccommodation`.
+
+## Lifecycles
+
+| Entity | States |
+|---|---|
+| Dated flight | scheduled, open_for_sale, closed_for_sale, delayed, departed, arrived, cancelled |
+| Offer | held, accepted, expired, withdrawn |
+| Booking | pending, confirmed, ticketed, in_progress, completed, cancelled |
+| Ticket | pending, issued, partially_used, used, suspended, voided, refunded, exchanged |
+| Bag | accepted, loaded, in_transit, arrived, delivered, delayed, mishandled, closed |
+| Disruption | detected, published, recovering, resolved, cancelled |
+| Carrier | active, suspended, archived |
+
+## System lists
+
+`AuditEvent` (action, actor, source, correlation id, before and after summaries), `IdempotencyKey`, `RateLimitBucket`, `WorkerHeartbeat`, `OutboxEvent`, `WebhookEvent`, `WebhookEndpoint`, `IntegrationProvider`, `ProviderConnection`, `MachineCredential`.
+
+Lists without a dedicated desk (`User`, `Role`, `ApprovedAgent`, `ServiceRequest`, `WebhookEndpoint`, `OutboxEvent`, `ElectronicMiscDocument`, `Exchange`) are edited at `/dashboard/<list-key>`. Command-only lists reject direct writes there.

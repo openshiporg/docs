@@ -1,0 +1,28 @@
+---
+title: Troubleshooting
+description: Error messages and fixes.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| Authenticated organization session required | Sign in again |
+| Another billing operation is processing; retry shortly | Retry with the same request |
+| Billing operation claim was replaced; retry with the same idempotency key | Retry unchanged |
+| Appointment is outside published instructor availability | Add availability |
+| Instructor is unavailable at this time | Pick another slot |
+| Member has an overlapping class | Cancel the other booking |
+| No active membership found | Start or renew a plan |
+| Class capacity exceeds the room | Lower capacity |
+| Kiosk search must be between 2 and 100 characters | Type more |
+| Guest check-in organization is invalid | Check `KIOSK_ORGANIZATION_ID` |
+| Discovery organization is not active | Reactivate the organization |
+| Invalid discovery date window. | Fix `from`/`to` |
+| Custom onboarding requires a configuration | Send the custom config |
+| Cash close overlaps a previously reconciled period | Pick a later period |
+| Checkout session is invalid | Start checkout again |
+| Only a paid, unfulfilled checkout can be retried | Check the Stripe session |
+| Card packages are refunded to the original card from Training | Use the Training page |
+| Package already has different refund evidence | Reuse the first reference |
+| Contact message saved; staff email copy failed: | Check SMTP |
+| Member service calendar requires review | Review the member's calendar |

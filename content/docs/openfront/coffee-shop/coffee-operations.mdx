@@ -1,0 +1,42 @@
+---
+title: Coffee operations
+description: Purchasing, receiving, prep batches, waste, stock counts, and staff shifts at /dashboard/platform/coffee-operations.
+icon: Gauge
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+One page for daily back-of-house work (`getCoffeeOperations`) with recent records for each.
+
+## Order stock
+
+`createCoffeePurchaseOrder`: supplier, inventory item, `orderedQuantity`, `unitCostCents`, `expectedAt` (valid calendar date), notes.
+
+## Receive a delivery
+
+`receiveCoffeePurchaseOrder` creates an active `InventoryLot` and a `received` stock movement. Lot expiry must be after receipt: "Lot expiry must be after the receipt time. Record expired goods as waste instead of receiving them as usable stock." A PO can be received once: "Cannot receive purchase order with status ...".
+
+## Prep batches
+
+`completeCoffeePrepBatch` from an active recipe: quantity made and expiry. It consumes the recipe's ingredients (`PrepBatchConsumption`). Later orders draw from the batch until it expires or runs out. Batch states: planned, in_progress, completed, discarded.
+
+## Waste
+
+`recordCoffeeWaste`: item or batch, quantity, and a reason of expired, damaged, overproduction, or quality. Waste cannot exceed stock.
+
+## Stock counts
+
+`recordCoffeeStockCount` sets counted quantity and records an adjustment movement.
+
+## Staff shifts
+
+<Steps>
+<Step>
+### Schedule
+`scheduleCoffeeStaffShift`: staff member, role, start and end.
+</Step>
+<Step>
+### Track
+`updateCoffeeStaffShiftStatus`: clock in, clock out, or mark missed. Statuses: scheduled, clocked_in, completed, missed.
+</Step>
+</Steps>

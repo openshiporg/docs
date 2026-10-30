@@ -1,0 +1,28 @@
+---
+title: Purchasing and vendors
+description: Vendors, vendor items, purchase orders, and receiving.
+icon: Truck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/purchasing`, `/vendors`, `/vendors/[id]`, `/purchase-orders`, `/purchase-orders/[id]`.
+
+<Steps>
+<Step>
+### Set up a vendor
+`configureVendor`, then `configureVendorItem` linking a variant to the vendor's item, cost, and minimums. Vendor minimum order must be a non-negative integer in cents.
+</Step>
+<Step>
+### Draft an order
+`draftPurchaseOrder` with lines. "Each purchase-order line requires a unit cost or vendor item".
+</Step>
+<Step>
+### Submit and approve
+`transitionPurchaseOrder`: draft, submitted, approved, partially_received, received, cancelled.
+</Step>
+<Step>
+### Receive
+`receivePurchaseOrder` with a location, accepted and rejected quantities per line, lot numbers, expiry (valid ISO timestamp), `vendorDocumentNumber`, and `discrepancyNotes`.
+</Step>
+</Steps>

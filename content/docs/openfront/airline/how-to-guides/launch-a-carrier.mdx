@@ -1,0 +1,38 @@
+---
+title: Launch a carrier
+description: From the first sign-in to a storefront that sells seats.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the first user
+Open `/dashboard/init` on an empty database. Enter a name, email, and a password of at least 10 characters. This creates the carrier and a full-permission role.
+</Step>
+<Step>
+### Run onboarding
+Choose **Full network** or **Custom launch** in the onboarding dialog (also `/dashboard/onboarding`). Custom launch asks for carrier name and code, currency, timezone, origin, destination, flight number, date, times, capacity, and fare. See [Getting started](/docs/openfront/airline/getting-started#onboarding).
+</Step>
+<Step>
+### Add a second payment operator
+Launch review needs at least two users with `canManagePayments`. Create a role and user on `/dashboard/users`. See [Roles and permissions](/docs/openfront/airline/roles-permissions).
+</Step>
+<Step>
+### Issue the settlement credential
+Issue a machine credential with audience `settlement-import` and scope `settlements:write` from the onboarding form.
+</Step>
+<Step>
+### Set the storefront copy
+On [Storefront settings](/docs/openfront/airline/store-settings) enter the homepage title, description, brand colour, and customer service details.
+</Step>
+<Step>
+### Activate a payment provider
+On [Payment providers](/docs/openfront/airline/payment-providers) activate the manual provider.
+</Step>
+<Step>
+### Check the storefront
+Open `/`. Search should show your flight. If it says booking is unavailable, check direct sales on `/dashboard/platform/settings`.
+</Step>
+</Steps>

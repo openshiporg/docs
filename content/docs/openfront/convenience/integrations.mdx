@@ -1,0 +1,18 @@
+---
+title: Integrations
+description: Payments, workers, email, credentials, and the dashboard assistant.
+icon: Plug
+---
+
+| Integration | Setup |
+|---|---|
+| Payments | [Payment providers](/docs/openfront/convenience/payments) |
+| Credential references | `env://NAME` or secret-manager references in payment, money-service, export, and fuel configuration. Inline secret-like values are rejected |
+| Outbox worker | `npm run worker:outbox` with `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, `OUTBOX_SIGNING_VALUE` (32+ characters). Posts HMAC-signed events to an HTTPS sink |
+| Alert worker | `npm run worker:alerts` |
+| SMTP | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` for password reset |
+| Assistant | `/api/completion` with `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`; needs `canUseAssistant`. Read-only MCP at `/api/mcp-transport/http`: `listModels`, `searchModels`, `getFieldsForType`, `queryData` (50 rows) |
+| Health | `/api/health/live` |
+| S3 | Product photos |
+
+Railway service files `railway.outbox.json` and `railway.alerts.json` describe the two worker services.

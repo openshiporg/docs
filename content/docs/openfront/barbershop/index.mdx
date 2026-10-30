@@ -4,17 +4,13 @@ description: Services, barbers and chairs, booking, walk-in queue, POS, customer
 icon: Scissors
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-barbershop) · [Live demo](https://barbershop.openship.org) · [Catalog](https://openship.org/products/openfront-barbershop)
+[Source](https://github.com/openshiporg/openfront-barbershop) · [Live site](https://barbershop.openship.org) · [Catalog](https://openship.org/products/openfront-barbershop)
 
 Openfront Barbershop is a self-hosted Next.js and Keystone app for a barbershop. Customers browse services and barbers, book a time, join the walk-in line, and see their visits and balances. Staff run the booking board, walk-in queue, POS checkout, customer records, packages and memberships, barber schedules, payroll, retail stock, policies, and reports from `/dashboard/platform`.
 
-Start with [Getting started](/docs/openfront/barbershop/getting-started). The operator pages are listed in [External dashboards](/docs/openfront/barbershop/external-dashboard). The customer routes are listed in [External storefronts](/docs/openfront/barbershop/external-storefront).
+Start with [Getting started](/docs/openfront/barbershop/getting-started) and [Deployment](/docs/openfront/barbershop/deployment). Each dashboard area has its own page, starting with the [booking board](/docs/openfront/barbershop/booking). Task guides are under [How-to guides](/docs/openfront/barbershop/how-to-guides/set-up-the-menu). The API is in the [API reference](/docs/openfront/barbershop/api-reference).
 
-<Callout type="warn">
-Card payments are limited. The only online payment path is a Stripe Checkout for booking deposits, and it only works when `STRIPE_SECRET_KEY` is set and Stripe is set up on the Payments page. Counter checkout takes cash, card (recorded by staff, not processed), or a prepaid package visit. There is no online checkout for retail products, packages, or memberships.
-</Callout>
+Online payment is a Stripe Checkout for booking deposits, available when `STRIPE_SECRET_KEY` is set and Stripe is set up on the Payments page. Counter checkout takes cash, card (recorded by staff), or a prepaid package visit. Retail products, packages, and memberships are sold at the counter.
 
 ## Tenancy
 
@@ -90,19 +86,7 @@ These custom operations are defined in `features/keystone/mutations/index.ts`. G
 
 ## Integrations
 
-- **Payments:** two adapters are registered in `features/integrations/payment`. `manual` is offline (pay in person) and is the default provider (`pp_manual`). `stripe` uses Stripe Checkout for booking deposits only, needs `STRIPE_SECRET_KEY`, and confirms payment by reading the Checkout Session back from Stripe. Neither adapter handles webhooks. `POST /api/payment-webhooks/[providerCode]` exists but rejects providers without a registered webhook, so it accepts nothing today. `checkoutAppointment` rejects a processor payment session at the counter.
-- **Email:** SMTP sends password reset emails, booking and status emails, and reminders about a day before a visit. There is no scheduler. The reminder sweep runs on ordinary traffic (storefront queue and dashboard projections), at most every five minutes per server. Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASSWORD`, emails are not sent.
+- **Payments:** two adapters are registered in `features/integrations/payment`. `manual` is offline (pay in person) and is the default provider (`pp_manual`). `stripe` uses Stripe Checkout for booking deposits only, needs `STRIPE_SECRET_KEY`, and confirms payment by reading the Checkout Session back from Stripe. Stripe deposits are confirmed by reading the Checkout Session back from Stripe. `POST /api/payment-webhooks/[providerCode]` serves providers that register a webhook handler. `checkoutAppointment` rejects a processor payment session at the counter.
+- **Email:** SMTP sends password reset emails, booking and status emails, and reminders about a day before a visit. The reminder sweep runs on ordinary traffic (storefront queue and dashboard projections), at most every five minutes per server. Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASSWORD`, emails are not sent.
 - **Images:** service, barber, and product images use S3-compatible storage configured with the `S3_*` variables.
 - **AI assistant and MCP:** `/api/completion` and `/api/mcp-transport/[transport]` return 403 unless `ENABLE_AI_TOOLS=true`. The chat also needs `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. The MCP tools are generic Keystone tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`). They run with the caller's session cookie.
-
-## Limitations
-
-- No online card checkout for visits, retail, packages, or memberships. Card at the counter is a record of a payment taken elsewhere.
-- Services that need a deposit cannot be booked online unless Stripe is set up. Without it, the storefront tells customers to book by phone.
-- No payment webhooks. Stripe deposits are confirmed when the customer returns to the appointment page or when staff run a processor check.
-- Reminders depend on site traffic; there is no background worker.
-- The storefront serves one public shop per deployment.
-- No SMS sending. The `texted` queue state is set by staff.
-- Practitioner credentials are records entered by staff. The app does not verify licences with any authority.
-- No tax engine. Tax at checkout is an amount staff enter.
-- The repository has no top-level license file.

@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-barbershop-custom-storefront/SKILL.md`](/skills/openfront-barbershop-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Routes live under `app/(storefront)`. Each route file is thin and re-exports a screen from `features/storefront/screens`. Data loaders are in `features/storefront/lib/data`.
 
@@ -23,20 +23,20 @@ Routes live under `app/(storefront)`. Each route file is thin and re-exports a s
 | `/book` | `BookingPageServer`, `BookingPage` | Pick a service, barber, and time (`checkBarberAvailability`), enter details, book as a guest (`createOnlineBooking`) or signed in (`createAccountBooking`); pay a deposit when Stripe is set up |
 | `/appointment` | `AppointmentStatusPage` | Visit status (`getPublicAppointment`), cancel or reschedule with a fee preview (`managePublicAppointment`), sign a waiver (`signPublicWaiver`), pay or confirm a deposit |
 | `/queue` | `QueuePage` | Now-serving board, join the walk-in line (`createPublicQueueEntry`), see your ticket (`getPublicQueueEntry`). Shows a closed state when no one is working |
-| `/shop`, `/shop/[id]` | `ShopPage`, `ShopProductPage` | Retail products (`getPublicProducts`). Sold at the counter only; there is no online checkout |
-| `/memberships` | `MembershipsPage` | Membership plans and packages (`getPublicMembershipOffers`). Bought in the shop; no online purchase |
+| `/shop`, `/shop/[id]` | `ShopPage`, `ShopProductPage` | Retail products (`getPublicProducts`). Sold at the counter |
+| `/memberships` | `MembershipsPage` | Membership plans and packages (`getPublicMembershipOffers`). Bought in the shop |
 | `/account` | `AccountPage` | Sign in or create a customer account; visits (`accountBookings`), package and membership balances (`accountBalances`), data export (`exportMyAccountData`) |
 | `/account/reset` | `AccountResetPage` | Password reset (needs SMTP) |
 | `/[...missing]` | `NotFoundPage` | Storefront 404 |
 
 Shop name, hours, colors, and logo come from `getPublicStorefrontSettings`. Booking rules for the public come from `getPublicBookingEligibility`. Whether deposits can be paid online comes from `getPublicPaymentOptions`.
 
-## Journey boundaries
+## Journey rules
 
-- The storefront shows one shop: the single active shop with `isPublic` set. If there is none, or more than one, public booking is unavailable.
+- The storefront shows one shop: the single active shop with `isPublic` set.
 - Guest bookings use a request key and proof so a retried request returns the same booking (`recoverGuestBooking`, `recoverAccountBooking`).
 - Access tokens for a booking or queue ticket are stored in HttpOnly cookies (`sf_appt_<id>`, kept 180 days, and `sf_queue_<id>`, kept 2 days). Status links carry only the record id. A separate client must keep these tokens server-side.
-- A service that requires a deposit can only be booked online when Stripe is set up for the shop. Otherwise the booking page tells the customer to book by phone, and the server rejects the booking.
-- Stripe deposits are confirmed by reading the Checkout Session back from Stripe when the customer returns to `/appointment`. There is no webhook.
-- Storefront sign-up creates a login with only name, email, phone, and password. It grants no role or shop access.
-- Customers cannot check out services, buy retail, or buy packages and memberships online.
+- A service that requires a deposit is booked online when Stripe is set up for the shop. Otherwise the booking page asks the customer to book by phone.
+- Stripe deposits are confirmed by reading the Checkout Session back from Stripe when the customer returns to `/appointment`.
+- Storefront sign-up creates a login with name, email, phone, and password. It grants no role or shop access.
+- Services, retail, packages, and memberships are paid at the counter.

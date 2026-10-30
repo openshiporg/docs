@@ -1,0 +1,28 @@
+---
+title: Handle a disruption
+description: Publish a delay or cancellation and move affected bookings.
+icon: RefreshCw
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Publish
+On `/dashboard/platform/disruptions` choose the flight, the type, and a public summary of up to 500 characters. It appears on `/status`.
+</Step>
+<Step>
+### Prepare a replacement
+Provision or open a flight on the same origin and destination and confirm it has authorized inventory.
+</Step>
+<Step>
+### Reaccommodate
+For each affected booking choose the replacement flight and bucket and confirm.
+</Step>
+<Step>
+### Refund where needed
+If the traveler declines, cancel through [Payments and refunds](/docs/openfront/airline/payments-refunds) using the reason `disruption`.
+</Step>
+</Steps>
+
+Boarded and flown passengers are not eligible for recovery.

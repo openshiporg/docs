@@ -1,15 +1,15 @@
 {
   "title": "Gym",
-  "description": "Memberships, class scheduling, booking, check-in, billing, and member operations",
+  "description": "Memberships, classes, check-in, personal training, retail, and billing",
   "icon": "Dumbbell",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront"
+    "---Introduction---","index","getting-started","deployment","roles-permissions","troubleshooting",
+    "---Dashboard---","members","membership-plans","classes","rosters","check-in","training","retail","billing","operations","reports","store-settings",
+    "---Storefront---","external-storefront",
+    "---Integrations---","external-dashboard","integrations","payment-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","data-model",
+    "---API---","api-reference"
   ]
 }

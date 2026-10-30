@@ -1,0 +1,13 @@
+---
+title: Restricted sales
+description: Age policies, ID check records, and incidents.
+icon: ShieldAlert
+---
+
+`/dashboard/platform/restricted-sales`.
+
+- **Policies:** `configureAgeRestrictionPolicy` per store and restricted type (alcohol, tobacco, lottery, otc_medicine, other). "Policy does not allow manager override", "Policy dates must be ISO timestamps".
+- **ID checks:** `verifyRestrictedSaleAge` on an open cart stores the outcome, method, age at verification (0 to 120), and a document fingerprint as an `AgeVerification`. The verifier must be an active employee assigned to the store.
+- **Incidents:** `transitionComplianceIncident`: open, investigating, resolved, reported, closed.
+
+Restricted products never appear on the public storefront.

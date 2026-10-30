@@ -1,0 +1,44 @@
+---
+title: POS checkout
+description: Take payment for visits, sell retail, and refund at /dashboard/platform/pos.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/pos` (`platformPos`) shows open tickets, the counter, retail, recent receipts, and cash refunds.
+
+## Check out a visit
+
+<Steps>
+<Step>
+### Find the ticket
+Open tickets are visits that are in the chair. Search by name or receipt number.
+</Step>
+<Step>
+### Choose the tender
+`checkoutAppointment` takes `paymentMethod`: `cash`, `card`, or `package`. Card is a payment taken on a terminal and recorded by staff. A package tender spends a visit from the customer's balance (`packageBalanceId`) and covers the visit only.
+</Step>
+<Step>
+### Add tip, discount, tax
+`tipAmount`, `discountAmount`, `taxAmount` are whole cents entered by staff. Total is price plus tip plus tax minus discount.
+</Step>
+<Step>
+### Complete
+The appointment moves to `completed`, a `CheckoutTransaction` is written, `Tip` and projected `Commission` rows are created, and any deposit paid online is applied.
+</Step>
+</Steps>
+
+Rules: only an in-chair appointment can be completed; cancelled or no-show appointments cannot be checked out; "Package tender covers a visit only. Collect tips/tax separately; mixed tender is not supported."; "Package has no visits remaining."
+
+A deposit paid by Stripe is passed in as `paymentSessionId`, and the payment session must be captured for the exact total.
+
+Transaction states: `open`, `paid`, `partially_refunded`, `refunded`, `voided`.
+
+## Retail sales and returns
+
+`recordProductSale` (`productId`, `quantity` 1 to 100, `paymentMethod`, `taxRateBps`) decrements stock from lots. `returnProductSaleLine` (`saleLineId`, `quantity`, `reason`, `cashReturned`, `restock`) records a return.
+
+## Cash refunds
+
+`refundCashCheckout` (`transactionId`, `reason`, `cashReturned`) refunds a cash-only appointment receipt that has not been refunded. Only the shop owner can record it. If a commission was already paid, owner reconciliation is required first.

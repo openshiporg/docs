@@ -1,0 +1,27 @@
+---
+title: Tickets
+description: Issue tickets and coupons for paid bookings and look them up at /dashboard/platform/tickets.
+icon: Ticket
+---
+
+`issueBookingTickets` issues one `Ticket` per passenger with one `TicketCoupon` per segment.
+
+## Issue tickets
+
+1. Open the booking on `/dashboard/platform/bookings`.
+2. Confirm the booking is `confirmed` with `paymentStatus` paid and `ticketingStatus` not_ticketed.
+3. Choose **Issue ticket**.
+
+The command checks that payment has been captured ("Capture payment before issuing tickets."), that the booking is confirmed ("Only confirmed bookings can be ticketed."), that it was never ticketed before, and that it has one to nine linked passengers. A booking is limited to 50 segments. Issuing also creates a `ServiceObligation` per coupon, which later gates check-in and bag acceptance.
+
+## Look up tickets
+
+`/dashboard/platform/tickets` is read only. Search by ticket number, record locator, or passenger. `/dashboard/platform/tickets/[id]` shows the coupons with fare basis, booking class, amount, and status.
+
+## Ticket statuses
+
+`pending`, `issued`, `partially_used`, `used`, `suspended`, `voided`, `refunded`, `exchanged`.
+
+Ticket fields include `ticketNumber`, `issuingCarrierCode`, `validatingCarrierCode`, `totalAmount`, `currencyCode`, `issuedAt`, and `providerReference`. A coupon links to its booking segment and service obligation and records `checkedInAt` and `usedAt`.
+
+Boarded or flown coupons cannot be refunded in the booking desk: "Boarded or flown ticket coupons require an exceptional servicing workflow and cannot be refunded here."

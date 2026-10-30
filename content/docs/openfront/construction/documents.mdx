@@ -1,0 +1,30 @@
+---
+title: Documents and drawings
+description: Controlled files with versions, signed uploads, and distribution.
+icon: FileText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/documents`.
+
+<Steps>
+<Step>
+### Register
+`registerDocument` or `registerDrawing`.
+</Step>
+<Step>
+### Upload a version
+`requestDocumentVersionUpload` returns a signed S3 `PUT` URL (60 to 900 seconds). After uploading, `completeDocumentVersionUpload` verifies the SHA-256 checksum and object metadata. Drawings use `requestDrawingRevisionUpload` and `completeDrawingRevisionUpload`.
+</Step>
+<Step>
+### Distribute
+`distributeDocumentVersion`. Recipients confirm with `acknowledgeDocumentDistribution`.
+</Step>
+<Step>
+### Download
+`documentVersionDownload`, `drawingRevisionDownload` return signed URLs.
+</Step>
+</Steps>
+
+"A newer document version is already issued" blocks reissuing old versions. S3 settings are required; see [Getting started](/docs/openfront/construction/getting-started).

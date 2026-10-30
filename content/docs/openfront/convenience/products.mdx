@@ -1,0 +1,41 @@
+---
+title: Products
+description: Catalog items, variants, barcodes, photos, and categories.
+icon: Package
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/products` and `/products/[id]` show variants, barcodes, photos, prices, stock by location, vendor items, and recent movements.
+
+## Create or edit an item
+
+`configureCatalogItem` creates or edits a product, variant, barcode, category, and tax category together.
+
+| Field | Notes |
+|---|---|
+| `title`, `handle`, `description`, `status` | |
+| `regulatedSaleType` | none, alcohol, tobacco, lottery, otc_medicine, other |
+| `minimumAge` | Required for restricted types. "Minimum age must be empty for an unrestricted product" |
+| `preparedFood`, `discountable`, `returnable` | |
+| `taxCategoryId`, `categoryName` with `categoryCode` | Provide the category pair together |
+| `variantTitle`, `sku`, `sellBy`, `unitOfMeasure` | |
+| `defaultPriceCents`, `costCents` | integer cents |
+| `trackInventory`, `allowNegativeStock` | |
+
+Photos are `ProductImage` rows stored in S3.
+
+<Steps>
+<Step>
+### Add the item
+Fill the form on the Products page.
+</Step>
+<Step>
+### Add a barcode
+Barcodes are `ProductBarcode` rows used by POS scanning.
+</Step>
+<Step>
+### Price it
+See [Pricing and tax](/docs/openfront/convenience/pricing).
+</Step>
+</Steps>

@@ -1,0 +1,22 @@
+---
+title: Register
+description: Register shift history, cash movements, and payments at /dashboard/platform/register.
+icon: Wallet
+---
+
+`/dashboard/platform/register` lists shifts. `/register?view=payments` lists payments. `/register/[id]` shows one shift. These pages are read only; shifts are opened and closed on the POS.
+
+## Shift detail
+
+A `RegisterShift` records:
+
+- `openingCashCents`, `cashSalesCents`, `cashRefundsCents`, `cardSalesCents`, `cardRefundsCents`, `tipsCents`
+- `payInsCents`, `payOutsCents`
+- `expectedCashCents`, `countedCashCents`, `cashVarianceCents`
+- `openedBy`, `closedBy`, `openedAt`, `closedAt`, `status`
+
+The page also lists `CashMovement` rows (number, type, amount, reason, who recorded it), POS receipts, and payments on the shift.
+
+## Payments
+
+`Payment` rows have `method`, `status` (pending, authorized, captured, failed, refunded, cancelled), `amount`, `refundedAmount`, `refundReason`, `provider`, and `providerPaymentId`. Card payments taken at the counter show `external_terminal:<approval code>`.

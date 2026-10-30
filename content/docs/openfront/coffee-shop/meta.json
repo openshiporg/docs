@@ -1,15 +1,14 @@
 {
   "title": "Coffee Shop",
-  "description": "Menu, pickup ordering, POS, KDS, register, inventory, recipes, rewards, catering, and reporting",
-  "icon": "Coffee",
   "root": true,
+  "icon": "Coffee",
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront"
+    "---Introduction---","index","getting-started","deployment","troubleshooting",
+    "---Dashboard---","orders","menu","pos","register","kds","inventory","suppliers","recipes","coffee-operations","loyalty","catering","subscriptions","reports","store-settings","roles-permissions",
+    "---Storefront---","external-storefront",
+    "---Integrations---","external-dashboard","payment-providers","integrations",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","data-model",
+    "---API---","api-reference"
   ]
 }

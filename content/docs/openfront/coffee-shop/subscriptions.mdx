@@ -1,0 +1,15 @@
+---
+title: Subscriptions
+description: Subscription plan records tied to rewards accounts at /dashboard/platform/subscriptions.
+icon: Repeat
+---
+
+`/dashboard/platform/subscriptions` and `/subscriptions/[id]`.
+
+## Create
+
+Choose a rewards account and set `planName`, `billingInterval`, `priceCents`, `startsAt`, and `renewsAt`. The subscription gets a `subscriptionNumber`.
+
+## Status
+
+`trialing`, `active`, `paused`, `cancelled`. Activate, pause, resume, or cancel with `updateSubscriptionStatus`. Cancelling sets `cancelledAt`.

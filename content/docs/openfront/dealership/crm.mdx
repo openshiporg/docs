@@ -1,0 +1,36 @@
+---
+title: CRM and leads
+description: Lead board, routing, interactions, tasks, cadences, and sales visits.
+icon: Users
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/crm` (list and board), `/crm/[id]`, `/crm/tasks`. Data comes from `crmWorkspace`.
+
+## Lead lifecycle
+
+Statuses: new, contacted, test-drive-scheduled, negotiating, closed-won, closed-lost. Move with `transitionLead`. Lost-sale evidence is only valid for closed-lost.
+
+## Work a lead
+
+<Steps>
+<Step>
+### Open
+Public forms create leads. Staff use `openLead` (new lead).
+</Step>
+<Step>
+### Route
+`routeLead` applies the first matching `LeadRoutingRule` (managed in [Catalog](/docs/openfront/dealership/catalog)). `transferLeadOwnership` reassigns by hand. Both write `LeadAssignmentEvent`.
+</Step>
+<Step>
+### Log and follow up
+`recordLeadInteraction`, `createLeadTask`, `completeTask`, `enrollLeadCadence`, `advanceLeadCadence`, `manageSalesVisit`.
+</Step>
+<Step>
+### Edit and close
+`updateLeadDetails`, then `transitionLead`.
+</Step>
+</Steps>
+
+Leads are visible to the assigned salesperson unless the user has `canViewAllLeads`. See [Roles and permissions](/docs/openfront/dealership/roles-permissions).

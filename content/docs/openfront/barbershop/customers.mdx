@@ -1,0 +1,35 @@
+---
+title: Customers
+description: Directory, visit history, notes, consent, waivers, memberships, and packages at /dashboard/platform/customers.
+icon: Contact
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/customers` (`platformCustomers`) is the directory. Add one at `/customers/new`.
+
+## Profile
+
+- Visit history and receipts
+- Notes: `addCustomerNote` with `body`, `noteType`, `visibility` (staff or owner only), optional `appointmentId`. Only an owner can add owner-only notes.
+- Consent: `setCustomerConsent` sets `acceptsMarketing` and `preferredContactMethod`.
+- Status: `setCustomerStatus`.
+- Waivers: `issueCustomerWaiver` creates a waiver record (title, type such as Minor consent or Photo release, delivery status). Customers sign through `signPublicWaiver`.
+- Memberships and packages: see below.
+
+Customer fields: `firstName`, `lastName`, `phone`, `email`, `status`, `preferredContactMethod`, `acceptsMarketing`, `birthday`, `preferredBarber`, `lastVisitAt`.
+
+## Sell and manage a membership or package
+
+<Steps>
+<Step>
+### Open the customer
+Choose **Membership** or **Package** on the profile.
+</Step>
+<Step>
+### Run the action
+`manageMembership` with `action`: `purchase` (plan), `purchase_package` (package), `renew`, `pause`, `resume`, or `cancel`. Payment method is cash. The sale writes a `CheckoutTransaction` and a `MembershipEvent`.
+</Step>
+</Steps>
+
+Rules: a cancelled membership cannot be renewed; only active memberships can be paused; only paused ones resumed; only active or paused ones cancelled. Balances are `CustomerPackage` rows with `remainingVisits`, `status` (active, paused, used_up, expired, cancelled), `startsAt`, `expiresAt`.

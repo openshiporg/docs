@@ -1,0 +1,34 @@
+---
+title: Add a barber
+description: Create a barber with a chair, hours, and a sign-in.
+icon: UserRound
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create the chair
+`/dashboard/platform/staff/chairs`: chair number and station name.
+</Step>
+<Step>
+### Add the barber
+`/dashboard/platform/staff/new`: display name, chair, commission rate, services, and **Takes online bookings**.
+</Step>
+<Step>
+### Set weekly hours
+On the barber profile fill the weekly hours editor.
+</Step>
+<Step>
+### Add the shop member
+On [Team](/docs/openfront/barbershop/team) add their account by email with the `barber` role.
+</Step>
+<Step>
+### Link the account
+On the profile, link the sign-in account (`linkBarberAccount`).
+</Step>
+<Step>
+### Add a credential if required
+For licensed services add a practitioner credential with effective dates.
+</Step>
+</Steps>

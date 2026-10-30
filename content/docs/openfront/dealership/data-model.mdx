@@ -1,0 +1,29 @@
+---
+title: Data model
+description: Lists by area and tenancy rules.
+icon: Database
+---
+
+## Tenancy and access
+
+- `DealerGroup` is the tenant root. A `Rooftop` is one store. Most operating lists carry a `rooftop` field and are filtered to the rooftops the user can reach.
+- Access comes from the user's `Role`. Operating permissions can also come from an active `DealerGroupMembership` (optionally all rooftops) or `RooftopMembership`, for that scope only. Memberships change only through `changeDealerMembership`, which writes a `MembershipAuditEvent`.
+- Some permissions are role-only: people, users, roles, settings, onboarding, API keys, and payments.
+- Leads, deals, approvals, and trade-ins are limited to the assigned salesperson unless the user has `canViewAllLeads` across all rooftops. Dealer cost needs inventory or financing management across all rooftops.
+- API keys (`ApiKey`) are owned by a user and limited to scopes: `read_inventory`, `write_inventory`, `write_leads`, `write_deals`, `write_service`, `read_reports`.
+- Most operational lists are command-only. Their Keystone create and update are denied, so writes go through named mutations. Each command writes a `DomainAuditEvent` and a `DomainOutboxEvent` in the same transaction, keyed by an idempotency key.
+
+## Lists
+
+| Area | Lists |
+|---|---|
+| Organization | User, Role, DealerGroup, Rooftop, DealerGroupMembership, RooftopMembership, MembershipAuditEvent, DealershipProfile, ApiKey, AuthenticationThrottle |
+| Inventory | Make, Model, Vehicle, VehicleImage, VehicleConditionReport, VehicleHistory, PriceHistory, InventoryAcquisition, InventoryAcquisitionEvent, InventoryStock, InventoryStockEvent, InventoryReconWorkItem, InventoryMerchandisingVersion, InventoryFeedRun, InventoryFeedError |
+| CRM | Customer, CustomerMergeEvent, CustomerHousehold, CustomerContactPreferenceEvent, Lead, LeadAssignmentEvent, LeadRoutingRule, CustomerInteraction, Task, SalesVisit, TestDrive, TradeIn |
+| Deals and finance | Deal, DealApproval, FinancingApplication, LenderSubmission, LenderDecision, FinanceProduct, FinanceProductQuote, FinanceMenuVersion, FinanceComplianceCheck, FinanceContractPackage, FinanceFundingCase, FinanceProductCancellation |
+| Delivery | DeliveryCase, WeOweItem |
+| Service and parts | ServiceAppointment, ServiceOrder, RepairOrderLineItem, ServiceLaborOperation, ServicePackage, PartsInventory, PartsMovement, PartsPurchaseOrder |
+| Payments and accounting | PaymentProvider, PaymentTransaction, PaymentRefund, PaymentProviderEvent, AccountingMapping, AccountingBatch, AccountingProviderResponse |
+| Reporting and system | SavedReport, ReportRun, RetentionPolicy, DomainAuditEvent, DomainOutboxEvent |
+
+A CRM `Customer` is separate from the login `User`. Public submissions find or create a Customer per rooftop by email or phone. A storefront account is linked to Customers only after it confirms its email with `confirmCustomerEmailVerification`.

@@ -1,0 +1,34 @@
+---
+title: Deployment
+description: Build, migrate, run, and schedule the outbox worker for Openfront Construction.
+icon: Rocket
+---
+
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`. Does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+| `npm run outbox:work` | One drain of the outbox to the webhook, then exit |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with Railpack using `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README has a Vercel import button that asks for `DATABASE_URL` and `SESSION_SECRET`. Either way, you provision PostgreSQL, S3-compatible storage, SMTP, and the outbox webhook yourself. All app processes must share the same database and `SESSION_SECRET`.
+
+`npm run outbox:work` drains one batch and exits. Run it on a schedule, for example a cron job, to deliver domain events.
+
+## Checks before release
+
+```bash
+npm run typecheck
+npm run lint
+npm run lint:schema
+npm run test:security
+```

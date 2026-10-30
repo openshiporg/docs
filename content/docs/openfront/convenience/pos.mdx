@@ -1,0 +1,48 @@
+---
+title: POS and checkout
+description: Ring sales, take tenders, and print receipts at /dashboard/platform/pos.
+icon: ScanBarcode
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/pos` is the checkout station (`FastCheckoutStation`) with the till, shift, corrections, refunds, receipts, and offline queue on the same page.
+
+## Ring a sale
+
+<Steps>
+<Step>
+### Clock in and open the drawer
+`openEmployeeShift`, then `openRegisterSession` with `openingCashCents`. An employee with a shift already open gets "Employee already has an open shift".
+</Step>
+<Step>
+### Start a cart
+`createPosCart` for the register session and cashier. Optionally attach a customer or loyalty account.
+</Step>
+<Step>
+### Scan items
+`addPosCartLine` by `barcode` or `variantId` with a quantity (fixed four-decimal string). Price comes from the store price book and tax from the store tax rate. Lines are changed with `updatePosCartLine` and `removePosCartLine`, which need the employee's manager PIN and a reason.
+</Step>
+<Step>
+### Apply promotions, rewards, and ID checks
+`applyPromotionToCart` (promotion id or code), `applyLoyaltyRedemptionToCart`, and `verifyRestrictedSaleAge` for restricted products. See [Restricted sales](/docs/openfront/convenience/restricted-sales).
+</Step>
+<Step>
+### Take tender
+`completePosSale` with one or more tenders. Methods: cash, credit_card, debit_card, mobile_wallet, gift_card, ebt_snap, fleet_card, house_account. Cash takes `tenderedCents` and returns change. Non-cash tenders carry `paymentProviderId`, `providerPaymentId`, `providerAuthority`, `cardBrand`, and `cardLast4`. "Cannot complete an empty cart".
+</Step>
+<Step>
+### Receipt
+`posSaleReceipt` and the print page at `/dashboard/platform/pos/receipt/[saleId]`.
+</Step>
+</Steps>
+
+Completing a sale posts stock from FIFO lots, posts cash, earns loyalty points, and writes the sale, lines, and tenders. To abandon a cart use `transitionPosCart`: "A reason is required to void or abandon a cart".
+
+## Offline queue
+
+`DurableOfflineQueue` keeps register work when the connection drops. Devices are registered on [Recovery](/docs/openfront/convenience/recovery); batches replay with `recordOfflineReplayBatch`. A payload is limited to 32 KiB.
+
+## Closing
+
+Count and close from the same page. See [Tills](/docs/openfront/convenience/tills).

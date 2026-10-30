@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "launch-a-carrier",
+    "build-a-flight",
+    "take-a-booking",
+    "settle-and-ticket",
+    "run-a-departure",
+    "handle-a-disruption"
+  ]
+}

@@ -1,0 +1,9 @@
+---
+title: Exceptions
+description: Operational alerts and heartbeats at /dashboard/platform/exceptions.
+icon: TriangleAlert
+---
+
+`evaluateOperationalAlerts` checks cash, fuel, stock, expiry, and settlement variances and creates `OperationalAlert` rows. Staff work them with `transitionOperationalAlert`: open, acknowledged, resolved, dismissed. `recordOperationalHeartbeat` records worker health.
+
+Run `npm run worker:alerts` on a schedule to evaluate automatically. Thresholds: `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, `ALERT_EXPIRY_WINDOW_DAYS`.

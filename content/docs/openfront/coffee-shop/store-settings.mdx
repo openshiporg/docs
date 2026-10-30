@@ -1,0 +1,26 @@
+---
+title: Store settings
+description: Store identity, hours, pickup rules, tax, and the online card payment switch.
+icon: Settings
+---
+
+`/dashboard/platform/store-settings` edits the `StoreSettings` singleton.
+
+## Fields
+
+- Identity: `name`, `tagline`, `description`, `brandColor`, `logoIcon`, `logoColor`
+- Contact: `address`, `phone`, `contactEmail`
+- `timezone`, `locale`, `currencyCode` (USD)
+- `weeklyHours`
+- Pickup: `pickupLeadTimeMinutes`, `pickupWindowMinutes`, `pickupCapacityPerWindow` (default 20)
+- `taxRateBasisPoints`
+
+Save with `UpdateCoffeePlatformStoreSettings`. On a fresh install the first save uses `CreateCoffeePlatformStoreSettings`.
+
+## Online card payment
+
+The switch (`SetCoffeeOnlinePayment`) enables Stripe Checkout for online orders. It needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` on the server. See [Payment providers](/docs/openfront/coffee-shop/payment-providers).
+
+## Pickup rules
+
+An order must be at least the lead time ahead, falls into a window, and each window takes up to the capacity. Over capacity: "The requested pickup window is at capacity".

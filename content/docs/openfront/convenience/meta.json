@@ -4,12 +4,12 @@
   "icon": "Store",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront"
+    "---Introduction---","index","getting-started","deployment","roles-permissions","troubleshooting",
+    "---Dashboard---","overview","pos","sales","tills","staff","products","pricing","stock-inventory","purchasing","loyalty-customers","restricted-sales","prepared-food","fuel","lottery","money-services","reconciliation","exceptions","recovery","reports","store-settings",
+    "---Storefront---","external-storefront",
+    "---Integrations---","external-dashboard","integrations","payments",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","data-model",
+    "---API---","api-reference"
   ]
 }

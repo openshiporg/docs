@@ -1,0 +1,32 @@
+---
+title: Lottery
+description: Games, packs, sales, returns, and daily settlement.
+icon: Ticket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/lottery`.
+
+<Steps>
+<Step>
+### Games
+`configureLotteryGame`.
+</Step>
+<Step>
+### Receive and activate packs
+`receiveLotteryPack`, `activateLotteryPack`. "Lottery pack is already recorded for this store".
+</Step>
+<Step>
+### Record sold ranges
+`recordLotteryPackSale`.
+</Step>
+<Step>
+### Close or return
+`closeLotteryPack`. Pack statuses: received, activated, in_sale, closed, returned, settled.
+</Step>
+<Step>
+### Settle
+`generateLotterySettlement`, `approveLotterySettlement`. "Lottery settlement period cannot exceed one trading date".
+</Step>
+</Steps>

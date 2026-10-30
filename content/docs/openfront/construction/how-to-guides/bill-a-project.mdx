@@ -1,0 +1,26 @@
+---
+title: Bill a project
+description: Claim, approve, collect, allocate, and release retainage.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Prepare the claim
+[Billing](/docs/openfront/construction/billing).
+</Step>
+<Step>
+### Approve
+[Approvals](/docs/openfront/construction/approvals).
+</Step>
+<Step>
+### Collect
+Owner pays through the portal ([Payment providers](/docs/openfront/construction/payment-providers)) or staff record the payment.
+</Step>
+<Step>
+### Allocate and release
+`allocateSettledPayment`, then `requestRetainageRelease`.
+</Step>
+</Steps>

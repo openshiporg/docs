@@ -1,0 +1,34 @@
+---
+title: Contracts and changes
+description: Prime contracts, commitments, change events, quotes, and change orders.
+icon: FileSignature
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/contracts`. Internal only.
+
+## Prime contracts and commitments
+
+`createPrimeContractWithLine`: draft, pending_approval, approved, executed, closed (rejected returns to draft). `createCommitmentWithLine`: draft, out_for_signature, executed, complete, closed, with cancelled and terminated.
+
+## Change flow
+
+<Steps>
+<Step>
+### Open a change event
+`openChangeEvent`, `addChangeEventLine`. Statuses: open, pricing, pending_approval, approved, incorporated, voided.
+</Step>
+<Step>
+### Record quotes
+`recordChangeQuote` from trade partners.
+</Step>
+<Step>
+### Create the change order
+`createChangeOrderWithLine`. "A change order requires persisted line items".
+</Step>
+<Step>
+### Approve, execute, post
+draft, pending_approval, approved, executed, posted (`transitionChangeOrderStatus`). Posting updates the contract and budget.
+</Step>
+</Steps>

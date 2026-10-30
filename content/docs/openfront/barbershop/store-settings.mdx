@@ -1,0 +1,21 @@
+---
+title: Store settings
+description: Shop identity, hours, colours, publication, and the active shop selector.
+icon: Settings
+---
+
+`/dashboard/platform/store-settings` edits the active shop with `updateActiveShopStorefrontSettings`.
+
+## Fields
+
+`name`, `legalName`, `tagline`, `address`, `phone`, `timezone`, `currencyCode` (USD only), `jurisdictionCode`, `hours` (opening and closing time per day; closing must be after opening, or mark the day closed), `brandColor`, `logoIcon`, `logoColor`, an optional custom SVG logo ("Invalid SVG format." if the SVG is rejected), and `isPublic`.
+
+## Publication
+
+Turn on **Published storefront** to make this the public shop. The storefront shows exactly one: the single active shop with `isPublic` set. **View storefront** opens it.
+
+## Active shop
+
+Users with several shops choose one in the selector (`selectActiveShop`). Every platform page follows the active shop. If you edit while the shop changed in another tab: "Your active shop changed since this form was loaded. Your changes were not saved."
+
+Users with no shop see a shop access panel. Instance admins can take over an unowned shop with `claimShopOwnership`; others need an owner to add them.

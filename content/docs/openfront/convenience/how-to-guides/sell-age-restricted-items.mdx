@@ -1,0 +1,22 @@
+---
+title: Sell age-restricted items
+description: Configure the policy and verify ID at the register.
+icon: ShieldAlert
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Mark the product
+Set `regulatedSaleType` and `minimumAge` on the [product](/docs/openfront/convenience/products).
+</Step>
+<Step>
+### Configure the policy
+[Restricted sales](/docs/openfront/convenience/restricted-sales).
+</Step>
+<Step>
+### Verify at checkout
+`verifyRestrictedSaleAge` before `completePosSale`.
+</Step>
+</Steps>

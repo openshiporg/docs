@@ -1,0 +1,34 @@
+---
+title: Personal training
+description: Availability, appointments, packages, coaching, and trial leads.
+icon: Dumbbell
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/training` (`trainingWorkspace`).
+
+<Steps>
+<Step>
+### Set availability
+`saveTrainerAvailability`. "Appointment is outside published instructor availability".
+</Step>
+<Step>
+### Sell a package
+`recordTrainingPackage` with cash, settled tender, or a Stripe counter checkout. Each use, refund, or adjustment is a `TrainingCreditEntry`.
+</Step>
+<Step>
+### Book
+`bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment`. Members also book from `/account/training`.
+</Step>
+<Step>
+### Coach
+`assignCoaching`, `transitionCoaching`. Trial leads: `saveTrainingLead`.
+</Step>
+<Step>
+### Refund
+`refundTrainingPackage`. "Only card-paid packages refund to a card". "A settled refund reference is required".
+</Step>
+</Steps>
+
+Packages are sold by staff; members book against them.

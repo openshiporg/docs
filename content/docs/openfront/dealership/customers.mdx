@@ -1,0 +1,15 @@
+---
+title: Customers
+description: Directory, contact, consent, duplicates, merge, and households.
+icon: Contact
+---
+
+`/dashboard/platform/customers` and `/customers/[id]`.
+
+- `updateCustomerContact`: edit contact details
+- `updateCustomerCommunicationPreferences`: consent; each change writes a `CustomerContactPreferenceEvent`
+- `customerDuplicateCandidates` then `mergeCustomers` (a `CustomerMergeEvent` is kept)
+- `linkCustomerHousehold`, `unlinkCustomerHousehold`. "Customer is not in a household"
+- `openLead` from the customer
+
+A CRM `Customer` is separate from the login `User`. Public submissions find or create a Customer per rooftop by email or phone. A storefront account links to Customers after `confirmCustomerEmailVerification`.

@@ -1,0 +1,12 @@
+---
+title: Organization and users
+description: Dealer group, rooftops, memberships, roles, retention, and staff.
+icon: Building2
+---
+
+`/dashboard/platform/organization` tabs: dealer group, rooftops, access, roles, retention. `/dashboard/platform/users` lists staff (shoppers are excluded).
+
+- **Dealer group and rooftops:** `DealerGroup`, `Rooftop` (one store, with time zone).
+- **Access:** `changeDealerMembership` grants or revokes a `DealerGroupMembership` (optionally all rooftops) or `RooftopMembership`. Each change writes a `MembershipAuditEvent`.
+- **Roles:** generated CRUD on `Role`. See [Roles and permissions](/docs/openfront/dealership/roles-permissions).
+- **Retention:** `configureRetentionPolicy` stores policies.

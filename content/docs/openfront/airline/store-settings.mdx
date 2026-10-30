@@ -1,0 +1,28 @@
+---
+title: Storefront settings
+description: Carrier identity, brand colour, homepage copy, and customer service details.
+icon: Palette
+---
+
+`/dashboard/platform/store-settings` edits the public face of the carrier with `updateCarrierStorefrontSettings`. The page has a live preview.
+
+## Fields
+
+| Field | Notes |
+|---|---|
+| Carrier name, legal name | `name`, `legalName` |
+| Brand colour | slate, blue, indigo, violet, rose, emerald, or amber. Anything else: "Choose one of the approved storefront colors." |
+| Homepage title and description | `storefrontHomepageTitle`, `storefrontHomepageDescription` |
+| Customer service | `storefrontContactEmail`, `storefrontContactPhone`, `storefrontServiceHours` |
+
+Email and phone are validated ("Enter a valid contact email.", "Enter a valid contact phone.").
+
+## What it controls
+
+- The `/` homepage title and description, and the search section.
+- `/contact`, which shows the email, phone, and hours.
+- Whether online booking is available. Search and booking show only when the carrier is active, has direct sales on, an approved colour, a title, and a description.
+
+## Readiness
+
+`/dashboard/platform/settings` shows direct-sales state and provider connections with last success and last attempt, read only. Use it as the readiness check after setup.

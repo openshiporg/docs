@@ -1,0 +1,29 @@
+---
+title: Data model
+description: Keystone lists, key fields, and relationships.
+icon: Database
+---
+
+Everything hangs off the `StoreSettings` singleton (`singletonKey="primary"`). Money is integer cents (`...Cents`, `price`, `total`).
+
+| List | Key fields |
+|---|---|
+| `MenuCategory`, `MenuItem`, `MenuItemImage` | name, price, available, barStation, inventoryItem |
+| `MenuItemModifier` | modifierGroup, priceAdjustment, inventoryAction, inventoryItem, inventoryQuantity |
+| `CafeOrder` | orderNumber, status, fulfillmentType, orderSource, subtotal, tax, tip, discount, total, handoffCode, secretKey, promisedAt |
+| `OrderItem` | quantity, price, itemNameSnapshot, modifierSnapshot, barStatus, station |
+| `PosOrder` | POS receipt for a counter sale |
+| `Payment`, `PaymentEvent`, `PaymentProvider` | status, method, amount, refundedAmount, providerPaymentId |
+| `RegisterShift`, `CashMovement` | drawer totals, expected and counted cash |
+| `InventoryItem`, `InventoryLot`, `StockMovement` | currentStock, reorderPoint, lot expiry, movement type |
+| `Supplier`, `PurchaseOrder` | status, orderedQuantity, unitCostCents |
+| `Recipe`, `Ingredient` | status, yieldQuantity, quantity, unit |
+| `PrepBatch`, `PrepBatchConsumption`, `WasteLog` | quantityMade, quantityRemaining, expiresAt, reason |
+| `StaffShift` | staff, role, startsAt, clockInAt |
+| `LoyaltyAccount`, `LoyaltyEvent` | pointsBalance, drinkCredits, tier |
+| `Subscription` | planName, billingInterval, priceCents |
+| `CateringOrder` | eventAt, guestCount, subtotalCents |
+| `User`, `Role` | customers and staff |
+| `CoffeeDomainEvent`, `CoffeeOutboxDelivery` | system |
+
+Status values are listed on each dashboard page. Stock, payment, and order status fields reject generic updates; use the commands in the [API reference](/docs/openfront/coffee-shop/api-reference).

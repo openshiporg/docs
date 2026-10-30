@@ -1,0 +1,28 @@
+---
+title: Settle and ticket
+description: Record a payment, approve it, mark the booking paid, and issue tickets.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Record money received
+Open the booking and use **Received**. Pick Payment received, the method, the receipt reference, and when it arrived.
+</Step>
+<Step>
+### Approve as a second user
+Another user with `canManagePayments` opens the booking, finds the evidence under **Settlement approval**, and approves it.
+</Step>
+<Step>
+### Mark paid
+Enter the approved reference in **Payment** and choose **Mark paid**.
+</Step>
+<Step>
+### Issue tickets
+Choose **Issue ticket**. One ticket per passenger is created with a coupon per segment.
+</Step>
+</Steps>
+
+If the carrier has an active Stripe provider the traveler can instead pay from Manage booking and tickets issue automatically on return from Stripe. For a refund, record "Refund sent", have it approved, then use **Record refund**. See [Payments and refunds](/docs/openfront/airline/payments-refunds).

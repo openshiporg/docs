@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-coffee-shop-custom-dashboard/SKILL.md`](/skills/openfront-coffee-shop-custom-dashboard/SKILL.md)
 
-## Current platform pages
+## Platform pages
 
 Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `features/platform/<slice>`. Navigation is defined in `features/platform/lib/navigation.ts`.
 
@@ -39,5 +39,4 @@ Lists without a dedicated page are edited on the generic `/dashboard/<list-key>`
 - Order state, payments, refunds, stock levels, menu prices, and modifier stock change only through the named commands above. Generated updates for those fields are blocked.
 - Most commands need an `idempotencyKey`. Generate one per user intent and reuse it on retry.
 - KDS and menu commands check `expectedStatus` or `expectedUpdatedAt`. Pass the value you last read so stale screens fail instead of overwriting.
-- Card payments at the POS are cashier attestations of a terminal approval. Nothing verifies them with a card network.
-- The PayPal adapter is not wired into any dashboard flow.
+- Card payments at the POS record the cashier's entry of a terminal approval.

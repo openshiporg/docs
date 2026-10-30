@@ -1,0 +1,44 @@
+---
+title: Roles and permissions
+description: Carrier tenancy, role flags, access patterns, and who can do what.
+icon: Shield
+---
+
+`Carrier` is the tenant. Users see only their own carrier's data. `Airport` is shared. A user belongs to one carrier and one `Role`.
+
+## Role flags
+
+Manage flags imply read. Read-only flags exist where listed.
+
+| Area | Flags |
+|---|---|
+| Network | `canReadNetwork`, `canManageNetwork` |
+| Inventory | `canReadInventory`, `canManageInventory` |
+| Offers | `canReadOffers`, `canManageOffers` |
+| Bookings | `canReadBookings`, `canManageBookings` |
+| Passengers | `canReadPassengers`, `canManagePassengers`, `canManageSecurePassengerData` |
+| Ticketing | `canReadTicketing`, `canManageTicketing` |
+| Payments | `canReadPayments`, `canManagePayments` |
+| Airport service | `canReadAirportService`, `canManageAirportService` |
+| Disruptions | `canReadDisruptions`, `canManageDisruptions` |
+| Integrations | `canReadIntegrations`, `canManageIntegrations` |
+| Audit | `canReadAudit` |
+| Setup | `canManageOnboarding`, `canManageAgents` |
+| People | `canReadUsers`, `canManageUsers`, `canReadRoles`, `canManageRoles` |
+| Platform | `canAccessDashboard`, `canManageCarriers` |
+
+A user can grant only permissions they hold. `canManageCarriers` is the cross-carrier flag.
+
+## Access patterns
+
+- **Carrier scoped.** Standard Keystone reads and writes for the user's carrier.
+- **Command only.** GraphQL can read, but writes go through a command. Commands are idempotent (12 to 200 character key), audited with an `AuditEvent`, and run in a serializable transaction.
+- **Station scoped.** Command only, plus a [station assignment](/docs/openfront/airline/stations).
+
+## Separation of duties
+
+The user who records manual payment evidence cannot approve it. Onboarding launch review needs at least two users with `canManagePayments`.
+
+## Manage people
+
+`/dashboard/users` (Operator access) edits `User` and `Role`. Create roles from the initial administrator's permission set and assign them to staff such as agents with payment rights, station staff, and network planners.

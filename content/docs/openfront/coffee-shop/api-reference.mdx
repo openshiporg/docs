@@ -1,0 +1,43 @@
+---
+title: API reference
+description: GraphQL queries and mutations added on top of the generated Keystone API.
+icon: Code
+---
+
+The endpoint is the Keystone GraphQL API. Generated CRUD exists for readable lists. The commands below carry the business rules.
+
+## Idempotency
+
+Most commands take an `idempotencyKey` of 16 to 128 characters (letters, numbers, and safe punctuation). Reusing a key with different data fails: "Idempotency key was already used with different order data".
+
+## Queries
+
+`getCafeOrder(orderId, secretKey)`, `getCafeLoyaltyAccount(email, orderId, secretKey)`, `getCoffeeStore`, `getCoffeeMenu(menuItemId, search, categoryId, after)`, `getCoffeeCustomerOrders`, `getCoffeeCustomerCatering`, `getCoffeeKdsBoard`, `getCoffeeKdsRecoveryScope`, `getCoffeeMenuManager`, `getCoffeeMenuInventoryOptions`, `getCoffeePosRegister`, `quoteCafeOrder`, `getCoffeeReports`, `getCoffeeOperations`, `getCoffeeOrderQueue`.
+
+## Mutations
+
+| Group | Mutations |
+|---|---|
+| Customers | `registerCoffeeCustomer(name, email, password)`, `updateCoffeeCustomerProfile(name, phone)` |
+| Orders | `createCafePickupOrder`, `acceptCafePickupOrder`, `updateCafeOrderStatus(orderId, status)`, `updatePosOrderStatus`, `updateCafeOrderItemStatus(orderItemId, status, expectedStatus, idempotencyKey)` |
+| Payments | `initiateCafePaymentSession`, `recordCafePayment`, `refundCafePayment`, `handleCafePaymentWebhook` |
+| Rewards | `applyCafeLoyalty`, `adjustCoffeeLoyaltyAccount(accountId, pointsDelta, drinkCreditsDelta, status, tier, note, idempotencyKey)` |
+| Catering | `requestCafeCatering`, `updateCateringOrderStatus` |
+| Subscriptions | `updateSubscriptionStatus(subscriptionId, status)` |
+| Register | `openRegisterShift`, `recordRegisterCashMovement`, `closeRegisterShift` |
+| Menu | `createCoffeeMenuCategory`, `createCoffeeMenuItem`, `updateCoffeeMenuItem`, `createCoffeeMenuModifier`, `updateCoffeeMenuModifier`, `updateCoffeeModifierStock` |
+| Stock | `createCoffeePurchaseOrder`, `receiveCoffeePurchaseOrder`, `cancelCoffeePurchaseOrder`, `completeCoffeePrepBatch`, `recordCoffeeWaste`, `recordCoffeeStockCount` |
+| Staff | `scheduleCoffeeStaffShift`, `updateCoffeeStaffShiftStatus` |
+| Setup | `runCoffeeOnboarding` |
+
+## createCafePickupOrder arguments
+
+`customerName` (required), `customerEmail`, `customerPhone`, `pickupName`, `requestedPickupMinutes`, `specialInstructions`, `paymentMethod`, `orderSource`, `fulfillmentType`, `idempotencyKey`, `receiptKey`, `registerShiftId`, `tipCents`, `quoteFingerprint`, `externalCardReference`, `externalCardApproved`, `cashTenderedCents`, `items`.
+
+Online requests need a valid email: "A valid email is required for online pickup requests". The server re-prices every line; a changed total fails the `quoteFingerprint` check so the client can ask the customer to review.
+
+## HTTP routes
+
+- `GET /api/health`
+- `POST /api/payment-providers/[providerCode]/webhook`
+- `/api/completion`, `/api/mcp-transport/[transport]`

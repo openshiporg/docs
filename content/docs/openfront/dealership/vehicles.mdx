@@ -1,0 +1,47 @@
+---
+title: Vehicles and inventory
+description: Intake, acquisitions, stock, costs, recon, merchandising, and the listing feed.
+icon: Car
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/vehicles`, `/vehicles/[id]`, `/vehicles/acquisitions`, `/vehicles/feed`. The workspace loads with `inventoryWorkspace`.
+
+## Bring a unit in
+
+<Steps>
+<Step>
+### One step
+`intakeInventoryVehicle` creates the vehicle, stock, and listing in one command.
+</Step>
+<Step>
+### Or through an acquisition
+`startInventoryAcquisition`, then `transitionInventoryAcquisition` through appraised, approved, purchased, arrived, reconditioning, frontline (or cancelled), then `establishInventoryStock`.
+</Step>
+<Step>
+### Trade-ins
+A trade-in can be sent to inventory as an acquisition. See [Trade-ins](/docs/openfront/dealership/trade-ins).
+</Step>
+</Steps>
+
+## Keep the unit current
+
+- `moveInventoryStock`: location moves
+- `recordInventoryCost`: acquisition and recon costs
+- `openInventoryReconWorkItem`, `transitionInventoryReconWorkItem`: open, in-progress, completed, cancelled
+- `updateInventoryVehicleDetails`: identity and spec edits
+- `addInventoryVehiclePhoto`, `arrangeInventoryVehiclePhotos`, `removeInventoryVehiclePhoto`. Image URLs must start with https:// or /. "Photos changed; reload and try again"
+- Condition report and vehicle history are edited on the vehicle page (`VehicleConditionReport`, `VehicleHistory`). Condition must be new, used, or certified.
+
+## Merchandising
+
+`updateInventoryMerchandisingDraft`, `submitInventoryMerchandising`, then `decideInventoryMerchandising` approves or rejects the version. A vehicle appears on the storefront only when its current revision is approved, recon is complete, it is frontline, and its status is `available`. Price changes append `PriceHistory`.
+
+## Vehicle status
+
+`available`, `pending` (reserved when a deal is submitted), `sold` (on delivery), `service`.
+
+## Feed
+
+`recordInventoryFeedRun` records a run; `/vehicles/feed` lists runs and errors. See [Integrations](/docs/openfront/dealership/integrations).

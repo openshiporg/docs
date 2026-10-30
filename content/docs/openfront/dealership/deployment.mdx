@@ -1,0 +1,26 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Dealership, and point Stripe webhooks at it.
+icon: Rocket
+---
+
+
+`npm run build` runs `keystone build --no-ui && next build`. It does not migrate. `railway.toml` builds the same way and starts with `npm run migrate && next start`.
+
+1. Provision PostgreSQL and an S3-compatible bucket.
+2. Set `DATABASE_URL`, `SESSION_SECRET`, and the five `S3_*` variables, plus SMTP and Stripe if you use them.
+3. Back up any existing database.
+4. Build, apply migrations, then start:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+5. If you use Stripe, point its webhook at `/api/payment-webhooks/pp_stripe_stripe` (or the code of your provider record).
+6. Create the first user at `/dashboard/init` and run onboarding.
+
+The README's Vercel button imports the repository and asks for the database, session, and S3 values. Provision the database and bucket yourself and run `npm run migrate` as a release step.
+
+See the [overview](/docs/openfront/dealership) for workflows and operations.

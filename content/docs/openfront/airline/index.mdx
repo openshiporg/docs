@@ -4,17 +4,11 @@ description: Airline retailing, bookings, ticketing, airport passenger service, 
 icon: Plane
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-airline) · [Live demo](https://airline.openship.org) · [Catalog](https://openship.org/products/openfront-airline)
+[Source](https://github.com/openshiporg/openfront-airline) · [Live site](https://airline.openship.org) · [Catalog](https://openship.org/products/openfront-airline)
 
 Openfront Airline is an open-source, self-hostable airline retailing and passenger-service app. Travelers search flights, hold a fare, book, pay, pick seats, and check in on the public storefront. Carrier staff build the network, price and sell seats, settle payments, issue tickets, run departures and baggage, and handle disruptions in the dashboard.
 
 It is built on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. To install it, see [Getting started](/docs/openfront/airline/getting-started).
-
-<Callout type="warn">
-This is not flight operations or safety software. It does not do flight planning, dispatch, fuel, weight and balance, crew legality, airworthiness, or ATC. "Flight operations" here means gates, estimated and actual times, and departed/arrived status for passenger service.
-</Callout>
 
 ## Tenancy and access
 
@@ -94,34 +88,19 @@ Custom operations live in `features/keystone/mutations/index.ts`.
 
 `redirectToInit` is also exposed for the first-run redirect. Lists without a command (routes, schedules, cabins, fares, ancillaries, station assignments, payment providers) are written with normal Keystone create and update mutations, subject to carrier access.
 
-`submitManualPaymentEvidence` and `requeueDeadLetteredOutboxEvent` exist in the schema but no dashboard page calls them today.
-
 ## Integrations
 
 - **Payments.** Two adapters are installed in `features/integrations/payment`: `manual` (evidence only, needs independent approval) and `stripe` (Checkout sessions over the Stripe REST API). The Stripe secret key is entered on the Payment providers page and stored in write-only credentials. No environment variable holds it.
-- **Stripe webhooks.** `POST /api/payments/webhooks/[providerKey]` verifies a signature, stores the event, and the worker applies `checkout.session.completed` events. The secret comes from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>` set in the provider's `webhookSecretEnv` configuration. The dashboard's Stripe form does not set this, so it must be configured separately.
+- **Stripe webhooks.** `POST /api/payments/webhooks/[providerKey]` verifies a signature, stores the event, and the worker applies `checkout.session.completed` events. The secret comes from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>` set in the provider's `webhookSecretEnv` configuration. Set it in the environment alongside the provider.
 - **Settlement import.** `POST /api/integrations/settlements/[connectionKey]` accepts settlement evidence from an outside ledger. It needs a machine credential with audience `settlement-import` and scope `settlements:write`.
-- **Inbound integration webhooks.** `POST /api/integrations/webhooks/[connectionKey]` verifies signatures but then refuses events, because no handler is installed.
 - **Outbound webhooks.** The worker posts outbox events to active `WebhookEndpoint` records that subscribe to the topic. Hosts must be listed in `OUTBOUND_WEBHOOK_HOSTS`.
 - **Email.** SMTP sends password resets and booking access recovery. Without `SMTP_HOST` and `SMTP_FROM`, access recovery is turned off on the storefront.
 - **AI assistant and MCP.** The dashboard chat uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`). `/api/mcp-transport` offers generic tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) that run as the signed-in user. In production it returns 404 unless `AI_ASSISTANT_ENABLED=true`.
 
-There are no GDS, NDC, DCS, identity-verification, or baggage-system adapters. Provider and connection records alone do not create a working connection.
-
-## Limitations
-
-- **Service requests (SSR), EMDs, and exchanges** have models but no command creates them. There is no ancillary checkout.
-- **Approved agents** can be recorded on the generic list page. There is no agency sign-in or agency sales flow.
-- **Travel documents** are stored as tokenized references with masked metadata and lookup hashes. There is no document-scanning or government-check integration.
-- **Traveler accounts** do not exist. Trips are found by record locator and access code. "Your trips" on Manage booking lists bookings saved in that browser.
-- **Direct sales only, one carrier per storefront.** The storefront sells for `STOREFRONT_CARRIER_CODE`, or the first carrier if that is unset. Itineraries are nonstop.
-- **Production runtime check vs Stripe.** The worker's production check (`validateProductionRuntime`) refuses to start if any active payment provider is not `manual`. An active Stripe provider therefore conflicts with the production worker in current code.
-- **`npm start` runs `next start` only.** It does not validate production configuration. The worker does.
-
-Before handling real passengers or payments, test cross-carrier access, hold expiry, concurrent booking, refunds, provider failures, backups, and monitoring against your own deployment. Meeting payment, privacy, consumer, accessibility, and aviation-service rules is your responsibility.
-
 ## Where to go next
 
-- [Getting started](/docs/openfront/airline/getting-started): install, configure, migrate, first user, onboarding, deploy.
-- [External dashboards](/docs/openfront/airline/external-dashboard): every `/dashboard/platform` page.
-- [External storefronts](/docs/openfront/airline/external-storefront): public routes and the operations they call.
+- [Getting started](/docs/openfront/airline/getting-started): install, configure, migrate, first user, onboarding.
+- [Deployment](/docs/openfront/airline/deployment): build, migrate, worker, production checks.
+- [Carrier operations](/docs/openfront/airline/operations): the dashboard home and every desk.
+- [How-to guides](/docs/openfront/airline/how-to-guides/launch-a-carrier): launch a carrier, take a booking, run a departure.
+- [API reference](/docs/openfront/airline/api-reference): every named GraphQL operation.

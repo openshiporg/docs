@@ -1,0 +1,67 @@
+---
+title: Troubleshooting
+description: Messages the commands return and what to do about each.
+icon: LifeBuoy
+---
+
+Messages below are returned by the commands as written.
+
+## Selling
+
+| Message | Cause and fix |
+|---|---|
+| "Online booking isn't available yet." | The storefront carrier lacks direct sales, a homepage title, description, or brand colour. Fix on [Storefront settings](/docs/openfront/airline/store-settings). |
+| "Not enough inventory for this request." | The bucket's authorized seats minus sold, held, and blocked is too low. Raise it with `setInventoryAuthorization`. |
+| "Complete or release an existing held offer before holding more inventory." | The session already holds seats. Finish or let the 15-minute hold expire. |
+| "Offer has expired." | Hold lapsed. Create a new offer. |
+| "Online hold capacity is temporarily full..." | Global hold cap reached. Wait for holds to expire. |
+| "Each booking needs at least one traveler aged 18 or over." | Add an adult passenger. |
+| "Passenger count must be between 1 and 9." | Reduce the party. |
+
+## Payment and ticketing
+
+| Message | Cause and fix |
+|---|---|
+| "Approved manual settlement evidence is required." | Record money received, then have a different user approve it. |
+| "Evidence must be current, booking-eligible, and approved once by a different authorized user." | The same user cannot approve their own record. |
+| "Capture payment before issuing tickets." | Use Mark paid first. |
+| "Only confirmed bookings can be ticketed." | Check the booking status. |
+| "Refund amount exceeds the remaining captured amount." | Reduce the refund; the desk shows the remaining amount. |
+| "Refund captured airfare before cancelling this booking." | Refund first, then cancel. |
+| "No active payment provider is configured for this carrier." | Add one on [Payment providers](/docs/openfront/airline/payment-providers). |
+| "Online payment isn't available for this airline." | No active Stripe provider. |
+
+## Airport service
+
+| Message | Cause and fix |
+|---|---|
+| "Booking must have a current paid ticket before check-in." | Pay and ticket the booking. |
+| "A current authoritative travel-document verification is required." | Register and verify the document first. |
+| "Check-in requires exactly one published seat map for the dated flight." | Re-provision or review the seat maps. |
+| "Boarding requires a checked-in coupon and confirmed seat assignment." | Check in first. |
+| "Bag weight must be an integer between 0 and 100000 grams." | Enter grams. |
+| "No unused checked-bag entitlement with matching amount, currency, passenger, segment, and weight covers this bag." | The fare does not include a bag for this passenger. |
+| "An offload reason is required." | Enter a reason. |
+
+## Operations
+
+| Message | Cause and fix |
+|---|---|
+| "An operation with this idempotency key is already in progress or failed." | Retry with a new key after reviewing the audit log. |
+| "Sales status must be open_for_sale or closed_for_sale." | Other statuses are set in flight operations. |
+| "Replacement service must preserve the disrupted origin and destination." | Pick a flight on the same city pair. |
+| "Recovery is unavailable after the original service has departed or arrived." | Handle as a refund. |
+| "Carrier code, currency, and timezone cannot change after dated flights, offers, or bookings exist." | Locked once the carrier has sold or scheduled service. |
+
+## Startup
+
+- "SESSION_SECRET must contain at least 32 characters."
+- "Missing production configuration: ..." lists the env variables the worker needs.
+- "STOREFRONT_CARRIER_CODE must identify an active direct-sales carrier."
+- "The storefront carrier requires an active evidence-only manual payment provider."
+- "The storefront carrier requires an active settlement-import machine credential."
+- "Initial operator setup requires ALLOW_INCOMPLETE_LAUNCH_SETUP=true..." during first-run in production.
+
+## Health
+
+`GET /api/health` returning `worker: "stale"` means the worker heartbeat is older than 60 seconds. Restart `npm run worker` and check `REQUIRED_WORKER_ID`.

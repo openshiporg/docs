@@ -1,0 +1,30 @@
+---
+title: Company setup
+description: Onboard the first company and work through the readiness checklist at /dashboard/platform/setup.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/setup` runs first-company onboarding (`onboardConstructionWorkspace`) and shows the readiness checklist (`constructionOnboardingReadiness`).
+
+<Steps>
+<Step>
+### Sign in as the first administrator
+Create the user at `/dashboard/init`. It gets the `Platform Administrator` role.
+</Step>
+<Step>
+### Pick a path
+**Custom setup** takes company, brand, first project, currency code, cost code, budget code, contact email, service area, capability summary, first service, and privacy notice. **Starter workspace** loads "Northstar Builders" from `features/platform/onboarding/lib/seed.json`, and is offered only for first-company setup.
+</Step>
+<Step>
+### Review what was created
+Company, four roles (Company Administrator, Project Manager, Field Lead, External Collaborator), your memberships, the first project, a cost code, a budget code, an active budget with one line, five approval policies, a location, a schedule, an inspection template, and the public site profile with one service.
+</Step>
+<Step>
+### Clear the checklist
+Company profile, role templates, cost codes, project manager access, budget codes, active budget, approval policies, schedule, and site locations. Completion is recorded only after the readiness check passes.
+</Step>
+</Steps>
+
+Onboarding needs `canManageOnboarding` and `canManageCompanies` and a user with no company membership yet. Repeating a request is idempotent.

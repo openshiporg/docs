@@ -1,0 +1,43 @@
+---
+title: API reference
+description: Custom GraphQL operations and REST routes.
+icon: Code
+---
+
+## GraphQL operations
+
+Custom operations are defined in `features/keystone/mutations/index.ts` and the files it merges. Generated Keystone CRUD is also available, subject to model access rules.
+
+**Public storefront queries** (scoped to the storefront organization, no member or payment data): `publicGymSettings`, `storefrontOrganization`, `publicGymClassTypes`, `publicGymClassType`, `publicGymSchedules`, `publicGymSchedule`, `publicGymClassInstances`, `publicGymClassInstance`, `publicGymInstructors`, `publicGymInstructor`, `publicGymMembershipTiers`, `publicGymMembershipTier`.
+
+**Member account:** `memberProfile`, `updateMemberProfile`, `memberCheckInCode`, `myUpcomingBookingPage`, `registerMember`, `changeMemberPassword`, `requestEmailChange`, `confirmEmailChange`, `refreshMyEntitlement`.
+
+**Classes and scheduling:** `checkClassAvailability`, `bookClass`, `cancelClassBooking`, `promoteFromWaitlist`, `cancelClassInstance`, `markClassAttendance`, `schedulingWorkspace`, `saveGymClassSchedule`, `saveGymClassInstance`, `generateUpcomingClassInstances` (1 to 12 weeks), `updateClassScheduleCapacity`, `updateClassInstanceCapacity`, `rosterSessions`, `rosterDetail`, `instructorAccount`.
+
+**Check-in:** `frontDeskWorkspace`, `recordMemberCheckIn`, `checkOutMember`, `authorizeKioskSession`, `kioskSearchMembers`, `kioskRecordMemberCheckIn`, `kioskRecordGuestCheckIn`.
+
+**Personal training:** `trainingWorkspace`, `bookTrainerAppointment`, `rescheduleTrainerAppointment`, `transitionTrainerAppointment`, `saveTrainerAvailability`, `recordTrainingPackage`, `refundTrainingPackage`, `assignCoaching`, `transitionCoaching`, `saveTrainingLead`, `eligibleCoachAccounts`, `createCoachProfile`.
+
+**Billing:** `getBillingStats`, `billingWorkspace`, `initiateMembershipCheckout`, `completeMembershipCheckout`, `createStripeSetupIntent`, `getStripeBillingPortal`, `cancelMembership`, `freezeMembership`, `unfreezeMembership`, `changeMembershipTier`, `markPaymentRecoveryContacted`, `refundGymPayment`, `replayPaymentEvent`.
+
+**Retail and counter card payments:** `retailWorkspace`, `retailSaleItems`, `saveRetailItem`, `quoteRetailSale`, `sellRetail`, `returnRetail`, `closeRetail`, `reconcileCounterPayment`.
+
+**People and settings:** `inviteMember`, `setMemberAccountStatus`, `importMemberContacts` (1 to 100 rows, with dry run), `gymSettingsEditor`, `upsertGymSettings`, `publishGymParticipationTerms`, `reportsDashboard`, `submitContactForm`.
+
+**Operations:** `operationsWorkspace`, `participationWorkspace`, `runOperationsCommand`, `exportOperatingData` (payments, members, or cases), `updateGymResourceAllocation`, `reconcileGymEntitlements`.
+
+**Partner discovery:** `discoveryClasses`, `discoveryBookClass`.
+
+**Onboarding and system:** `runDeterministicOnboarding`, `transitionOnboardingStatus`, `redirectToInit`, `beginStaffIntent`, `settleStaffIntent`, `myStaffIntent`, `myPendingStaffIntents`.
+
+## REST routes
+
+| Route | Purpose |
+|---|---|
+| `/api/graphql` | GraphQL |
+| `/api/stripe/webhook` | Stripe webhooks |
+| `/api/kiosk/session`, `/search-member`, `/check-in`, `/guest-check-in` | Kiosk |
+| `GET /api/discovery/classes`, `POST /api/discovery/bookings`, `GET /api/discovery/calendar` | Partner discovery |
+| `/api/mcp-transport/[transport]` | MCP |
+| `/api/completion` | AI chat |
+| `/api/health` | Health |

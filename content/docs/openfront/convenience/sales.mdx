@@ -1,0 +1,36 @@
+---
+title: Sales, refunds and voids
+description: Review receipts, refund lines, and void cash sales.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/sales` lists receipts by status. `/sales/[id]` shows lines, tenders, refunds, returns, ID checks, and promotions.
+
+Sale statuses: open, completed, partially_refunded, refunded, voided. Tender statuses: pending, authorized, captured, partially_refunded, refunded, failed, cancelled.
+
+## Refund
+
+<Steps>
+<Step>
+### Pick the sale and lines
+From the sale page or the refund picker on POS.
+</Step>
+<Step>
+### Choose reasons
+`refundPosSale` needs `reason` (customer_return, price_correction, duplicate_charge, service_recovery, fraud, other) and, per line, a return reason (unwanted, defective, expired, wrong_item, recall, other). "Open register session not found for refund" means the drawer is closed.
+</Step>
+<Step>
+### Allocate to tenders
+Refunds go back across the original tenders (`tenderAllocations`). "At least one original tender allocation is required".
+</Step>
+<Step>
+### Stock disposition
+Each line restocks to the original lot, goes to quarantine, or is destroyed. Non-returnable items need `overrideNonReturnable` with an `overrideReason`, which can need a `managerPin`.
+</Step>
+</Steps>
+
+## Void
+
+`voidCompletedPosSale` voids a cash sale and reverses its stock and drawer effects. It is a separate command from refunds and may need a manager PIN.

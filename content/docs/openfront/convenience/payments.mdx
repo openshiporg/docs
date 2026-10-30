@@ -1,0 +1,37 @@
+---
+title: Payment providers
+description: manual_external and hmac_json_v1 adapters, webhooks, and settlement reconciliation.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/payments`. `configurePaymentProvider` sets an adapter on a `PaymentProvider`.
+
+| Adapter | Behavior |
+|---|---|
+| `manual_external` | Records a card or wallet payment an outside terminal already took. No webhooks |
+| `hmac_json_v1` | Also accepts signed webhooks at `/api/webhooks/payment/[providerId]` |
+
+Both require a short-lived signed authority proof for each non-cash tender and refund. The signing key is an `env://NAME` credential reference whose value is 32+ characters.
+
+## Webhooks
+
+Headers: `x-openfront-timestamp`, `x-openfront-signature: v1=<hex>` (HMAC-SHA256 of `timestamp.body`, within five minutes). Events: `payment.captured`, `payment.failed`, `refund.completed`, `refund.failed`. Duplicate event ids are replayed, not re-applied (`WebhookEvent`).
+
+## Reconcile settlement
+
+<Steps>
+<Step>
+### Generate
+`generatePaymentReconciliation` for a period up to 32 days.
+</Step>
+<Step>
+### Review lines
+`PaymentReconciliationLine` shows each tender against the provider amount.
+</Step>
+<Step>
+### Approve
+`approvePaymentReconciliation`.
+</Step>
+</Steps>

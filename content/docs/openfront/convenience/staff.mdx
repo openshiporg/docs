@@ -1,0 +1,26 @@
+---
+title: Staff
+description: Add employees, set roles and stores, and manage POS PINs.
+icon: Users
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/staff` and `/staff/[id]`.
+
+<Steps>
+<Step>
+### Add a person
+The page creates a `User` with a temporary password (`createUser`) and an `Employee` (`createEmployee`) joined to one business, one business-owned `Role`, and a set of stores.
+</Step>
+<Step>
+### Set role and status
+Only active employees count for access.
+</Step>
+<Step>
+### PIN
+Each employee sets their own POS PIN with `setOwnPosPin`. Machine sessions cannot: "Machine sessions cannot set a human POS PIN".
+</Step>
+</Steps>
+
+The detail page shows shifts and tills. See [Roles and permissions](/docs/openfront/convenience/roles-permissions).

@@ -1,0 +1,30 @@
+---
+title: Loyalty and customers
+description: Rewards program, members, and points ledger.
+icon: Gift
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/loyalty`, `/customers`, `/customers/[id]`.
+
+<Steps>
+<Step>
+### Configure the program
+`configureLoyaltyProgram`. Onboarding creates "Store Rewards": 1 point per dollar, 100 points worth one dollar.
+</Step>
+<Step>
+### Enroll
+`enrollLoyaltyAccount` for a customer.
+</Step>
+<Step>
+### Adjust or expire
+`adjustLoyaltyPoints` with a reason; `expireLoyaltyPoints` expires due points. Each change writes a `LoyaltyLedgerEntry`.
+</Step>
+<Step>
+### Redeem at the register
+`applyLoyaltyRedemptionToCart`.
+</Step>
+</Steps>
+
+Customers see their balance and last 10 entries on the storefront (`storefrontRewards`).

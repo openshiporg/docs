@@ -1,0 +1,26 @@
+---
+title: Flight operations
+description: Day board for gates, terminals, estimated and actual times, and flight status at /dashboard/platform/flight-ops.
+icon: Gauge
+---
+
+The flight operations board lists dated flights by date and station. Staff update what passengers see on flight status.
+
+## What you can set
+
+With `updateFlightOperations` on a `FlightInstance`:
+
+- `departureTerminal`, `departureGate`, `arrivalTerminal`, `arrivalGate`
+- `estimatedDepartureAt`, `estimatedArrivalAt`
+- `actualDepartureAt`, `actualArrivalAt`
+- `status`, through three buttons: **Mark delayed** (from scheduled, open for sale, or closed for sale), **Departed** (from closed for sale or delayed), and **Arrived** (from departed)
+
+Rules enforced by the command: "Actual arrival must be after actual departure." and "Nothing to update." when no field changed. The command needs an idempotency key (12 to 200 characters) which the dashboard generates.
+
+## Steps
+
+1. Open `/dashboard/platform/flight-ops` and pick the date and station.
+2. Open the flight row and enter the gate or times, or use the status buttons. A cancelled flight is final and shows no status buttons.
+3. Save. The public `/status` page shows gates, times, and any published disruption summary.
+
+Delays and cancellations that need a customer-facing explanation go through [Disruptions](/docs/openfront/airline/disruptions), not this board.

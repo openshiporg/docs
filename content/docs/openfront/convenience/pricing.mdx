@@ -1,0 +1,17 @@
+---
+title: Pricing and promotions
+description: Price books, tax rates, and promotions.
+icon: Tags
+---
+
+## Prices
+
+`setRetailPrice` publishes a `PriceBookEntry` for a price book and variant: `amountCents`, `minQuantity`, `startsAt`, `endsAt`. The store's default price book wins; the variant default price is the fallback.
+
+## Tax
+
+`configureStoreTaxRate` sets a store tax rate in basis points per `TaxCategory` (onboarding creates Standard and Exempt).
+
+## Promotions
+
+`configurePromotion` creates a `Promotion` with rules. `/dashboard/platform/promotions` lists them by status, window, and use. Percentage promotions need basis points: "Percentage promotions require basis points". Cashiers apply them with `applyPromotionToCart`; each use writes a `PromotionRedemption`.

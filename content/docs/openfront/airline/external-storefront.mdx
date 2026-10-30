@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-airline-custom-storefront/SKILL.md`](/skills/openfront-airline-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Routes are top-level files under `app/` (there is no route group). Most of the logic is in `features/storefront/components/FlightShop.tsx`, which runs in three modes: `book`, `manage`, and `check-in`. Carrier identity comes from `features/storefront/lib/carrier.ts` and the route timetable from `features/storefront/lib/network.ts`.
 
@@ -35,9 +35,3 @@ Routes are top-level files under `app/` (there is no route group). Most of the l
 - **Payment.** Without an active Stripe provider, bookings are pay-the-airline: an operator records payment in the dashboard. Unpaid storefront bookings expire after 24 hours when the worker runs.
 - **Stripe return.** Stripe returns to `/manage-booking?ref=<locator>&checkout=<session id>`. The page then calls `completeCustomerCheckout`, which checks the session with Stripe before recording payment and issuing tickets.
 - **Rate limits.** Offer, booking, manage-booking, and checkout calls are rate limited per shopping session or client.
-
-## Not in the storefront
-
-- No traveler accounts or sign-in.
-- No ancillary purchase, special service requests, or ticket exchange.
-- No multi-segment or connecting itineraries in search.

@@ -1,0 +1,37 @@
+---
+title: Data model
+description: The 87 Keystone lists grouped by area, and the rules that cross them.
+icon: Database
+---
+
+## Tenancy and access
+
+- **Company** is the tenant. Every business record belongs to one company. Most also belong to a **Project**.
+- Project-owned records store a derived company key. Hooks derive it from the connected project and reject relationships that cross companies or projects.
+- Permissions live on **Role** (40+ `canRead*` and `canManage*` checkboxes). A user gets them through **CompanyMembership** (company-wide, optionally all projects) and **ProjectMembership** (one project, access level viewer, contributor, or manager).
+- A ProjectMembership also has a portal type: internal, owner/client, designer, subcontractor, or vendor. External members can be linked to a **TradePartner** as their portal organization. They use `/portal`, not the dashboard.
+- Website customers have a `User` but no membership. They see only their own `ServiceRequest` records under `/account`.
+- **ApiCredential** stores hashed API keys with scopes. **AgentIdentity** and **ScopeGrant** bind an automated actor to exact company and project scopes such as `financials:write` or `agents:execute`.
+
+## Lists
+
+All 87 lists, by area:
+
+- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey, OutboxMessage.
+- **Company master data:** Project, TradePartner, ProjectLocation, CostCode, BudgetCode, Equipment, Material.
+- **Pursuits and website:** ConstructionLead, ConstructionOpportunity, PublicSiteProfile, PublicService, PublicProject, IntakeSubmission, ServiceRequest, ServiceRequestEvent.
+- **Preconstruction:** BidPackage, BidInvitation, BidSubmission, BidLineItem, Estimate, EstimateVersion, EstimateLineItem.
+- **Financials:** Budget, BudgetLineItem, BudgetChange, BudgetChangeLineItem, DirectCost.
+- **Contracts and change:** PrimeContract, Commitment, ContractLineItem, ChangeEvent, ChangeEventLineItem, ChangeQuote, ChangeOrder, ChangeOrderLineItem.
+- **Execution and documents:** RFI, RFIResponse, SpecificationSection, Submittal, SubmittalReview, Drawing, DrawingRevision, Document, DocumentVersion, DocumentDistribution, DocumentAcknowledgement, DailyLog, DailyLogEntry, Schedule, ScheduleTask, ScheduleDependency, PunchItem, LaborEntry, ResourceLog.
+- **Quality and safety:** SafetyIncident, SafetyObservation, InspectionTemplate, Inspection, InspectionItem, CorrectiveAction.
+- **Procurement:** ProcurementRequest, ProcurementRequestLine, MaterialReceipt, MaterialReceiptLine.
+- **Billing:** ProgressClaim, ProgressClaimLineItem, Payment, PaymentAllocation, PaymentReversal, RetainageRelease, LienWaiver.
+- **Governance:** ApprovalPolicy, ApprovalRequest, ApprovalDecision.
+
+Rules that apply across the model:
+
+- Money is a BigInt in minor units with a currency code. Budget, contract, claim, and payment totals are recalculated by hooks and workflows, not typed in.
+- Estimate versions, drawing revisions, and document versions are kept as separate records, so issued revisions are not overwritten.
+- Lifecycle `status` fields are read-only on generic update. Status changes go through named transition mutations that follow `lifecyclePolicies` in `features/keystone/domain/lifecycle.ts`.
+- Commands are idempotent (`IdempotencyKey`), recorded as `AgentAction` audit rows, and emit `OutboxMessage` events.

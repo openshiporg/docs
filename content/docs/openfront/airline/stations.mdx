@@ -1,0 +1,25 @@
+---
+title: Stations and access
+description: Grant staff check-in, bag, and boarding rights at an airport at /dashboard/platform/stations.
+icon: Warehouse
+---
+
+A `StationAssignment` ties a user to an airport. Station commands (check-in, bag acceptance, boarding, offloading) require an active assignment for the flight's origin airport.
+
+## Fields
+
+- `user` and `airport`
+- `canCheckIn`, `canAcceptBags`, `canBoard`
+- `validFrom`, `validUntil`
+- `status`
+
+## Assign a user
+
+1. Open `/dashboard/platform/stations`.
+2. Choose the user, the airport, and the flags the person needs.
+3. Optionally set the validity window.
+4. Save (`CreateStationAssignment`).
+
+Edit flags with `UpdateStationAssignment`. Suspend or revoke with `SetStationAssignmentStatus`.
+
+The onboarding flow creates an assignment for the first user at the launch origin with all three flags. Launch review requires that assignment.

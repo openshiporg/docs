@@ -1,0 +1,38 @@
+---
+title: Quality and safety
+description: Incidents, observations, inspections, corrective actions, and punch items.
+icon: ShieldCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/quality-safety`.
+
+## Observations
+
+`recordSafetyObservation`: open, assigned, resolved, closed.
+
+## Incidents
+
+`recordSafetyIncident` then `recordSafetyIncidentPrivateDetails` for restricted detail, read back with `safetyIncidentPrivateDetail`. Statuses: reported, investigating, corrective_action, closed. Closing needs verified actions: "All incident corrective actions must be verified before closure".
+
+## Inspections
+
+<Steps>
+<Step>
+### Template
+`registerInspectionTemplate`.
+</Step>
+<Step>
+### Inspect
+`createInspectionWithItem`, `recordInspectionItemResult`. scheduled, in_progress, passed or failed, closed.
+</Step>
+<Step>
+### Follow up
+A failed inspection needs a failed item. Create corrective actions or punch items.
+</Step>
+</Steps>
+
+## Corrective actions and punch
+
+`registerCorrectiveAction`, `recordCorrectiveActionEvidence`: open, in_progress, ready_for_verification, verified, closed. `recordPunchItem`: open, in_progress, ready_for_review, closed, voided.

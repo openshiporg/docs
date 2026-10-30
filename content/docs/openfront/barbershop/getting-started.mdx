@@ -4,9 +4,7 @@ description: Clone the source, configure PostgreSQL, sessions, storage and optio
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-To look around before installing, open the live demo at [barbershop.openship.org](https://barbershop.openship.org).
+The hosted app is at [barbershop.openship.org](https://barbershop.openship.org).
 
 ## Requirements
 
@@ -72,9 +70,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, then `npm run migrate` (`prisma migrate deploy`), then `next dev`.
 
-<Callout type="warn">
-`npm run dev` applies migrations to whatever database `DATABASE_URL` points at. Use a local or disposable database while you evaluate the app.
-</Callout>
+`npm run dev` applies migrations to whatever database `DATABASE_URL` points at.
 
 Then open:
 
@@ -101,7 +97,7 @@ When the signed-in user has `canManageOnboarding`, the dashboard shows an onboar
 - **Full setup:** the shop, a booking policy, a no-show policy, the manual payment provider (`pp_manual`), 3 service categories, 6 services, 3 barbers with chairs and weekly hours, 2 packages, 2 membership plans, 3 retail products, and 1 supplier.
 - **Minimal setup:** the shop, the manual payment provider, a booking policy, 2 categories, up to 3 services, 1 barber with hours, 1 product, and 1 supplier. No no-show policy, packages, or memberships.
 
-The data comes from `features/platform/onboarding/lib/seed.json` (a sample shop named Stack & Fade). It runs through the `runBarbershopOnboarding` mutation.
+The data comes from `features/platform/onboarding/lib/seed.json` (a starter shop named Stack & Fade). It runs through the `runBarbershopOnboarding` mutation.
 
 How it behaves:
 
@@ -109,33 +105,7 @@ How it behaves:
 - Otherwise it creates a new shop, makes the user its `owner`, and sets it as their active shop. The new shop is made public only if no other active shop is public.
 - Records are found or created, so running it again reuses existing rows.
 - It writes configuration only. It never creates customers, appointments, queue entries, stock receipts, balances, payments, commissions, or payouts.
-- Practitioner credentials are seeded only on a disposable local test database. On any other database, licensed services need real credentials entered on the barber page.
+- Licensed services need practitioner credentials entered on the barber page.
 - The user's `onboardingStatus` moves to `in_progress`, then `completed`. On failure it goes back to the previous status.
 
 After onboarding, review the services, prices, hours, and policies on the platform pages before taking bookings.
-
-## Checks
-
-The repository has a `lint` script (`eslint .`) and test files in `tests/`, but `package.json` has no `test` or `typecheck` script.
-
-## Deploy
-
-The app needs a Node.js server, PostgreSQL, and S3-compatible storage.
-
-```bash
-npm run build     # keystone build --no-ui && next build; does not migrate
-npm run migrate   # prisma migrate deploy
-npm start         # next start
-```
-
-- **Railway:** `railway.toml` builds with `prisma generate && keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run at start.
-- **Vercel:** the README has a Deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to set the `S3_*` variables, `APP_ORIGIN`, and any optional services, and run migrations as a release step.
-
-Before deploying with real data:
-
-1. Back up the database and test a restore.
-2. Set `APP_ORIGIN` to the HTTPS origin.
-3. Set a new `SESSION_SECRET` and keep it the same across all app instances.
-4. Configure SMTP if you want resets, booking emails, and reminders.
-5. Only one shop should be public for the storefront.
-6. Replace or remove the onboarding sample data that does not match your shop.

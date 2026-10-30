@@ -1,0 +1,30 @@
+---
+title: Billing
+description: Stats, payment recovery, plan changes, freezes, and refunds.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/billing` (`getBillingStats`, `billingWorkspace`).
+
+<Steps>
+<Step>
+### Review the recovery queue
+Failed payments (`GymPayment` status: pending, succeeded, failed, refunded).
+</Step>
+<Step>
+### Record follow-up
+`markPaymentRecoveryContacted` records that staff followed up.
+</Step>
+<Step>
+### Change a plan
+`changeMembershipTier`.
+</Step>
+<Step>
+### Refund
+`refundGymPayment`.
+</Step>
+</Steps>
+
+Members use `/account/membership` for `freezeMembership`, `unfreezeMembership`, `cancelMembership` and the Stripe billing portal (`getStripeBillingPortal`). "A membership ending after this paid period cannot be frozen". "Membership renewal is already cancelled". "Membership has no active Stripe subscription".

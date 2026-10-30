@@ -4,17 +4,13 @@ description: Menu, pickup ordering, POS, KDS, register, inventory, recipes, rewa
 icon: Coffee
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-coffeeshop) · [Live demo](https://coffee-shop.openship.org) · [Catalog](https://openship.org/products/openfront-coffee-shop)
+[Source](https://github.com/openshiporg/openfront-coffeeshop) · [Live site](https://coffee-shop.openship.org) · [Catalog](https://openship.org/products/openfront-coffee-shop)
 
 Openfront Coffee Shop is a self-hosted app for one cafe. Customers browse the menu, order ahead for pickup, ask for catering, and keep a rewards balance. Staff take counter sales on a POS, run a bar display (KDS), manage the register drawer, buy and count stock, build recipes, make prep batches, schedule shifts, and manage rewards, catering, and subscriptions.
 
-<Callout type="warn">
-The default way to pay is at pickup or at the counter (cash, or a card terminal the cashier confirms by hand). Online card payment through Stripe Checkout is possible but off by default. It needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` on the server and the switch turned on in Store Settings. A PayPal adapter exists in source, but checkout does not offer it.
-</Callout>
+Customers pay at pickup or at the counter (cash, or a card terminal the cashier confirms). Online card payment through Stripe Checkout is off by default. It needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` on the server and the switch turned on in Store Settings.
 
-Start with [Getting started](/docs/openfront/coffee-shop/getting-started).
+Start with [Getting started](/docs/openfront/coffee-shop/getting-started) and [Deployment](/docs/openfront/coffee-shop/deployment). Each dashboard area has its own page, beginning with [Orders](/docs/openfront/coffee-shop/orders). Task guides are under [How-to guides](/docs/openfront/coffee-shop/how-to-guides/set-up-the-menu). Operations are listed in the [API reference](/docs/openfront/coffee-shop/api-reference).
 
 ## Stack
 
@@ -26,7 +22,7 @@ Start with [Getting started](/docs/openfront/coffee-shop/getting-started).
 
 ## Tenancy
 
-One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primary"`), and every other list has a required `store` relationship to it. There is no multi-cafe or multi-location model. Currency is USD only (the `currencyCode` field rejects anything else). Money is stored in cents. Stock quantities are decimals in each inventory item's own unit.
+One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primary"`), and every other list has a required `store` relationship to it. Currency is USD only (the `currencyCode` field rejects anything else). Money is stored in cents. Stock quantities are decimals in each inventory item's own unit.
 
 ## Models
 
@@ -39,7 +35,7 @@ One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primar
 | Stock | `InventoryItem`, `InventoryLot`, `StockMovement` (ledger), `Supplier`, `PurchaseOrder` (one item per PO), `WasteLog` |
 | Production | `Recipe`, `Ingredient`, `PrepBatch`, `PrepBatchConsumption` |
 | People | `User`, `Role`, `StaffShift` |
-| Retention | `LoyaltyAccount`, `LoyaltyEvent`, `Subscription` (a plan record with no billing), `CateringOrder` |
+| Retention | `LoyaltyAccount`, `LoyaltyEvent`, `Subscription` (a plan record), `CateringOrder` |
 | System | `CoffeeDomainEvent`, `CoffeeOutboxDelivery` (transactional outbox, hidden and system-only) |
 
 `Role` has read and manage flags for orders, payments, products, inventory, and loyalty, plus `canAccessDashboard`, `canManagePeople`, `canManageRoles`, `canManageSettings`, `canManageOnboarding`, `canSeeOtherPeople`, and `canEditOtherPeople`.
@@ -62,11 +58,11 @@ One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primar
 
 **Staff shifts.** Schedule a shift, then clock in, clock out, or mark it missed.
 
-**Rewards.** `applyCafeLoyalty` links an order to a loyalty account by email and earns 1 point per dollar of subtotal. Staff can adjust points, drink credits, tier, and status with `adjustCoffeeLoyaltyAccount`. Drink-credit redemption is turned off in source.
+**Rewards.** `applyCafeLoyalty` links an order to a loyalty account by email and earns 1 point per dollar of subtotal. Staff can adjust points, drink credits, tier, and status with `adjustCoffeeLoyaltyAccount`.
 
 **Catering.** Customers send an inquiry from `/catering` (`requestCafeCatering`), or staff create one. Status goes `inquiry`, `quoted`, `confirmed`, `completed`, or `cancelled` (`updateCateringOrderStatus`).
 
-**Subscriptions.** Staff create a subscription against a loyalty account and move it between `trialing`, `active`, `paused`, and `cancelled` (`updateSubscriptionStatus`). Nothing charges the customer.
+**Subscriptions.** Staff create a subscription against a loyalty account and move it between `trialing`, `active`, `paused`, and `cancelled` (`updateSubscriptionStatus`).
 
 ## GraphQL boundary
 
@@ -101,23 +97,8 @@ Both templates create the store "Neighborhood Roast" and three payment providers
 
 ## Integrations
 
-- **Payments.** `features/integrations/payment` has Stripe, PayPal, and manual adapters. Webhooks arrive at `/api/payment-providers/[providerCode]/webhook` and only accept `pp_stripe_stripe` or `pp_paypal_paypal`. Only Stripe Checkout is wired into the storefront and into online refunds.
-- **Email.** SMTP is used for password reset emails only. No order or catering notifications are sent.
+- **Payments.** `features/integrations/payment` has Stripe, PayPal, and manual adapters. Webhooks arrive at `/api/payment-providers/[providerCode]/webhook` and only accept `pp_stripe_stripe` or `pp_paypal_paypal`. Stripe Checkout powers online payment and online refunds.
+- **Email.** SMTP sends password reset emails.
 - **Storage.** Menu images use S3-compatible storage.
-- **Dashboard AI chat.** `/api/completion` uses OpenRouter and connects to `/api/mcp-transport/[transport]`. That MCP route returns 404 in current source, so the chat cannot reach its tools.
+- **Dashboard AI chat.** `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`) and the MCP transport at `/api/mcp-transport/[transport]`.
 - **Health.** `/api/health` checks the database and returns 200 or 503.
-
-## Limitations
-
-- One store per deployment, USD only.
-- No delivery dispatch, no third-party POS or card-terminal integration (card terminal approvals are typed in by the cashier), no kiosk route.
-- No subscription billing. Subscriptions are records only.
-- Drink-credit redemption is disabled.
-- PayPal is not offered at checkout. Online refunds only work for Stripe.
-- No order, catering, or marketing emails.
-- The outbox records domain events, but no worker in source delivers them.
-- POS receipts are created paid. The void command has no caller in the UI.
-- Purchase orders have no draft state in the UI. Lots can't be set to expired or quarantined from any command.
-- Menu images are edited on the generic Keystone pages (reached from a menu item's full record), not on a dedicated platform page.
-- The MCP transport is disabled, so dashboard AI chat does not work.
-- Nothing in source provides food-safety, tax, or payment compliance or certification.

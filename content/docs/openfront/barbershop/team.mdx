@@ -1,0 +1,17 @@
+---
+title: Team
+description: Shop membership roles at /dashboard/platform/team.
+icon: UsersRound
+---
+
+`/dashboard/platform/team` (`platformTeam`) lists the shop's `ShopMembership` rows.
+
+## Add someone
+
+1. The person creates an account (sign-up, or an owner adds them under `/dashboard/users`).
+2. An owner or manager enters their email and a role. `addShopMemberByEmail` takes `email` and `membershipRole`.
+3. Managers can grant `front_desk`, `barber`, or `viewer`. Only owners grant `owner` or `manager`.
+
+Roles: `owner`, `manager`, `front_desk`, `barber`, `viewer`. Status: `invited`, `active`, `suspended`, `revoked`. Suspend, restore, or remove access from the row. Memberships are not deleted, and each shop keeps at least one active owner.
+
+See [Roles and permissions](/docs/openfront/barbershop/roles-permissions) for what each role can do.

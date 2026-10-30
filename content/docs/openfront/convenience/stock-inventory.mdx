@@ -1,0 +1,36 @@
+---
+title: Stock and inventory
+description: Stock levels, counts, adjustments, and transfers.
+icon: Boxes
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Stock
+
+`/dashboard/platform/stock` shows stock by location with low stock, negative stock, and expiring lots. `StockLevel` rows hold quantity; `InventoryLot` tracks lot, expiry, and status (active, quarantined, consumed, expired, recalled). Every movement writes an `InventoryLedgerEntry`.
+
+## Counts
+
+<Steps>
+<Step>
+### Start
+`startInventoryCount` with a location and type full, cycle, or spot.
+</Step>
+<Step>
+### Count lines
+`recordInventoryCountLine` with `actualQuantity`. A count increase needs a unit cost: "Count increase is missing its accepted unit cost".
+</Step>
+<Step>
+### Submit and approve
+`transitionInventoryCount`: draft, counting, submitted, approved, cancelled. `approveInventoryCount` posts differences.
+</Step>
+</Steps>
+
+## Adjustments
+
+`postInventoryAdjustment` for corrections, spoilage, waste, and theft. A zero adjustment or one that makes stock negative is refused.
+
+## Transfers
+
+`draftInventoryTransfer`, then `transitionInventoryTransfer`: draft, approved, shipped, received, cancelled. Lot allocations are recorded per line.

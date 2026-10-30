@@ -1,0 +1,32 @@
+---
+title: Fuel
+description: Sites, tanks, pumps, prices, deliveries, transactions, and wet-stock reconciliation.
+icon: Fuel
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/fuel`. Lists: `FuelSite`, `FuelGrade`, `FuelTank`, `FuelTankReading`, `FuelPump`, `FuelNozzle`, `FuelPrice`, `FuelDelivery`, `FuelTransaction`, `FuelReconciliation`. Prices are in mills per gallon.
+
+<Steps>
+<Step>
+### Build the topology
+`configureFuelTopology`: grades, tanks, pumps, nozzles. Controller key defaults to `manual_external`.
+</Step>
+<Step>
+### Set prices
+`setFuelPrice`. Live prices show on the storefront home.
+</Step>
+<Step>
+### Record tank readings and deliveries
+`recordFuelTankReading`, `recordFuelDelivery`. "Fuel delivery would exceed tank capacity".
+</Step>
+<Step>
+### Authorize and complete sales
+`authorizeFuelPayment`, `completeFuelTransaction`, or `cancelFuelPaymentAuthorization`. Statuses: requested, authorized, dispensing, completed, stopped, declined, cancelled, refunded. "Fuel transaction exceeds tank inventory".
+</Step>
+<Step>
+### Reconcile
+`generateFuelReconciliation`, `approveFuelReconciliation` compare tank movement to dispensed volume.
+</Step>
+</Steps>

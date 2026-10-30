@@ -1,0 +1,24 @@
+---
+title: Kitchen display
+description: Bar display for bumping order items at /dashboard/platform/kds.
+icon: Monitor
+---
+
+The KDS (`getCoffeeKdsBoard`) shows accepted and paid orders with each item's status. It refreshes every 5 seconds while the tab is visible.
+
+## Item status
+
+`OrderItem.barStatus`: `queued`, `preparing`, `ready`, `handed_off` (also `new` and `voided`). Each item has a `station` copied from the menu item's bar station: espresso bar, cold bar, brew bar, pastry case, or retail shelf.
+
+`updateCafeOrderItemStatus` moves one item. It needs an `expectedStatus` and a command key so a stale screen cannot overwrite a newer one: "KDS item changed; refresh before issuing a new command".
+
+Rules:
+
+- "Cannot bump an item before the pickup request is accepted"
+- "Cannot bump an item on a [status] order"
+- "Cannot transition KDS item from [current] to [next]"
+- When every item is ready the order rolls up to ready.
+
+## Recovery
+
+If a bump request is retried after a lost response, `getCoffeeKdsRecoveryScope` lets the board find the committed result. "KDS status replay requires the original command key." Pages use a cursor with a page size of at most 100.

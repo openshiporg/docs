@@ -1,0 +1,40 @@
+---
+title: Data model
+description: Tenancy, lists by area, and write rules.
+icon: Database
+---
+
+## Tenancy and permissions
+
+`Business` is the tenant root. A `Store` belongs to one business. Almost every other record carries a direct business link, and most also carry a store link. List access rules filter reads by the business and stores the signed-in person can reach.
+
+A `User` is a sign-in identity. Staff access comes from an `Employee` row that joins a user to one business, one business-owned `Role`, and a set of stores. Only active employees count. A role is a set of 47 permission checkboxes, such as `canAccessDashboard`, `canManageCatalog`, `canReadCash`, `canManageFuel`, `canManageApiKeys`, `canUseAssistant`, and `canReadAudit`. Most areas have a read and a manage permission.
+
+The first user created on an empty database is marked as an approved platform admin. Only a platform admin can create a new business through onboarding.
+
+Machine access uses `ApiKey` bearer tokens. A key belongs to one business, has a list of scopes, and is limited to chosen stores or all stores. The plaintext token is shown once. Machine keys cannot open the dashboard UI.
+
+## Lists
+
+Money is stored as integer cents. Fuel prices use mills per gallon. Rates use basis points or fractions. Quantities use fixed four-decimal values.
+
+- **Tenancy and people:** `Business`, `Store`, `User`, `Employee`, `Role`, `Shift`.
+- **Registers and cash:** `Register`, `RegisterSession`, `CashMovement`.
+- **Selling:** `Cart`, `CartLine`, `Sale`, `SaleLine`, `Tender`, `Refund`, `RefundLine`, `RefundTenderAllocation`, `Return`, `ReturnLine`.
+- **Catalog:** `Product`, `ProductVariant`, `ProductBarcode`, `ProductCategory`, `ProductImage`.
+- **Pricing and tax:** `PriceBook`, `PriceBookEntry`, `TaxCategory`, `TaxRate`, `Promotion`, `PromotionRule`, `PromotionRedemption`.
+- **Inventory:** `InventoryLocation`, `StockLevel`, `InventoryLot`, `InventoryLedgerEntry`, `InventoryCount`, `InventoryCountLine`, `InventoryTransfer`, `InventoryTransferLine`, `InventoryTransferLotAllocation`.
+- **Purchasing:** `Vendor`, `VendorItem`, `PurchaseOrder`, `PurchaseOrderLine`, `Receiving`, `ReceivingLine`.
+- **Customers:** `LoyaltyProgram`, `LoyaltyAccount`, `LoyaltyLedgerEntry`.
+- **Restricted sales:** `CompliancePolicy`, `AgeVerification`, `ComplianceIncident`.
+- **Prepared food:** `Recipe`, `RecipeIngredient`, `PrepBatch`, `WasteEvent`.
+- **Fuel:** `FuelSite`, `FuelGrade`, `FuelTank`, `FuelTankReading`, `FuelPump`, `FuelNozzle`, `FuelPrice`, `FuelDelivery`, `FuelTransaction`, `FuelReconciliation`.
+- **Lottery:** `LotteryGame`, `LotteryPack`, `LotteryPackEvent`, `LotterySettlement`.
+- **Money services:** `MoneyServiceProvider`, `MoneyServiceTransaction`, `MoneyServiceSettlement`.
+- **Store-day close:** `StoreDay`, `StoreDayLine`, `BankDeposit`.
+- **Payments:** `PaymentProvider`, `PaymentReconciliation`, `PaymentReconciliationLine`, `WebhookEvent`.
+- **Accounting exports:** `ExportDestination`, `ExportBatch`, `ExportLine`.
+- **Offline registers:** `OfflineDevice`, `OfflineOperationBatch`, `OfflineOperation`.
+- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `OutboxEvent`, `OutboxAttempt`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
+
+Most operational lists have generic create and update turned off. They change only through a named mutation. Sales, sale lines, tenders, refunds, ledger entries, cash movements, readings, audit events, and idempotency keys are written only by the system. `docs/schema-map.md` in the source repo marks each list as op-only, immutable, or CRUD.

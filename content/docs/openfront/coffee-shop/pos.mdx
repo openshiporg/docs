@@ -1,0 +1,40 @@
+---
+title: POS
+description: Ring up counter sales and run the cash drawer at /dashboard/platform/pos.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/pos` (`getCoffeePosRegister`) is the counter. The left side is the menu with search and category tabs. The right side is the ticket.
+
+## Open the drawer
+
+<Steps>
+<Step>
+### Start a shift
+Enter a register name and opening cash. `openRegisterShift` creates a `RegisterShift` with a `shiftNumber`.
+</Step>
+<Step>
+### Ring up items
+Tap items, choose modifiers (sold-out items are marked), adjust quantity, and add a customer name, tip, and ticket notes. `quotePosOrder` prices the ticket.
+</Step>
+<Step>
+### Take tender
+Cash: enter cash received and the app computes change. Card: enter the terminal approval code and confirm the terminal approved the total.
+</Step>
+<Step>
+### Complete
+`createCafePickupOrder` with the register shift creates a paid `CafeOrder`, a `PosOrder` receipt, and a `Payment`, and consumes stock.
+</Step>
+</Steps>
+
+"Immediate tender requires an open register shift". Immediate-tender methods are staff only.
+
+## Cash movements
+
+`recordRegisterCashMovement` with `type` pay-in, pay-out, or drop, an amount, and a required reason.
+
+## Close the drawer
+
+`closeRegisterShift` takes the counted cash. The shift stores expected cash and variance. Expected cash is opening cash plus cash sales, pay-ins, minus cash refunds, pay-outs, and drops. History lives on [Register](/docs/openfront/coffee-shop/register).

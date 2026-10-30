@@ -1,0 +1,32 @@
+---
+title: Billing
+description: Progress claims, payments, allocations, retainage, and lien waivers.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/billing`. Internal only.
+
+<Steps>
+<Step>
+### Prepare a claim
+`prepareProgressClaim` snapshots the schedule of values. Owner claims draw from the prime contract; subcontractor claims from a commitment (also `submitPortalProgressClaim`).
+</Step>
+<Step>
+### Review
+draft, submitted, under_review, approved, partially_paid, paid, closed (rejected returns to draft).
+</Step>
+<Step>
+### Record and allocate payment
+`recordProgressPayment`, then `allocateSettledPayment`. Statuses: pending, authorized, settled, reversed, failed, voided. "Allocation exceeds remaining claim payment due after effective settlements".
+</Step>
+<Step>
+### Retainage and waivers
+`requestRetainageRelease`: requested, approved, released. `recordLienWaiverEvidence`: requested, received, accepted.
+</Step>
+</Steps>
+
+`reverseSettledPayment` reverses a settled payment. A claim closes only when allocations cover the payment due.
+
+Owners can pay approved claims online; staff can send a link. See [Payment providers](/docs/openfront/construction/payment-providers).

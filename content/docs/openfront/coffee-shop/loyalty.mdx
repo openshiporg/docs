@@ -1,0 +1,21 @@
+---
+title: Rewards
+description: Loyalty accounts, points, and the event ledger at /dashboard/platform/loyalty.
+icon: Gift
+---
+
+`/dashboard/platform/loyalty` lists accounts. `/loyalty/[id]` shows one with its full `LoyaltyEvent` ledger.
+
+## How points are earned
+
+A customer links an order by email (`applyCafeLoyalty`) on `/order-confirmed` or staff do it from the order queue. The account earns 1 point per dollar of subtotal. A refund reverses the points; if the history needs reconciliation, the refund stops: "Loyalty account requires reconciliation before refund".
+
+## Account fields
+
+`customerName`, `customerEmail`, `customerPhone`, `marketingOptIn`, `status` (active, paused, closed), `tier` (regular, neighborhood, house_account), `pointsBalance`, `lifetimePoints`, `drinkCredits`, `visits`, `firstVisitAt`, `lastVisitAt`.
+
+## Adjust an account
+
+`adjustCoffeeLoyaltyAccount`: change points, drink credits, tier, or status, with a note. Pause, reactivate, or close from the same form. Each change writes an event.
+
+Customers see their balance on `/account` (`getCafeLoyaltyAccount`).

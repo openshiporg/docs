@@ -4,8 +4,6 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js 20 or later (`package.json` `engines` is `>=20.0.0`). The README suggests Node.js 22 for Next.js 16.
@@ -13,9 +11,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - A PostgreSQL database you are allowed to migrate.
 - S3-compatible object storage for product photos in production.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [convenience.openship.org](https://convenience.openship.org). It uses demo data. Payments, fuel, lottery, and money services there are records only, as they are in the source.
+The hosted app is at [convenience.openship.org](https://convenience.openship.org).
 
 ## Install
 
@@ -53,7 +51,7 @@ Optional settings read by the code:
 | `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN` | Outbox and alert workers: GraphQL URL and a machine API key |
 | `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, `OUTBOX_SIGNING_VALUE`, `OUTBOX_WORKER_ID` | Outbox worker target and HMAC signing |
 | `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, `ALERT_EXPIRY_WINDOW_DAYS`, `ALERT_WORKER_ID` | Alert worker thresholds |
-| `RUNTIME_ADMIN_EMAIL`, `RUNTIME_ADMIN_PASSWORD`, `ALLOW_DISPOSABLE_RUNTIME_SEED` | `npm run seed:runtime`, a non-production seed for a database named `runtime_convenience` |
+| `RUNTIME_ADMIN_EMAIL`, `RUNTIME_ADMIN_PASSWORD`, `ALLOW_DISPOSABLE_RUNTIME_SEED` | `npm run seed:runtime`, a local seed for a database named `runtime_convenience` |
 
 Any `env://NAME` credential reference you set on a payment provider also needs `NAME` in the environment, with a value of at least 32 characters. Keep `.env` out of source control.
 
@@ -65,9 +63,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, applies the checked-in migrations with `prisma migrate deploy`, and starts Next.js. The repo has 30 migration directories. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds the schema, regenerates the dashboard view order, and runs `keystone prisma migrate dev`. Commit model changes and their migrations together.
 
-<Callout type="warn">
-`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 
@@ -80,8 +76,8 @@ Once running:
 ## First user and onboarding
 
 1. While the database has no users, every route redirects to `/dashboard/init`. Create the first user there. That user becomes an approved platform admin.
-2. Sign in. The dashboard opens the onboarding dialog. Pick **Sample store** to prefill the form, or **Blank**.
-3. Fill in the business, store, address, timezone, currency, and standard tax percent. Tick **This store sells fuel** if needed, and **Add sample products** for the 18 demo items. Choose **Draft** or **Published** for the storefront.
+2. Sign in. The dashboard opens the onboarding dialog. Pick **Starter store** to prefill the form, or **Blank**.
+3. Fill in the business, store, address, timezone, currency, and standard tax percent. Tick **This store sells fuel** if needed, and **Add starter products** for the 18 starter items. Choose **Draft** or **Published** for the storefront.
 4. Submit. `onboardConvenienceBusiness` creates the business, store, Owner role and employee, two stock locations, a price book, tax categories and rate, a register, a loyalty program, an external-terminal payment provider, and optional fuel and sample catalog. See [Onboarding](/docs/openfront/convenience#onboarding) for the full list.
 5. Open `/dashboard/platform/store-settings` to set the public name, logo, hours, and location, and to add registers and stock locations.
 6. Add staff at `/dashboard/platform/staff`. Give each person a role with only the permissions they need. Each cashier sets a POS PIN.
@@ -100,27 +96,5 @@ Once running:
 | `npm run lint` / `npm run typecheck` | ESLint / `tsc --noEmit` |
 | `npm run worker:outbox` | Outbox delivery worker |
 | `npm run worker:alerts` | Operational alert worker |
-| `npm run seed:runtime` | Non-production seed for a dedicated runtime database |
+| `npm run seed:runtime` | Local seed for a dedicated runtime database |
 | `npm run backup` / `npm run backup:verify` | PostgreSQL backup and backup check scripts |
-
-## Deployment
-
-A typical release builds, applies migrations against a backed-up database, then starts:
-
-```bash
-npm run build
-npm run migrate
-npm start
-```
-
-`railway.toml` does the same on Railway: it builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. `railway.outbox.json` and `railway.alerts.json` describe separate services for the two workers. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to provide the S3 values and run migrations yourself.
-
-Before real use:
-
-- set `NODE_ENV=production` and all five S3 values;
-- use a fixed, long `SESSION_SECRET`;
-- put the app behind a proxy that sets `Host` and `X-Forwarded-*` headers to fixed values, because the app builds its own base URL from them;
-- keep `PUBLIC_SIGNUPS_ALLOWED` off unless you want open dashboard sign-up;
-- run the outbox and alert workers if you use those features, each with its own machine API key;
-- remove or mark demo records created by onboarding;
-- test backups and restores.

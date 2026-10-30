@@ -1,0 +1,28 @@
+---
+title: Take a booking
+description: Book a customer from the phone or front desk.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the board
+`/dashboard/platform/booking`, choose the shop day.
+</Step>
+<Step>
+### New appointment
+Pick or create the customer, then the service, barber, and time.
+</Step>
+<Step>
+### Collect a deposit if needed
+For deposit services the customer pays by Stripe on the appointment page, or you take it at the counter.
+</Step>
+<Step>
+### Confirm
+Move the appointment from requested to confirmed.
+</Step>
+</Steps>
+
+On the day: check in, then seat. See [Booking board](/docs/openfront/barbershop/booking).

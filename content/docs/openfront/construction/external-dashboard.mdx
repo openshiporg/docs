@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-construction-custom-dashboard/SKILL.md`](/skills/openfront-construction-custom-dashboard/SKILL.md)
 
-## Current platform pages
+## Platform pages
 
 Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file only imports a screen from `features/platform/<slice>`.
 
@@ -19,7 +19,8 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file on
 |---|---|---|
 | `/dashboard/platform/portfolio` | `portfolio` | Project portfolio with budget, cost, and open-item metrics across companies the user can see |
 | `/dashboard/platform/projects` | `projects` | Project list; create a project (`createConstructionProject`) |
-| `/dashboard/platform/setup` | `onboarding` | First-company onboarding (custom or fictional sample) and the readiness checklist |
+| `/dashboard/platform/setup` | `onboarding` | First-company onboarding (custom or starter workspace) and the readiness checklist |
+| `/dashboard/platform/payment-providers` | `payment-providers` | Install Stripe for a company and turn providers on or off (`installStripePaymentProvider`, `setPaymentProviderInstalled`) |
 | `/dashboard/platform/store-settings` | `store-settings` | Company brand and logo, public site profile, services, and portfolio projects (`updateConstructionStoreSettings`) |
 | `/dashboard/platform/trade-partners`, `/[id]` | `trade-partners` | Directory of subcontractors, vendors, owners, designers, consultants, and authorities; create, edit, and change status (prospective, approved, inactive, blocked) |
 | `/dashboard/platform/cost-codes` | `cost-codes` | Company cost code library; create, edit name and division, activate or deactivate |

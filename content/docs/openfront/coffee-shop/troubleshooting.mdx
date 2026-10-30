@@ -1,0 +1,36 @@
+---
+title: Troubleshooting
+description: Exact error messages and what to do about them.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| Insufficient inventory for this order | Receive stock or record a count; check expired or quarantined lots |
+| Insufficient eligible stock: expired or quarantined lots cannot be sold or prepared | Record the lots as waste or release quarantine |
+| Menu item has multiple active recipes; review recipe versions before selling | Archive all but one recipe |
+| Ingredient X unit does not match inventory | Use the inventory item's unit |
+| Choose how this option affects inventory before offering it | Set `inventoryAction` on the modifier |
+| Exactly one open register shift is required to record pay-at-pickup settlement | Open exactly one drawer on the POS |
+| Immediate tender requires an open register shift | Open a drawer first |
+| Confirm the card terminal approved this exact amount before recording the card payment | Tick the confirmation |
+| Enter the terminal approval or reference code (4-64 letters, numbers or #._:/-) | Enter a valid code |
+| Cash refund exceeds the ... expected in the payout drawer | Add cash to the drawer or refund from a shift with enough cash |
+| Cafe order paid status is controlled by payment settlement | Record or settle a payment instead |
+| Cannot bump an item before the pickup request is accepted | Accept the order first |
+| KDS item changed; refresh before issuing a new command | Reload the board |
+| The requested pickup window is at capacity | Choose another time or raise capacity |
+| Online pickup requests are temporarily paused while the cafe catches up | Accept or cancel open requests |
+| Idempotency key must be at least 16 characters | Generate a longer key |
+| Loyalty account requires reconciliation before refund | Review the account's event ledger |
+| Drink-credit redemption is unavailable until it is integrated with tender authorization | Adjust credits manually on the Rewards page |
+| Lot expiry must be after the receipt time | Fix the date or record the goods as waste |
+| Inventory lot balances exceed recorded stock for this item; reconcile the stock count before continuing | Run a stock count |
+
+## Startup
+
+The app will not start without `DATABASE_URL`, and rejects a `SESSION_SECRET` shorter than 32 characters. In production the five S3 values are required.
+
+## Online payment does nothing
+
+`getCoffeeStore` must return `onlinePayment: true`: both Stripe keys, the Stripe provider enabled, and the Store Settings switch on.

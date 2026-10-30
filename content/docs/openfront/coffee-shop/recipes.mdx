@@ -1,0 +1,28 @@
+---
+title: Recipes
+description: Recipes, ingredients, and cost per serving at /dashboard/platform/recipes.
+icon: BookOpen
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/recipes` has Draft, Active, and Archived tabs. `/recipes/[id]` is the builder.
+
+## Build a recipe
+
+<Steps>
+<Step>
+### Create the recipe
+`CreatePlatformRecipe`: name, menu item, `yieldQuantity`, `yieldUnit`, `prepInstructions`, `allergenNotes`.
+</Step>
+<Step>
+### Add ingredients
+`CreatePlatformIngredient`: inventory item, quantity, unit, optional flag, notes. The unit must match the inventory item's unit: "Ingredient X unit does not match inventory".
+</Step>
+<Step>
+### Activate
+`SetPlatformRecipeStatus` to active. Only one recipe may be active per menu item: "Menu item has multiple active recipes; review recipe versions before selling".
+</Step>
+</Steps>
+
+The builder shows cost per yield unit and servings available from current stock. Selling an item with an active recipe consumes the recipe's ingredients. Modifiers that add or substitute inventory adjust the draw.

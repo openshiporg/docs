@@ -1,0 +1,21 @@
+---
+title: Roles and permissions
+description: Business roles, employees, store scope, and machine API keys.
+icon: Shield
+---
+
+`User` is the sign-in identity. `Employee` joins a user to one business, a business-owned `Role`, and a set of stores. A role is a set of 47 checkboxes.
+
+| Area | Flags |
+|---|---|
+| General | `canAccessDashboard`, `canUseAssistant`, `canManageOnboarding`, `canManageBusiness`, `canManageRoles`, `canReadPeople`, `canManagePeople` |
+| Catalog and pricing | `canReadCatalog`/`canManageCatalog`, `canReadPricing`/`canManagePricing`, `canReadPromotions`/`canManagePromotions` |
+| Stock and buying | `canReadInventory`/`canManageInventory`, `canReadPurchasing`/`canManagePurchasing` |
+| Selling | `canReadSales`/`canManageSales`, `canReadPayments`/`canManagePayments`, `canReadCash`/`canManageCash` |
+| Customers and compliance | `canReadLoyalty`/`canManageLoyalty`, `canReadCompliance`/`canManageCompliance` |
+| Verticals | `canReadPreparedFood`, `canReadFuel`, `canReadLottery`, `canReadMoneyServices` (each with a Manage flag) |
+| Operations | `canReadReporting`, `canReadExports`, `canReadAlerts`, `canReadOfflineOperations`, `canReadIntegrations` (each with Manage), `canManageApiKeys`, `canReadAudit` |
+
+Onboarding creates an `Owner` role with every permission. "Access denied for this store" means the employee is not assigned to that store.
+
+API keys (`ApiKey`) belong to one business, carry scopes, are limited to stores, and cannot open the dashboard. See [Recovery](/docs/openfront/convenience/recovery).

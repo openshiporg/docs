@@ -1,0 +1,24 @@
+---
+title: API reference
+description: Custom GraphQL operations.
+icon: Code
+---
+
+Declared in `features/keystone/mutations/index.ts`, served at `/api/graphql`. Commands take an `idempotencyKey`, write a `DomainAuditEvent` and a `DomainOutboxEvent` in the same transaction, and fail on key reuse with different data ("Lead edit idempotency key was reused with different details").
+
+| Group | Operations |
+|---|---|
+| Storefront reads | `publicInventoryVehicles`, `publicInventoryVehicle`, `publicInventoryVehicleRecord`, `publicInventoryCount`, `storefrontProfile` |
+| Public submissions | `submitInquiry`, `submitTestDrive`, `submitTradeIn`, `submitFinancing`, `submitServiceBooking` |
+| Customer account | `registerCustomerAccount`, `requestCustomerEmailVerification`, `confirmCustomerEmailVerification`, `cancelCustomerBooking`, `rescheduleCustomerBooking`, `customerRequestHistory`, `customerRequestDetail`, `customerPurchases`, `customerServiceHistory`, `customerServiceOrder`, `customerPayments`, `customerEmailLinkStatus` |
+| Workspace reads | `inventoryWorkspace`, `crmWorkspace`, `dealDeskWorkspace`, `dealWorkspace`, `dealLenderOffers`, `financeWorkspace`, `deliveryWorkspace`, `fixedOpsWorkspace`, `accountingWorkspace`, `operationalReport`, `auditSearch`, `domainTimeline`, `customerDuplicateCandidates` |
+| Inventory | `intakeInventoryVehicle`, `startInventoryAcquisition`, `transitionInventoryAcquisition`, `establishInventoryStock`, `moveInventoryStock`, `recordInventoryCost`, `openInventoryReconWorkItem`, `transitionInventoryReconWorkItem`, `updateInventoryMerchandisingDraft`, `updateInventoryVehicleDetails`, `submitInventoryMerchandising`, `decideInventoryMerchandising`, `recordInventoryFeedRun`, `addInventoryVehiclePhoto`, `arrangeInventoryVehiclePhotos`, `removeInventoryVehiclePhoto` |
+| CRM | `openLead`, `updateLeadDetails`, `transitionLead`, `recordLeadInteraction`, `createLeadTask`, `completeTask`, `transferLeadOwnership`, `routeLead`, `configureLeadRoutingRule`, `enrollLeadCadence`, `advanceLeadCadence`, `manageSalesVisit`, `updateCustomerContact`, `updateCustomerCommunicationPreferences`, `mergeCustomers`, `linkCustomerHousehold`, `unlinkCustomerHousehold`, `updateTestDriveWorkflow`, `createWalkInTradeIn`, `recordTradeInAppraisal` |
+| Deals and delivery | `createDealPencil`, `saveDealWorksheet`, `presentDealWorksheet`, `acceptDealWorksheet`, `selectDealLenderOffer`, `reopenDealWorksheet`, `setDealTradeIn`, `transitionDeal`, `manageDeliveryCase`, `manageWeOweItem`, `completeDealDelivery` |
+| Finance | `queueFinancingApplication`, `recordLenderSubmissionStatus`, `recordLenderDecision`, `openFinanceFollowUp`, `configureFinanceProduct`, `recordFinanceProductQuote`, `presentFinanceMenu`, `decideFinanceMenu`, `recordFinanceComplianceCheck`, `manageFinanceContractPackage`, `reviewFinancePrerequisites`, `manageFinanceFundingCase`, `recordCashDealDeposit`, `recordFinanceProductCancellation` |
+| Service and parts | `transitionServiceAppointment`, `openServiceOrder`, `recordServiceOrderEvidence`, `addServiceOrderLineItem`, `updateServiceOrderLineItem`, `removeServiceOrderLineItem`, `setServiceOrderTax`, `transitionServiceOrder`, `manageLaborOperation`, `configurePart`, `recordPartsMovement`, `managePartsPurchaseOrder` |
+| Payments and accounting | `createPaymentCheckout`, `requestPaymentRefund`, `reconcilePaymentTransaction`, `handlePaymentProviderWebhook`, `configureAccountingMapping`, `stageAccountingBatch`, `manageAccountingBatch` |
+| Organization and reporting | `changeDealerMembership`, `configureRetentionPolicy`, `saveOperationalReport`, `runSavedReport`, `queueDueSavedReports`, `ensureDealershipOnboardingRecord`, `updateActiveUser`, `redirectToInit` |
+
+
+Lists that are not command-only (for example Make, Model, ServicePackage, Role, DealerGroup, Rooftop, DealershipProfile, PaymentProvider, ApiKey, VehicleConditionReport, VehicleHistory) also use Keystone's generated CRUD.

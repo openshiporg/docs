@@ -9,14 +9,14 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-barbershop-custom-dashboard/SKILL.md`](/skills/openfront-barbershop-custom-dashboard/SKILL.md)
 
-## Current platform pages
+## Platform pages
 
 Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server actions are in `features/platform/<slice>`. Every platform page is scoped to the active shop. If the user has no shop, the platform layout shows a shop access panel instead.
 
 | Page | Slice | What operators do there |
 |---|---|---|
 | `/dashboard/platform/booking` | `booking` | Booking board for one day: appointments by time, schedule by barber, chairs, status filter. Create staff appointments, confirm, check in, seat, cancel, reschedule, mark no-show |
-| `/dashboard/platform/queue` | `queue` | Walk-in line: add a walk-in, assign service and barber, mark texted (no SMS is sent), seat into an appointment, mark served or left; recently served |
+| `/dashboard/platform/queue` | `queue` | Walk-in line: add a walk-in, assign service and barber, mark texted, seat into an appointment, mark served or left; recently served |
 | `/dashboard/platform/barbershop` | `barbershop` | Shop operations: a "Needs attention" list (low or expiring stock, unpaid or unapproved commissions, open card payments, missing no-show policy, chairs in maintenance or unassigned, unsigned waivers) and the waitlist |
 | `/dashboard/platform/services` | `services` | Service menu, packages and memberships, retail products, booking policy link |
 | `/dashboard/platform/services/categories` | `services` | Create, edit, order, and show or hide menu categories |
@@ -39,7 +39,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server
 | `/dashboard/platform/policies` | `policies` | Booking policy in force, publish a new version, version history, retire; no-show policies (create, edit, use, pause, archive) |
 | `/dashboard/platform/team` | `team` | Add an existing account by email, set the shop role, suspend, restore, or remove access |
 | `/dashboard/platform/reports` | `reports` | Revenue, appointments, walk-ins, and barber and service performance for a date range |
-| `/dashboard/platform/store-settings` | `store-settings` | Shop name, tagline, address, phone, timezone, hours, brand color, logo, publish the storefront, sample-shop flag; active shop selector |
+| `/dashboard/platform/store-settings` | `store-settings` | Shop name, tagline, address, phone, timezone, hours, brand color, logo, publish the storefront; active shop selector |
 
 Onboarding is not a route. It is a dialog in the dashboard shell (`features/platform/onboarding`). See [Getting started](/docs/openfront/barbershop/getting-started#onboarding).
 

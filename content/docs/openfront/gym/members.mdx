@@ -1,0 +1,28 @@
+---
+title: Members
+description: Invite, search, and manage member accounts and contact imports.
+icon: Users
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/members` and `/dashboard/platform/imports`.
+
+## Invite and manage
+
+<Steps>
+<Step>
+### Invite
+`inviteMember` creates the member and account invitation.
+</Step>
+<Step>
+### Set account status
+`setMemberAccountStatus`: active, suspended, or cancelled. "Member account status must be active, suspended, or cancelled".
+</Step>
+</Steps>
+
+## Import contacts
+
+`importMemberContacts` takes 1 to 100 rows with a dry-run preview, then applies. Each row is kept in `MemberImportRecord`.
+
+Members can also sign up themselves on `/account` when `PUBLIC_MEMBER_SIGNUPS_ALLOWED=true`.

@@ -1,0 +1,14 @@
+---
+title: Approvals
+description: Approval policies and the approval panel.
+icon: CheckCircle
+---
+
+Budget changes, prime contracts, change orders, progress claims, and retainage releases can require an `ApprovalRequest` under the project's `ApprovalPolicy`. Onboarding creates five policies with the administrator role as approver.
+
+- `configureConstructionApprovalPolicy` edits a policy.
+- `requestConstructionApproval` creates a request; the requester assigns another eligible person.
+- `decideConstructionApproval` approves or rejects. Owners decide from the portal after `constructionPortalApprovalSnapshot`.
+- `constructionApprovalSnapshot` feeds the approval panel on financials, contracts, and billing.
+
+Self-approval is rejected: "A different authorized person must decide this approval request". Governance lists: ApprovalPolicy, ApprovalRequest, ApprovalDecision.

@@ -1,0 +1,50 @@
+---
+title: Finance and F&I
+description: Applications, lender decisions, product menu, compliance, contracts, funding, and cancellations.
+icon: Landmark
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/finance` (`financeWorkspace`), `/finance/applications/[id]`, `/finance/products`, `/finance/cancellations`.
+
+## Applications
+
+Customers apply at `/financing` (`submitFinancing`) with consent and privacy acknowledgment. Statuses: submitted, under-review, approved, declined, expired, cancelled.
+
+<Steps>
+<Step>
+### Queue
+`queueFinancingApplication` with the `operator-recorded` adapter. "Only submitted applications can be queued".
+</Step>
+<Step>
+### Record the submission and decision
+`recordLenderSubmissionStatus`, `recordLenderDecision`. `openFinanceFollowUp` for stipulations.
+</Step>
+</Steps>
+
+## F&I menu
+
+<Steps>
+<Step>
+### Catalog
+`configureFinanceProduct`.
+</Step>
+<Step>
+### Quote and present
+`recordFinanceProductQuote`, `presentFinanceMenu` (creates a `FinanceMenuVersion`). "Every menu product requires current operator/provider quote evidence".
+</Step>
+<Step>
+### Customer choice
+`decideFinanceMenu`.
+</Step>
+</Steps>
+
+## Close out
+
+- `recordFinanceComplianceCheck`: identity, OFAC, red-flag, privacy
+- `manageFinanceContractPackage`
+- `reviewFinancePrerequisites`
+- `manageFinanceFundingCase`
+- `recordCashDealDeposit` for cash deals
+- `recordFinanceProductCancellation` on `/finance/cancellations` with a pro-rata refund calculator. "Cancellation must reference an accepted menu product"

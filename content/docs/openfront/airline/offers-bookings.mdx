@@ -1,0 +1,50 @@
+---
+title: Offers and bookings
+description: Hold seats with an offer, accept it into a booking, and service the booking at /dashboard/platform/offers and /dashboard/platform/bookings.
+icon: BookOpenCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Operators sell the same way travelers do: search, hold, accept. The desks are `/dashboard/platform/offers` and `/dashboard/platform/bookings`.
+
+## Create an offer
+
+<Steps>
+<Step>
+### Search flights
+On Offers, pick a passenger party (1 to 9 passengers) and search. `airlineFlightOptions` returns open flights with cabin, fare brand, price, and seats left.
+</Step>
+<Step>
+### Hold the seats
+`createOfferFromShopping` takes `flightInstanceId`, `inventoryBucketId`, and `passengerIds`. It creates an `Offer` with `OfferItem` rows and an `InventoryHold`. The hold lasts 15 minutes.
+</Step>
+</Steps>
+
+Offer statuses: held, accepted, expired, withdrawn. Errors you may meet: "Not enough inventory for this request.", "Offer has expired.", "Offer flight is no longer open for future sale.", "Complete or release an existing held offer before holding more inventory."
+
+## Accept into a booking
+
+On Bookings, the **Held offers** section lists live offers. `createBookingFromOffer` takes `offerId` and `passengerIds`. Passengers must exactly match the offer. Each booking needs at least one traveler aged 18 or over. The booking, its record locator, and the inventory change happen in one serializable transaction.
+
+## Booking states
+
+| Field | Values |
+|---|---|
+| `status` | pending, confirmed, ticketed, in_progress, completed, cancelled |
+| `paymentStatus` | unpaid, partially_paid, paid, partially_refunded, refunded, failed |
+| `ticketingStatus` | not_ticketed, partially_ticketed, ticketed, voided, exchanged |
+| `source` | direct, website, call_center, agent, ndc, gds, airport |
+
+## Booking commands
+
+Open a booking row on `/dashboard/platform/bookings` to see the commands that apply to its state.
+
+- **Issue ticket**: shown for confirmed, paid, not ticketed bookings. See [Tickets](/docs/openfront/airline/tickets).
+- **Received**: record money received or a refund sent. See [Payments and refunds](/docs/openfront/airline/payments-refunds).
+- **Payment / Mark paid**: consume approved evidence.
+- **Refund**: for paid or partially refunded bookings, with amount, reference, and reason.
+- **New access code**: `reissueBookingAccessCode` returns a new `recordLocator` and `accessToken` for the traveler.
+- **Cancel and release**: for unpaid, failed, or refunded bookings, with a reason. Releases sold seats. A paid booking must be refunded first: "Refund captured airfare before cancelling this booking."
+
+`/dashboard/platform/bookings/[id]` shows the receipt (`operatorBookingReceipt`). Search by record locator, exact or partial.

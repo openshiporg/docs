@@ -1,0 +1,44 @@
+---
+title: Baggage
+description: Track bags by tag number and record scan events at /dashboard/platform/baggage.
+icon: Luggage
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Bags are created at check-in with `acceptCheckedBag`. After that, `/dashboard/platform/baggage` is where scans are recorded.
+
+## Find a bag
+
+Search by bag tag number or booking record locator. `/dashboard/platform/baggage/[id]` shows the bag, its flight, the passenger, and a timeline of `BagEvent` records.
+
+## Record a scan
+
+<Steps>
+<Step>
+### Open the bag
+Only the actions allowed from the bag's current status are shown.
+</Step>
+<Step>
+### Enter station and note
+Station is an optional three-letter airport code. The note is up to 300 characters.
+</Step>
+<Step>
+### Choose the action
+`recordBagEvent` with `bagId`, `action`, `airportCode`, `note`. Mishandled and Close ask for confirmation.
+</Step>
+</Steps>
+
+## Status transitions
+
+| From | Actions available |
+|---|---|
+| accepted | load, transfer, delay, mishandle |
+| loaded | transfer, arrive, delay, mishandle |
+| in_transit | load, arrive, delay, mishandle |
+| arrived | deliver, delay, mishandle |
+| delayed | transfer, arrive, deliver, mishandle, close |
+
+Statuses: accepted, loaded, in_transit, arrived, delivered, delayed, mishandled, closed. Bag types: checked, gate_checked, special_item, mobility_aid.
+
+Delayed and mishandled bags appear in the "Mishandled bags" queue on [Carrier operations](/docs/openfront/airline/operations).

@@ -1,0 +1,49 @@
+---
+title: Booking board
+description: Day view of appointments by time and by barber at /dashboard/platform/booking.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The booking board shows one shop day: appointments by time, the schedule by barber, chairs, and a status filter. It reads the `platformBooking` projection.
+
+## What you can do
+
+- Create an appointment for a new or existing customer.
+- Confirm, check in, seat, cancel, reschedule, and mark no-show.
+- Book a waitlist entry into a slot.
+- Open the checkout for a seated visit (see [POS checkout](/docs/openfront/barbershop/pos)).
+
+## Create an appointment
+
+<Steps>
+<Step>
+### Choose the customer
+Pick an existing customer or enter first name, last name, phone, and email.
+</Step>
+<Step>
+### Choose service, barber, and time
+`createStaffAppointment` takes `serviceId`, `barberId`, `startsAt`, optional `notes`, and `source` (phone, staff, or walk_in). The barber must offer the service, work that day (weekly hours, shifts, no time-off), and be free. Pass `waitlistEntryId` to convert a waitlist entry.
+</Step>
+</Steps>
+
+## Status flow
+
+`requested` to `confirmed` to `checked_in` to `in_chair` to `completed`. Use `transitionAppointment` (`appointmentId`, `toStatus`, `idempotencyKey`). `completed` is reached only through a paid checkout. `cancelled` and `no_show` are terminal.
+
+- Check-in and seating happen only on the appointment's day: "Check-in and seating happen on the appointment's day."
+- A service with a required waiver cannot start until the customer signs it.
+- A licensed service needs a barber with an effective practitioner credential.
+
+## Cancel and reschedule
+
+`manageStaffAppointment` with `action` cancel or reschedule, a `reason`, and for reschedule a new `startsAt` or `barberId`. Only requested or confirmed appointments can be changed this way. Guests already in the shop use the board status actions.
+
+## No-show
+
+`markAppointmentNoShow` records the no-show against the active no-show policy. It is allowed after the start time plus the policy's `graceMinutes`: "No-show can be recorded after the N-minute grace period." An active no-show policy is required.
+
+## Key fields
+
+`Appointment`: `startsAt`, `endsAt`, `durationMinutes`, `status`, `source`, `paymentStatus`, `price`, `depositAmount`, `cancellationReason`, snapshots of the service title, barber, chair, booking policy, and waiver requirement, and `customerRescheduleCount`. Every change writes an `AppointmentChangeEvent`.

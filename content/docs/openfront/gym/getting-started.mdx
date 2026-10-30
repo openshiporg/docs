@@ -4,8 +4,6 @@ description: Clone the source, configure PostgreSQL, sessions, and S3 storage, a
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 ## Requirements
 
 - Node.js. `package.json` declares `>=20.0.0`; Next.js 16 needs 20.9 or later.
@@ -13,9 +11,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - A PostgreSQL database you are allowed to migrate. `DATABASE_URL` must start with `postgres://` or `postgresql://`.
 - S3-compatible object storage for images (member profile photos) in production.
 
-## Live demo
+## Hosted app
 
-A hosted demo runs at [gym.openship.org](https://gym.openship.org). The staff dashboard is at `/dashboard` on the same host. It runs on demo data.
+The hosted app is at [gym.openship.org](https://gym.openship.org). The staff dashboard is at `/dashboard` on the same host.
 
 ## Install
 
@@ -72,9 +70,7 @@ npm run dev
 
 `npm run dev` runs `keystone build --no-ui`, applies checked-in migrations with `prisma migrate deploy`, and starts Next.js. To change the schema, run `npm run migrate:gen` against a disposable database. It rebuilds Keystone, regenerates the dashboard view order, and runs `keystone prisma migrate dev`.
 
-<Callout type="warn">
-`npm run dev` applies migrations to whatever `DATABASE_URL` points at. Do not point it at a shared or production database.
-</Callout>
+`npm run dev` applies migrations to whatever `DATABASE_URL` points at.
 
 Once running:
 
@@ -91,7 +87,7 @@ Other scripts: `npm run lint`, `npm run typecheck`, and `npm run test:offline` (
 
 On an empty database, every route redirects to `/dashboard/init`. That page creates the first user with name, email, and password. The user is attached to the `gym_default_organization` organization, which the tenant migration creates, and gets an `Admin` role with full management capabilities.
 
-Dashboard self-signup is not supported. Add staff from the dashboard and give them a role. Members join through invitation (`/dashboard/platform/members`), contact import (`/dashboard/platform/imports`), or public signup when it is enabled.
+Dashboard self-signup is refused. Add staff from the dashboard and give them a role. Members join through invitation (`/dashboard/platform/members`), contact import (`/dashboard/platform/imports`), or public signup when it is enabled.
 
 ## Onboarding
 
@@ -101,28 +97,6 @@ Open the onboarding dialog from the dashboard sidebar. It offers three templates
 - **Basic Starter Setup** (`minimal`): one plan, one class type (Yoga), one instructor, three weekly schedules.
 - **Custom Setup** (`custom`): starts from the full configuration and lets you edit plans, classes, instructors, and schedules before it is validated.
 
-All three also create (or reuse) store settings, one location, a bounded instructor role, and a Stripe provider record. The Stripe record is marked installed only when `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set. Setup creates no members, charges, subscriptions, or revenue. See [Architecture and workflows](/docs/openfront/gym#onboarding) for details.
+All three also create (or reuse) store settings, one location, a bounded instructor role, and a Stripe provider record. The Stripe record is marked installed only when `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are set. Setup creates no members, charges, subscriptions, or revenue. 
 
 After setup, work through the readiness checklist it returns. Required steps: store settings (name, contact email, hours), an open location, membership plans, class types, active coaches, and a weekly schedule with upcoming sessions. When checkout is on, at least one plan also needs a Stripe product and price ID.
-
-## Deployment
-
-| Script | Effect |
-|---|---|
-| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
-| `npm run migrate` | `prisma migrate deploy` |
-| `npm start` | `next start` |
-
-A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
-
-```bash
-npm run build
-npm run migrate
-npm start
-```
-
-The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also has a Vercel import button. Either way, you provision PostgreSQL, S3-compatible storage, SMTP, and Stripe yourself. Point the Stripe webhook at `/api/stripe/webhook`.
-
-<Callout type="warn">
-The tenant migration backfills older rows to `gym_default_organization`. If you upgrade a database that held data from more than one real business, review row ownership before applying it.
-</Callout>

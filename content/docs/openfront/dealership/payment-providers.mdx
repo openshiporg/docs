@@ -1,0 +1,26 @@
+---
+title: Payment providers
+description: Stripe and manual adapters, webhook URL, and provider records.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters live in `features/integrations/payment`: `stripe` and `manual`. Records are `PaymentProvider` rows on the Payments page.
+
+<Steps>
+<Step>
+### Set keys
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+</Step>
+<Step>
+### Add the webhook
+`POST /api/payment-webhooks/{providerCode}`, for example `/api/payment-webhooks/pp_stripe_stripe`. `handlePaymentProviderWebhook` verifies the signature and records a `PaymentProviderEvent`.
+</Step>
+<Step>
+### Check the provider
+Onboarding seeds Stripe (installed) and Manual. Stripe fails until the keys are set.
+</Step>
+</Steps>
+
+Stripe creates Checkout Sessions and refunds. The manual adapter records payments staff take.

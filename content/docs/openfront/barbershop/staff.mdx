@@ -1,0 +1,36 @@
+---
+title: Barbers and schedules
+description: Barbers, chairs, weekly hours, shifts, time off, and practitioner credentials at /dashboard/platform/staff.
+icon: UserRound
+---
+
+`/dashboard/platform/staff` (`platformStaff`) shows the weekly roster, barbers, projected commission, shop closures, and shifts.
+
+## Barbers
+
+`/staff/new` and `/staff/[id]`. Fields: `displayName`, `legalName`, `bio`, `imagePath`, `phone`, `email`, `chair`, `status`, `bookingEnabled` ("Takes online bookings"), `bufferMinutes`, `serviceCommissionRateBps` (basis points), and `specialties` (services offered). The profile also holds the weekly hours editor (`BarberSchedule` per day) and recent visits.
+
+Link a sign-in account with `linkBarberAccount`. The person must already be an active shop member: "Invite this person to the shop first; only active shop members can be linked."
+
+## Chairs
+
+`/staff/chairs`. `BarberChair`: `chairNumber`, `stationName`, `status` (in service, maintenance, reserved), `locationNote`.
+
+## Shifts
+
+`manageStaffShift` with `action` `schedule`, `clock_in`, `clock_out`, or `cancel`; `barberId`, `chairId`, `scheduledStart`, `scheduledEnd`, `notes`. Cancelling a shift is blocked while booked appointments rely on it: "N booked appointment(s) rely on this shift. Reschedule or reassign them before cancelling it."
+
+## Time off and closures
+
+`manageScheduleException` with `action` `create` or `cancel` and `exceptionType`:
+
+- `time_off` (needs a barber)
+- `shop_closure`
+- `chair_unavailable` (needs a chair)
+- `working_override` (needs a barber)
+
+Creating one that overlaps booked appointments is refused: "N booked appointment(s) fall in this window. Reschedule or cancel them before blocking this time."
+
+## Practitioner credentials
+
+On the barber profile add a credential: `credentialType` (for example Cosmetology, Master barber, Apprentice), `credentialNumber`, `issuingAuthority`, `jurisdictionCode`, `effectiveFrom`, `expiresAt`, `supervisionRequired`. Change status with `setPractitionerCredentialStatus` (active, suspended, expired, revoked) with a reason. A terminal status cannot be reversed. Credentials are checked only for services marked `credentialRequired`.

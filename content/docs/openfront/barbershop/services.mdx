@@ -1,0 +1,40 @@
+---
+title: Services and packages
+description: Categories, services, packages, membership plans, and retail products at /dashboard/platform/services.
+icon: Scissors
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/services` (`platformServices`) lists the menu. Create and edit pages live under it.
+
+## Categories
+
+`/dashboard/platform/services/categories`. Create, edit, order, and show or hide categories. A service appears on the storefront only if its category is active.
+
+## Services
+
+`/services/new` and `/services/[id]`.
+
+| Field | Notes |
+|---|---|
+| `name`, `description`, `imagePath` | Image uploads use S3 |
+| `price` | Entered in dollars, stored in cents |
+| `durationMinutes`, `bookingBufferMinutes` | Buffer is cleanup after the visit |
+| `depositRequired`, `depositAmount` | Deposit paid online with Stripe |
+| `credentialRequired` | Needs a barber with an effective practitioner credential |
+| `waiverRequired`, `waiverTemplate*` | Customer must sign before service |
+| `specialists` | Barbers who offer the service |
+| `status` | active or not |
+
+## Packages
+
+`/services/packages/new`. A `ServicePackage` has a price and `ServicePackageItem` rows for included services. Sold at the counter with `manageMembership` (`purchase_package`). Only active packages can be sold.
+
+## Membership plans
+
+`/services/plans/new`. A `MembershipPlan` has `price`, `billingInterval`, `includedVisits`, `discountPercent`, and `status`. Only active plans can be purchased. A customer cannot hold two active or paused balances for the same plan.
+
+## Retail products
+
+`/services/new-product` and `/services/products/[id]`: `name`, `sku`, `price`, `cost`, `productType`, `inventoryTracked`, `status`. Stock is managed on [Inventory](/docs/openfront/barbershop/inventory).

@@ -1,0 +1,18 @@
+---
+title: Operations
+description: Notices, cases, policies, facility resources, partner credentials, exports, and payment events.
+icon: ClipboardCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/operations` has tabs (`operationsWorkspace`, `participationWorkspace`). Most actions go through `runOperationsCommand`.
+
+- **Member notices:** `OperationalNotice`
+- **Cases:** incident, inspection, facility closure, financial reconciliation, integration exception, privacy review (`OperationsCase`)
+- **Policy and waivers:** `ParticipationPolicy` and `ParticipationEvidence`. Publish from [Store settings](/docs/openfront/gym/store-settings). "Explicit acceptance or staff verification is required".
+- **Facility resources:** `GymResource`, with `updateGymResourceAllocation`
+- **Partner credentials:** `IntegrationCredential`, `gym_`-prefixed, stored hashed, scopes `classes:read` and `bookings:create`
+- **Exports:** `exportOperatingData` for payments, members, or cases
+- **Payment events:** `replayPaymentEvent`
+- **Entitlements:** `reconcileGymEntitlements`

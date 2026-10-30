@@ -4,9 +4,7 @@ description: Construction project controls, field operations, safety, contracts,
 icon: HardHat
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-construction) · [Live demo](https://construction.openship.org) · [Catalog](https://openship.org/products/openfront-construction)
+[Source](https://github.com/openshiporg/openfront-construction) · [Live site](https://construction.openship.org) · [Catalog](https://openship.org/products/openfront-construction)
 
 Openfront Construction is a self-hostable application for general and specialty contractors. It has three surfaces:
 
@@ -15,10 +13,6 @@ Openfront Construction is a self-hostable application for general and specialty 
 - a project portal where invited clients, designers, subcontractors, and vendors work on their own items.
 
 Start with [Getting started](/docs/openfront/construction/getting-started).
-
-<Callout type="warn">
-Current source has no accounting or ERP connector, no payment processor, no e-signature provider, no malware scanning for uploaded files, and no long-running notification worker. Customer quote requests end at "accepted"; there is no online payment. See [Limitations](#limitations).
-</Callout>
 
 ## Stack
 
@@ -121,7 +115,7 @@ All operations below are defined in `features/keystone/mutations/index.ts`.
 | Approvals | `configureConstructionApprovalPolicy`, `requestConstructionApproval`, `decideConstructionApproval` |
 | Portal | `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver` |
 | Public website and customers | `submitPublicIntake`, `registerConstructionCustomer`, `commandConstructionRequest` (operations `request`, `quote`, `accept`, `cancel`) |
-| API keys and agents | `issueApiCredential`, `revokeApiCredential`, `requestAgentAction`, `reviewAgentAction`, `recordAgentActionObservation`, `recordAgentActionOutcome` (deprecated; records an observation only) |
+| API keys and agents | `issueApiCredential`, `revokeApiCredential`, `requestAgentAction`, `reviewAgentAction`, `recordAgentActionObservation`, `recordAgentActionOutcome` (records an observation only) |
 
 Each command checks the session or API key, permission, company and project, expected state, reason where required, and idempotency key.
 
@@ -132,23 +126,11 @@ Each command checks the session or API key, permission, company and project, exp
 | S3-compatible storage | `features/integrations/storage/s3.ts` signs SigV4 `PUT`, `GET`, and `HEAD` URLs (60 to 900 seconds) for document versions and drawing revisions. Completion verifies the SHA-256 checksum and object metadata. Fails closed when `S3_*` values are missing |
 | SMTP | Password reset email only. Dashboard users get a `/dashboard/reset` link; customers and portal users get `/account/reset` |
 | Outbox webhook | `npm run outbox:work` drains `OutboxMessage` rows to `OUTBOX_WEBHOOK_URL` with an HMAC-SHA256 signature in `x-openfront-signature-sha256` and the event type in `x-openfront-event`. Failed messages retry up to `OUTBOX_MAX_ATTEMPTS`, then move to `dead_letter` |
+| Stripe Checkout | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_KEY`, `NEXT_PUBLIC_SITE_URL`. Installed per company at `/dashboard/platform/payment-providers`. Pays customer quote deposits and owner progress claims by card or US bank account. Webhook: `/api/payment-webhooks/[providerId]` |
 | OpenRouter AI chat | `/api/completion` uses the signed-in user's session cookie and the MCP tools at `/api/mcp-transport/[transport]` |
 | MCP tools | `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `modelSpecificSearch`. Reads are bounded to 100 rows per page and 500 rows total fanout |
 
-Project invitations return a one-time `/accept-invitation?token=…` link to the operator. The app does not email it; share it yourself.
-
-## Limitations
-
-- No accounting, ERP, or payroll connector. `Payment` and `DirectCost` records are entered in the app.
-- No payment processor. `/account/requests/[id]/payment` redirects back to the request; accepted quotes are settled with the contractor outside the app.
-- No e-signature provider. Commitment "out for signature" is a status only.
-- No malware scanning or quarantine for uploaded files.
-- No email for invitations, quotes, or approvals. Only password reset email exists.
-- The outbox worker drains once per run. You must schedule it.
-- Website inquiries (`IntakeSubmission`) have no customer link, so they do not appear in a signed-in customer's account.
-- One public website per deployment, selected by `PUBLIC_SITE_KEY`.
-- `tests/schema` is empty and `tests/integration` is missing, so `test:schema`, `proof:authorization`, and `proof:workflows` do not exercise anything in current source.
-- Construction legal, labor, safety, lien, and payment rules vary by jurisdiction. The app records evidence; it does not decide compliance.
+Project invitations return a one-time `/accept-invitation?token=…` link to the operator, who shares it with the invitee.
 
 ## Extension paths
 

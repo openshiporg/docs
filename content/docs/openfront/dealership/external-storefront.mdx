@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-dealership-custom-storefront/SKILL.md`](/skills/openfront-dealership-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Routes live under `app/(storefront)/`. Screens are in `features/storefront/screens`. Server actions are in `features/storefront/actions`. GraphQL documents are in `features/storefront/lib/data`.
 
@@ -33,17 +33,16 @@ Routes live under `app/(storefront)/`. Screens are in `features/storefront/scree
 | `/account/service`, `/account/service/[id]` | Service history and repair order detail | `CustomerServiceHistory`, `CustomerServiceOrder` |
 | `/account/profile` | Name, email, phone, password | `UpdateCustomer` |
 | `/account/verify` | Confirm the account email to link earlier requests | `RequestCustomerEmailVerification`, `ConfirmCustomerEmail` |
-| `/[...slug]` | Always not found | none |
 
 `app/sitemap.ts` lists the main pages and every listed vehicle. `app/robots.ts` sets crawler rules.
 
-## Journey boundaries
+## Journey rules
 
 - The storefront serves one rooftop: the oldest active rooftop in an active dealer group. Submissions with a different `rooftopSlug` are rejected.
 - Public reads (`publicInventoryVehicles` and related) return only listed vehicles. Dealer cost and staff fields are never selected.
 - Every submission needs an `idempotencyKey` and has a `website` honeypot field. A retry with the same key returns the first result (`reused`).
 - Service bookings allow 4 per rooftop per hour. A vehicle can hold only one open test drive in a 60-minute window.
 - Signed-in submissions are tied to the account. Guest submissions become visible in the account only after email verification links the matching CRM Customer, and only for leads with that exact email.
-- The trade-in estimate is `automated-preliminary` and no provider request is sent. Financing uses the `operator-recorded` mode; no lender or bureau is contacted.
-- There is no online purchase, reservation, or deposit. Payment checkout is created by staff only.
-- `/account/profile` uses the generic `updateUser` mutation and does not ask for the current password.
+- The trade-in estimate is `automated-preliminary`. Financing uses the `operator-recorded` mode: the finance desk enters lender decisions.
+- Payment checkout (`createPaymentCheckout`) is created by staff for an approved deal or invoiced repair order; customers see their payments in `/account/vehicles`.
+- `/account/profile` updates name, email, phone, and password through `updateUser`.

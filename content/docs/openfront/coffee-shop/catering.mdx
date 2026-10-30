@@ -1,0 +1,19 @@
+---
+title: Catering
+description: Inquiries, quotes, and events at /dashboard/platform/catering.
+icon: UtensilsCrossed
+---
+
+`/dashboard/platform/catering` lists requests. `/catering/[id]` is the detail.
+
+## Intake
+
+Customers submit `requestCafeCatering` from `/catering`. Staff create one with **New inquiry** (`PlatformCreateCatering`).
+
+## Fields
+
+`cateringNumber`, `customerName`, `customerEmail`, `eventAt`, `guestCount`, `deliveryAddress`, `subtotalCents` (the quote), `notes`.
+
+## Status
+
+`inquiry` to `quoted` to `confirmed` to `completed`, or `cancelled`. Edit event facts and the quote with `PlatformUpdateCatering`, then use the status buttons: send quote, confirm, complete, cancel (`updateCateringOrderStatus`).

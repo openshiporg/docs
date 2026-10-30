@@ -1,0 +1,23 @@
+---
+title: Deployment
+description: Build, migrate, and start Openfront Gym on Railway or Vercel.
+icon: Rocket
+---
+
+| Script | Effect |
+|---|---|
+| `npm run build` | `keystone build --no-ui && next build`; does not migrate |
+| `npm run migrate` | `prisma migrate deploy` |
+| `npm start` | `next start` |
+
+A typical release builds, applies migrations as a separate step against a backed-up database, then starts:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, because the build environment cannot reach an internal database. The README also has a Vercel import button. Either way, you provision PostgreSQL, S3-compatible storage, SMTP, and Stripe yourself. Point the Stripe webhook at `/api/stripe/webhook`.
+
+The tenant migration backfills older rows to `gym_default_organization`.

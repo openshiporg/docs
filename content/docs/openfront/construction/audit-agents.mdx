@@ -1,0 +1,34 @@
+---
+title: Audit, API keys and agents
+description: Agent actions, outbox messages, idempotency keys, and API credentials.
+icon: History
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/audit`.
+
+## API keys
+
+`issueApiCredential` shows the key once; only a hash is stored. `revokeApiCredential` revokes it. Scopes: `agents:read/write/execute`, `audit:read`, `billing:`, `companies:`, `contracts:`, `documents:`, `execution:`, `field:`, `financials:`, `preconstruction:`, `projects:`, `safety:` with `read` or `write`.
+
+## Agent actions
+
+<Steps>
+<Step>
+### Request
+`requestAgentAction` binds an operation, target, destination status, company, project, agent identity, and scope grant.
+</Step>
+<Step>
+### Review
+`reviewAgentAction` by a different human: "A different authorized human must approve this action".
+</Step>
+<Step>
+### Execute
+Through the normal transition; the grant is rechecked. `recordAgentActionObservation` records what happened.
+</Step>
+</Steps>
+
+## Events
+
+Commands write `AgentAction`, `IdempotencyKey`, and `OutboxMessage` records. `npm run outbox:work` delivers outbox messages to `OUTBOX_WEBHOOK_URL`.

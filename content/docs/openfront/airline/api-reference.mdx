@@ -1,0 +1,66 @@
+---
+title: API reference
+description: Named GraphQL queries and mutations at /api/graphql with their arguments.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. Custom operations are defined in `features/keystone/mutations/`. Every command takes an `idempotencyKey` of 12 to 200 characters; repeating a key returns the earlier result. All other lists have standard Keystone queries (`bookings`, `bookingsCount`, `flightInstances`, ...) and create, update, and delete mutations, subject to carrier access.
+
+## Storefront (public)
+
+| Operation | Arguments |
+|---|---|
+| `publicCarrierIdentity` | `carrierCode` |
+| `publicAirlineFlightOptions` | `carrierCode`, origin, destination, date, passenger count |
+| `publicFlightStatuses` | `carrierCode`, flight number, date |
+| `customerBooking` | `carrierCode`, `recordLocator`, `accessToken` |
+| `createCustomerOffer` | shopping session, flight, bucket, passenger count |
+| `createCustomerBooking` | offer, passenger details, contact |
+| `startCustomerCheckout` | `carrierCode`, `recordLocator`, `accessToken` |
+| `completeCustomerCheckout` | same plus `checkoutSessionId` |
+| `assignCustomerSeat` | `recordLocator`, `accessToken`, `bookingPassengerId`, `bookingSegmentId`, `seatId`, `idempotencyKey` |
+| `checkInCustomerBooking` | same as seat, `seatId` optional |
+| `cancelCustomerBooking` | `recordLocator`, `accessToken`, `reason`, `idempotencyKey` |
+| `rotateCustomerBookingAccessToken` | `recordLocator`, `accessToken` |
+| `recoverCustomerBookingAccess` | `carrierCode`, `recordLocator`, `email` |
+
+## Operator commands
+
+```graphql
+mutation Provision($key: String!) {
+  provisionDatedFlight(
+    scheduleId: "..." cabinId: "..." fareBrandId: "..."
+    serviceDate: "2026-12-01"
+    scheduledDepartureAt: "2026-12-01T13:00:00Z"
+    scheduledArrivalAt: "2026-12-01T14:30:00Z"
+    capacity: 150 baseAmount: 12900 taxAmount: 1800 currencyCode: "USD"
+    idempotencyKey: $key
+  ) { resourceType resourceId status changed replayed }
+}
+```
+
+Most commands return `AirlineOperationResult` with `resourceType`, `resourceId`, `status`, `changed`, and `replayed`.
+
+| Group | Operations |
+|---|---|
+| Network | `registerAirport(iataCode, icaoCode, name, city, countryCode, subdivisionCode, timezone)` |
+| Flights | `provisionDatedFlight`, `setDatedFlightSalesStatus(flightInstanceId, status)`, `setInventoryAuthorization(inventoryBucketId, authorized)`, `updateFlightOperations(flightInstanceId, terminals, gates, estimated and actual times, status)` |
+| Offers | `airlineFlightOptions`, `createOfferFromShopping(flightInstanceId, inventoryBucketId, passengerIds)`, `createBookingFromOffer(offerId, passengerIds, recoverOnly)` |
+| Bookings | `cancelBooking(bookingId, reason)`, `reissueBookingAccessCode(bookingId)`, `operatorBookingReceipt` |
+| Payments | `recordReceivedPayment(bookingId, purpose, method, externalReference, amount, receivedAt)`, `submitManualPaymentEvidence`, `approveManualPaymentEvidence(evidenceId)`, `rejectManualPaymentEvidence(evidenceId, reason)`, `captureBookingPayment(bookingId, providerReference, instrumentBrand, instrumentLast4)`, `processBookingRefund(bookingId, amount, reason, providerReference)` |
+| Ticketing | `issueBookingTickets(bookingId)` |
+| Airport service | `departureManifest`, `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger(bookingPassengerId, bookingSegmentId, seatId)`, `acceptCheckedBag(bookingPassengerId, flightInstanceId, weightGrams)`, `boardBookingPassenger(boardingPassId)`, `offloadBookingPassenger(boardingPassId, reason)`, `recordBagEvent(bagId, action, airportCode, note)` |
+| Recovery | `publishFlightDisruption(flightInstanceId, type, publicSummary)`, `reaccommodateBooking(disruptionId, bookingId, replacementFlightInstanceId, replacementInventoryBucketId)`, `requeueDeadLetteredOutboxEvent` |
+| Setup | `completeCarrierOnboarding`, `dismissCarrierOnboarding`, `updateCarrierStorefrontSettings`, `issueMachineCredential`, `revokeMachineCredential`, `machineCredentialSummaries` |
+
+## Errors
+
+Expected failures are `DomainError`s with codes `BAD_USER_INPUT`, `NOT_FOUND`, `FORBIDDEN`, `CONFLICT`, or `RATE_LIMITED`. Their messages are returned as written. Any other exception is masked. See [Troubleshooting](/docs/openfront/airline/troubleshooting).
+
+## Other endpoints
+
+- `GET /api/health`
+- `POST /api/payments/webhooks/[providerKey]`
+- `POST /api/integrations/settlements/[connectionKey]`
+- `/api/mcp-transport`, `/api/completion`
+- `/api/robots.txt`, `/api/sitemap.xml`

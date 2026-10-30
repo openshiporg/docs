@@ -1,0 +1,28 @@
+---
+title: Payroll
+description: Approve and pay barber commissions and review tips at /dashboard/platform/payroll.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Each completed checkout creates a `Commission` for the barber, calculated from `serviceCommissionRateBps`. The Payroll page shows commissions by status and barber, amounts owed per barber, payouts, and tips by barber.
+
+## Commission states
+
+`projected` to `approved` to `paid`, or `voided`.
+
+## Pay barbers
+
+<Steps>
+<Step>
+### Approve
+Select commissions and approve or void them with `transitionCommission` (`commissionId`, `toStatus`, `reason`). Bulk selection is supported.
+</Step>
+<Step>
+### Pay
+Choose **Pay** for a barber. `payApprovedCommissions` takes `commissionIds` and `notes` and creates a `CommissionPayout`. A payout contains one barber's commissions; only approved commissions can be paid.
+</Step>
+</Steps>
+
+Approving and voiding happen with `transitionCommission`. Recording payment happens only through the payout: "Commissions can be approved or voided here. Record payment with Create payout."

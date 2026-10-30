@@ -1,0 +1,46 @@
+---
+title: Schedules and flights
+description: Provision dated flights, set inventory authorization, and open or close sales.
+icon: CalendarClock
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Dated flights are what travelers buy. Use `/dashboard/platform/schedules` to create them from published schedules and `/dashboard/platform/inventory` to manage seats for sale.
+
+## Provision a dated flight
+
+<Steps>
+<Step>
+### Choose the schedule
+Only published schedules appear. Open the schedule at `/dashboard/platform/schedules/[id]`.
+</Step>
+<Step>
+### Enter the service
+Pick the cabin and fare brand, service date, scheduled departure and arrival, capacity (1 to 300), base amount, tax amount, currency, and optional terminal and gate.
+</Step>
+<Step>
+### Submit
+`provisionDatedFlight` creates the `FlightInstance`, one `InventoryBucket`, and a generated `SeatMap` with seats. Scheduled departure must be in the future and on the service date in the carrier timezone, and arrival must be after departure within 24 hours.
+</Step>
+</Steps>
+
+The currency must match the carrier default. Carrier code, currency, and timezone cannot change once dated flights, offers, or bookings exist.
+
+## Dated flight status
+
+| Status | Meaning |
+|---|---|
+| `scheduled` | Created, not yet for sale |
+| `open_for_sale` | Visible to offers and the storefront |
+| `closed_for_sale` | Held back from sale |
+| `delayed`, `departed`, `arrived` | Set from [Flight operations](/docs/openfront/airline/flight-ops) |
+| `cancelled` | Set when a cancellation is published |
+
+`setDatedFlightSalesStatus` accepts only `open_for_sale` or `closed_for_sale`.
+
+## Inventory buckets
+
+`/dashboard/platform/inventory` lists buckets per flight with `capacity`, `authorized`, `sold`, `held`, and `blocked`. Change the number of seats offered for sale with `setInventoryAuthorization`. Sold, held, and blocked quantities cannot exceed what you authorize: "Sold, held, and blocked quantities exceed authorized inventory."
+
+Each bucket carries a `bookingClassCode`, `baseAmount`, `taxAmount`, `currencyCode`, and `status`.

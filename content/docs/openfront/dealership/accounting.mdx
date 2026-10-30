@@ -1,0 +1,26 @@
+---
+title: Accounting
+description: GL mappings and posting batches.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/accounting` and `/accounting/[id]` (`accountingWorkspace`).
+
+<Steps>
+<Step>
+### Map accounts
+`configureAccountingMapping`. Onboarding adds 11 mappings.
+</Step>
+<Step>
+### Stage a batch
+`stageAccountingBatch` builds a balanced batch from mappings. "Active accounting batch already exists for source".
+</Step>
+<Step>
+### Post and reconcile
+`manageAccountingBatch`: queue post, record posted or failed, reconcile, lock. Statuses: staged, posting, posted, failed, reconciled, locked.
+</Step>
+</Steps>
+
+Only the `operator-recorded` provider is accepted. Accounting administration permission is required.

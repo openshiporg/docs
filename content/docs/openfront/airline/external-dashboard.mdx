@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-airline-custom-dashboard/SKILL.md`](/skills/openfront-airline-custom-dashboard/SKILL.md)
 
-## Current platform pages
+## Platform pages
 
 Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. The older desks (bookings, departures, disruptions, inventory, manifests, offers, passengers, payments, schedules, settings) render from `features/platform/screens/Canonical/PlatformDeskPages.tsx` with desk components in `features/platform/components`. Newer pages have their own slice in `features/platform/<slice>`.
 
@@ -43,9 +43,3 @@ Other dashboard routes:
 - `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset`, and `/dashboard/no-access` are the shared auth pages. Sign-up needs `PUBLIC_SIGNUPS_ALLOWED=true`.
 
 Lists without a dedicated page (for example `User`, `Role`, `ApprovedAgent`, `ServiceRequest`, `WebhookEndpoint`, `OutboxEvent`, `ElectronicMiscDocument`, `Exchange`) are edited on the generic `/dashboard/<list-key>` pages. Those pages do not run the airline commands, and command-only lists reject direct writes.
-
-## Gaps
-
-- No page creates service requests, EMDs, or exchanges. No command exists for them.
-- No page calls `submitManualPaymentEvidence` or `requeueDeadLetteredOutboxEvent`.
-- Machine credentials are issued from the onboarding form, not a separate page.

@@ -1,0 +1,47 @@
+---
+title: Payment providers
+description: Pay-in-person and Stripe Checkout deposits at /dashboard/platform/payments.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Two adapters live in `features/integrations/payment`:
+
+| Code | Adapter | Use |
+|---|---|---|
+| `pp_manual` | `manual` | Pay in person. Default provider |
+| Stripe | `stripe` | Checkout for booking deposits |
+
+## Set up
+
+<Steps>
+<Step>
+### Manual provider
+On `/dashboard/platform/payments`, set up the manual provider (`ensureDefaultPaymentProvider`). Onboarding does this for you.
+</Step>
+<Step>
+### Stripe
+Set `STRIPE_SECRET_KEY` in the environment, then choose **Set up Stripe** on the page. The storefront then accepts deposits.
+</Step>
+</Steps>
+
+Without it, services that need a deposit cannot be booked online: "Online deposits are not available. Pay the deposit in the shop."
+
+## Payment sessions
+
+A deposit creates a `PaymentSession` tied to an appointment.
+
+| Command | Purpose |
+|---|---|
+| `startDepositCheckout` | Customer starts Stripe Checkout |
+| `confirmDepositCheckout` | On return to `/appointment`, reads the session back from Stripe |
+| `initiateAppointmentPaymentSession` | Staff open a session; amount up to the appointment price |
+| `captureAppointmentPaymentSession` | Capture |
+| `refundAppointmentPaymentSession` | Refund |
+| `cancelAppointmentPaymentSession` | Cancel |
+| `reconcilePaymentSession` | Processor check; compares amount and currency |
+
+Pay-in-person sessions have no processor to capture, refund, or reconcile. Record the payment at checkout, and refund cash from the receipt.
+
+The page also shows takings by tender over 30 days, recent receipts, open card payments, and processor checks. `POST /api/payment-webhooks/[providerCode]` serves providers with a registered webhook handler and answers "Payment webhook signature is invalid." for bad signatures.

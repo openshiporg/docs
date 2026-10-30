@@ -1,0 +1,39 @@
+---
+title: RFIs and submittals
+description: Registers, routing, responses, and reviews at /projects/[projectId]/execution.
+icon: MessageSquare
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## RFIs
+
+<Steps>
+<Step>
+### Raise
+`raiseRfi`: draft, open, answered, closed (or voided).
+</Step>
+<Step>
+### Route
+`routeRfi` to a reviewer.
+</Step>
+<Step>
+### Respond
+`respondToRfi`, or an external member uses `respondPortalRfi`.
+</Step>
+</Steps>
+
+## Submittals
+
+<Steps>
+<Step>
+### Register
+`registerSubmittal`. It needs a review route: "A submittal requires a persisted review route for its current revision".
+</Step>
+<Step>
+### Route and review
+`routeSubmittalReview`, then `recordSubmittalReview` (approved, revise_resubmit, rejected) or `reviewPortalSubmittal`.
+</Step>
+</Steps>
+
+Statuses: draft, submitted, under_review, revise_resubmit, approved, rejected, closed, voided. Specification sections are registered with `registerSpecificationSection`. Registers: `constructionRfiRegister`, `constructionSubmittalRegister`.

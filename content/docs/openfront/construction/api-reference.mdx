@@ -1,0 +1,44 @@
+---
+title: API reference
+description: Named GraphQL queries and mutations.
+icon: Code
+---
+
+Defined in `features/keystone/mutations/index.ts`. Every command checks the session or API key, permission, company, project, expected state, reason where required, and idempotency key.
+
+## Queries
+
+| Area | Operations |
+|---|---|
+| Portfolio and onboarding | `constructionPortfolio`, `constructionOnboardingReadiness`, `redirectToInit` |
+| Project workspace | `constructionProjectWorkspace`, `constructionProjectOptions`, `constructionProjectOptionSearch`, `constructionRecordDetail`, `constructionBidComparison`, `constructionApprovalSnapshot` |
+| Registers | `constructionProcurementRequestRegister`, `constructionMaterialReceiptRegister`, `constructionProcurementCommitmentRegister`, `constructionProcurementBidInvitationRegister`, `constructionProcurementLienWaiverRegister`, `constructionResourceLogRegister`, `constructionResourceActivityReceipt`, `constructionInspectionRegister`, `constructionSafetyIncidentRegister`, `constructionSafetyObservationRegister`, `constructionSubmittalRegister`, `constructionRfiRegister` |
+| Files and restricted data | `documentVersionDownload`, `drawingRevisionDownload`, `safetyIncidentPrivateDetail` |
+| Portal | `constructionPortalInbox`, `constructionPortalApprovalSnapshot` |
+| Public website | `publicConstructionSite`, `publicConstructionService`, `publicConstructionProject`, `publicIntakeReceipt` |
+| Store settings and quote requests | `constructionStoreSettings`, `constructionCustomerRequests`, `constructionCustomerRequestCount`, `constructionCustomerRequest`, `constructionOperatorRequests` |
+
+## Mutations
+
+| Area | Operations |
+|---|---|
+| Lifecycle transitions | `transitionProjectStatus`, `transitionBidPackageStatus`, `transitionEstimateStatus`, `transitionBudgetChangeStatus`, `transitionPrimeContractStatus`, `transitionCommitmentStatus`, `transitionChangeEventStatus`, `transitionChangeOrderStatus`, `transitionRfiStatus`, `transitionSubmittalStatus`, `transitionProgressClaimStatus`, `transitionSafetyIncidentStatus`, `transitionInspectionStatus`, `transitionScheduleStatus`, `transitionScheduleTaskStatus`, `transitionDailyLogStatus`, `transitionPunchItemStatus`, `transitionSafetyObservationStatus`, `transitionCorrectiveActionStatus`, `transitionPaymentStatus`, `transitionRetainageReleaseStatus`, `transitionLienWaiverStatus`, `transitionProcurementRequestStatus` |
+| Setup and team | `onboardConstructionWorkspace`, `createConstructionProject`, `addProjectMember`, `inviteProjectMember`, `revokeProjectInvitation`, `reissueProjectInvitation`, `acceptProjectInvitation`, `registerTradePartner`, `updateConstructionStoreSettings` |
+| Preconstruction | `startBidPackage`, `inviteBidder`, `recordBidSubmission`, `awardBidSubmission`, `createEstimateWithLine`, `reviseEstimate` |
+| Financials and contracts | `addBudgetLine`, `createBudgetChangeWithLine`, `recordDirectCost`, `reversePostedDirectCost`, `createPrimeContractWithLine`, `createCommitmentWithLine`, `openChangeEvent`, `addChangeEventLine`, `recordChangeQuote`, `createChangeOrderWithLine` |
+| Execution and documents | `raiseRfi`, `routeRfi`, `respondToRfi`, `registerSubmittal`, `routeSubmittalReview`, `recordSubmittalReview`, `registerSpecificationSection`, `registerDocument`, `registerDrawing`, `requestDocumentVersionUpload`, `completeDocumentVersionUpload`, `requestDrawingRevisionUpload`, `completeDrawingRevisionUpload`, `distributeDocumentVersion`, `acknowledgeDocumentDistribution` |
+| Field and schedule | `startDailyLog`, `addDailyLogEntry`, `registerFieldPhoto`, `recordLaborTime`, `createResourceCatalogItem`, `recordResourceActivity`, `reconcileResourceActivityIntent`, `closeResourceActivityIntent`, `registerSchedule`, `registerScheduleTask`, `linkScheduleDependency`, `updateScheduleTaskProgress`, `recordPunchItem` |
+| Quality and safety | `recordSafetyObservation`, `recordSafetyIncident`, `recordSafetyIncidentPrivateDetails`, `registerInspectionTemplate`, `createInspectionWithItem`, `recordInspectionItemResult`, `registerCorrectiveAction`, `recordCorrectiveActionEvidence` |
+| Procurement and billing | `createProcurementRequestWithLine`, `placeProcurementOrder`, `recordMaterialReceipt`, `prepareProgressClaim`, `recordProgressPayment`, `allocateSettledPayment`, `reverseSettledPayment`, `requestRetainageRelease`, `recordLienWaiverEvidence` |
+| Approvals | `configureConstructionApprovalPolicy`, `requestConstructionApproval`, `decideConstructionApproval` |
+| Portal | `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver` |
+| Public website and customers | `submitPublicIntake`, `registerConstructionCustomer`, `commandConstructionRequest` (operations `request`, `quote`, `accept`, `cancel`) |
+| API keys and agents | `issueApiCredential`, `revokeApiCredential`, `requestAgentAction`, `reviewAgentAction`, `recordAgentActionObservation`, `recordAgentActionOutcome` (records an observation only) |
+
+## Payments
+
+Queries and mutations: `constructionPayableClaims(projectId)`, `createCustomerPayment(requestId)`, `reconcileCustomerPayment(requestId, sessionId)`, `createClaimPayment(projectId, claimId)`, `createClaimPaymentLink(projectId, claimId)`, `checkPaymentStatus(projectId, paymentId)`, `installStripePaymentProvider(companyId)`, `setPaymentProviderInstalled(providerId, isInstalled)`.
+
+## Lifecycle transitions
+
+Every `transition<Type>Status` takes a target status and a reason of 3 to 500 characters.

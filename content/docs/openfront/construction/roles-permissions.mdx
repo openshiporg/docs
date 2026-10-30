@@ -1,0 +1,19 @@
+---
+title: Roles and permissions
+description: Role flags, memberships, and access levels.
+icon: Shield
+---
+
+Permissions are `Role` checkboxes granted through `CompanyMembership` (company wide) and `ProjectMembership` (viewer, contributor, manager).
+
+| Area | Flags |
+|---|---|
+| Companies and people | `canReadCompanies`, `canManageCompanies`, `canReadCompanyMemberships`, `canManageCompanyMemberships`, `canReadPeople`, `canManagePeople`, `canReadRoles`, `canManageRoles`, `canManageSettings`, `canManageOnboarding` |
+| Projects | `canReadProjects`, `canManageProjects`, `canReadProjectMemberships`, `canManageProjectMemberships` |
+| Preconstruction | `canReadPreconstruction`, `canManagePreconstruction` |
+| Financials, contracts, billing | `canReadFinancials`/`canManageFinancials`, `canReadContracts`/`canManageContracts`, `canReadBilling`/`canManageBilling` |
+| Execution and documents | `canReadProjectExecution`/`canManageProjectExecution`, `canReadDocuments`/`canManageDocuments`, `canReadFieldOperations`/`canManageFieldOperations` |
+| Safety | `canReadSafety`, `canManageSafety` |
+| Agents and audit | `canReadAgents`, `canManageAgents`, `canReadAudit` |
+
+Onboarding creates Company Administrator, Project Manager, Field Lead, and External Collaborator roles. External portal members and website customers never get dashboard access. Status fields are read-only on generic update pages; use the named transitions.

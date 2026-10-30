@@ -1,0 +1,34 @@
+---
+title: Build a flight
+description: Add an airport pair, a route, a fare, a schedule, and a sellable dated flight.
+icon: PlaneTakeoff
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Register airports
+On [Network](/docs/openfront/airline/network) use the Airports tab if either airport is missing.
+</Step>
+<Step>
+### Create the route
+Routes tab: choose origin and destination, set distance and minimum connection minutes, then set the route to active.
+</Step>
+<Step>
+### Create the cabin and fare brand
+On [Fares and products](/docs/openfront/airline/fares) create an Economy cabin and a fare brand with its included baggage.
+</Step>
+<Step>
+### Author and publish the schedule
+Schedules tab: flight number such as `XY101`, local departure and arrival times, days of week, and the effective dates. Publish it with `SetScheduleStatus`.
+</Step>
+<Step>
+### Provision the dated flight
+On `/dashboard/platform/schedules` choose the schedule, cabin, fare brand, service date, times, capacity, base amount, and tax. See [Schedules and flights](/docs/openfront/airline/schedules-flights).
+</Step>
+<Step>
+### Open for sale
+Set the flight to `open_for_sale` and confirm the bucket's `authorized` count on the Inventory desk.
+</Step>
+</Steps>

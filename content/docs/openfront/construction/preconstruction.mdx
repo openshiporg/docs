@@ -1,0 +1,34 @@
+---
+title: Preconstruction
+description: Bid packages, bid leveling, award, and estimates.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/dashboard/platform/projects/[projectId]/preconstruction`.
+
+## Bid packages
+
+<Steps>
+<Step>
+### Start the package
+`startBidPackage`. Statuses: draft, open, closed, awarded, archived (`transitionBidPackageStatus`).
+</Step>
+<Step>
+### Invite bidders
+`inviteBidder`. Opening needs at least one persisted invitation: "A bid package requires at least one persisted invitation before issue". Invitations appear in the subcontractor portal.
+</Step>
+<Step>
+### Record submissions
+`recordBidSubmission` with `BidLineItem` rows, or the bidder submits through the portal (`submitPortalBid`).
+</Step>
+<Step>
+### Level and award
+`constructionBidComparison` compares submissions. `awardBidSubmission` awards one and creates a commitment.
+</Step>
+</Steps>
+
+## Estimates
+
+`createEstimateWithLine` creates an estimate. `reviseEstimate` adds a new `EstimateVersion`; issued versions are never overwritten. Statuses: draft, internal_review, issued, accepted, rejected, superseded. Issuing needs a current version with lines: "An estimate requires a current version with line items before issue".

@@ -1,0 +1,25 @@
+---
+title: Carrier operations
+description: The operations home at /dashboard/operations with queues, next departures, and links to every desk.
+icon: Building2
+---
+
+`/dashboard/operations` is the first page after sign-in. It is the working view for the carrier shift and links to every platform desk in the sidebar.
+
+## What you can do
+
+- See the queues that need action: payments awaiting approval, unpaid bookings, open disruptions, delayed flights, and mishandled bags (delayed or mishandled status).
+- See the next departures and jump to the flight's manifest.
+- Open any desk from the sidebar: Network, Fares and products, Schedules and flights, Flight operations, Inventory and fares, Offers, Bookings, Tickets, Passengers and service, Departures, Baggage, Disruptions, Payments and refunds, Refunds, Payment providers, Manifest entry and audit, Stations and access, Storefront settings, Settings and readiness, and Operator access.
+
+## Sidebar order
+
+The sidebar follows the order of a flight's life: network and fares first, then schedules, flight operations, inventory, offers, bookings, tickets, passengers, departures, baggage, disruptions, payments, refunds, providers, audit, stations, storefront settings, readiness, and operator access (`/dashboard/users`).
+
+Each page and each Keystone list checks the signed-in user's carrier permissions, so a link can open a page that shows no data if the role lacks the read permission. See [Roles and permissions](/docs/openfront/airline/roles-permissions).
+
+## Related routes
+
+- `/dashboard/onboarding` is the launch setup form. See [Getting started](/docs/openfront/airline/getting-started#onboarding).
+- `/dashboard/bookings` renders the bookings workspace.
+- `/dashboard/departures`, `/dashboard/network`, `/dashboard/recovery`, and `/dashboard/shopping` redirect to the matching platform desk.

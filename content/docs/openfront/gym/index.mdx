@@ -4,9 +4,7 @@ description: Organization-scoped memberships, classes, rosters, check-in, person
 icon: Dumbbell
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-gym) · [Live demo](https://gym.openship.org) · [Catalog](https://openship.org/products/openfront-gym)
+[Source](https://github.com/openshiporg/openfront-gym) · [Live site](https://gym.openship.org) · [Catalog](https://openship.org/products/openfront-gym)
 
 Openfront Gym is a self-hostable app for gyms and fitness studios. It has a public site for memberships and class booking, member accounts, a staff dashboard, and a staff-unlocked check-in kiosk. It runs on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL.
 
@@ -128,23 +126,3 @@ The result includes a readiness checklist. Required steps are store settings, an
 **AI chat** in the dashboard calls `/api/completion` with OpenRouter when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set.
 
 **Storage** is one S3-compatible bucket (`my_images`) for images such as member profile photos.
-
-## Limitations
-
-<Callout type="warn">
-These are gaps in the current source. Plan around them before running a real gym on it.
-</Callout>
-
-- Only Stripe is supported for payments. There is no PayPal, terminal hardware, or other provider.
-- Stripe Connect and per-tenant merchant accounts are not supported. Online checkout needs exactly one installed Stripe organization.
-- Currency is fixed to USD.
-- Dashboard self-signup is not supported. The first user comes from `/dashboard/init`; other staff are added by an operator.
-- There is no organization switcher. Each session and the storefront are bound to one organization.
-- Training packages are sold by staff. There is no public package checkout.
-- Onboarding instructor accounts cannot sign in. Handing them over to real coaches is not implemented.
-- `markPaymentRecoveryContacted` only records that staff followed up. There is no automated dunning or collections.
-- The QR code and kiosk record membership-based entry. They do not prove identity or control doors.
-- Health notes and participation terms are stored records. The app does not make medical or legal decisions.
-- There is no payroll, even though a `canManagePayroll` flag exists on roles.
-- No background worker runs in the source. Failed payment events are replayed by staff from the Operations page.
-- The repository has a small test suite (`tests/`). Concurrency of bookings, check-ins, and trainer appointments under real load should be tested against your own PostgreSQL deployment.

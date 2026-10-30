@@ -1,0 +1,28 @@
+---
+title: Run the walk-in line
+description: Add walk-ins, set service and barber, seat, and close out.
+icon: Users
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Add the guest
+`/dashboard/platform/queue`: name, phone, party size, quoted wait.
+</Step>
+<Step>
+### Assign service and barber
+Required before seating.
+</Step>
+<Step>
+### Seat
+Seating creates an appointment and puts the guest in the chair.
+</Step>
+<Step>
+### Finish
+Check the guest out in POS to complete the visit, then mark the queue entry served.
+</Step>
+</Steps>
+
+Guests who leave are marked `left`.

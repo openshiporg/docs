@@ -1,0 +1,28 @@
+---
+title: Payments
+description: Checkout, refunds, webhooks, and reconciliation at /dashboard/platform/payments.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create a checkout
+`createPaymentCheckout` for an approved deal or an invoiced repair order. Staff only.
+</Step>
+<Step>
+### Track
+Transaction statuses: creating, pending, authorized, captured, failed, canceled, partially-refunded, refunded.
+</Step>
+<Step>
+### Refund
+`requestPaymentRefund` on `/payments/[id]`.
+</Step>
+<Step>
+### Reconcile
+`reconcilePaymentTransaction`. "Payment is already reconciled with different evidence". "Choose how the payment was made".
+</Step>
+</Steps>
+
+Provider setup is in [Payment providers](/docs/openfront/dealership/payment-providers).

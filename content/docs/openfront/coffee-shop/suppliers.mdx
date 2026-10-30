@@ -1,0 +1,19 @@
+---
+title: Suppliers
+description: Vendors and their purchase orders at /dashboard/platform/suppliers.
+icon: Truck
+---
+
+`/dashboard/platform/suppliers` has status tabs. `/suppliers/[id]` shows the supplier, its purchase orders, and lots.
+
+## Fields
+
+`name`, `status`, `contactName`, `email`, `phone`, `website`, `leadTimeDays`, `notes`.
+
+## Actions
+
+- Create (`CreateCoffeeSupplier`) and edit (`UpdateCoffeeSupplier`).
+- Pause, activate, or archive.
+- Delete (`DeleteCoffeeSupplier`) only when the supplier is unused.
+
+Pick a supplier when you create a purchase order on [Coffee operations](/docs/openfront/coffee-shop/coffee-operations).

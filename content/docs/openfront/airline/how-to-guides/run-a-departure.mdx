@@ -1,0 +1,36 @@
+---
+title: Run a departure
+description: Check in passengers, accept bags, and board a flight at the station.
+icon: PlaneTakeoff
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Before you start, the user needs a [station assignment](/docs/openfront/airline/stations) with `canCheckIn`, `canAcceptBags`, and `canBoard`.
+
+<Steps>
+<Step>
+### Set the gate
+On [Flight operations](/docs/openfront/airline/flight-ops) enter the gate and terminal.
+</Step>
+<Step>
+### Open the manifest
+`/dashboard/platform/departures`, choose the date and station, and open the flight.
+</Step>
+<Step>
+### Register and verify documents
+For each passenger, register the travel document and verify it.
+</Step>
+<Step>
+### Check in and accept bags
+Check the passenger in and choose a seat. Enter the bag weight in grams to accept each checked bag.
+</Step>
+<Step>
+### Board
+Board each passenger with a boarding pass. Offload with a reason if needed.
+</Step>
+<Step>
+### Close out
+Mark the flight **Departed** on Flight operations and record bag scans on [Baggage](/docs/openfront/airline/baggage).
+</Step>
+</Steps>

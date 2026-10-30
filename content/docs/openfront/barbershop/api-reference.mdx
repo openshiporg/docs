@@ -1,0 +1,53 @@
+---
+title: API reference
+description: Named GraphQL queries and mutations served at /api/graphql.
+icon: Code
+---
+
+Custom operations are defined in `features/keystone/mutations/index.ts`. Lists that allow it also have generated Keystone CRUD. Commands take an `idempotencyKey`; repeating a key with the same input returns the earlier result and with different input is refused.
+
+## Public and account queries
+
+`getPublicStorefrontSettings`, `getPublicServiceCatalog`, `getPublicBarbers`, `getPublicBarberWeek`, `getPublicProducts`, `getPublicMembershipOffers`, `getPublicBookingEligibility`, `getPublicPaymentOptions`, `checkBarberAvailability`, `getPublicAppointment`, `getPublicQueue`, `getPublicQueueEntry`, `getPublicWalkInStatus`, `accountBookings`, `accountBalances`, `exportMyAccountData`.
+
+## Public and account mutations
+
+```graphql
+mutation Book($requestKey: String!, $guestProof: String!, $body: String!) {
+  createOnlineBooking(requestKey: $requestKey, guestProof: $guestProof, requestBody: $body) { ... }
+}
+```
+
+| Operation | Arguments |
+|---|---|
+| `createOnlineBooking` | `requestKey`, `guestProof`, `requestBody` |
+| `createAccountBooking`, `recoverGuestBooking`, `recoverAccountBooking` | request key and proof |
+| `managePublicAppointment` | `appointmentId`, `accessToken`, `action`, `startsAt`, `reason`, `idempotencyKey`, `preview`, `acceptedFeeAmount` |
+| `signPublicWaiver` | appointment and token |
+| `startDepositCheckout` | `appointmentId`, `accessToken` |
+| `confirmDepositCheckout` | appointment and session |
+| `createPublicQueueEntry` | name, phone, service, barber |
+
+## Dashboard projections
+
+`platformBooking`, `platformQueue`, `platformCustomers`, `platformPos`, `platformReports`, `platformServices`, `platformStaff`, `platformOperations`, `platformTeam`, `activeShopStorefrontSettings`, `claimableShops`.
+
+## Dashboard commands
+
+| Area | Operations |
+|---|---|
+| Shop and team | `selectActiveShop`, `claimShopOwnership`, `addShopMemberByEmail(email, membershipRole)`, `updateActiveShopStorefrontSettings`, `runBarbershopOnboarding` |
+| Appointments | `createStaffAppointment`, `manageStaffAppointment(appointmentId, action, startsAt, barberId, reason)`, `transitionAppointment(appointmentId, toStatus)`, `markAppointmentNoShow(appointmentId, policyId, reason)` |
+| Walk-ins and waitlist | `createStaffQueueEntry`, `assignWalkInQueueEntry`, `transitionQueueEntry(queueEntryId, toStatus)`, `seatWalkInQueueEntry(queueEntryId)`, `manageWaitlist(action, ...)` |
+| Checkout | `checkoutAppointment(appointmentId, paymentMethod, packageBalanceId, tipAmount, discountAmount, taxAmount, notes, paymentSessionId)`, `refundCashCheckout(transactionId, reason, cashReturned)`, `recordProductSale`, `returnProductSaleLine` |
+| Payment sessions | `ensureDefaultPaymentProvider`, `initiateAppointmentPaymentSession`, `captureAppointmentPaymentSession`, `refundAppointmentPaymentSession`, `cancelAppointmentPaymentSession`, `reconcilePaymentSession` |
+| Customers | `addCustomerNote`, `setCustomerStatus`, `setCustomerConsent`, `issueCustomerWaiver`, `manageMembership(action, customerId, membershipPlanId, servicePackageId, customerPackageId, paymentMethod, reason)` |
+| Staff | `manageStaffShift`, `manageScheduleException`, `linkBarberAccount`, `setPractitionerCredentialStatus` |
+| Payroll and stock | `transitionCommission`, `payApprovedCommissions`, `receiveInventoryLot`, `recordInventoryMovement` |
+
+## HTTP endpoints
+
+- `/api/graphql`
+- `POST /api/payment-webhooks/[providerCode]`
+- `/api/completion` and `/api/mcp-transport/[transport]` (403 unless `ENABLE_AI_TOOLS=true`)
+- `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`

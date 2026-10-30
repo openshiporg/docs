@@ -1,0 +1,40 @@
+---
+title: Payment providers
+description: Manual cash, Stripe Checkout, and the PayPal adapter, with webhooks and refunds.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters live in `features/integrations/payment`: `manual.ts`, `stripe.ts`, `paypal.ts`. Providers are `PaymentProvider` records edited on the generic `/dashboard/payment-providers` page. Onboarding creates Manual / Cash (enabled), Stripe (disabled), and PayPal (disabled).
+
+## Manual / cash and terminal card
+
+Counter and pay-at-pickup payments are recorded by staff (`recordCafePayment`, POS tender). A card payment is the cashier's entry of an external terminal approval; the payment's `providerPaymentId` is `external_terminal:<reference>`.
+
+## Stripe Checkout
+
+<Steps>
+<Step>
+### Set environment
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+</Step>
+<Step>
+### Point the webhook
+Stripe sends events to `/api/payment-providers/pp_stripe_stripe/webhook`.
+</Step>
+<Step>
+### Enable the provider and the switch
+Enable Stripe on the payment providers page, then turn on online payment in [Store settings](/docs/openfront/coffee-shop/store-settings). `getCoffeeStore` then returns `onlinePayment: true`.
+</Step>
+</Steps>
+
+The storefront calls `initiateCafePaymentSession`, redirects to Stripe, and Stripe returns to `/order-confirmed`. The webhook runs `handleCafePaymentWebhook`, settles the payment, and moves the order to `paid`. A bad body returns 400 ("Invalid webhook body"); an unknown provider code returns 404.
+
+## Refunds
+
+`refundCafePayment` refunds Stripe payments online. Each refund has its own idempotency key: "A different refund request already owns this payment".
+
+## PayPal
+
+The adapter reads `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENVIRONMENT` and accepts webhooks at `/api/payment-providers/pp_paypal_paypal/webhook`.

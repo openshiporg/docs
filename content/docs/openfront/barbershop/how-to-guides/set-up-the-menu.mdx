@@ -1,0 +1,28 @@
+---
+title: Set up the menu
+description: Categories, services, packages, plans, and the booking policy.
+icon: Scissors
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Create categories
+`/dashboard/platform/services/categories`. Add categories such as Haircuts and Beard.
+</Step>
+<Step>
+### Add services
+`/dashboard/platform/services/new`: name, price in dollars, duration, optional deposit, buffer, and barbers who offer it. Turn on the waiver or licensed flag if needed.
+</Step>
+<Step>
+### Add packages and plans
+Create packages (price plus included services) and membership plans (price, billing interval, included visits, discount).
+</Step>
+<Step>
+### Publish a booking policy
+On [Policies](/docs/openfront/barbershop/policies) set cancellation hours, fees, and the deposit rule, then add a no-show policy.
+</Step>
+</Steps>
+
+Or run onboarding to start from a starter menu. See [Getting started](/docs/openfront/barbershop/getting-started#onboarding).

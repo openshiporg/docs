@@ -1,0 +1,59 @@
+---
+title: Troubleshooting
+description: Messages returned by Barbershop commands and how to resolve them.
+icon: LifeBuoy
+---
+
+## Booking
+
+| Message | Fix |
+|---|---|
+| "Online deposits are not available. Pay the deposit in the shop." | Set `STRIPE_SECRET_KEY` and set up Stripe on Payments, or take the deposit at the counter. |
+| "Choose an appointment at least 5 minutes and no more than 90 days from now." | Pick a time in range. |
+| "No barber is taking online bookings for this service." | Turn on **Takes online bookings** for a barber who offers the service. |
+| "No barber is free at that time anymore. Choose another time." | Another booking took the slot. |
+| "Multiple booking policies are effective; online requests and customer changes are disabled until the conflict is resolved." | Retire the extra policy on [Policies](/docs/openfront/barbershop/policies). |
+| "An effective jurisdiction-matched booking policy is required." | Publish a policy for the shop's jurisdiction. |
+| "Check-in and seating happen on the appointment's day." | Use the board on the visit day. |
+| "A signer-controlled waiver is required before this service can start." | Issue and sign the waiver. |
+| "Practitioner authority evidence is not effective for this service time." | Add or reactivate the barber's credential. |
+
+## Queue and staff
+
+| Message | Fix |
+|---|---|
+| "No active barber is available for this walk-in." | Clock someone in or check schedules. |
+| "Party size must be a whole number from 1 to 8." | Adjust party size. |
+| "N booked appointment(s) rely on this shift..." | Reschedule them first. |
+| "Invite this person to the shop first; only active shop members can be linked." | Add them on Team. |
+
+## Checkout
+
+| Message | Fix |
+|---|---|
+| "Only an in-chair appointment can be completed at checkout." | Seat the guest first. |
+| "Choose cash, card or a prepaid visit." | Pick a valid tender. |
+| "Package has no visits remaining." | Use another tender. |
+| "Only the shop owner can record a cash refund." | Ask an owner. |
+| "A commission was already paid. Owner reconciliation is required before refunding this receipt." | Reconcile payroll first. |
+| "Pay-in-person sessions are not captured by a processor. Record the payment at checkout." | Use POS. |
+| "Payments for this shop are taken in USD." | Currency must match the shop. |
+
+## Stock and payroll
+
+- "Insufficient inventory for this movement."
+- "Insufficient sellable inventory for this product sale."
+- "A payout must contain commissions for one barber."
+- "Only approved commissions can be paid."
+
+## Access
+
+- "Not authorized to select this shop."
+- "Only a shop owner or manager can manage the team."
+- With no shop, the platform pages show the shop access panel.
+
+## Startup
+
+- "DATABASE_URL must use PostgreSQL."
+- `SESSION_SECRET` must be at least 32 characters.
+- Without SMTP, no email is sent and dashboard password reset is unavailable.

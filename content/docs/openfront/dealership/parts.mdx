@@ -1,0 +1,13 @@
+---
+title: Parts
+description: Parts catalog, movements, and purchase orders.
+icon: Cog
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/parts`, `/parts/[id]`, `/parts/purchase-orders`, `/parts/purchase-orders/[id]`.
+
+- `configurePart` creates or edits a part.
+- `recordPartsMovement` writes a movement of any type to the ledger. "Part inventory changed concurrently" means reload.
+- `managePartsPurchaseOrder` creates, edits, orders, receives, closes, or cancels. Statuses: draft, ordered, partially-received, received, cancelled. Receiving posts receipt movements. A PO can have at most 200 lines.

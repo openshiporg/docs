@@ -1,0 +1,20 @@
+---
+title: Roles and permissions
+description: Role flags that gate each dashboard area and command.
+icon: Shield
+---
+
+`Role` records carry checkbox flags. A `canManageX` flag implies `canReadX`.
+
+| Flag | Area |
+|---|---|
+| `canReadOrders`, `canManageOrders` | Order queue, accept, status, KDS, catering status |
+| `canReadPayments`, `canManagePayments` | Payments, register shifts, refunds |
+| `canReadProducts`, `canManageProducts` | Menu, categories, modifiers, recipes |
+| `canReadInventory`, `canManageInventory` | Inventory, suppliers, purchase orders, waste, staff shifts |
+| `canReadLoyalty`, `canManageLoyalty` | Rewards and subscriptions |
+| `canManagePeople`, `canManageRoles` | Users and roles |
+| `canManageSettings` | Store settings |
+| `canManageOnboarding` | Onboarding |
+
+The first user created at `/dashboard/init` gets a role with every flag. Commands refuse with messages such as "Not authorized to operate the KDS", "Not authorized to operate register shifts", "Not authorized to manage coffee inventory", and "Not authorized to manage rewards". Report sections only appear for roles that can read their source data.

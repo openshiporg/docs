@@ -1,0 +1,34 @@
+---
+title: Inventory
+description: Retail stock, lots, movements, and suppliers at /dashboard/platform/inventory.
+icon: Package
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/inventory` lists retail stock on hand with a needs-reordering tab, search, and margin. `/inventory/[id]` is one product. `/inventory/suppliers` manages suppliers.
+
+## Receive a delivery
+
+<Steps>
+<Step>
+### Open the product
+`/dashboard/platform/inventory/[id]`.
+</Step>
+<Step>
+### Enter the lot
+`receiveInventoryLot`: `lotNumber`, `quantity`, optional `supplierId`, `unitCost`, `receivedAt`, `expiresAt`. The expiry must be after the received date.
+</Step>
+</Steps>
+
+## Waste and corrections
+
+`recordInventoryMovement` on a lot: `movementType` (receive, sale, return, waste, adjustment), `quantityDelta`, `reason`, `referenceKey`. Receive and return must be positive; sale and waste negative; movements cannot be zero. "Insufficient inventory for this movement." blocks going below zero.
+
+The stock ledger on the product lists every `InventoryMovement`.
+
+## Suppliers
+
+`Supplier`: `name`, `contactName`, `email`, `phone`, `website`, `notes`, `status` (use, pause, archive).
+
+Low and expiring stock shows in [Shop operations](/docs/openfront/barbershop/shop-operations).

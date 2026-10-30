@@ -1,0 +1,32 @@
+---
+title: Retail
+description: Items, sales, returns, stock, drawer close, and counter card payments.
+icon: ShoppingBag
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/retail` (`retailWorkspace`).
+
+<Steps>
+<Step>
+### Items and stock
+`saveRetailItem` per location; stock entries are `RetailStockEntry` rows.
+</Step>
+<Step>
+### Quote and sell
+`quoteRetailSale`, then `sellRetail`. Card sales record a `CounterPaymentAttempt` first. "Combine duplicate item lines".
+</Step>
+<Step>
+### Return
+`returnRetail`.
+</Step>
+<Step>
+### Close the drawer
+`closeRetail` with a variance reason. "Cash close overlaps a previously reconciled period".
+</Step>
+<Step>
+### Settle uncertain card payments
+`reconcileCounterPayment`.
+</Step>
+</Steps>

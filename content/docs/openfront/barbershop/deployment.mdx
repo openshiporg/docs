@@ -1,0 +1,26 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Barbershop on Railway, Vercel, or your own Node.js server.
+icon: Rocket
+---
+
+
+The app needs a Node.js server, PostgreSQL, and S3-compatible storage.
+
+```bash
+npm run build     # keystone build --no-ui && next build; does not migrate
+npm run migrate   # prisma migrate deploy
+npm start         # next start
+```
+
+- **Railway:** `railway.toml` builds with `prisma generate && keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run at start.
+- **Vercel:** the README has a Deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to set the `S3_*` variables, `APP_ORIGIN`, and any optional services, and run migrations as a release step.
+
+Production checklist:
+
+1. Back up the database and test a restore.
+2. Set `APP_ORIGIN` to the HTTPS origin.
+3. Set a new `SESSION_SECRET` and keep it the same across all app instances.
+4. Configure SMTP if you want resets, booking emails, and reminders.
+5. Only one shop should be public for the storefront.
+6. Replace or remove the starter data from onboarding that does not match your shop.

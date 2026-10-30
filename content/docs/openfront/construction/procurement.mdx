@@ -1,0 +1,26 @@
+---
+title: Procurement
+description: Material requests, orders, and receipts.
+icon: Package
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/procurement`. Registers: requests, receipts, commitments, bid invitations, lien waivers.
+
+<Steps>
+<Step>
+### Request
+`createProcurementRequestWithLine`. "A procurement request requires a bounded, non-empty line set".
+</Step>
+<Step>
+### Order
+`placeProcurementOrder` after `transitionProcurementRequestStatus` moves draft to submitted.
+</Step>
+<Step>
+### Receive
+`recordMaterialReceipt`. "Accepted receipts exceed the ordered quantity for a request line" blocks over-receipt.
+</Step>
+</Steps>
+
+Lien waivers are tracked here and on [Billing](/docs/openfront/construction/billing).

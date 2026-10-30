@@ -1,0 +1,30 @@
+---
+title: Field operations
+description: Daily logs, photos, labor time, and resource logs.
+icon: HardHat
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/field`.
+
+## Daily logs
+
+<Steps>
+<Step>
+### Start
+`startDailyLog`.
+</Step>
+<Step>
+### Add entries and photos
+`addDailyLogEntry`, `registerFieldPhoto`. Submitting needs at least one entry: "A daily log requires at least one field entry before submission".
+</Step>
+<Step>
+### Submit and approve
+draft, submitted, approved (`transitionDailyLogStatus`). A submitted log can return to draft.
+</Step>
+</Steps>
+
+## Labor and resources
+
+`recordLaborTime` records labor entries. `recordResourceActivity` logs equipment or material use. The resource log register supports recovery of interrupted records with `reconcileResourceActivityIntent` and `closeResourceActivityIntent`.

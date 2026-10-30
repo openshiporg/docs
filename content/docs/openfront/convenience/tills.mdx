@@ -1,0 +1,36 @@
+---
+title: Tills
+description: Register sessions, cash movements, counts, and over/short.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/tills` lists sessions by status; `/tills/[id]` shows one.
+
+## Statuses
+
+`RegisterSession`: open, closing, suspended, closed.
+
+## Cash movements
+
+`recordCashMovement` with `type` and a required reason: opening_float, paid_in, paid_out, safe_drop, correction, plus system-written sale_payment, refund, lottery_sale, lottery_payout, money_service_in, money_service_out, closing_count. Direction is in or out.
+
+## Close a till
+
+<Steps>
+<Step>
+### Count the drawer
+Enter `countedCashCents`.
+</Step>
+<Step>
+### Close
+`closeRegisterSession`. Expected cash is computed from the float, cash sales and refunds, movements, lottery, and money services; the difference is over/short.
+</Step>
+<Step>
+### Close the shift
+`closeEmployeeShift`. "Close all linked registers before completing this shift".
+</Step>
+</Steps>
+
+Registers themselves are added in [Store settings](/docs/openfront/convenience/store-settings) with `configureRegister`.

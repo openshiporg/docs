@@ -1,0 +1,28 @@
+---
+title: Money services
+description: Providers, confirmed transactions, voids, and settlement.
+icon: Landmark
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/money-services`.
+
+<Steps>
+<Step>
+### Add a provider
+`configureMoneyServiceProvider`. Credentials are `env://` references.
+</Step>
+<Step>
+### Record a transaction
+`recordExternalMoneyServiceTransaction` after the provider confirms it. "Externally confirmed transaction reference is required". Drawer cash moves with money_service_in or money_service_out.
+</Step>
+<Step>
+### Void
+`voidExternalMoneyServiceTransaction`.
+</Step>
+<Step>
+### Settle
+`generateMoneyServiceSettlement`, `approveMoneyServiceSettlement`.
+</Step>
+</Steps>

@@ -1,0 +1,30 @@
+---
+title: Delivery
+description: Schedule, checklist, acknowledgment, completion, and we-owe items.
+icon: PackageCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/delivery` (`deliveryWorkspace`).
+
+<Steps>
+<Step>
+### Schedule and arrive
+`manageDeliveryCase`: scheduled, arrived, ready, delivered, cancelled.
+</Step>
+<Step>
+### Checklist and waivers
+Recorded through the same command.
+</Step>
+<Step>
+### Acknowledge
+The customer acknowledgment must match the current worksheet: "Delivery acknowledgment is unbound or stale; record it for the current worksheet".
+</Step>
+<Step>
+### Complete
+`completeDealDelivery` delivers the deal and marks the vehicle sold. It needs deal and financing permissions.
+</Step>
+</Steps>
+
+`manageWeOweItem` tracks promises after the sale: open, fulfilled, waived.

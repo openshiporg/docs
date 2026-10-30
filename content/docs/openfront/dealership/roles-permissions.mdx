@@ -1,0 +1,20 @@
+---
+title: Roles and permissions
+description: Role flags, memberships, and record scoping.
+icon: Shield
+---
+
+Access comes from the user's `Role`. Operating permissions can also come from an active `DealerGroupMembership` or `RooftopMembership`, for that scope only.
+
+| Area | Flags |
+|---|---|
+| Dashboard | `canAccessDashboard`, `canManageOnboarding`, `canManageSettings` |
+| People | `canReadPeople`, `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManageUsers`, `canManageRoles` |
+| Inventory | `canViewInventory`, `canReadVehicles`, `canManageInventory`, `canViewDealerCost` |
+| Leads and CRM | `canAccessLeads`, `canReadLeads`, `canManageLeads`, `canViewAllLeads`, `canManageTasks` |
+| Trade-ins | `canAccessTradeIns`, `canReadTradeIns`, `canManageTradeIns` |
+| Deals | `canAccessDeals`, `canReadDeals`, `canManageDeals`, `canApproveDeals`, `canReadDealApprovals` |
+| Finance, service, payments | `canManageFinancing`, `canManageService`, `canReadPayments`, `canManagePayments` |
+| Keys | `canManageKeys` |
+
+People, users, roles, settings, onboarding, API keys, and payments are role-only. Leads, deals, approvals, and trade-ins are limited to the assigned salesperson unless `canViewAllLeads` applies across all rooftops. Onboarding creates up to 8 staff roles.

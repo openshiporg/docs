@@ -1,0 +1,24 @@
+---
+title: Schedule and tasks
+description: Schedules, tasks, dependencies, and progress.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/schedule`.
+
+<Steps>
+<Step>
+### Register a schedule
+`registerSchedule`: draft, published, archived. Publishing needs a task: "A schedule requires at least one planned task before publication".
+</Step>
+<Step>
+### Add tasks and dependencies
+`registerScheduleTask`, `linkScheduleDependency`. "A schedule task cannot depend on itself".
+</Step>
+<Step>
+### Update progress
+`updateScheduleTaskProgress`. Statuses: not_started, in_progress, delayed, on_hold, completed. Completion needs 100 percent progress.
+</Step>
+</Steps>

@@ -1,0 +1,21 @@
+---
+title: Reports
+description: Sales, top items, stations, low stock, and rewards at /dashboard/platform/reports.
+icon: ChartColumn
+---
+
+`/dashboard/platform/reports` (`getCoffeeReports`) is the analytics page.
+
+## Period
+
+Today, 7, 30, or 90 days, or a custom range up to 366 days. The default is 30 days. Dates follow the store timezone. A bad range returns "Choose a valid start and end date".
+
+## Sections
+
+- **Sales ledger** and totals over the whole period (database aggregates)
+- **Top items** (top 8)
+- **Items by station**
+- **Low stock** (10 per page)
+- **Top rewards accounts**
+
+Each section is only shown to roles that own those facts (orders, payments, inventory, loyalty).

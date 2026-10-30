@@ -1,0 +1,28 @@
+---
+title: Troubleshooting
+description: Error messages and fixes.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| Employee already has an open shift | Close the existing shift |
+| Close all linked registers before completing this shift | Close each till first |
+| Cannot complete an empty cart | Scan items |
+| Open register session not found for refund | Open a drawer |
+| A reason is required to void or abandon a cart | Provide a reason |
+| Access denied for this store | Assign the employee to the store |
+| Active age policy not found for this store | Configure the policy |
+| Active verifier is not assigned to this store | Use an assigned employee |
+| Adjustment would make inventory negative | Count and correct first |
+| Each purchase-order line requires a unit cost or vendor item | Set cost |
+| Count increase is missing its accepted unit cost | Enter cost |
+| Deposit amount exceeds unreserved counted cash | Lower the amount |
+| Fuel delivery would exceed tank capacity | Check the reading |
+| Offline operation payload exceeds 32 KiB | Split the operation |
+| Payment reconciliation period cannot exceed 32 days | Shorten the period |
+| Brand mark must contain 1-4 uppercase letters or digits | Fix the mark |
+| Machine sessions cannot run onboarding | Use a human session |
+| Export artifact checksum verification failed | Regenerate |
+
+The app builds its base URL from `Host` and `X-Forwarded-*`; run it behind a proxy that sets fixed values.

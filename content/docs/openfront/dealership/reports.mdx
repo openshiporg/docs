@@ -1,0 +1,28 @@
+---
+title: Reports and audit
+description: Saved reports, runs, audit search, and outbox health.
+icon: ChartColumn
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/reports` tabs: saved reports, runs, audit, outbox.
+
+<Steps>
+<Step>
+### Save a report
+`saveOperationalReport`.
+</Step>
+<Step>
+### Run it
+`runSavedReport`, then download from the Runs tab. `queueDueSavedReports` queues due reports; they run when someone runs them.
+</Step>
+<Step>
+### Search the audit trail
+`auditSearch` reads `DomainAuditEvent`. "An audit reason is required".
+</Step>
+<Step>
+### Check the outbox
+`DomainOutboxEvent` rows are written in the same transaction as each command.
+</Step>
+</Steps>

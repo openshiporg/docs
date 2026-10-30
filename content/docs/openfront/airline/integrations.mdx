@@ -1,0 +1,36 @@
+---
+title: Integrations
+description: Stripe, settlement import, outbound webhooks, SMTP, the background worker, and the MCP endpoint.
+icon: Plug
+---
+
+## Payments
+
+Two adapters live in `features/integrations/payment`: `manual` and `stripe`. See [Payment providers](/docs/openfront/airline/payment-providers) for setup.
+
+- `POST /api/payments/webhooks/[providerKey]` verifies the Stripe signature, stores a `WebhookEvent`, and the worker applies `checkout.session.completed` events. The secret is read from `AIRLINE_WEBHOOK_SECRET_<NAME>`.
+- `POST /api/integrations/settlements/[connectionKey]` accepts settlement evidence from an outside ledger with a machine credential (audience `settlement-import`, scope `settlements:write`).
+
+## Outbound webhooks
+
+The worker posts `OutboxEvent` records to active `WebhookEndpoint` records whose `eventTypes` include the topic. Endpoint hosts must be listed in `OUTBOUND_WEBHOOK_HOSTS`. Fields on an endpoint: `url`, `eventTypes`, `status`, `secret`, `failureCount`, `lastAttemptedAt`.
+
+Outbox statuses end in `dead_lettered` after repeated failures. `requeueDeadLetteredOutboxEvent` (`outboxEventId`, `expectedAttemptCount`, `reason` of 8 to 500 characters, `idempotencyKey`) puts one back in the queue. The worker posts to `ALERT_WEBHOOK_URL` when new dead letters appear, at most once a minute.
+
+## Email
+
+SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) sends password resets and booking access recovery. Without `SMTP_HOST` and `SMTP_FROM`, the recovery form is hidden and `recoverCustomerBookingAccess` answers "Access codes can't be emailed right now. Contact the airline." Recovery is limited to 5 requests per client per hour.
+
+## Background worker
+
+`npm run worker` runs `scripts/runtime-worker.ts`. Every 30 seconds it expires inventory holds, expires unpaid storefront bookings after their 24-hour window, and prunes rate-limit buckets. It delivers outbox events continuously and writes a heartbeat every 10 seconds under `REQUIRED_WORKER_ID` or `OUTBOX_WORKER_ID`.
+
+`GET /api/health` returns `{ status: "ok", worker: "fresh" | "stale" | "not_configured" | "unknown" }`, or 503 when the database is unreachable or the process is draining. The worker is fresh if its heartbeat is under 60 seconds old.
+
+## AI assistant and MCP
+
+The dashboard chat at `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`). `/api/mcp-transport` exposes `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`, run as the signed-in user. In production it returns 404 unless `AI_ASSISTANT_ENABLED=true`.
+
+## Machine credentials
+
+`issueMachineCredential(name, audience, scopes, expiresAt)` returns a token once. Only a hash and a preview are stored. `machineCredentialSummaries` lists them; `revokeMachineCredential(credentialId)` revokes.

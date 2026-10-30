@@ -1,0 +1,34 @@
+---
+title: Recovery
+description: Offline devices, replay batches, outbox, and machine keys.
+icon: LifeBuoy
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/recovery`.
+
+## Offline devices
+
+`registerOfflineDevice`, `transitionOfflineDevice` (active, suspended, revoked). Replay with `recordOfflineReplayBatch`. "Offline sequence may appear only once per batch".
+
+## Outbox
+
+`OutboxEvent` rows are claimed by a worker (`claimOutboxEvents`, `completeOutboxEvent`). `replayOutboxEvent` retries dead-lettered events. "Outbox event is not leased by this worker".
+
+## Machine keys
+
+<Steps>
+<Step>
+### Create
+`createBusinessApiKey` with scopes and stores. The token is shown once.
+</Step>
+<Step>
+### Use
+Set `OPENFRONT_API_TOKEN` for `worker:outbox` and `worker:alerts`.
+</Step>
+<Step>
+### Revoke
+`revokeBusinessApiKey`.
+</Step>
+</Steps>

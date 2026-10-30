@@ -1,0 +1,37 @@
+---
+title: Pipeline
+description: Leads, opportunities, and website inquiries at /dashboard/platform/pipeline.
+icon: Target
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Routes
+
+- `/dashboard/platform/pipeline`: leads, opportunities, and website inquiries
+- `/dashboard/platform/pipeline/create`: new opportunity
+- `/dashboard/platform/pipeline/[id]`: opportunity detail
+- `/dashboard/platform/pipeline/requests/[id]`: one `IntakeSubmission`
+
+## How inquiries arrive
+
+Forms on the public site call `submitPublicIntake`. Each creates an `IntakeSubmission` of type `project_inquiry`, `estimate_request`, `rfp_invitation`, `trade_partner_interest`, or `general_contact`, plus a lead and an opportunity. The visitor gets a receipt at `/requests/[publicReference]/confirmation`.
+
+## Work an opportunity
+
+<Steps>
+<Step>
+### Review the inquiry
+Open it from the Website inquiries list.
+</Step>
+<Step>
+### Qualify
+Opportunities move from qualifying through go/no-go, estimating, submitted, and negotiating to won, lost, or declined.
+</Step>
+<Step>
+### Convert
+When won, create the project on [Portfolio and projects](/docs/openfront/construction/portfolio-projects).
+</Step>
+</Steps>
+
+Lead statuses: new, qualified, nurturing, converted, disqualified.

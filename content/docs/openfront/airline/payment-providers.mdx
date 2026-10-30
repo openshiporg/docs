@@ -1,0 +1,51 @@
+---
+title: Payment providers
+description: Add an evidence-only manual provider or connect Stripe Checkout at /dashboard/platform/payment-providers.
+icon: Landmark
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+A carrier needs an active payment provider before bookings can be paid. Two adapters exist in `features/integrations/payment`.
+
+## Manual settlement
+
+The manual provider records evidence only and needs independent approval. It is the provider required by onboarding and by the production runtime check.
+
+<Steps>
+<Step>
+### Add the provider
+On `/dashboard/platform/payment-providers` choose **Add manual provider** and give a name and a code (2 to 32 letters, digits, hyphens or underscores). `CreateManualPaymentProvider` saves it with `providerKey` `<carrier>:manual:<code>` and configuration `providerExecution: false`, `requiresIndependentApproval: true`.
+</Step>
+<Step>
+### Activate
+`SetPaymentProviderStatus` sets `active`. Statuses: inactive, active, degraded, disabled.
+</Step>
+</Steps>
+
+Errors: "A provider with code `<code>` already exists." and "Activate a manual settlement provider on the Payment providers page first."
+
+## Stripe Checkout
+
+<Steps>
+<Step>
+### Paste the secret key
+Choose **Connect Stripe** and paste an `sk_test_` or `sk_live_` key (restricted `rk_` keys also match). Otherwise: "Enter a Stripe secret key (sk_test_… or sk_live_…)."
+</Step>
+<Step>
+### Save
+`CreateStripePaymentProvider` stores the key in write-only `credentials` and the mode (test or live) in `configuration`. The provider key is `<carrier>:stripe:<mode>:<suffix>`.
+</Step>
+<Step>
+### Add the webhook
+Create a Stripe webhook that posts to `/api/payments/webhooks/<providerKey>`, and set the signing secret in an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>`, referenced from the provider's `webhookSecretEnv` configuration. The worker applies `checkout.session.completed` events.
+</Step>
+</Steps>
+
+On Manage booking the traveler sees **Pay now**. `startCustomerCheckout` creates a `PaymentSession` and Stripe Checkout session. After the return, `completeCustomerCheckout` verifies the session with Stripe (amount and currency must match), records the payment, and issues tickets. Checkout calls are limited to 20 per client per 15 minutes.
+
+Only manual and Stripe providers can be activated: "Only manual settlement and Stripe providers can be activated."
+
+## Settlement import
+
+`POST /api/integrations/settlements/[connectionKey]` accepts evidence from an outside ledger. It needs a `MachineCredential` with audience `settlement-import` and scope `settlements:write`, issued with `issueMachineCredential` (expiry within one year) from the onboarding form. Revoke with `revokeMachineCredential`.

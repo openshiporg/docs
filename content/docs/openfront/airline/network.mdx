@@ -1,0 +1,53 @@
+---
+title: Network
+description: Register airports, create routes, and author flight schedules at /dashboard/platform/network.
+icon: MapPinned
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The Network desk has three tabs: airports, routes, and schedules. Everything a dated flight needs comes from here.
+
+## Airports
+
+`Airport` is shared reference data used by every carrier. Register one with `registerAirport`.
+
+<Steps>
+<Step>
+### Open the Airports tab
+Go to `/dashboard/platform/network` and choose **Airports**.
+</Step>
+<Step>
+### Enter the airport
+Give the three-letter IATA code, optional four-letter ICAO code, name, city, two-letter ISO country code, optional subdivision code, and an IANA timezone. Errors you may see: "IATA code must be three letters.", "ICAO code must be four letters.", "Country must be a two-letter ISO code."
+</Step>
+<Step>
+### Save
+The call is idempotent. Submitting the same form again does not create a second airport.
+</Step>
+</Steps>
+
+## Routes
+
+A `Route` joins an origin and a destination airport. Fields: `origin`, `destination`, `status` (draft, active, suspended, archived), `distanceKilometers`, `minimumConnectionMinutes`, and `isInternational`.
+
+Create and edit routes on the Routes tab (`CreateRoute`, `UpdateRoute`) and change status with `SetRouteStatus`. Origin and destination must be chosen and must differ.
+
+## Schedules
+
+A `FlightSchedule` is a recurring service on a route.
+
+| Field | Meaning |
+|---|---|
+| `flightNumber`, `serviceSuffix` | Carrier designator plus number, such as `XY101` |
+| `departureLocalTime`, `arrivalLocalTime` | `HH:MM` in each airport's local time |
+| `arrivalDayOffset` | Between -1 and 2 |
+| `daysOfWeek` | At least one day |
+| `effectiveFrom`, `effectiveTo` | Dates; `effectiveTo` must not be before `effectiveFrom` |
+| `status` | draft, published, suspended, retired |
+
+Create and edit schedules with `CreateFlightSchedule` and `UpdateFlightSchedule`. Publish, suspend, or retire with `SetScheduleStatus`. Only a published schedule can create sellable dated service.
+
+## Next step
+
+[Fares and products](/docs/openfront/airline/fares) define what is sold. [Schedules and flights](/docs/openfront/airline/schedules-flights) turn a published schedule into dated flights.

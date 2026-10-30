@@ -1,0 +1,16 @@
+---
+title: Integrations
+description: Storage, email, Stripe, outbox webhook, AI chat, and MCP tools.
+icon: Plug
+---
+
+| Integration | Setup |
+|---|---|
+| S3-compatible storage | `S3_*`. Signs SigV4 URLs for document and drawing files |
+| SMTP | `SMTP_*`. Password reset: `/dashboard/reset` and `/account/reset` |
+| Stripe | See [Payment providers](/docs/openfront/construction/payment-providers) |
+| Outbox webhook | `OUTBOX_WEBHOOK_URL`, `OUTBOX_WEBHOOK_SECRET` (32+ characters). Sends `x-openfront-signature-sha256` (HMAC-SHA256) and `x-openfront-event`. Retries up to `OUTBOX_MAX_ATTEMPTS` (default 8), then `dead_letter`. Batch size `OUTBOX_BATCH_SIZE` (25), max per run `OUTBOX_MAX_MESSAGES_PER_RUN` (100) |
+| OpenRouter chat | `OPENROUTER_API_KEY`; `/api/completion` |
+| MCP tools | `/api/mcp-transport/[transport]`: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `modelSpecificSearch`. Reads: 100 rows per page, 500 total |
+
+Health check: `/api/health`.

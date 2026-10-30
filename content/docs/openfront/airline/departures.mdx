@@ -1,0 +1,42 @@
+---
+title: Departures
+description: Station manifest for registering documents, checking in, accepting bags, boarding, and offloading.
+icon: PlaneTakeoff
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/departures` shows the departure manifest (`departureManifest`) by date and station. `/dashboard/platform/departures/[id]` opens one flight.
+
+Station actions require an active [station assignment](/docs/openfront/airline/stations) for the flight's origin airport with the matching flag: `canCheckIn`, `canAcceptBags`, or `canBoard`.
+
+## Work a passenger
+
+<Steps>
+<Step>
+### Register the travel document
+`registerPassengerTravelDocument` takes `documentType`, `documentNumber`, `issuingCountryCode`, optional `nationalityCode` and `issuedAt`, `expiresAt`, `providerReference`, `evidenceVersion`, and `verificationExpiresAt`. The number is tokenized before storage.
+</Step>
+<Step>
+### Verify it
+`verifyPassengerTravelDocument` records the verification for the segment. Check-in requires "A current authoritative travel-document verification."
+</Step>
+<Step>
+### Check in
+`checkInBookingPassenger` needs a paid, ticketed booking and a published seat map. It creates a `CheckIn`, a `SeatAssignment`, and a `BoardingPass`. An optional `seatId` picks the seat.
+</Step>
+<Step>
+### Accept bags
+`acceptCheckedBag` takes `bookingPassengerId`, `flightInstanceId`, and `weightGrams` (0 to 100000). The bag needs a checked-in passenger and a matching unused bag entitlement. A `Bag` with a tag number is created.
+</Step>
+<Step>
+### Board or offload
+`boardBookingPassenger` needs a checked-in coupon and a confirmed seat. `offloadBookingPassenger` needs a reason.
+</Step>
+</Steps>
+
+## Statuses
+
+Check-in: not_started, eligible, checked_in, boarded, blocked, offloaded, cancelled. Boarding pass: issued, reissued, boarded, revoked.
+
+Seat rule: a paid seat needs an authorized, audited entitlement before check-in. A traveler cannot hold more than one active seat on a flight.

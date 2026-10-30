@@ -1,0 +1,42 @@
+---
+title: Menu
+description: Categories, items, modifiers, and modifier stock at /dashboard/platform/menu.
+icon: Coffee
+---
+
+`/dashboard/platform/menu` (`getCoffeeMenuManager`) manages what customers and the POS can order.
+
+## Categories
+
+`createCoffeeMenuCategory`: name (required), description (up to 1000 characters), sort order (whole number).
+
+## Items
+
+`createCoffeeMenuItem` and `updateCoffeeMenuItem`.
+
+| Field | Notes |
+|---|---|
+| `name`, `shortDescription` | |
+| `price` | Non-negative integer in cents |
+| `available`, `featured`, `popular` | |
+| `barStation` | espresso_bar, cold_bar, brew_bar, pastry_case, retail_shelf |
+| `prepTimeMinutes`, `caffeineMg`, `calories` | |
+| `category`, `inventoryItem` | |
+
+Price and availability change only through the commands. Item images are edited on the generic `MenuItemImage` page reached from the item's full record.
+
+## Modifiers
+
+`createCoffeeMenuModifier` and `updateCoffeeMenuModifier`.
+
+- `modifierGroup`: size, milk, espresso, syrup, sweetness, temperature, ice, topping, bakery_prep, grind
+- `modifierGroupLabel`: the customer-facing label such as Milk choice
+- `required`, `minSelections`, `maxSelections`, `defaultSelected`
+- `priceAdjustment` in cents
+- `inStock`
+
+## How a modifier affects inventory
+
+Every option must say how it affects inventory: `inventoryAction` is none, add, or substitute. "Choose how this option affects inventory before offering it". An add consumes `inventoryQuantity` of the linked `inventoryItem` per serving in that item's unit. A substitute names the base recipe item it replaces (`replacesInventoryItem`) in the same unit. Choices are matched by item id, never by name.
+
+`updateCoffeeModifierStock` toggles `inStock`. The cart validates selection bounds: "requires at least N selections", "allows at most N selections".

@@ -1,0 +1,30 @@
+---
+title: Service requests
+description: Price customer quote requests at /dashboard/platform/service-requests.
+icon: MessageSquareQuote
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Signed-in website customers request a quote for a published service. Staff price it on `/dashboard/platform/service-requests` (`constructionOperatorRequests`).
+
+<Steps>
+<Step>
+### Open the request
+Status `requested`.
+</Step>
+<Step>
+### Quote
+`commandConstructionRequest` with `quote`: amount, terms, and expiry. Each quote is a version. "Accepted or cancelled requests cannot be repriced".
+</Step>
+<Step>
+### Customer decides
+The customer accepts (status becomes `payment_pending`) or cancels in `/account/requests/[id]`.
+</Step>
+<Step>
+### Collect the deposit
+If Stripe is set up, the customer pays on `/account/requests/[id]/payment`. See [Payment providers](/docs/openfront/construction/payment-providers).
+</Step>
+</Steps>
+
+Staff can also cancel with `cancel`. Status values: requested, quoted, payment_pending, cancelled. Events are stored as `ServiceRequestEvent`.

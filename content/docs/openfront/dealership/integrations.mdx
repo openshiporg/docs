@@ -1,0 +1,16 @@
+---
+title: Integrations
+description: Payments, financing, inventory channels, accounting, email, storage, and the assistant.
+icon: Plug
+---
+
+| Area | What the code does |
+|---|---|
+| Payments | See [Payment providers](/docs/openfront/dealership/payment-providers) |
+| Financing | `operator-recorded` adapter; the finance desk enters lender submissions and decisions |
+| Inventory channels | `public-inventory-feed` (built in) and `manual-marketplace-export`. `GET /api/inventory-feed` returns listed vehicles as JSON for the served rooftop |
+| Accounting | `operator-recorded` provider for mappings and batches |
+| Email | SMTP (`SMTP_*`) for password reset and customer email verification |
+| Storage | S3-compatible (`S3_*`) for vehicle images |
+| Assistant | `/api/completion` with OpenRouter; MCP at `/api/mcp-transport/http`: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch` |
+| Outbox | `DomainOutboxEvent` rows written with each command |

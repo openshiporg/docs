@@ -1,0 +1,27 @@
+---
+title: Inventory
+description: Stock on hand, lots, movements, and purchase orders at /dashboard/platform/inventory.
+icon: Boxes
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/inventory` has All, Low, and Out tabs. `/inventory/[id]` opens one item.
+
+## Inventory items
+
+`InventoryItem`: `name`, `category` (coffee, milk, syrup, tea, bakery, retail, packaging), `unit` (each, lb, oz, g, gal, l), `currentStock`, `reorderPoint`, `parLevel`, `costPerUnit`, `supplierName`, `sku`. Create and edit with `createCoffeeInventoryItem` and `updateCoffeeInventoryItem`. Low stock means at or below the reorder point.
+
+The unit cannot change once an item has stock, lots, purchase orders, or recipe ingredients. Create a new item instead.
+
+## Lots
+
+`InventoryLot`: `lotNumber`, `quantityReceived`, `quantityRemaining`, `unitCostCents`, `receivedAt`, `expiresAt`, `status` (active, consumed, expired, quarantined). Expired or quarantined lots cannot be sold or prepared: "Insufficient eligible stock: expired or quarantined lots cannot be sold or prepared".
+
+## Movements
+
+Every change writes a `StockMovement`: received, sale, return, waste, adjustment, transfer. The item page shows the ledger, lots, waste, and purchase orders.
+
+## Purchase orders
+
+Create and receive purchase orders on [Coffee operations](/docs/openfront/coffee-shop/coffee-operations). Cancel one from the item page with `cancelCoffeePurchaseOrder`. A PO has one item. Status: draft, submitted, received, cancelled.

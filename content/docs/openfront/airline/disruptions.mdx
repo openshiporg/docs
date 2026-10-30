@@ -1,0 +1,38 @@
+---
+title: Disruptions
+description: Publish delays and cancellations and move affected bookings to replacement flights.
+icon: RefreshCw
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/disruptions` is the recovery desk. `/dashboard/platform/disruptions/[id]` shows one disruption and its affected bookings.
+
+## Publish a disruption
+
+`publishFlightDisruption` takes `flightInstanceId`, `type`, and `publicSummary` (up to 500 characters). Types: delay, cancellation, schedule_change, misconnection, diversion, equipment_change, other.
+
+- A cancellation sets severity high and the flight to `cancelled`.
+- A delay sets the flight to `delayed`.
+- The public summary shows on the storefront `/status` page.
+
+Disruption status: detected, published, recovering, resolved, cancelled.
+
+## Reaccommodate a booking
+
+<Steps>
+<Step>
+### Open the disruption
+Affected bookings list with their segments.
+</Step>
+<Step>
+### Pick the replacement
+`reaccommodateBooking` takes `disruptionId`, `bookingId`, `replacementFlightInstanceId`, and `replacementInventoryBucketId`. The replacement must be a different future flight of the same carrier with the same origin and destination and enough inventory.
+</Step>
+<Step>
+### Confirm
+The command moves ticketed passengers' coupons and records a `Reaccommodation`. Boarded or flown passengers are not eligible.
+</Step>
+</Steps>
+
+Recovery is unavailable after the original service has departed or arrived.

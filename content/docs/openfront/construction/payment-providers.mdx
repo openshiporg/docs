@@ -1,0 +1,31 @@
+---
+title: Payment providers
+description: Install Stripe per company for quote deposits and progress claim payments.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Set server keys
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_KEY`, and `NEXT_PUBLIC_SITE_URL` (used for return URLs).
+</Step>
+<Step>
+### Install
+`/dashboard/platform/payment-providers`, **Add Stripe** (`installStripePaymentProvider`). Toggle with `setPaymentProviderInstalled`. Needs `canManageBilling`.
+</Step>
+<Step>
+### Add the webhook
+Point Stripe at `/api/payment-webhooks/[providerId]`. Signatures are verified; unknown providers return 404, bad signatures 400, bodies over 1 MB 413.
+</Step>
+</Steps>
+
+## What it pays
+
+Stripe Checkout accepts card and US bank account (ACH).
+
+- **Quote deposit:** `createCustomerPayment`, then `reconcileCustomerPayment` on return.
+- **Owner progress claims:** `createClaimPayment` from the portal (`constructionPayableClaims` lists payable claims), or staff send a link with `createClaimPaymentLink`. `checkPaymentStatus` refreshes status.
+
+Settlement creates a `Payment` and allocates it. Errors: "Online payment is not set up for this contractor", "Deposit already received", "Claim is not payable online", "Claim has nothing left to pay", "Only the project owner can pay this claim".

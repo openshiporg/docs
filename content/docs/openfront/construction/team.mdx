@@ -1,0 +1,26 @@
+---
+title: Project team
+description: Members, invitations, and external portal access.
+icon: UserPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Route: `/projects/[projectId]/team`.
+
+<Steps>
+<Step>
+### Add a member
+`addProjectMember` for existing users. Access level: viewer, contributor, manager. Portal type: internal, owner/client, designer, subcontractor, vendor.
+</Step>
+<Step>
+### Invite
+`inviteProjectMember` returns a one-time `/accept-invitation?token=...` link. Share it. Invitees need a password of at least 10 characters.
+</Step>
+<Step>
+### Manage
+`revokeProjectInvitation`, `reissueProjectInvitation`.
+</Step>
+</Steps>
+
+External members use [/portal](/docs/openfront/construction/project-portal).

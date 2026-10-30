@@ -1,0 +1,30 @@
+---
+title: Shop operations
+description: The Needs attention list and waitlist at /dashboard/platform/barbershop.
+icon: ClipboardList
+---
+
+`/dashboard/platform/barbershop` is the operations page (`platformOperations`).
+
+## Needs attention
+
+The list flags:
+
+- low or expiring stock
+- unpaid or unapproved commissions
+- open card payments
+- a missing no-show policy
+- chairs in maintenance or unassigned
+- unsigned waivers
+
+Each item links to the page that resolves it.
+
+## Waitlist
+
+The waitlist is for customers who want a slot that is not available. `manageWaitlist` takes an `action`:
+
+- `create`: `customerName`, `phone`, optional `customerId`, `requestedServiceId`, `requestedBarberId`, `preferredAt`, `notes`. Duplicates (same phone, same service, still waiting or notified) are refused.
+- `notify`: waiting entries move to `notified`.
+- `expire`: waiting or notified entries move to `expired`.
+
+Book an entry from the booking board by passing its id to `createStaffAppointment`; the entry becomes `booked`. The full list opens from the "All requests" link.

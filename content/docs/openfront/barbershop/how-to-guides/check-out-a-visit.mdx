@@ -1,0 +1,28 @@
+---
+title: Check out a visit
+description: Take payment, tip, and close the ticket.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open the ticket
+`/dashboard/platform/pos`, find the in-chair visit.
+</Step>
+<Step>
+### Choose the tender
+Cash, card (recorded after the terminal), or a package visit.
+</Step>
+<Step>
+### Enter tip, discount, and tax
+In dollars. Package visits take no tip or tax in the same ticket.
+</Step>
+<Step>
+### Complete
+The appointment is completed, the receipt is written, and a commission is projected.
+</Step>
+</Steps>
+
+To refund a cash receipt, the owner records it from the receipt. See [POS checkout](/docs/openfront/barbershop/pos).

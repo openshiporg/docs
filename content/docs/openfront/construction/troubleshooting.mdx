@@ -1,0 +1,32 @@
+---
+title: Troubleshooting
+description: Error messages and fixes.
+icon: LifeBuoy
+---
+
+| Message | Fix |
+|---|---|
+| A transition reason is required / must be at least 3 characters | Add a reason of 3 to 500 characters |
+| A bid package requires at least one persisted invitation before issue | Invite a bidder first |
+| An estimate requires a current version with line items before issue | Add lines |
+| A budget change requires at least one line item | Add a line |
+| A change order requires persisted line items | Add lines |
+| A daily log requires at least one field entry before submission | Add an entry |
+| A schedule requires at least one planned task before publication | Add a task |
+| A schedule task must record 100 percent progress before completion | Update progress |
+| A failed inspection requires at least one failed item | Mark an item failed |
+| All incident corrective actions must be verified before closure | Verify actions |
+| A submittal requires a persisted review route for its current revision | Route the review |
+| A different authorized person must decide this approval request | Another approver decides |
+| Accepted receipts exceed the ordered quantity | Reduce receipt quantity |
+| Allocation exceeds remaining claim payment due after effective settlements | Allocate less |
+| A claim can close only after settled allocations cover its full current payment due | Allocate the remainder |
+| A progress claim requires immutable schedule-of-values snapshots | Prepare the claim from a contract or commitment |
+| Online payment is not set up for this contractor | Install Stripe and set keys |
+| A new invited account requires a password with at least 10 characters | Use a longer password |
+| Agent action must be approved before execution | Review it first |
+| Agent action does not grant the required scope | Add the scope grant |
+
+## Startup
+
+Needs `DATABASE_URL` and a `SESSION_SECRET` of 32+ characters. Document uploads fail without all `S3_*` values.

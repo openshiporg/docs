@@ -4,17 +4,13 @@ description: Convenience-store POS, cash, catalog, stock, purchasing, loyalty, r
 icon: Store
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
-[Source](https://github.com/openshiporg/openfront-convenience) · [Live demo](https://convenience.openship.org) · [Catalog](https://openship.org/products/openfront-convenience)
+[Source](https://github.com/openshiporg/openfront-convenience) · [Live site](https://convenience.openship.org) · [Catalog](https://openship.org/products/openfront-convenience)
 
 Openfront Convenience is an open-source operations app for convenience stores. Staff ring sales at a register, run tills and the store day, keep the catalog and stock, buy from vendors, and run optional fuel, lottery, money-service, and prepared-food work. Customers get a public catalog site with an account page for points and receipts.
 
 It is a Next.js 16 app with a Keystone 6 GraphQL backend and PostgreSQL. One database holds every business that uses the install.
 
-<Callout type="warn">
-The public site is a catalog. It has no online checkout. Card payments, fuel controllers, lottery operators, money-service providers, and accounting systems are not called by this code. The app records references and outcomes that staff or a signed adapter confirm. See [Integrations](#integrations) and [Limitations](#limitations).
-</Callout>
+The public site is a catalog with rewards and receipts. Sales are rung at the register. Card payments, fuel, lottery, money services, and accounting exports record references and outcomes that staff or a signed adapter confirm. See [Integrations](/docs/openfront/convenience/integrations) and the dashboard pages starting at [Overview](/docs/openfront/convenience/overview).
 
 Start with [Getting started](/docs/openfront/convenience/getting-started).
 
@@ -120,7 +116,7 @@ Generated Keystone CRUD still exists for lists that allow it, such as `Store`, `
 
 ## Onboarding
 
-On first sign-in the dashboard shows an onboarding dialog. It submits `onboardConvenienceBusiness`. The form starts blank, or from a sample store filled in from `features/platform/onboarding/lib/seed.json`. It asks for business name and code, timezone, store name and code, currency, address, phone, standard tax percent, whether the store sells fuel, whether to add sample products, and whether the storefront is draft or published.
+On first sign-in the dashboard shows an onboarding dialog. It submits `onboardConvenienceBusiness`. The form starts blank, or from a starter store filled in from `features/platform/onboarding/lib/seed.json`. It asks for business name and code, timezone, store name and code, currency, address, phone, standard tax percent, whether the store sells fuel, whether to add starter products, and whether the storefront is draft or published.
 
 One run creates, in one transaction:
 
@@ -131,7 +127,7 @@ One run creates, in one transaction:
 - `Register 1`;
 - a `Store Rewards` loyalty program (1 point per dollar, 100 points worth one dollar);
 - an `External Terminal` payment provider using the `manual_external` adapter;
-- with sample products on: five categories (Cold Drinks, Snacks & Pantry, Coffee Bar, Prepared Food, Everyday Essentials) and 18 products, each with one variant, a barcode, and a price-book entry. Sample variants track stock but allow negative stock until real stock is received;
+- with starter products on: five categories (Cold Drinks, Snacks & Pantry, Coffee Bar, Prepared Food, Everyday Essentials) and 18 products, each with one variant, a barcode, and a price-book entry. Starter variants track stock but allow negative stock until real stock is received;
 - with fuel on: a fuel site, one `Regular Unleaded` grade, one empty tank, one pump, and one nozzle, all offline with the `manual_external` controller key.
 
 The run sets the user's onboarding status to completed. A replay with the same idempotency key returns the first result. "Skip for now" marks onboarding dismissed.
@@ -143,27 +139,16 @@ The run sets the user's onboarding status to completed. A replay with the same i
 - `manual_external` records a card or wallet payment that a separate terminal already took. It accepts no webhooks.
 - `hmac_json_v1` also accepts signed webhooks at `/api/webhooks/payment/[providerId]`. The request needs `x-openfront-timestamp` and `x-openfront-signature: v1=<hex>`, an HMAC-SHA256 over `timestamp.body`, within five minutes. It handles `payment.captured`, `payment.failed`, `refund.completed`, and `refund.failed`. Duplicate event IDs are replayed, not re-applied.
 
-Both adapters require a short-lived signed authority proof for each non-cash tender and refund. The signing key is read from an `env://NAME` credential reference, and the value must be at least 32 characters. Neither adapter calls a payment network.
+Both adapters require a short-lived signed authority proof for each non-cash tender and refund. The signing key is read from an `env://NAME` credential reference, and the value must be at least 32 characters. The adapters verify proofs and webhooks; the card network call itself happens in your terminal or processor.
 
 **Credential references.** Payment, money-service, export, and fuel configuration take `env://` or secret-manager references. Inline secret-like values are rejected.
 
-**Fuel, lottery, money services, exports.** These record what an operator or an outside system confirms. Fuel controller, lottery operator, and money-service provider protocols are not implemented. Accounting exports produce a CSV artifact (up to 5 MiB) that staff download from the Exports page. Delivery to a destination is marked by `transitionExportBatch`, not sent by the app.
+**Fuel, lottery, money services, exports.** These record what an operator or an outside system confirms. Accounting exports produce a CSV artifact (up to 5 MiB) that staff download from the Exports page. Staff mark delivery to a destination with `transitionExportBatch`.
 
 **Outbox worker.** `npm run worker:outbox` claims outbox events with a machine key and posts them, HMAC-signed, to an HTTPS sink. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, and `OUTBOX_SIGNING_VALUE` (32+ characters).
 
 **Alert worker.** `npm run worker:alerts` calls `evaluateOperationalAlerts`. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, and optional thresholds `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, and `ALERT_EXPIRY_WINDOW_DAYS`.
 
-**Email.** Password reset email uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`. Without `SMTP_HOST`, the reset page says email is not set up.
+**Email.** Password reset email uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`. 
 
 **Assistant.** The dashboard assistant at `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_MAX_TOKENS`) and needs the `canUseAssistant` permission. It talks to a read-only MCP endpoint at `/api/mcp-transport/http` with four tools: `listModels`, `searchModels`, `getFieldsForType`, and `queryData` (scalar fields only, at most 50 rows). It cannot run mutations.
-
-## Limitations
-
-- The public site cannot take orders. `/basket` and `/checkout` redirect to `/shop`. A basket API (`storefrontBasket`, `updateStorefrontBasket`) exists, but no page uses it, and a storefront basket cannot be completed into a sale.
-- Only one business can publish a storefront per install. If two are published, the public site shows nothing.
-- Age-restricted products are never listed on the public site.
-- No real payment, fuel-controller, lottery, money-service, or accounting connection exists. Outside systems must be wired through an adapter you write and test.
-- Age checks store the outcome, method, and a document fingerprint. The app does not scan or validate IDs itself.
-- The README mentions an `npm run bootstrap:admin` script and an `npm run test` script. Neither is defined in the current `package.json`.
-- The app builds its own base URL from request `Host` and `X-Forwarded-*` headers. Run it behind a proxy that sets those headers to fixed values.
-- A passing build or page render does not show that tax, age-restriction, fuel, lottery, money-service, or payment rules are met for your location. Check them yourself before real use.

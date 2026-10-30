@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-gym-custom-storefront/SKILL.md`](/skills/openfront-gym-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Routes live under `app/(storefront)/(browse)/` (plus `app/(storefront)/classes/[id]` and `app/(storefront)/instructors/[id]`), `app/member/`, and `app/kiosk/`. Logic lives in `features/storefront` (`screens`, `modules`, `lib/data`, `lib/actions`), with the check-in code in `features/member` and the kiosk in `features/kiosk`.
 
@@ -49,7 +49,7 @@ Mutations: `StorefrontLogin`, `StorefrontAutoSignIn`, `StorefrontRegisterMember`
 
 Kiosk API routes (`/api/kiosk/session`, `/api/kiosk/search-member`, `/api/kiosk/check-in`, `/api/kiosk/guest-check-in`) call `authorizeKioskSession`, `KioskSearch`, `KioskCheckIn`, and `KioskGuestCheckIn`.
 
-## Journey boundaries
+## Journey rules
 
 - The storefront serves one organization. Set `STOREFRONT_ORGANIZATION_ID` when the database has more than one.
 - Public queries return only catalog data. Member, booking, and payment data need a signed-in session and are checked against the member's own records.

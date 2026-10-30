@@ -1,0 +1,28 @@
+---
+title: Classes and scheduling
+description: Class types, weekly schedules, dated sessions, and capacity.
+icon: CalendarDays
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/class-catalog` (generated CRUD on `ClassType`), `/instructors`, `/locations`, `/scheduling` (`schedulingWorkspace`).
+
+<Steps>
+<Step>
+### Define class types and coaches
+Difficulty, duration, equipment. Coaches: `createCoachProfile` from an existing user (`eligibleCoachAccounts`).
+</Step>
+<Step>
+### Save a weekly schedule
+`saveGymClassSchedule`, then `updateClassScheduleCapacity`.
+</Step>
+<Step>
+### Generate sessions
+`generateUpcomingClassInstances` creates dated `ClassInstance` rows for 1 to 12 weeks. Conflicts with a coach, room, closure, or qualification are skipped and reported.
+</Step>
+<Step>
+### Edit or cancel a session
+`saveGymClassInstance`, `updateClassInstanceCapacity`, `cancelClassInstance`. "Class capacity exceeds the room".
+</Step>
+</Steps>

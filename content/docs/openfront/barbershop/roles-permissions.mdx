@@ -1,0 +1,28 @@
+---
+title: Roles and permissions
+description: Shop memberships, global permission flags, and what each role can do.
+icon: Shield
+---
+
+`Shop` is the tenant. A user's global `Role` flags apply only inside shops where their `ShopMembership` allows them.
+
+| Membership role | Dashboard permissions inside the shop |
+|---|---|
+| `owner` | canAccessDashboard, canManageOnboarding, canManageServices, canManageStaff, canManageSchedules, canManageAppointments, canManageQueue, canManageCustomers, canManageCustomerNotes, canManageMemberships, canManagePayments, canViewReports |
+| `manager` | Same as owner |
+| `front_desk` | canAccessDashboard, canManageAppointments, canManageQueue, canManageCustomers, canManageCustomerNotes, canManageMemberships, canManagePayments |
+| `barber` | canAccessDashboard, canManageAppointments, canManageQueue, canManageCustomers, canManageCustomerNotes |
+| `viewer` | canAccessDashboard, canViewReports |
+
+People and role administration (`canManagePeople`, `canManageRoles`) are global, not shop scoped.
+
+## Owner-only actions
+
+- Cash refunds (`refundCashCheckout`)
+- Owner-only customer notes
+- Granting the `owner` or `manager` membership role
+- Linking staff accounts is for owners and managers
+
+## First user
+
+The first user gets an `Admin` role with every flag from `/dashboard/init`. Customers who sign up on the storefront have no role and no shop access.

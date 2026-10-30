@@ -1,0 +1,36 @@
+---
+title: Portfolio and projects
+description: Cross-project metrics at /dashboard/platform/portfolio and project creation at /dashboard/platform/projects.
+icon: LayoutDashboard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Portfolio
+
+`/dashboard/platform/portfolio` (`constructionPortfolio`) shows budget, cost, and open-item metrics for each project in the companies you can see.
+
+## Create a project
+
+<Steps>
+<Step>
+### Open Projects
+`/dashboard/platform/projects`, then the create form (`createConstructionProject`).
+</Step>
+<Step>
+### What it creates
+The project, your membership, a "GEN" cost code and budget code, the budget and its first line, and the approval policies.
+</Step>
+<Step>
+### Add structure and people
+Add budget codes and locations in [Cost structure](/docs/openfront/construction/financials), then invite the team on [Team](/docs/openfront/construction/team).
+</Step>
+</Steps>
+
+## Project status
+
+`transitionProjectStatus`: planning to active or archived; active to on_hold or completed; on_hold to active or completed; completed to archived. Every transition needs a reason of 3 to 500 characters.
+
+## Project tools
+
+Open a project to reach its tools at `/dashboard/platform/projects/[projectId]/<tool>`. Financials, contracts, procurement, billing, reports, team, and audit are internal-only.

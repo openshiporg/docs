@@ -1,0 +1,17 @@
+---
+title: Roles and permissions
+description: Capability flags, organizations, and instructors.
+icon: Shield
+---
+
+## Tenancy and roles
+
+`Organization` is the tenant root. A signed-in session carries one organization. Operational records have a required organization relationship, and access rules filter by it. There is no organization switcher.
+
+The storefront serves one organization. It uses `STOREFRONT_ORGANIZATION_ID` when set. Otherwise it uses the only active organization. With more than one active organization and no setting, the public catalog is empty.
+
+An organization can be `active` or `suspended`. A suspended organization keeps sign-in, password recovery, reads, and reconciliation of existing payments. New bookings, sales, check-ins, catalog edits, settings edits, and new charges are refused. Organization currency is fixed to USD.
+
+Roles carry capability flags: `canCreateRecords`, `canManageAllRecords`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManageSettings`, `canManageAppointments`, `canManageCheckIns`, `canManageFacilities`, `canManagePrograms`, `canManageCommunications`, `canManageRetail`, `canManagePayroll`, `canViewReports`, and `isInstructor`. A user cannot grant a role capability they do not hold unless they have `canManageAllRecords`.
+
+The sidebar filters by role: instructors without management rights see only Scheduling (and Check-in when allowed). `isInstructor` unlocks `/account/instructor`.

@@ -1,0 +1,42 @@
+---
+title: Fares and products
+description: Cabins, fare brands, fare rules, and ancillary products at /dashboard/platform/fares.
+icon: Tags
+---
+
+The Fares desk has four tabs. Create, edit, and change status from each tab. Mutations: `CreateCabin`, `CreateFareBrand`, `CreateFareRule`, `CreateAncillaryProduct`, and their update and status counterparts.
+
+## Cabins
+
+A `Cabin` has a `code`, `name`, `cabinClass` (economy, premium_economy, business, first), and `displayOrder`. Cabin codes are unique per carrier: "A cabin with this code already exists."
+
+## Fare brands
+
+A `FareBrand` belongs to a cabin and is what a traveler sees as a fare choice.
+
+- `code`, `name`, `description`, `displayOrder`, `status`
+- `includedBaggage` (for example one checked bag), `benefits`
+- `refundabilitySummary`, `changeabilitySummary`, `seatSelectionSummary`
+
+Dated service requires an active fare brand. Brand codes are unique per carrier.
+
+## Fare rules
+
+A `FareRule` attaches conditions to a fare brand, optionally for one route.
+
+- `fareBasisPattern` using letters, digits, `*` and `?`
+- `effectiveFrom`/`effectiveTo`, `travelFrom`/`travelTo`
+- `salesChannels`, `passengerTypes`
+- `minimumStayDays`, `maximumStayDays` (maximum must be at least minimum), `minimumAdvancePurchaseHours`
+- `isRefundable`, `isChangeable`, `changeFeeAmount`, `cancellationFeeAmount`, `noShowFeeAmount`, `currencyCode`
+- `status`: draft, active, inactive, archived
+
+## Ancillary products
+
+An `AncillaryProduct` has a `type` (seat, checked_bag, cabin_bag, priority, lounge, meal, wifi, assistance, other), a `fulfillmentType` (associated or standalone), `defaultPriceAmount`, `taxAmount`, `currencyCode`, and `requiresInventory`. Status is draft, active, inactive, or archived.
+
+All amounts are integer minor units, for example cents.
+
+## Related
+
+[Schedules and flights](/docs/openfront/airline/schedules-flights) price each dated flight with a base amount and tax amount per inventory bucket.

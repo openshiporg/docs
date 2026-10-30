@@ -1,0 +1,38 @@
+---
+title: Financials and cost structure
+description: Budgets, budget changes, direct costs, budget codes, and locations.
+icon: Wallet
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Routes: `/projects/[projectId]/financials` and `/projects/[projectId]/structure` under `/dashboard/platform`. Financials is internal only.
+
+## Cost structure
+
+Add project **budget codes** from the company cost code library and **site locations** (`ProjectLocation`).
+
+## Budget
+
+`addBudgetLine` adds a line per budget code. Totals are recalculated, not typed in. Money is an integer in minor units: "Amount must be a non-negative integer in minor units".
+
+## Budget changes
+
+<Steps>
+<Step>
+### Create
+`createBudgetChangeWithLine`. A budget change needs at least one line.
+</Step>
+<Step>
+### Submit for approval
+draft to pending_approval (`transitionBudgetChangeStatus`). See [Approvals](/docs/openfront/construction/approvals).
+</Step>
+<Step>
+### Post
+approved to posted updates the budget.
+</Step>
+</Steps>
+
+## Direct costs
+
+`recordDirectCost` posts a cost against a budget code with an active budget line. `reversePostedDirectCost` reverses it. Job cost and forecast appear in [Reports](/docs/openfront/construction/reports).

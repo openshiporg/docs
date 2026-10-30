@@ -1,0 +1,26 @@
+---
+title: Payment providers
+description: Stripe configuration, webhooks, and test mode.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Stripe is the registered adapter (`features/integrations/payment`). It runs hosted subscription checkout, setup intents, the billing portal, cancel, freeze, resume, tier changes, refunds, and counter card checkouts.
+
+<Steps>
+<Step>
+### Set keys
+`STRIPE_ENABLED=true`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. Checkout is Stripe-hosted, so no publishable key is read.
+</Step>
+<Step>
+### Add the webhook
+Point Stripe at `/api/stripe/webhook`. Handled events: checkout session, subscription, invoice, charge refund and dispute, refund, and payout.
+</Step>
+<Step>
+### Install the provider
+Onboarding creates the `PaymentProvider` record. Online checkout needs exactly one installed Stripe merchant organization.
+</Step>
+</Steps>
+
+`PAYMENT_TEST_MODE` swaps in a test adapter for isolated tests; strict mode refuses to start with it on. If a webhook arrives out of order, "Invoice membership prerequisite missing; retry reconciliation" clears after replaying it with `replayPaymentEvent`.

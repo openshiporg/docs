@@ -1,0 +1,31 @@
+---
+title: Data model
+description: Lists by area and how they fit together.
+icon: Database
+---
+
+## Lists
+
+Models registered in `features/keystone/models/index.ts`:
+
+| Area | Models |
+|---|---|
+| Tenant and people | `Organization`, `User`, `Role`, `Member`, `MemberImportRecord`, `ContactMessage` |
+| Settings and sites | `GymSettings`, `Location`, `GymResource` |
+| Memberships | `MembershipTier`, `Membership`, `MembershipCreditGrant`, `MembershipCreditEntry`, `Subscription` |
+| Classes | `ClassType`, `ClassSchedule`, `ClassInstance`, `ClassBooking`, `Waitlist`, `AttendanceRecord`, `Instructor` |
+| Check-in | `CheckIn` |
+| Personal training | `TrainerAvailability`, `TrainerAppointment`, `TrainingPackage`, `TrainingCreditEntry`, `CoachingAssignment`, `TrainingLead` |
+| Workouts | `Exercise`, `WorkoutLog`, `WorkoutSet` |
+| Payments | `MembershipPayment`, `GymPayment`, `PaymentMethod`, `PaymentProvider`, `PaymentSession`, `PaymentEvent`, `MembershipBillingAttempt`, `GymRefundAttempt`, `CounterPaymentAttempt` |
+| Retail | `RetailItem`, `RetailSale`, `RetailReturn`, `RetailStockEntry`, `RetailClose` |
+| Operations | `OperationalNotice`, `ParticipationPolicy`, `ParticipationEvidence`, `OperationsCase`, `IntegrationCredential` |
+| System | `OnboardingRun`, `StaffIntent`, `AuthRateLimitBucket` |
+
+Some notes on how they fit:
+
+- Class booking works on dated `ClassInstance` rows. Each booking is `confirmed`, `waitlist`, or `cancelled`. The separate `Waitlist` model is an older schedule-level list; live booking uses the per-session waitlist on `ClassBooking`.
+- Class credits come from a `MembershipCreditGrant` per service period, with every change in `MembershipCreditEntry`.
+- Training packages hold prepaid credits. Each use, refund, or adjustment is a `TrainingCreditEntry`.
+- `StaffIntent` stores the exact form request a person submitted, so a lost response can be retried without applying it twice.
+- `CounterPaymentAttempt` records a counter card sale or refund before Stripe is called.

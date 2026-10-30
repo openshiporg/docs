@@ -1,0 +1,19 @@
+---
+title: Reports
+description: Revenue, appointments, walk-ins, and barber and service performance at /dashboard/platform/reports.
+icon: ChartColumn
+---
+
+Pick a start and end date and choose **Show range**. `platformReports` returns figures in the shop timezone and currency.
+
+## Figures
+
+- **Appointments:** total, completed, cancelled, no-show
+- **Revenue:** paid total, tips, transaction count, product sales and count
+- **Queue:** waiting, served, left
+- **Payouts:** total and count
+- **Rates:** completion, queue conversion, utilization
+- **Liabilities:** memberships and active balances
+- **Service performance** and **Barber performance:** revenue and appointments per row. Duplicate names are flagged.
+
+Barber and service rows count settled service lines only: "No settled service lines in this range." Viewing needs `canViewReports`, held by owner, manager, and viewer roles. Invalid ranges and a missing shop timezone return a message on the page.

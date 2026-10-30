@@ -1,0 +1,39 @@
+---
+title: Data model
+description: The Keystone lists, their relationships, and the lifecycles behind Openfront Barbershop.
+icon: Database
+---
+
+The schema has 49 lists in `features/keystone/models`.
+
+## Relationships
+
+- `Shop` owns nearly everything: memberships, chairs, barbers, customers, services, products, appointments, policies, queue entries, transactions, commissions, suppliers, and lots.
+- `ServiceCategory` has `Service`. `Service` links to `Barber` through `specialists` and has `PractitionerCredential` requirements.
+- `Barber` has a `BarberChair`, `BarberSchedule` rows (weekly hours), `ScheduleException`, `StaffShift`, and `Commission`.
+- `Appointment` links customer, barber, chair, service, optional `WalkInQueueEntry`, and one `CheckoutTransaction`. It has `AppointmentLineItem`, `PaymentSession`, `NoShowEvent`, and `AppointmentChangeEvent`.
+- `CheckoutTransaction` has `ProductSaleLine`, `Tip`, `CashRefund`, `PackageUsage`, and `Commission`.
+- `Commission` belongs to a `CommissionPayout`.
+- `Customer` has `CustomerNote`, `GroomingNote`, `WaiverForm`, `CustomerPackage` balances, and `MembershipEvent`.
+- `Product` has `InventoryLot` and `InventoryMovement`.
+- `PaymentProvider` has `PaymentSession`, `PaymentReconciliation`, and `PaymentWebhookEvent`.
+
+## Lifecycles
+
+| Entity | States |
+|---|---|
+| Appointment | requested, confirmed, checked_in, in_chair, completed, cancelled, no_show |
+| Walk-in | waiting, texted, in_chair, served, left |
+| Waitlist | waiting, notified, booked, expired |
+| Commission | projected, approved, paid, voided |
+| CheckoutTransaction | open, paid, partially_refunded, refunded, voided |
+| CustomerPackage | active, paused, used_up, expired, cancelled |
+| PractitionerCredential | active, suspended, revoked, expired |
+| BookingPolicy | active, retired |
+| ShopMembership | invited, active, suspended, revoked |
+
+## Commands and ledgers
+
+Many lists reject generic create and update. They change through named commands that take an idempotency key, write the ledger row, and record a `LifecycleOutboxEvent`. System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `LifecycleOutboxEvent` are read only in the dashboard.
+
+Money is stored in whole cents.

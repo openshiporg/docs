@@ -1,0 +1,34 @@
+---
+title: Service
+description: Appointments and repair orders.
+icon: Wrench
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Pages: `/dashboard/platform/service` (`fixedOpsWorkspace`), `/service/appointments/[id]`, `/service/orders/[id]`.
+
+## Appointments
+
+Customers book at `/service` (`submitServiceBooking`); staff can add one on the page. `transitionServiceAppointment`: scheduled, checked-in, in-progress, waiting-parts, completed, cancelled. Bookings allow 4 per rooftop per hour.
+
+## Repair orders
+
+<Steps>
+<Step>
+### Open
+`openServiceOrder` from the appointment.
+</Step>
+<Step>
+### Record the story
+`recordServiceOrderEvidence`: concern, cause, correction, authorization.
+</Step>
+<Step>
+### Add lines
+`addServiceOrderLineItem`, `updateServiceOrderLineItem`, `removeServiceOrderLineItem` for labor, part, and sublet. `manageLaborOperation` runs labor operations. `setServiceOrderTax`.
+</Step>
+<Step>
+### Move it through
+`transitionServiceOrder`: estimate, approved, in-progress, completed, invoiced, paid. "Invoice number is required before invoicing".
+</Step>
+</Steps>

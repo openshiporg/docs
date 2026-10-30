@@ -1,0 +1,34 @@
+---
+title: Reports and exports
+description: Period summaries and accounting CSV exports.
+icon: ChartColumn
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Reports
+
+`/dashboard/platform/reports` shows `convenienceReportingSummary` for a period, by store.
+
+## Exports
+
+`/dashboard/platform/exports`.
+
+<Steps>
+<Step>
+### Add a destination
+`configureExportDestination` for the stores to include. "At least one export store is required".
+</Step>
+<Step>
+### Generate
+`generateDailyAccountingExport` produces a CSV artifact up to 5 MiB with a checksum.
+</Step>
+<Step>
+### Download
+`downloadExportArtifact`.
+</Step>
+<Step>
+### Mark delivery
+`transitionExportBatch`: ready, delivering, delivered, failed, cancelled. "Failed export requires a failure message".
+</Step>
+</Steps>

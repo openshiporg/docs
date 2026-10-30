@@ -1,0 +1,28 @@
+---
+title: Reconciliation and deposits
+description: Store-day close and bank deposits.
+icon: Scale
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/reconciliation`.
+
+<Steps>
+<Step>
+### Generate the day
+`generateStoreDayReconciliation` builds a `StoreDay` with `StoreDayLine` rows.
+</Step>
+<Step>
+### Review and approve
+`approveStoreDayReconciliation`. Statuses: draft, in_review, reconciled, locked, reopened.
+</Step>
+<Step>
+### Prepare the deposit
+`prepareBankDeposit`. "Deposit amount exceeds unreserved counted cash".
+</Step>
+<Step>
+### Track it
+`transitionBankDeposit`: prepared, in_transit, deposited, verified (needs "Bank reference is required to verify a deposit"), voided.
+</Step>
+</Steps>

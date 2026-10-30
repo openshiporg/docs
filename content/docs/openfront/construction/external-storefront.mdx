@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-construction-custom-storefront/SKILL.md`](/skills/openfront-construction-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 Routes live directly under `app/` (there is no route group). Screens live in `features/storefront/screens`, `features/storefront/account`, and `features/portal`. The website shows the `PublicSiteProfile` selected by `PUBLIC_SITE_KEY`, and only when that profile is published and its company is active.
 
@@ -38,7 +38,7 @@ All inquiry forms call `submitPublicIntake`. It creates an `IntakeSubmission` an
 |---|---|
 | `/account` | Sign in, sign up (`registerConstructionCustomer`, needs a published site), profile, quote request form, request history |
 | `/account/requests/[id]` | One quote request: status, quote version, amount, terms, expiry; accept or cancel |
-| `/account/requests/[id]/payment` | Redirects to the request page. Online payment is not offered |
+| `/account/requests/[id]/payment` | Pay the deposit on an accepted quote through Stripe Checkout (card or US bank account). Returns with `?session_id=` and `reconcileCustomerPayment` settles it; `?cancelled=1` shows that no payment was taken |
 | `/account/reset` | Password reset (needs SMTP) |
 
 Quote requests use `commandConstructionRequest` with `request`, `accept`, or `cancel`. Staff use `quote` and `cancel`. States are requested, quoted, accepted (stored as `payment_pending`), and cancelled.
@@ -52,11 +52,11 @@ Quote requests use `commandConstructionRequest` with `request`, `accept`, or `ca
 | `/portal/projects/[projectId]` | Project overview and inbox (`constructionPortalInbox`) |
 | `/portal/projects/[projectId]/[tool]` | Tools: `preconstruction` (Bids), `execution` (RFIs & submittals), `documents`, `billing` (Billing & waivers), `schedule`, `field` (Field updates), `quality-safety` |
 
-Portal actions call `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver`, `decideConstructionApproval` (owner approvals, after `constructionPortalApprovalSnapshot`), and `acknowledgeDocumentDistribution`. Unknown tool slugs fall back to the overview.
+Owners also see **Pay approved claims** in the portal project page (`createClaimPayment`, `checkPaymentStatus`). Portal actions call `submitPortalBid`, `respondPortalRfi`, `reviewPortalSubmittal`, `submitPortalProgressClaim`, `submitPortalLienWaiver`, `decideConstructionApproval` (owner approvals, after `constructionPortalApprovalSnapshot`), and `acknowledgeDocumentDistribution`. Unknown tool slugs fall back to the overview.
 
-## Journey boundaries
+## Journey rules
 
 - Website inquiries are anonymous. They are not linked to a customer and do not appear in `/account`.
-- There is no checkout or payment. An accepted quote is settled with the contractor outside the app.
+- An accepted quote is stored as `payment_pending`. The customer pays the deposit with `createCustomerPayment` when the company has Stripe set up. Otherwise the payment page shows that online payment is not set up for the contractor.
 - Portal users see only items for their own project membership and portal organization. Financials, contracts, procurement, reports, team, and audit are not available in the portal.
-- Invitation links are shown once to the operator. The app does not email them.
+- Invitation links are shown once to the operator, who shares them with the invitee.

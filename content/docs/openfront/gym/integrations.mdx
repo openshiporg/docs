@@ -1,0 +1,17 @@
+---
+title: Integrations
+description: Mail, partner discovery, MCP, AI chat, and storage.
+icon: Plug
+---
+
+**Mail** is SMTP through `MAIL_ENABLED` and `SMTP_*`. It sends password reset links, email-change confirmations, email-changed notices, and staff copies of contact messages.
+
+**Partner discovery** exposes `GET /api/discovery/classes`, `POST /api/discovery/bookings`, and `GET /api/discovery/calendar` (an iCalendar feed, up to 1,000 sessions). Partners send a key in `x-discovery-api-key` or a bearer token, plus `x-discovery-partner`. Keys come from the Operations page (`gym_`-prefixed, stored as a hash, with scopes `classes:read` and `bookings:create`) or from the `DISCOVERY_*` environment variables. Requests are rate limited.
+
+**MCP** is served at `/api/mcp-transport/[transport]`. It forwards the caller's session cookie to GraphQL and offers generic tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. Access is whatever the session's role allows.
+
+**AI chat** in the dashboard calls `/api/completion` with OpenRouter when `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are set.
+
+**Storage** is one S3-compatible bucket (`my_images`) for images such as member profile photos.
+
+Payments are on [Payment providers](/docs/openfront/gym/payment-providers).

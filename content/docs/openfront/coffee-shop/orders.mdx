@@ -1,0 +1,59 @@
+---
+title: Orders
+description: The order queue at /dashboard/platform/orders for accepting, preparing, paying, and refunding orders.
+icon: ClipboardList
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/orders` (`getCoffeeOrderQueue`) is the order queue with status and fulfillment filters and search. It refreshes on its own and shows a pickup clock for each order.
+
+## Order sources and types
+
+`CafeOrder.orderSource`: online, pos, kiosk, phone. `fulfillmentType`: pickup, counter, dine_in. Each order has an `orderNumber`, a `handoffCode` for pickup, and a `secretKey` that lets a guest read it.
+
+## Status flow
+
+| Status | Meaning |
+|---|---|
+| `open` | Online request waiting for staff. Can only be accepted or cancelled |
+| `accepted` | Accepted, pay at pickup |
+| `paid` | Payment recorded |
+| `in_bar_queue` | On the bar display |
+| `preparing`, `ready` | Bar progress |
+| `completed`, `cancelled`, `refunded` | Closed |
+
+Payment-controlled statuses are not set by hand: "Cafe order paid status is controlled by payment settlement".
+
+## Accept an online order
+
+<Steps>
+<Step>
+### Open the request
+Find the order with status Open request.
+</Step>
+<Step>
+### Accept
+`acceptCafePickupOrder` consumes stock from lots and prep batches and moves the order to `accepted`. If stock is short: "Insufficient inventory for this order".
+</Step>
+<Step>
+### Record payment at pickup
+`recordCafePayment` with `method` cash or card. A card payment needs the terminal approval code (4 to 64 characters) and a confirmation that the terminal approved this exact amount. A register shift must be open: "Exactly one open register shift is required to record pay-at-pickup settlement".
+</Step>
+<Step>
+### Complete
+`updateCafeOrderStatus` to `completed`. Every item must be ready first: "Every order item must be ready before the whole ticket can be completed".
+</Step>
+</Steps>
+
+## Refunds
+
+`refundCafePayment` refunds a counter payment from the current drawer, or a Stripe payment back to the card. It updates the order, the POS receipt, register totals, and reverses rewards points. A cash refund cannot exceed the cash expected in the payout drawer.
+
+## Rewards
+
+`applyCafeLoyalty` links an order to a loyalty account by email. See [Rewards](/docs/openfront/coffee-shop/loyalty).
+
+## Capacity
+
+Online requests pause when too many are open: "Online pickup requests are temporarily paused while the cafe catches up". Each pickup window has a capacity set in [Store settings](/docs/openfront/coffee-shop/store-settings): "The requested pickup window is at capacity".

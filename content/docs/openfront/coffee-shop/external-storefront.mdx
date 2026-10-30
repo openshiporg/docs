@@ -9,7 +9,7 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 Skill file: [`/skills/openfront-coffee-shop-custom-storefront/SKILL.md`](/skills/openfront-coffee-shop-custom-storefront/SKILL.md)
 
-## Current storefront routes
+## Storefront routes
 
 The home page is `app/page.tsx`. Other routes live under `app/(storefront)/`. Logic lives in `features/storefront` (`screens`, `components`, `lib/data`). There is no country or region prefix.
 
@@ -23,11 +23,10 @@ The home page is `app/page.tsx`. Other routes live under `app/(storefront)/`. Lo
 | `/account` | Sign in or sign up; once signed in, orders, rewards balance, catering requests, and profile | `CustomerSignIn`, `RegisterCoffeeCustomer`, `CustomerSignOut`, `CustomerIdentity`, `CustomerOrders`, `CustomerCatering`, `UpdateCoffeeCustomerProfile` |
 | `/account/reset` | Request a reset email, or set a new password with `?token=` | Keystone password reset link and token redemption |
 
-## Journey boundaries
+## Journey rules
 
 - The cart lives in the browser's `localStorage`. The server re-prices every line on quote and on order creation. If the quote changed, checkout asks the customer to review the new total.
 - An online order is a request. It stays `open` until staff accept it. Stock is consumed on acceptance, not on submit.
 - Guests read their order with the order `secretKey`, passed as `key` in the receipt URL. Signed-in customers can read their own orders without it.
 - Online payment only works when `getCoffeeStore` returns `onlinePayment: true`. That needs both Stripe keys on the server and the Stripe provider enabled. Stripe Checkout may only return to `/order-confirmed`.
-- PayPal is not offered. Subscriptions are not offered to customers. Drink-credit redemption is disabled.
 - Rewards earn 1 point per dollar of subtotal when the customer links the order by email.

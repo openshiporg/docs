@@ -1,0 +1,32 @@
+---
+title: Policies
+description: Booking policy versions and no-show policies at /dashboard/platform/policies.
+icon: ScrollText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Booking policy
+
+`BookingPolicy` fields: `name`, `version`, `jurisdictionCode`, `status` (active, retired), `effectiveFrom`, `effectiveUntil`, `cancellationWindowMinutes`, `rescheduleWindowMinutes`, `lateCancellationFeeAmount`, `rescheduleFeeAmount`, `depositCancellationRule` (refund, forfeit, manual_review), `publicServiceEligibility`, `maxCustomerReschedules`.
+
+<Steps>
+<Step>
+### Publish a new version
+The page shows the policy in force. Enter free cancellation hours, free reschedule hours, late fees, deposit rule, and reschedules allowed, then publish. The previous version is retired. Each booking stores a snapshot.
+</Step>
+<Step>
+### Review history
+The version list shows retired policies.
+</Step>
+</Steps>
+
+If two policies are effective at once, online requests and customer changes are disabled until resolved. With none: "An effective jurisdiction-matched booking policy is required."
+
+## No-show policy
+
+`NoShowPolicy`: `name`, `feeAmount`, `graceMinutes`, `appliesToMemberships`, `description`, `status`. Create, edit, use, pause, or archive. `markAppointmentNoShow` needs an active one.
+
+## Customer changes
+
+On the storefront, `managePublicAppointment` previews the fee (`preview: true`) and the customer accepts it with `acceptedFeeAmount`. Only requested or confirmed appointments can be changed online.

@@ -1,0 +1,30 @@
+---
+title: Check-in and kiosk
+description: Staffed entry and exit, QR codes, and the kiosk.
+icon: ScanLine
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Front desk
+
+`/dashboard/platform/check-in` (`frontDeskWorkspace`) validates the membership, then `recordMemberCheckIn` and `checkOutMember`. Methods: qr_code, rfid, manual, app.
+
+## Kiosk
+
+<Steps>
+<Step>
+### Configure
+Set `KIOSK_API_TOKEN` and `KIOSK_ORGANIZATION_ID`.
+</Step>
+<Step>
+### Unlock
+Staff enter the token at `/kiosk`; `authorizeKioskSession` sets a 12-hour HttpOnly cookie.
+</Step>
+<Step>
+### Check in
+`kioskSearchMembers` (2 to 100 characters), `kioskRecordMemberCheckIn`, or `kioskRecordGuestCheckIn` with an idempotency key.
+</Step>
+</Steps>
+
+Members show a QR code from `/member/check-in-code` that rotates every 30 seconds. It needs `QR_CODE_SECRET`. The QR code and kiosk record membership-based entry. They do not control doors.

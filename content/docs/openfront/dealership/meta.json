@@ -4,12 +4,12 @@
   "icon": "Car",
   "root": true,
   "pages": [
-    "---Introduction---",
-    "index",
-    "getting-started",
-    "---Dashboard---",
-    "external-dashboard",
-    "---Storefront---",
-    "external-storefront"
+    "---Introduction---","index","getting-started","deployment","roles-permissions","troubleshooting",
+    "---Dashboard---","overview","vehicles","crm","customers","test-drives","trade-ins","deals","finance","delivery","service","parts","payments","accounting","catalog","organization","reports","store-settings","api-keys",
+    "---Storefront---","external-storefront",
+    "---Integrations---","external-dashboard","integrations","payment-providers",
+    "---How-to Guides---","how-to-guides",
+    "---Advanced Features---","data-model",
+    "---API---","api-reference"
   ]
 }

@@ -1,0 +1,22 @@
+---
+title: Store settings
+description: Public identity, hours, facility copy, and participation terms.
+icon: Settings
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+`/dashboard/platform/store-settings` (`gymSettingsEditor`, `upsertGymSettings`).
+
+<Steps>
+<Step>
+### Identity and locale
+Name, contact, timezone, hours, facility copy, storefront hero.
+</Step>
+<Step>
+### Publish participation terms
+`publishGymParticipationTerms`. Members accept them before checkout on `/join` and at `/account/participation`. Setup never publishes terms for you.
+</Step>
+</Steps>
+
+Locations (`/dashboard/platform/locations`) hold site names, contact details, and active state.

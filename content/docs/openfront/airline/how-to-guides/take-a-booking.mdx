@@ -1,0 +1,32 @@
+---
+title: Take a booking
+description: Hold seats and accept an offer for a caller or counter customer.
+icon: BookOpenCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Search
+On `/dashboard/platform/offers` pick the passenger party and search flights.
+</Step>
+<Step>
+### Hold
+Create the offer for the chosen flight and bucket. It holds the seats for 15 minutes.
+</Step>
+<Step>
+### Accept
+On `/dashboard/platform/bookings`, find the offer under **Held offers** and accept it with the passenger list. The booking gets a record locator.
+</Step>
+<Step>
+### Give the traveler their access
+Use **New access code** to issue an access code. Give the traveler the locator and code for Manage booking.
+</Step>
+<Step>
+### Take payment
+Continue with [Settle and ticket](/docs/openfront/airline/how-to-guides/settle-and-ticket).
+</Step>
+</Steps>
+
+Unpaid storefront bookings expire after 24 hours when the worker is running. Held offers expire after 15 minutes.

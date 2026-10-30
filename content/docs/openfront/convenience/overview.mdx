@@ -1,0 +1,16 @@
+---
+title: Overview
+description: The daily summary at /dashboard/platform with sales, drawers, shifts, and items that need attention.
+icon: LayoutDashboard
+---
+
+`/dashboard/platform` loads `conveniencePlatformProjection` and shows:
+
+- today's net sales, transaction count, and refunds
+- open drawers (`RegisterSession` in status open)
+- people on shift (`Shift`)
+- a "needs you" list: open operational alerts, open compliance incidents, pending approvals
+
+The sidebar is built from `conveniencePlatformNavigation`, so it shows only the areas your role can read. See [Roles and permissions](/docs/openfront/convenience/roles-permissions).
+
+Everything is scoped to the business and the stores you are assigned to as an `Employee`.
