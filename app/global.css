@@ -43,6 +43,19 @@
   }
 }
 
+/* Match the phone header controls to the page gutter and 40px tap targets. */
+@media (width < 48rem) {
+  #nd-subnav {
+    padding-inline-end: 4px;
+  }
+
+  #nd-subnav > button {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+}
+
 /* Custom text highlighting styles */
 .text-highlight {
   color: var(--color-fd-primary);
