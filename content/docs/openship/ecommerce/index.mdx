@@ -5,15 +5,12 @@ icon: Route
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 
 [Source](https://github.com/openshiporg/openship) · [Getting started](/docs/openship/ecommerce/getting-started)
 
 Openship connects the places where orders originate with the places that fulfill them. A **shop** is an order source. A **channel** is a fulfillment destination. **Links** connect shops to channels, and **matches** map a shop item to a channel item before an order is placed downstream.
 
-<Callout type="warn">
-The repository contains shop-to-channel routing and Shopify/Openfront adapters. A configured shop/channel, provider name, model, or synthetic endpoint response does not prove an external purchase, webhook, retry, cancellation, or tracking flow. Current credential fields, configurable execution destinations, and non-durable callback paths require hardening before production credentials or orders.
-</Callout>
+The repository contains shop-to-channel routing and Shopify/Openfront adapters.
 
 ## Architecture and data
 

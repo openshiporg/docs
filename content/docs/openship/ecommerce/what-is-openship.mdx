@@ -9,15 +9,12 @@ import { ShopDiagram } from "../../../../components/ShopDiagram";
 import { ChannelDiagram } from "../../../../components/ChannelDiagram";
 import { LinkDiagram } from "../../../../components/LinkDiagram";
 import { MatchDiagram } from "../../../../components/MatchDiagram";
-import { Callout } from 'fumadocs-ui/components/callout';
 
 Openship is an operator order router. It connects a **shop**, where an order originates, to a **channel**, where matched items are purchased for fulfillment. It stores routing, match, purchase-reference, and tracking state; connected systems remain authoritative for their own catalog, inventory, customer order, funds, and shipment facts.
 
 <IntroDiagram />
 
-<Callout type="warn">
-Current compiled adapters cover Shopify and Openfront only. Other commerce, marketplace, warehouse, 3PL, email, or spreadsheet systems require separate adapter source and verification. Openship is not a customer storefront, payment processor, warehouse system, or shipping carrier.
-</Callout>
+Compiled adapters cover Shopify and Openfront. Other commerce, marketplace, warehouse, 3PL, email, or spreadsheet systems need separate adapter source. Openship is not a customer storefront, payment processor, warehouse system, or shipping carrier.
 
 ## Shops
 
@@ -51,4 +48,4 @@ A Match maps one exact shop product/variant to one exact channel product/variant
 
 The intended path is shop order -> line match -> channel cart item -> downstream purchase -> authenticated tracking/cancellation -> source update. Custom GraphQL operations handle product/order search, matching, cart construction, purchase placement/cancellation, and webhooks. Each step needs same-user ownership, adapter allowlisting, idempotency, signed callback verification, durable error evidence, and reconciliation.
 
-Current source has no onboarding seed. Initialize the first user at `/dashboard/init`, then configure synthetic platforms, one shop, one channel, a link, and matches manually. Do not connect production credentials until the exact adapter passes cross-user, credential-read, egress, duplicate-purchase, partial-failure, cancellation, tracking, and restore tests.
+Current source has no onboarding seed. Initialize the first user at `/dashboard/init`, then configure platforms, one shop, one channel, a link, and matches manually. Do not connect production credentials until the exact adapter passes cross-user, credential-read, egress, duplicate-purchase, partial-failure, cancellation, tracking, and restore tests.

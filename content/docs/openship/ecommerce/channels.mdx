@@ -4,13 +4,9 @@ description: Configure user-owned fulfillment destinations, purchase commands, a
 icon: Radio
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 A **Channel** is one user-owned fulfillment destination. A **ChannelPlatform** describes how Openship searches the destination catalog, retrieves one item, creates or cancels a downstream purchase, registers provider webhooks, and interprets tracking or cancellation events.
 
-<Callout type="warn">
-Current source contains compiled channel adapters for Shopify and Openfront only. A supplier, warehouse, 3PL, marketplace, WooCommerce, or BigCommerce connection requires a separately implemented and verified adapter or custom endpoint. A configured ChannelPlatform does not prove that an external purchase, cancellation, or tracking update occurred.
-</Callout>
+Compiled channel adapters cover Shopify and Openfront. Other supplier, warehouse, 3PL, marketplace, WooCommerce, or BigCommerce connections use a custom adapter or endpoint.
 
 ## Current model boundary
 
@@ -28,16 +24,16 @@ The executor can also call a database-selected HTTP URL or dynamic function path
 
 ## Routing workflow
 
-1. Configure a synthetic Shop and ShopPlatform.
+1. Configure a Shop and ShopPlatform.
 2. Open `/dashboard/platform/channels` and configure a ChannelPlatform tied to an implemented test adapter.
 3. Create a user-owned Channel with sandbox credentials.
 4. Use channel product search/detail to identify a candidate variant.
 5. Open `/dashboard/platform/matches` and match the shop line to that exact channel item.
-6. Link the shop and channel, then route a synthetic order through `matchOrder`, cart commands, and `createChannelPurchase`/`placeOrders` as required by the current schema.
+6. Link the shop and channel, then route an order through `matchOrder`, cart commands, and `createChannelPurchase`/`placeOrders` as required by the current schema.
 7. Record downstream purchase identity and test tracking/cancellation callbacks.
 8. Reconcile Openship, shop, and channel state after success, duplicate delivery, timeout, partial failure, and cancellation.
 
-There is no current channel-onboarding mutation or demo seed. The docs site's POST-only demo endpoints return in-memory synthetic payloads for adapter development; they are not a fulfillment provider, durable order store, invoice service, or live 3PL.
+There is no current channel-onboarding mutation or demo seed. The docs site's POST-only demo endpoints return in-memory payloads for adapter development; they are not a fulfillment provider, durable order store, invoice service, or live 3PL.
 
 ## Controlled GraphQL boundary
 

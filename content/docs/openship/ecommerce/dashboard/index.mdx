@@ -5,13 +5,10 @@ icon: LayoutDashboard
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
-import { Callout } from 'fumadocs-ui/components/callout';
 
 Openship's purpose-built dashboard is an operator workspace for user-owned order routing. The current application uses Next.js 16, Keystone 6, React 19, GraphQL, Prisma, and PostgreSQL. It is not a customer storefront or payment platform.
 
-<Callout type="warn">
-The workspace exposes routing records and calls adapter operations. A visible order, match, purchase ID, or tracking row does not prove external fulfillment. Verify the selected adapter, callback, idempotency, and reconciliation path with synthetic systems before connecting real credentials.
-</Callout>
+The workspace exposes routing records and calls adapter operations. Order, match, purchase ID, and tracking rows reflect what the selected adapter returned.
 
 ## Current routes
 
@@ -27,11 +24,11 @@ The first user is initialized at `/dashboard/init`, not `/init` or `/platform`. 
 ## Task workflow
 
 1. Create the first operator and sign in.
-2. Configure one synthetic shop against the compiled Shopify/Openfront handler or an isolated custom endpoint.
-3. Configure one synthetic channel against a compiled handler or isolated endpoint.
+2. Configure one shop against the compiled Shopify/Openfront handler or an isolated custom endpoint.
+3. Configure one channel against a compiled handler or isolated endpoint.
 4. Create the user-owned Link between those records.
 5. Search source and destination catalogs and create an exact variant Match.
-6. Import or select a synthetic shop order.
+6. Import or select a shop order.
 7. Use bounded match/cart/purchase commands to create the downstream purchase.
 8. Authenticate tracking/cancellation events and reconcile all three systems.
 

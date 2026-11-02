@@ -4,7 +4,6 @@ description: Install Openship and prepare an isolated shop-to-channel evaluation
 icon: Terminal
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 ## Prerequisites
@@ -51,9 +50,9 @@ The current script generates the Keystone schema, runs `prisma migrate deploy`, 
 Open `/dashboard/init`, create the first operator, and sign in at `/dashboard`. Current source has no Openship onboarding mutation or seed, so platform, shop, channel, link, and match records are configured manually. Do not copy credentials from a public example.
 </Step>
 <Step>
-### Build one synthetic route
+### Build one route
 
-Create one test shop, one test channel, a link, and one exact variant match. Current compiled handlers cover Shopify and Openfront; the docs site's POST-only demo endpoints can exercise custom-handler shapes with in-memory synthetic data. Route a synthetic order and inspect both Openship and the downstream test system.
+Create one test shop, one test channel, a link, and one exact variant match. Current compiled handlers cover Shopify and Openfront; the docs site's POST-only demo endpoints can exercise custom-handler shapes with in-memory data. Route an order and inspect both Openship and the downstream test system.
 </Step>
 </Steps>
 
@@ -66,6 +65,3 @@ Create one test shop, one test channel, a link, and one exact variant match. Cur
 - webhook signatures and event IDs are checked before state changes.
 - a partial channel failure remains visible and can be retried or reconciled.
 
-<Callout type="warn">
-`npm run build` currently deploys migrations before building, the checked-in `lint` script uses the removed Next.js 16 `next lint` command, and the package has no test or typecheck script. Do not represent a release as fully verified or connect a production shop/supplier until the owning source adds current gates and the exact handler passes product, order, ownership, egress, credential, cancellation, fulfillment, tracking, replay, retry, and reconciliation tests.
-</Callout>

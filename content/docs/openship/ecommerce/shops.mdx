@@ -4,13 +4,9 @@ description: Configure user-owned order sources and their Openship adapter bound
 icon: Store
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 A **Shop** is one user-owned order source. A **ShopPlatform** describes how Openship searches that source's products and orders, retrieves one product, updates product data, and manages source webhooks. The platform is reusable configuration; the shop holds the connection-specific domain and credentials.
 
-<Callout type="warn">
-Current source contains compiled shop adapters for Shopify and Openfront only. BigCommerce, WooCommerce, Amazon, eBay, email, and spreadsheet names are not built-in shop adapters. A custom HTTP endpoint can be configured, but that does not make it trusted, compatible, or retry-safe.
-</Callout>
+Compiled shop adapters cover Shopify and Openfront. BigCommerce, WooCommerce, Amazon, eBay, email, and spreadsheet names are not built-in shop adapters. A custom HTTP endpoint can be configured.
 
 ## Current model boundary
 

@@ -3,7 +3,6 @@ title: Product matching
 description: Link exact shop items to channel items for order routing.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 A `Match` records how one or more source `ShopItem` records map to one or more destination `ChannelItem` records. Openship uses these saved mappings when an order is configured with `matchOrder`.
@@ -39,7 +38,7 @@ Choose the source and destination product/variant identities and quantities. Cur
 <Step>
 ### Save and test
 
-Creating a `Match` reuses or creates the corresponding `ShopItem` and `ChannelItem` records. Route a synthetic order and inspect the generated cart items before enabling downstream purchase creation.
+Creating a `Match` reuses or creates the corresponding `ShopItem` and `ChannelItem` records. Route an order and inspect the generated cart items before enabling downstream purchase creation.
 </Step>
 </Steps>
 
@@ -57,9 +56,7 @@ When a new order has `matchOrder` enabled and does not take the separate link-ro
 
 If no suitable match is found, Openship records a match error and leaves the order for operator handling rather than proving successful fulfillment.
 
-<Callout type="warn">
-Matching is exact application logic, not probabilistic product identification. Product IDs, variant IDs, quantities, ownership, adapter responses, and current prices must all be tested. Retries and downstream purchase creation also need idempotency and reconciliation coverage before live routing.
-</Callout>
+Matching is exact application logic, not probabilistic product identification. Product IDs, variant IDs, quantities, ownership, adapter responses, and current prices must all line up.
 
 ## Current boundaries
 

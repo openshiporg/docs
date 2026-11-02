@@ -3,8 +3,6 @@ title: Comparisons
 description: Compare Openship's self-hosted routing model with hosted and custom order-routing approaches.
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 Openship is a self-hosted order-routing application. It stores shops, channels, links, matches, orders, and downstream purchase state, then invokes configured adapter operations to read source orders and place fulfillment purchases.
 
 Its main distinction from a hosted order-management service is ownership: you operate the source, database, deployment, credentials, adapter destinations, retries, and reconciliation.
@@ -39,10 +37,6 @@ Openship can:
 Delivery latency depends on webhook or polling behavior, queueing, provider availability, and the configured execution path. Current source does not establish a universal real-time delivery guarantee.
 
 ## Cost and setup
-
-<Callout type="warn">
-Open source does not mean zero operating cost or setup in a fixed number of minutes. A useful evaluation needs a database, deployment, operator account, credentials, shop/channel records, links or matches, webhook configuration, and a tested failure-and-reconciliation path.
-</Callout>
 
 Infrastructure, provider, marketplace, support, monitoring, and implementation charges remain deployment-specific.
 
