@@ -27,7 +27,7 @@ const openfrontOptions = [...openfrontProducts]
     color: p.color,
   }));
 
-const openshipOptions = [{ url: '/docs/openship/ecommerce', title: 'Ecommerce', color: '#f59e0b' }];
+const openshipOptions = [{ url: '/docs/openship/ecommerce', title: 'Order routing', color: '#f59e0b' }];
 
 /** Phone-only: current vertical in the top bar, one tap to a bottom sheet listing every vertical. */
 export function MobileVerticalSwitcher({ product }: { product: 'openfront' | 'openship' }) {

@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Analytics operator dashboard by e
 
 # Openfront Analytics custom operator dashboard
 
-Use this skill to adapt the built-in Analytics operator dashboard or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Analytics operator dashboard or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around sites, periods in the site's timezone, filters and segments, goals, funnels, realtime, visits, events, performance, public visibility, and shared links. Preserve the product's real workflow nouns and privacy boundaries: visitors are daily-rotating hashes, the IP is never stored, and there is no cross-day identity. Never show numbers the instance has not recorded, invent benchmarks, or imply per-site ownership or teams that the schema does not have (every site is visible to every `canReadSites` user). Destructive actions (`deleteSiteWithData`, `deleteVisitorData`) need explicit confirmation. Do not borrow Ecommerce GraphQL roots or the inherited MCP commerce tools; they do not exist in this schema.
+Design around sites, periods in the site's timezone, filters and segments, goals, funnels, realtime, visits, events, performance, public visibility, and shared links. Preserve the product's real workflow nouns and privacy boundaries: visitors are daily-rotating hashes, the IP is never stored, and there is no cross-day identity. Never show numbers the instance has not recorded, invent benchmarks, or imply per-site ownership or teams that the schema does not have (every site is visible to every `canReadSites` user). Destructive actions (`deleteSiteWithData`, `deleteVisitorData`) need explicit confirmation. Do not borrow E-commerce GraphQL roots or the inherited MCP commerce tools; they do not exist in this schema.
 
 For consequential actions, require one bounded server projection or command that validates actor, permission, related-record ownership (for example funnel steps using goals from the same site), transaction, idempotency, and error states. If it does not exist (for example editing a funnel's steps in place, data export, or retention), request the backend contract and show the feature as unavailable.
 

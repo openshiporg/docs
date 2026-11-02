@@ -1,18 +1,18 @@
 ---
 name: openfront-medspa-custom-storefront
-description: Plan and build a custom Openfront Medspa storefront by explaining the source architecture, interviewing the user, inspecting the current product code and contract, then adapting the built-in client or creating a safe separate client.
+description: Plan and build a custom Openfront Med Spa storefront by explaining the source architecture, interviewing the user, inspecting the current product code and contract, then adapting the built-in client or creating a safe separate client.
 ---
 
-# Openfront Medspa custom storefront
+# Openfront Med Spa custom storefront
 
-Use this skill to adapt the built-in Medspa storefront or create a separately deployed client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Med Spa storefront or create a separately deployed client. Start from this product's current source—not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Public source: `https://github.com/openshiporg/openfront-medspa`. Still confirm the exact checkout path and revision the user is targeting; `docs/schema-map.md` in that checkout maps every list to the workflow that writes it.
-- Built-in Medspa customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront` (`screens/`, `lib/data/`, `account/`).
+- Built-in Med Spa customer experience, screens/modules, data loaders, sessions, and UI composition: `features/storefront` (`screens/`, `lib/data/`, `account/`).
 - Thin customer-facing route entry points: `app/(storefront)/(main)/**` — `/`, `/services`, `/services/[id]`, `/providers`, `/team`, `/team/[id]`, `/book`, `/booking/[id]`, `/account`, `/account/sign-in`, `/account/sign-up`, `/account/intake/[appointmentId]`, `/appointments` (redirects to `/account`), `/reviews`, `/gallery`, `/contact`, `/gift-cards`.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
 - Provider boundaries: inspect `features/integrations/**` and the exact server actions called by the built-in client.
@@ -25,7 +25,7 @@ The current product focus is treatment and provider discovery, availability (`ch
 
 After the source orientation, ask one concise set of questions and skip anything already answered:
 
-1. Where is the exact Medspa source checkout, and which revision/deployment is the target?
+1. Where is the exact Med Spa source checkout, and which revision/deployment is the target?
 2. Do they want to adapt the built-in storefront or create an independently deployed client?
 3. What do they dislike about the current experience, what must stay, and what should change?
 4. Which customer journeys, routes, content, brand, devices, accessibility, and commerce/booking states are required?
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around treatment and provider discovery, availability (`checkAvailability`) and booking requests (`bookAppointment`, created as `pending` with no payment), guest confirmation links (`storefrontAppointment`, `cancelGuestAppointment`), client accounts (`registerCustomer`, `clientPortal`), intake submission (`clientIntakeForms`, `submitIntake`), waitlist requests (`requestWaitlistSpot`), aftercare replies (`submitFollowUpResponse`), and reviews (`submitAppointmentReview`, `storefrontReviews`). Online deposits, card payments, and gift card sales are disabled in current source, and the storefront serves one practice (`MEDSPA_PRACTICE_SLUG` or the single published practice). Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around treatment and provider discovery, availability (`checkAvailability`) and booking requests (`bookAppointment`, created as `pending` with no payment), guest confirmation links (`storefrontAppointment`, `cancelGuestAppointment`), client accounts (`registerCustomer`, `clientPortal`), intake submission (`clientIntakeForms`, `submitIntake`), waitlist requests (`requestWaitlistSpot`), aftercare replies (`submitFollowUpResponse`), and reviews (`submitAppointmentReview`, `storefrontReviews`). Online deposits, card payments, and gift card sales are disabled in current source, and the storefront serves one practice (`MEDSPA_PRACTICE_SLUG` or the single published practice). Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

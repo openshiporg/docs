@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Sportsbook storefront by explaini
 
 # Openfront Sportsbook custom storefront
 
-Use this skill to adapt the built-in Sportsbook storefront or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Sportsbook storefront or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -68,7 +68,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around the board, published-only catalog, quote-then-place bet slip with readable rejection codes, bet history and cash-out, wallet, safer-play controls, promotions, disputes, and account security. Preserve the product's real workflow nouns and authority boundaries. Never imply that betting is open when the API reports it closed, that a wager is accepted before the server returns an accepted decision, that funds are available beyond the server balance, or that sandbox verification is real identity verification. Keep limits, breaks, and self-exclusion easy to reach. Do not borrow Ecommerce roots (products, carts, checkout) without validating that they exist and are authorized here.
+Design around the board, published-only catalog, quote-then-place bet slip with readable rejection codes, bet history and cash-out, wallet, safer-play controls, promotions, disputes, and account security. Preserve the product's real workflow nouns and authority boundaries. Never imply that betting is open when the API reports it closed, that a wager is accepted before the server returns an accepted decision, that funds are available beyond the server balance, or that sandbox verification is real identity verification. Keep limits, breaks, and self-exclusion easy to reach. Do not borrow E-commerce roots (products, carts, checkout) without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server command that validates customer, tenant, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist (for example any non-sandbox customer API), request the backend contract and show the feature as unavailable.
 

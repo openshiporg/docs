@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Financial client portal by explai
 
 # Openfront Financial custom storefront (client portal)
 
-Use this skill to adapt the built-in Financial client portal or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema. There is no cart, checkout, or payment in this product; the "storefront" is an investor portal.
+Use this skill to adapt the built-in Financial client portal or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema. There is no cart, checkout, or payment in this product; the "storefront" is an investor portal.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around recorded balances with stated coverage, paper orders, operator-settled transfers, and owner-scoped records. Preserve the product's real workflow nouns and authority boundaries. Keep the disclosure "Paper trading only. Orders are not sent to an exchange and no real money moves. Quotes may be delayed. Not investment advice." visible. Never present quotes as live, orders as executed at a broker, transfers as moved money, banks as verified by a bank, or recommendations and public trades as advice or performance claims, and never invent returns, testimonials, or track records. Do not borrow Ecommerce GraphQL roots (carts, checkout, payment sessions) without validating that they exist and are authorized here.
+Design around recorded balances with stated coverage, paper orders, operator-settled transfers, and owner-scoped records. Preserve the product's real workflow nouns and authority boundaries. Keep the disclosure "Paper trading only. Orders are not sent to an exchange and no real money moves. Quotes may be delayed. Not investment advice." visible. Never present quotes as live, orders as executed at a broker, transfers as moved money, banks as verified by a bank, or recommendations and public trades as advice or performance claims, and never invent returns, testimonials, or track records. Do not borrow E-commerce GraphQL roots (carts, checkout, payment sessions) without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server command that validates actor, owner scope, related-record ownership, state transition, approval policy, transaction/concurrency, idempotency, and audit and ledger evidence. If it does not exist (for example self-service brokerage account opening, customer transfer cancellation, or generating statement documents), request the backend contract and show the feature as unavailable.
 

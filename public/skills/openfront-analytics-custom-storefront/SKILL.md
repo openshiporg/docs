@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Analytics public site (public and
 
 # Openfront Analytics custom public site
 
-Use this skill to adapt the built-in Analytics public site or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Analytics public site or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 Openfront Analytics has no shop. There are no products, carts, checkout, orders, or customer accounts. Its "storefront" is a public site that lists public dashboards and shows read-only, aggregate analytics for public sites and shared links.
 
@@ -70,7 +70,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around read-only, aggregate dashboards. Preserve the product's real nouns (site, visitors, visits, pageviews, sources, goals, funnels, vitals) and privacy boundaries. Never expose visit lists, visit timelines, visitor hashes, or `distinctId` values publicly, and never add viewer accounts, comments, or exports without a backend contract. Never show numbers the instance has not recorded or invent traffic claims. Do not borrow Ecommerce storefront roots such as carts or products; they do not exist here.
+Design around read-only, aggregate dashboards. Preserve the product's real nouns (site, visitors, visits, pageviews, sources, goals, funnels, vitals) and privacy boundaries. Never expose visit lists, visit timelines, visitor hashes, or `distinctId` values publicly, and never add viewer accounts, comments, or exports without a backend contract. Never show numbers the instance has not recorded or invent traffic claims. Do not borrow E-commerce storefront roots such as carts or products; they do not exist here.
 
 For any new public capability (for example embeds, CSV export, or per-link report restrictions), require one bounded server projection that validates the slug or link, its status and expiry, the password token, and which reports are allowed. If it does not exist, request the backend contract and show the feature as unavailable.
 

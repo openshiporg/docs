@@ -16,7 +16,7 @@ Implementation repositories were read-only. Their working trees can be newer tha
 
 | Product | MDX pages | Words | Required functionality/limitation topics |
 |---|---:|---:|---|
-| Ecommerce | 25 | 7,504 | Pass |
+| E-commerce | 25 | 7,504 | Pass |
 | Restaurant | 18 | 8,154 | Pass |
 | Airline | 3 | 1,487 | Pass |
 | Barbershop | 3 | 738 | Pass |
@@ -49,7 +49,7 @@ All commands ran against the uncommitted working tree:
 - `npm run check:routes` passed against that production build. It fetched 243 generated routes, five legacy redirects, and 97 discovered internal links/assets with no local 404, broken anchor, missing asset, visible error state, or HTTP error.
 - `git diff --check`: passed.
 - Public-copy scans found no forbidden maturity/status labels or positive HIPAA/PCI/SOC 2/GDPR compliance claims.
-- Agent-browser verified the inline copy/view/hide skill controls and responsive overflow behavior for Ecommerce, Restaurant, Construction, Marketplace, and Pharmacy dashboard/storefront guides. It confirmed source orientation precedes the user interview, conventional products distinguish `features/dashboard` from `features/platform`, storefront skills inspect `features/storefront`, products without that layer say so, Marketplace does not invent Keystone/GraphQL layers, and products without advertised source do not guess a repository.
+- Agent-browser verified the inline copy/view/hide skill controls and responsive overflow behavior for E-commerce, Restaurant, Construction, Marketplace, and Pharmacy dashboard/storefront guides. It confirmed source orientation precedes the user interview, conventional products distinguish `features/dashboard` from `features/platform`, storefront skills inspect `features/storefront`, products without that layer say so, Marketplace does not invent Keystone/GraphQL layers, and products without advertised source do not guess a repository.
 
 ESLint remains unverified because this workspace has no ESLint dependency, flat configuration, or lint script. No unrelated lint migration was added.
 
@@ -59,7 +59,7 @@ A separate redirect-following probe compared all 118 current source-backed docs 
 
 - 62 routes returned HTTP 200.
 - 56 routes returned HTTP 404.
-- Only 7 of 19 product indexes are live: Ecommerce, Restaurant, Dealership, Grocery, Gym, Hospital, and Hotel.
+- Only 7 of 19 product indexes are live: E-commerce, Restaurant, Dealership, Grocery, Gym, Hospital, and Hotel.
 - The 12 product indexes still returning 404 are Airline, Barbershop, Coffee Shop, Construction, Convenience, Law Firm, Marketplace, Pharmacy, Real Estate, Rental, Salon, and UIKit.
 - The other 44 live 404s are the 36 new product-specific dashboard/storefront guides; Marketplace `architecture-workflows`, `getting-started`, `integrations-boundaries`, and `limitations`; plus the same four child paths under Pharmacy.
 - The seven reachable live product pages referenced 25 same-origin script/style/image assets; all 25 returned HTTP 200. Assets for the 12 unreachable product pages cannot be validated on the deployment because those pages do not exist there yet.
@@ -83,7 +83,7 @@ Docs should understand enough of each implementation workspace to document it ac
 - Openfront Restaurant mature vertical template.
 - All Openfront verticals under `/Users/junaid/Code/openfronts/openfront-*`.
 - Openship order-routing platform.
-- Openfront Marketplace / conversational commerce layer.
+- Marketplace / conversational commerce layer.
 - OpenSource Builders where relevant to the Openfront/Openship ecosystem and public docs.
 
 `os.org` remains in Default for now.
@@ -120,7 +120,7 @@ The docs repo is a Next.js + Fumadocs app. `source.config.ts` loads all MDX from
 - Openfront docs: `/docs/openfront/**` backed by `content/docs/openfront/**`
 - Openship docs: `/docs/openship/**` backed by `content/docs/openship/**`
 
-There is not currently a separate Fumadocs product source for Openfront Marketplace or OpenSource Builders. Marketplace content would fit under `content/docs/openfront/marketplace` unless a separate top-level product route is desired. OpenSource Builders should probably remain a separate product/site unless it is being referenced from ecosystem/marketplace docs.
+There is not currently a separate Fumadocs product source for Marketplace or OpenSource Builders. Marketplace content would fit under `content/docs/openfront/marketplace` unless a separate top-level product route is desired. OpenSource Builders should probably remain a separate product/site unless it is being referenced from ecosystem/marketplace docs.
 
 The public docs tree currently contains:
 
@@ -281,7 +281,7 @@ Do not force every vertical into identical page names. Use the vertical’s real
 - Rental: catalog, availability, reservations, agreements, payments, customers, reports.
 - Analytics: tracking, realtime, events, sessions, sources, goals, reports, sharing.
 
-### Openfront Marketplace docs structure
+### Marketplace docs structure
 
 If marketplace lives inside Openfront docs, add `content/docs/openfront/marketplace`:
 

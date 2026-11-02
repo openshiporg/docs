@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Vape operator dashboard by explai
 
 # Openfront Vape custom operator dashboard
 
-Use this skill to adapt the built-in Vape operator dashboard or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Vape operator dashboard or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -68,7 +68,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around the release gate and its blocker codes, merchant authority, jurisdictions and rule sets, product evidence, provider approvals, the compliance ledger, reports, the kill switch, and retail order and fulfillment work. Preserve the product's real workflow nouns and authority boundaries. Never show sales as open, products as compliant, or providers as approved unless the server says so, and never invent regulatory warning copy. Do not borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around the release gate and its blocker codes, merchant authority, jurisdictions and rule sets, product evidence, provider approvals, the compliance ledger, reports, the kill switch, and retail order and fulfillment work. Preserve the product's real workflow nouns and authority boundaries. Never show sales as open, products as compliant, or providers as approved unless the server says so, and never invent regulatory warning copy. Do not borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, permission, related-record ownership, state transition, evidence immutability, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

@@ -91,7 +91,7 @@ The old `6662469` security findings below are a historical warning, not the curr
 Before asking implementation questions, briefly orient the user to the source:
 
 - Repository: <https://github.com/openshiporg/openfront>
-- Built-in Ecommerce storefront routes, screens, modules, data loaders, sessions, and UI composition: [`features/storefront`](https://github.com/openshiporg/openfront/tree/master/features/storefront)
+- Built-in E-commerce storefront routes, screens, modules, data loaders, sessions, and UI composition: [`features/storefront`](https://github.com/openshiporg/openfront/tree/master/features/storefront)
 - Thin storefront route entry points: [`app/(storefront)`](https://github.com/openshiporg/openfront/tree/master/app/%28storefront%29)
 - GraphQL schema, models, access, and named operations used by the storefront: [`features/keystone`](https://github.com/openshiporg/openfront/tree/master/features/keystone) and [`schema.graphql`](https://github.com/openshiporg/openfront/blob/master/schema.graphql)
 
@@ -165,7 +165,7 @@ Inspect the target product's current built-in client read-only:
 
 Source call sites are the implementation donor: copy/adapt their customer workflow, documents, hooks and cache behavior rather than merely using them as research inspiration. Validate the active call chain, not every unused export. Same-origin privileges and backend-only imports are external seams, not permission to copy backend code; adapt narrowly and disable anything not safe.
 
-### Built-in Ecommerce route and source map
+### Built-in E-commerce route and source map
 
 Use this map before editing or reproducing a flow:
 

@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Financial operator dashboard by e
 
 # Openfront Financial custom operator dashboard
 
-Use this skill to adapt the built-in Financial operator console or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Financial operator console or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -70,7 +70,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around paper orders, simulated fills, operator-settled transfers, consented paper connections, reconciliation, approvals with independent reviewers, the double-entry ledger, and compliance transitions. Preserve the product's real workflow nouns and authority boundaries. Never show an order as executed at a broker, a transfer as moved money, a bank as verified by a bank, a quote as live, or a recommendation as investment advice, and keep the paper-trading disclosure visible. Do not add a live-trading or live-money switch; the source restricts every provider to `sandbox` with execution off. Do not borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around paper orders, simulated fills, operator-settled transfers, consented paper connections, reconciliation, approvals with independent reviewers, the double-entry ledger, and compliance transitions. Preserve the product's real workflow nouns and authority boundaries. Never show an order as executed at a broker, a transfer as moved money, a bank as verified by a bank, a quote as live, or a recommendation as investment advice, and keep the paper-trading disclosure visible. Do not add a live-trading or live-money switch; the source restricts every provider to `sandbox` with execution off. Do not borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server command that validates actor, capability, owner scope, related-record ownership, state transition, approval policy, separation of duties, transaction/concurrency, idempotency, provider behavior, and audit and ledger evidence. If it does not exist (for example a firm-wide customer view, tax-lot updates on fill, or generating statements), request the backend contract and show the feature as unavailable.
 

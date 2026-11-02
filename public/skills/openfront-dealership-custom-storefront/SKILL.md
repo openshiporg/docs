@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Dealership storefront by explaini
 
 # Openfront Dealership custom storefront
 
-Use this skill to adapt the built-in Dealership storefront or create a separately deployed client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Dealership storefront or create a separately deployed client. Start from this product's current source—not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -77,7 +77,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around vehicle inventory/detail/compare, inquiry, finance intake, test-drive, trade-in, and service-request journeys. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around vehicle inventory/detail/compare, inquiry, finance intake, test-drive, trade-in, and service-request journeys. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

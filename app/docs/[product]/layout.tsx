@@ -59,7 +59,7 @@ export default async function Layout({
     : [
         {
           url: '/docs/openship/ecommerce',
-          title: 'Ecommerce',
+          title: 'Order routing',
           icon: <TabIcon color="#f59e0b" product="openship" />,
         },
       ];

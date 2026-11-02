@@ -1,11 +1,11 @@
 ---
 name: openfront-medspa-custom-dashboard
-description: Plan and build a custom Openfront Medspa operator dashboard by explaining the source architecture, interviewing the user, inspecting the current product code and contract, then adapting the built-in client or creating a safe separate client.
+description: Plan and build a custom Openfront Med Spa operator dashboard by explaining the source architecture, interviewing the user, inspecting the current product code and contract, then adapting the built-in client or creating a safe separate client.
 ---
 
-# Openfront Medspa custom operator dashboard
+# Openfront Med Spa custom operator dashboard
 
-Use this skill to adapt the built-in Medspa operator dashboard or create a separately deployed client. Start from this product's current source—not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Med Spa operator dashboard or create a separately deployed client. Start from this product's current source—not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -13,7 +13,7 @@ Before asking implementation questions, briefly tell the user where the current 
 
 - Public source: `https://github.com/openshiporg/openfront-medspa`. Still confirm the exact checkout path and revision the user is targeting; `docs/schema-map.md` in that checkout maps every list to the workflow that writes it.
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
-- Medspa-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform` (slices such as `appointments`, `treatment`, `checkout`, `payments`, `clients`, `engagement`, `follow-ups`, `reviews`, `catalog`, `benefits`, `inventory`, `staff`, `locations`, `schedules`, `resources`, `storefront-settings`, `forms`, `safety`, `privacy`, `commissions`, `reports`, `integrations`, `administration`, `onboarding`), with navigation in `features/platform/lib/navigation.ts`.
+- Med Spa-specific operator navigation, screens, server actions, projections, and workflows mounted into that shell: `features/platform` (slices such as `appointments`, `treatment`, `checkout`, `payments`, `clients`, `engagement`, `follow-ups`, `reviews`, `catalog`, `benefits`, `inventory`, `staff`, `locations`, `schedules`, `resources`, `storefront-settings`, `forms`, `safety`, `privacy`, `commissions`, `reports`, `integrations`, `administration`, `onboarding`), with navigation in `features/platform/lib/navigation.ts`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**` (for example `/dashboard/platform/appointments/[id]/treatment`, `/dashboard/platform/checkout/[id]`, `/dashboard/platform/staff/[id]`), plus `app/join` for staff invitation acceptance.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**`, and `schema.graphql`.
 
@@ -25,7 +25,7 @@ The current product focus is booking and the day sheet (`transitionAppointment`)
 
 After the source orientation, ask one concise set of questions and skip anything already answered:
 
-1. Where is the exact Medspa source checkout, and which revision/deployment is the target?
+1. Where is the exact Med Spa source checkout, and which revision/deployment is the target?
 2. Do they want to adapt the built-in dashboard or create an independently deployed client?
 3. What do they dislike about the current experience, what must stay, and what should change?
 4. Which operator jobs, screens, actions, roles, approvals, and scope are required?
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around booking and the day sheet (`transitionAppointment`), consultation, contraindication, treatment plan, clinical order, consent, treatment session and administration with lot traceability, intake review, cash checkout (`completeAppointmentCheckout`), memberships/packages/gift cards, inventory and purchasing, staff roles/invitations/credentials/treatment authority, safety incidents and recalls, patient rights and legal holds, commissions, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around booking and the day sheet (`transitionAppointment`), consultation, contraindication, treatment plan, clinical order, consent, treatment session and administration with lot traceability, intake review, cash checkout (`completeAppointmentCheckout`), memberships/packages/gift cards, inventory and purchasing, staff roles/invitations/credentials/treatment authority, safety incidents and recalls, patient rights and legal holds, commissions, and reports. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

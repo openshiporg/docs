@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Rideshare operator dashboard by e
 
 # Openfront Rideshare custom operator dashboard
 
-Use this skill to adapt the built-in Rideshare operator dashboard or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Rideshare operator dashboard or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around fleets and memberships, driver and vehicle readiness, services and versioned fare rules, the dispatch queue and offers, the trip lifecycle, manual payment records, safety and support queues, and reviews. Preserve the product's real workflow nouns and authority boundaries. Never show a driver as eligible, a payment as received, a refund as sent, or a notification as delivered unless the server says so, and never present route estimates as map data. Do not borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around fleets and memberships, driver and vehicle readiness, services and versioned fare rules, the dispatch queue and offers, the trip lifecycle, manual payment records, safety and support queues, and reviews. Preserve the product's real workflow nouns and authority boundaries. Never show a driver as eligible, a payment as received, a refund as sent, or a notification as delivered unless the server says so, and never present route estimates as map data. Do not borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, fleet capability, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist (for example payouts), request the backend contract and show the feature as unavailable.
 

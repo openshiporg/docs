@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Sports Agents storefront or publi
 
 # Openfront Sports Agents custom storefront
 
-Use this skill to plan a customer-facing or public client for Sports Agents. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to plan a customer-facing or public client for Sports Agents. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-There is no customer model, no public data, and no tenant model. Sign-up creates a `User` with no role, which is a dashboard account with no access, not a customer profile. Never present example `Todo` records as public content, never invent athlete, agent, client, or service listings, testimonials, or results, and never show a page as working until its models, public access rules, and migrations exist. Do not borrow Ecommerce cart, product, or checkout roots; they do not exist here.
+There is no customer model, no public data, and no tenant model. Sign-up creates a `User` with no role, which is a dashboard account with no access, not a customer profile. Never present example `Todo` records as public content, never invent athlete, agent, client, or service listings, testimonials, or results, and never show a page as working until its models, public access rules, and migrations exist. Do not borrow E-commerce cart, product, or checkout roots; they do not exist here.
 
 For consequential actions (inquiries, bookings, payments, document uploads), require one bounded server command that validates actor, scope, ownership, state transition, abuse limits, idempotency, and audit evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 

@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Social public creator site by exp
 
 # Openfront Social custom public site
 
-Use this skill to adapt the built-in Social public site (landing page, creator profiles, collections, items, feeds) or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Social public site (landing page, creator profiles, collections, items, feeds) or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -67,7 +67,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around creator profiles, collections, items, feeds, and sharing. Preserve the product's real nouns and its visibility rules. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots.
+Design around creator profiles, collections, items, feeds, and sharing. Preserve the product's real nouns and its visibility rules. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots.
 
 Do not add reader accounts, comments, follows, or external posting without a bounded server contract; none exist today. If a requested feature needs one, request the backend contract and show the feature as unavailable.
 

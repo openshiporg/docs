@@ -124,7 +124,7 @@ Completed 2026-07-23 after the final source refresh:
 - An isolated Next.js 16.1.6 production build passed with the product-specific client guides and generated 255 static pages. The isolated copy used webpack because Turbopack rejects an out-of-root `node_modules` symlink.
 - `npm run check:routes` passed against that build: 243 generated routes, five legacy redirects, and 97 discovered internal links/assets had no local 404, broken anchor, missing asset, or visible error state.
 - `git diff --check` and public maturity/unsupported-compliance scans passed.
-- Agent-browser verified copy/view/hide interactions and responsive overflow for representative Ecommerce, Restaurant, Construction, Marketplace, and Pharmacy client-skill pages. All 38 skills orient the LLM to the product source before interviewing the user.
+- Agent-browser verified copy/view/hide interactions and responsive overflow for representative E-commerce, Restaurant, Construction, Marketplace, and Pharmacy client-skill pages. All 38 skills orient the LLM to the product source before interviewing the user.
 - A separate live probe found deployment drift: only 62 of 118 current source-backed docs routes and 7 of 19 public product indexes return HTTP 200 from `docs.openship.org`; 56 routes still return 404. All 56 exist and pass locally, so publishing—not local path renaming—is required. See `docs/progress/openfront-openship-marketplace-coverage-audit.md` for the exact split.
 - The repository has no ESLint dependency, flat config, or `lint` script. No unrelated lint stack was added.
 - Source repositories were not modified. No commit, push, branch, checkout, reset, stash, rebase, merge, or other history operation was run.

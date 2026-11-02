@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Sports Agents operator dashboard 
 
 # Openfront Sports Agents custom operator dashboard
 
-Use this skill to adapt the built-in Sports Agents dashboard or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Sports Agents dashboard or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-The only real workflow nouns today are users, roles and their seven flags, and the example todos. There is no tenant model; one deployment is one group of users. Never present a placeholder or example model as a sports-agents record, never invent athlete, contract, or deal data, and never show a sports-agents page as working until its models, access rules, and migrations exist. Do not borrow Ecommerce or other vertical GraphQL roots without validating that they exist here.
+The only real workflow nouns today are users, roles and their seven flags, and the example todos. There is no tenant model; one deployment is one group of users. Never present a placeholder or example model as a sports-agents record, never invent athlete, contract, or deal data, and never show a sports-agents page as working until its models, access rules, and migrations exist. Do not borrow E-commerce or other vertical GraphQL roots without validating that they exist here.
 
 Treat the AI chat and MCP tools as acting with the signed-in user's full permissions, with no confirmation step or audit log. Do not route consequential actions through them.
 

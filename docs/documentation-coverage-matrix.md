@@ -46,7 +46,7 @@ The public Openfront family contains 19 products. Product repositories remained 
 
 | Product / repository | Source-backed boundary | Public coverage before | Internal audit classification | Principal documentation gap |
 |---|---|---:|---|---|
-| Ecommerce — `openshiporg/openfront` | Multi-region catalog, cart/checkout, orders, inventory, payments, shipping, returns/claims, B2B, OAuth/apps | Detailed | Canonical reference | Add family status/security context; recheck stale setup and launch language. |
+| E-commerce — `openshiporg/openfront` | Multi-region catalog, cart/checkout, orders, inventory, payments, shipping, returns/claims, B2B, OAuth/apps | Detailed | Canonical reference | Add family status/security context; recheck stale setup and launch language. |
 | Restaurant — `openshiporg/openfront-restaurant` | Menu, ordering, POS, service floor, KDS, inventory, staff, reporting | Detailed | Canonical reference | Keep canonical architecture consistent; qualify payment/security/runtime statements. |
 | Airline — `openshiporg/openfront-airline` | Carrier-scoped airline retailing and passenger service: network/inventory, offers, bookings, fulfillment, airport service, disruption, narrow lifecycle operations and provider boundaries | Missing | Maintained preview | Purpose-built traveler/operator surfaces, serialized inventory consumption, vault integration, live adapters/webhooks and production operations remain deployment work; no safety-critical aviation claim. |
 | Barbershop — `openshiporg/openfront-barbershop` | Services, barbers, booking, queue, POS/manual payment, customers and reports | Missing | Maintained preview | Booking/queue workflow, payment scope, onboarding, concurrency/security status. |
@@ -71,9 +71,9 @@ The public Openfront family contains 19 products. Product repositories remained 
 | Product | Source-backed boundary | Current docs | Gap |
 |---|---|---:|---|
 | Openship — `openshiporg/openship` | Shop/channel adapters, product matching, order routing and fulfillment coordination | Detailed | Fix stale Openfront copy, old links, and copied payment/shipping guides not backed by Openship’s current boundary. |
-| Openfront Marketplace | Open marketplace interoperability layer | Missing | Link from family architecture/integrations and clearly state current adapter/security limits. |
+| Marketplace | Open marketplace interoperability layer | Missing | Link from family architecture/integrations and clearly state current adapter/security limits. |
 | Openship product catalog | Product discovery pages | External | Link only verified `https://openship.org/products` pages; do not use catalog copy or HTTP availability as implementation evidence. |
-| External Storefront | Separate composable storefront source at `/Users/junaid/Code/storefront` | One Openfront Ecommerce guide | Current contracts/apps exist for Ecommerce, Restaurant, and Hotel only; keep Storefront's public SDK/GraphQL and merchant-owned checkout boundary distinct from unsupported verticals. |
+| External Storefront | Separate composable storefront source at `/Users/junaid/Code/storefront` | One Openfront E-commerce guide | Current contracts/apps exist for E-commerce, Restaurant, and Hotel only; keep Storefront's public SDK/GraphQL and merchant-owned checkout boundary distinct from unsupported verticals. |
 | OpenSource Builders | Separate open-source discovery product | Separate repo/site | Cross-link only where it explains discovery/open alternatives; do not fold it into Openfront product docs without a product-routing decision. |
 
 ## 2026-07-23 direct-source refresh evidence
@@ -82,7 +82,7 @@ This refresh did not rely on the older audit tables alone. It enumerated current
 
 | Product | Current source inspected directly | Evidence used in public docs |
 |---|---|---|
-| Ecommerce | `openfront/app/dashboard/(admin)/platform`, `app/(storefront)`, `features/keystone/mutations/index.ts`, provider and onboarding source | Product/order/inventory/payment/shipping/returns/B2B operator and storefront routes plus bounded commerce operations |
+| E-commerce | `openfront/app/dashboard/(admin)/platform`, `app/(storefront)`, `features/keystone/mutations/index.ts`, provider and onboarding source | Product/order/inventory/payment/shipping/returns/B2B operator and storefront routes plus bounded commerce operations |
 | Restaurant | `openfront-restaurant/app/dashboard/(admin)/platform`, `app/(storefront)`, `features/keystone/mutations/index.ts`, integrations | Storefront ordering/account; menu, POS, floor, KDS, inventory, staff and report workspaces; named cart/order/payment/floor/kitchen operations |
 | Airline | `openfront-airline/app` traveler/airport/operator routes, `features/platform`, model/mutation indexes, onboarding, migrations and package scripts | Traveler trip/offer/booking surfaces plus purpose-built network, inventory, offer, booking, ticketing, airport-service, disruption, control and task operations; live provider/operational proof remains explicitly absent |
 | Barbershop | `openfront-barbershop/app/(storefront)`, platform routes, models, mutations, payment webhook route | Services/booking plus booking/customer/POS/queue/staff/report workspaces and named notes/no-show/sale/commission/payment operations |
@@ -102,7 +102,7 @@ This refresh did not rely on the older audit tables alone. It enumerated current
 | Salon | `openfront-salon/app/(storefront)`, platform routes, model index, payment webhook and absence of a product custom schema | Customer and salon workspaces plus an explicit limitation that generated writes are not yet consolidated into named GraphQL operations |
 | UIKit | `openfront-uikit/app/(storefront)`, registry route, platform routes, models/mutations/payment source | Kit/release/review/checkout/access/registry workflows and artifact/payment integrity boundaries |
 | Openship | `openship/app`, `features`, current models, adapter handlers and package scripts | Separate user-scoped shop/channel/match/order/fulfillment product; Shopify/Openfront-only compiled adapters, custom-execution egress and credential-field limitations documented; copied Openfront payment/shipping docs removed |
-| External Storefront | `/Users/junaid/Code/storefront/apps`, `packages/storefront`, GraphQL contracts and architecture docs | Composable storefront runtime/SDK documented only for implemented Ecommerce, Restaurant, and Hotel contracts; invented repository URL removed |
+| External Storefront | `/Users/junaid/Code/storefront/apps`, `packages/storefront`, GraphQL contracts and architecture docs | Composable storefront runtime/SDK documented only for implemented E-commerce, Restaurant, and Hotel contracts; invented repository URL removed |
 
 Source and advertised URL check on 2026-07-23: the redirect-following advertised-link check received final HTTP 200 responses for retained site/repository/product destinations, external images, and realistic synthetic Openship demo API POSTs. UIKit's unauthenticated GitHub URL returned 404, so it is not advertised. Pharmacy's origin exposes only the committed baseline while the docs describe newer working-tree source; no Pharmacy repository, product, or demo URL is advertised. These checks establish URL existence only, not workflow quality, deployment state, settlement, security, compliance, or certification.
 

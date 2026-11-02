@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Sportsbook operator dashboard by 
 
 # Openfront Sportsbook custom operator dashboard
 
-Use this skill to adapt the built-in Sportsbook operator dashboard or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Sportsbook operator dashboard or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around the real nouns: tenant, brand, jurisdiction, event, market, selection, price snapshot, quote, wager, acceptance decision, result version, grade, settlement, journal, hold, approval request, and audit event. Preserve two-factor assurance and dual control: never let a client apply a sensitive change without an approved request from a different operator. Never show a market as open, a result as approved, a wager as settled, a provider as certified, or a jurisdiction as licensed unless the server says so. Show sandbox status plainly. Do not borrow Ecommerce GraphQL roots (products, orders, carts) without validating that they exist and are authorized here.
+Design around the real nouns: tenant, brand, jurisdiction, event, market, selection, price snapshot, quote, wager, acceptance decision, result version, grade, settlement, journal, hold, approval request, and audit event. Preserve two-factor assurance and dual control: never let a client apply a sensitive change without an approved request from a different operator. Never show a market as open, a result as approved, a wager as settled, a provider as certified, or a jurisdiction as licensed unless the server says so. Show sandbox status plainly. Do not borrow E-commerce GraphQL roots (products, orders, carts) without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, capability, MFA, tenant, related-record ownership, state transition, transaction/concurrency, idempotency, approval, provider behavior, and audit evidence. If it does not exist (for example writers for `Team`, `AccessReview`, `LegalHold`, `DataCorrectionCase`, or `ResettlementCase`), request the backend contract and show the feature as unavailable.
 

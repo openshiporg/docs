@@ -2,7 +2,7 @@
   {
     "id": "ecommerce",
     "repository": "openfront",
-    "name": "Ecommerce",
+    "name": "E-commerce",
     "description": "Multi-region catalog, storefront, checkout, orders, inventory, payments, shipping, returns, and B2B commerce.",
     "color": "#6366f1",
     "href": "/docs/openfront/ecommerce",

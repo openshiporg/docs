@@ -7,11 +7,11 @@ description: Discover, plan, and build a custom Openfront operator dashboard by 
 
 Help the user adapt an Openfront product's built-in operator dashboard or create a separately deployed operator client. The interface and workflows can be fully custom. Authentication, authorization, record scope, business invariants, provider calls, and audit evidence remain server responsibilities.
 
-The target product's current source, deployed GraphQL schema, and observed access behavior are authoritative. Never assume Ecommerce operations apply to Restaurant or another vertical.
+The target product's current source, deployed GraphQL schema, and observed access behavior are authoritative. Never assume E-commerce operations apply to Restaurant or another vertical.
 
 ## Scope of this skill
 
-This is a **discovery, implementation-planning, and safety-gating skill**, not a complete implementation specification for every Openfront deployment. It is sufficient to locate and adapt bounded built-in presentation and to start a verified read-only operator client. At canonical Ecommerce commit `6662469`, it is not sufficient to expose a complete independently deployed operational dashboard without adding the bounded context, lifecycle, provider, and multi-record commands documented below.
+This is a **discovery, implementation-planning, and safety-gating skill**, not a complete implementation specification for every Openfront deployment. It is sufficient to locate and adapt bounded built-in presentation and to start a verified read-only operator client. At canonical E-commerce commit `6662469`, it is not sufficient to expose a complete independently deployed operational dashboard without adding the bounded context, lifecycle, provider, and multi-record commands documented below.
 
 Do not advertise a full operator dashboard merely because generated CRUD validates, a table renders, or a host-owner credential can reach global data.
 
@@ -21,11 +21,11 @@ Before asking implementation questions, briefly orient the user to the source:
 
 - Repository: <https://github.com/openshiporg/openfront>
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: [`features/dashboard`](https://github.com/openshiporg/openfront/tree/master/features/dashboard)
-- Ecommerce-specific operator navigation, screens, server actions, projections, and workflows mounted into that dashboard: [`features/platform`](https://github.com/openshiporg/openfront/tree/master/features/platform)
+- E-commerce-specific operator navigation, screens, server actions, projections, and workflows mounted into that dashboard: [`features/platform`](https://github.com/openshiporg/openfront/tree/master/features/platform)
 - Thin route entry points that mount the platform slices: [`app/dashboard`](https://github.com/openshiporg/openfront/tree/master/app/dashboard)
 - GraphQL schema, models, access, and named operations: [`features/keystone`](https://github.com/openshiporg/openfront/tree/master/features/keystone) and [`schema.graphql`](https://github.com/openshiporg/openfront/blob/master/schema.graphql)
 
-Explain that `features/dashboard` is the reusable Keystone administration layer, while `features/platform` contains the Ecommerce-specific operator experience. If the user is concerned about how a custom dashboard should behave, these directories show the current UI composition and the server operations it relies on. They are reference source, not permission to copy private server code into an external client.
+Explain that `features/dashboard` is the reusable Keystone administration layer, while `features/platform` contains the E-commerce-specific operator experience. If the user is concerned about how a custom dashboard should behave, these directories show the current UI composition and the server operations it relies on. They are reference source, not permission to copy private server code into an external client.
 
 ## Then interview the user
 
@@ -119,7 +119,7 @@ When canonical source is available, inspect it read-only:
 
 Use built-in actions as workflow evidence only. They can rely on same-origin cookies, dynamic admin metadata, or source assumptions that are not portable.
 
-### Built-in Ecommerce dashboard map and conventions
+### Built-in E-commerce dashboard map and conventions
 
 Read these before adding or reproducing a platform slice:
 
@@ -134,7 +134,7 @@ Use generic dashboard screens for ordinary Keystone list/item administration onl
 
 ### Current repository verification reality
 
-At canonical commit `6662469` the Ecommerce repository has no Jest/Vitest, Playwright, Cypress, contract-test, or meaningful application-test suite; no `test`, `typecheck`, `codegen`, `test:contract`, or `test:e2e` package scripts; and `next.config.ts` sets `typescript.ignoreBuildErrors: true`. Both `dev` and `build` apply database migrations. Before broad built-in customization, add an independent non-migrating typecheck plus focused unit, permission/access, contract, and browser tests. Never report the existing production build alone as type or workflow proof.
+At canonical commit `6662469` the E-commerce repository has no Jest/Vitest, Playwright, Cypress, contract-test, or meaningful application-test suite; no `test`, `typecheck`, `codegen`, `test:contract`, or `test:e2e` package scripts; and `next.config.ts` sets `typescript.ignoreBuildErrors: true`. Both `dev` and `build` apply database migrations. Before broad built-in customization, add an independent non-migrating typecheck plus focused unit, permission/access, contract, and browser tests. Never report the existing production build alone as type or workflow proof.
 
 ## Phase 0: schema, identity, and scope discovery
 
@@ -180,7 +180,7 @@ If production introspection is disabled, obtain an exported schema. Never develo
 
 Every page, worker, and webhook consumer must map to these matrices.
 
-### Canonical Ecommerce access defects to record
+### Canonical E-commerce access defects to record
 
 At commit `6662469`, explicitly verify and plan around these defects rather than relying on role labels:
 
@@ -312,9 +312,9 @@ Every BFF request must:
 
 The GraphQL transport must inspect `errors` on HTTP 200, fail writes closed on partial data, apply a timeout, attach safe correlation metadata, and distinguish unauthenticated, denied, not-found, validation, conflict, provider-unavailable, timeout, and unknown-outcome states.
 
-## Canonical Ecommerce snapshot: schema-compatible examples
+## Canonical E-commerce snapshot: schema-compatible examples
 
-The examples below validate against canonical Ecommerce `schema.graphql` at commit `6662469`. They prove syntax only. Use them only for that Ecommerce contract. For Restaurant or any other product, derive operations from that product's current schema, resolvers, access rules, and built-in call sites; never rename or reuse these operations by analogy. Validate every operation against the target schema and run least-privilege access tests.
+The examples below validate against canonical E-commerce `schema.graphql` at commit `6662469`. They prove syntax only. Use them only for that E-commerce contract. For Restaurant or any other product, derive operations from that product's current schema, resolvers, access rules, and built-in call sites; never rename or reuse these operations by analogy. Validate every operation against the target schema and run least-privilege access tests.
 
 ### Operator context
 
@@ -504,7 +504,7 @@ query ExternalOperatorStoreConfiguration {
 
 Treat provider credentials, API/OAuth tokens, password/reset state, order secrets, customer tokens, raw payment data, and private integration metadata as forbidden selections. UI field-mode hiding is not API redaction; verify field-level access.
 
-## Canonical Ecommerce domain inventory
+## Canonical E-commerce domain inventory
 
 Before estimating an external dashboard, inventory each requested domain from its current platform slice through its exact GraphQL roots and access rules. Use this starting map, then verify the target revision:
 

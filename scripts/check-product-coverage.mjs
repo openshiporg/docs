@@ -24,12 +24,24 @@ const expectedIds = (await readdir(docsRoot, { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name).sort();
 const products = JSON.parse(await read('data/openfront-products.json'));
+// Names are a small committed snapshot of os.org, not a cross-repo import.
+// UIKit and Sports Agents are docs-only identities absent from that catalog;
+// retain them rather than inventing catalog entries or dropping their docs.
+const canonicalNames = JSON.parse(await read('data/product-names.json')).products;
+const namesById = new Map(canonicalNames.map((product) => [product.id, product]));
 const actualIds = products.map((product) => product.id);
 if (new Set(actualIds).size !== actualIds.length) fail('Product catalog has duplicate ids');
 if (JSON.stringify([...actualIds].sort()) !== JSON.stringify(expectedIds)) {
   fail(`Catalog/tree membership mismatch: tree ${expectedIds.join(', ')}; catalog ${actualIds.join(', ')}`);
 }
 for (const product of products) {
+  const canonical = namesById.get(product.id);
+  if (canonical && product.name !== canonical.label) fail(`${product.id}: expected catalog label ${canonical.label}`);
+  if (canonical) {
+    const overview = await read(`content/docs/openfront/${product.id}/index.mdx`);
+    const title = overview.match(/^title: (.+)$/m)?.[1];
+    if (title !== canonical.name) fail(`${product.id}: expected overview title ${canonical.name}`);
+  }
   if (product.href !== `/docs/openfront/${product.id}`) fail(`${product.id}: invalid docs href`);
   if (!product.name || !product.description || !/^#[\da-f]{6}$/i.test(product.color)) fail(`${product.id}: name, description and hex color required`);
   // Public repository names can differ from local folder names (for example
@@ -79,6 +91,7 @@ for (const filename of ['app/(home)/page.tsx', 'app/docs/[product]/layout.tsx', 
 for (const directory of ['content', 'app', 'components']) for (const filename of await walk(path.join(root, directory))) {
   if (!/\.(mdx|tsx)$/.test(filename)) continue;
   const text = await readFile(filename, 'utf8');
+  if (/\b(?:Openfront Ecommerce|Openfront Medspa|Openfront Marketplace)\b/.test(text)) fail(`${filename}: noncanonical product name`);
   if (/\b(?:is|are|ships as|provides)\s+(?:fully\s+)?(?:HIPAA|PCI(?: DSS)?|SOC ?2|GDPR)[ -]?(?:compliant|certified)\b/i.test(text)) fail(`${filename}: unsupported compliance claim`);
 }
 // Openship is a separate routing product, not an Openfront catalog entry.

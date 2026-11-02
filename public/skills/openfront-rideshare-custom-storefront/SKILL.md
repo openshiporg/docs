@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Rideshare storefront by explainin
 
 # Openfront Rideshare custom storefront
 
-Use this skill to adapt the built-in Rideshare rider storefront or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Rideshare rider storefront or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -69,7 +69,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around service discovery, the quote and its disclosures, the request receipt, request and trip status, cancellation with its preview, rider accounts, and signed-in after-ride actions. Preserve the product's real workflow nouns and authority boundaries. Never show a driver as assigned, a route as mapped, a payment as taken, or a message as delivered unless the server says so, and never invent ETAs, live locations, safety claims, or reviews. Do not borrow Ecommerce GraphQL roots without validating that they exist and are authorized here.
+Design around service discovery, the quote and its disclosures, the request receipt, request and trip status, cancellation with its preview, rider accounts, and signed-in after-ride actions. Preserve the product's real workflow nouns and authority boundaries. Never show a driver as assigned, a route as mapped, a payment as taken, or a message as delivered unless the server says so, and never invent ETAs, live locations, safety claims, or reviews. Do not borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. If it does not exist (for example rider card payment or guest support cases), request the backend contract and show the feature as unavailable.
 

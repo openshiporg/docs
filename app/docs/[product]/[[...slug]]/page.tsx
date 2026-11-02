@@ -44,13 +44,13 @@ export default async function ProductDocsPage(props: {
     ? {
         url: '/skills/openfront-custom-dashboard/SKILL.md',
         copyLabel: 'Copy dashboard skill',
-        title: 'Openfront Ecommerce custom dashboard skill',
+        title: 'Openfront E-commerce custom dashboard skill',
       }
     : fullSlug === 'openfront/ecommerce/storefront/custom'
       ? {
           url: '/skills/openfront-custom-storefront/SKILL.md',
           copyLabel: 'Copy storefront skill',
-          title: 'Openfront Ecommerce custom storefront skill',
+          title: 'Openfront E-commerce custom storefront skill',
         }
       : vertical && verticalName && clientType
         ? {

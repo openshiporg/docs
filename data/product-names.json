@@ -1,0 +1,180 @@
+{
+  "source": "os.org/lib/product-catalog.ts",
+  "sourceSha256": "30fed8bdd2c3512dbb6a168ee04405aa9ed8ba5d6e199a8c269cb0e74cd43558",
+  "products": [
+    {
+      "id": "marketplace",
+      "name": "Marketplace",
+      "label": "Marketplace",
+      "category": "network"
+    },
+    {
+      "id": "ecommerce",
+      "name": "Openfront E-commerce",
+      "label": "E-commerce",
+      "category": "openfront"
+    },
+    {
+      "id": "openship",
+      "name": "Openship",
+      "label": "Order routing",
+      "category": "network"
+    },
+    {
+      "id": "restaurant",
+      "name": "Openfront Restaurant",
+      "label": "Restaurant",
+      "category": "openfront"
+    },
+    {
+      "id": "grocery",
+      "name": "Openfront Grocery",
+      "label": "Grocery",
+      "category": "openfront"
+    },
+    {
+      "id": "hotel",
+      "name": "Openfront Hotel",
+      "label": "Hotel",
+      "category": "openfront"
+    },
+    {
+      "id": "rental",
+      "name": "Openfront Rental",
+      "label": "Rental",
+      "category": "openfront"
+    },
+    {
+      "id": "real-estate",
+      "name": "Openfront Real Estate",
+      "label": "Real Estate",
+      "category": "openfront"
+    },
+    {
+      "id": "coffee-shop",
+      "name": "Openfront Coffee Shop",
+      "label": "Coffee Shop",
+      "category": "openfront"
+    },
+    {
+      "id": "barbershop",
+      "name": "Openfront Barbershop",
+      "label": "Barbershop",
+      "category": "openfront"
+    },
+    {
+      "id": "dealership",
+      "name": "Openfront Dealership",
+      "label": "Dealership",
+      "category": "openfront"
+    },
+    {
+      "id": "hospital",
+      "name": "Openfront Hospital",
+      "label": "Hospital",
+      "category": "openfront"
+    },
+    {
+      "id": "gym",
+      "name": "Openfront Gym",
+      "label": "Gym",
+      "category": "openfront"
+    },
+    {
+      "id": "salon",
+      "name": "Openfront Salon",
+      "label": "Salon",
+      "category": "openfront"
+    },
+    {
+      "id": "construction",
+      "name": "Openfront Construction",
+      "label": "Construction",
+      "category": "openfront"
+    },
+    {
+      "id": "convenience",
+      "name": "Openfront Convenience",
+      "label": "Convenience",
+      "category": "openfront"
+    },
+    {
+      "id": "airline",
+      "name": "Openfront Airline",
+      "label": "Airline",
+      "category": "openfront"
+    },
+    {
+      "id": "law-firm",
+      "name": "Openfront Law Firm",
+      "label": "Law Firm",
+      "category": "openfront"
+    },
+    {
+      "id": "medspa",
+      "name": "Openfront Med Spa",
+      "label": "Med Spa",
+      "category": "openfront"
+    },
+    {
+      "id": "cannabis",
+      "name": "Openfront Cannabis",
+      "label": "Cannabis",
+      "category": "openfront"
+    },
+    {
+      "id": "sportsbook",
+      "name": "Openfront Sportsbook",
+      "label": "Sportsbook",
+      "category": "openfront"
+    },
+    {
+      "id": "rideshare",
+      "name": "Openfront Rideshare",
+      "label": "Rideshare",
+      "category": "openfront"
+    },
+    {
+      "id": "collectibles",
+      "name": "Openfront Collectibles",
+      "label": "Collectibles",
+      "category": "openfront"
+    },
+    {
+      "id": "pharmacy",
+      "name": "Openfront Pharmacy",
+      "label": "Pharmacy",
+      "category": "openfront"
+    },
+    {
+      "id": "vape",
+      "name": "Openfront Vape",
+      "label": "Vape",
+      "category": "openfront"
+    },
+    {
+      "id": "scheduling",
+      "name": "Openfront Scheduling",
+      "label": "Scheduling",
+      "category": "openfront"
+    },
+    {
+      "id": "social",
+      "name": "Openfront Social",
+      "label": "Social",
+      "category": "openfront"
+    },
+    {
+      "id": "analytics",
+      "name": "Openfront Analytics",
+      "label": "Analytics",
+      "category": "openfront"
+    },
+    {
+      "id": "financial",
+      "name": "Openfront Financial",
+      "label": "Financial",
+      "category": "openfront"
+    }
+  ]
+}

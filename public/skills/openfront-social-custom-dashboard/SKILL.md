@@ -5,7 +5,7 @@ description: Plan and build a custom Openfront Social creator studio or operator
 
 # Openfront Social custom creator and operator dashboard
 
-Use this skill to adapt the built-in Social dashboard (creator studio plus people-manager pages) or create a separately deployed client. Start from this product's current source, not Ecommerce conventions, screenshots, or another vertical's schema.
+Use this skill to adapt the built-in Social dashboard (creator studio plus people-manager pages) or create a separately deployed client. Start from this product's current source, not E-commerce conventions, screenshots, or another vertical's schema.
 
 ## Source orientation to explain first
 
@@ -68,7 +68,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around creators, personal sites, collections, items, publications, destinations, activity, exports, privacy requests, and creators directory. Preserve the product's real workflow nouns and owner-scoped authority. Never rename Ecommerce products/orders into this vertical or borrow Ecommerce GraphQL roots.
+Design around creators, personal sites, collections, items, publications, destinations, activity, exports, privacy requests, and creators directory. Preserve the product's real workflow nouns and owner-scoped authority. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots.
 
 Never present an external destination or publication as delivered: there is no dispatcher, and external intents end as `not_configured`. For any new consequential action, require one bounded server command that validates actor, ownership, state transition, version fence, transaction, idempotency, and `SocialEvent` evidence. If it does not exist, request the backend contract and show the feature as unavailable.
 
