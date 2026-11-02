@@ -26,6 +26,17 @@ Some commands exist but are switched off in source by a runtime-capability list.
 
 `Organization` is the licensed business and `Premises` is the licensed store. Users, roles, staff credentials, and most records carry both relationships. Operator reads are scoped to the signed-in user's organization and premises, and people management is premises-scoped. The public storefront serves exactly one scope: it stays unavailable until exactly one active organization with one active premises exists.
 
+
+## Who uses what
+
+| Audience | Surface | Typical work |
+|---|---|---|
+| Owner, compliance lead | Authority, Staff, Compliance, Recalls, Incidents | Renew licenses, add staff, place holds, open recalls |
+| Inventory manager | Receiving, Inventory, Menu | Receive packages, record lab results, release for sale, edit products |
+| Budtender | POS, Customers, Sales | Check in a customer, build a cart, take payment |
+| Finance | Cash, Payment providers, Reconciliation | Open and close shifts, approve variances, retry state reports |
+| Customer | Public menu | Browse released, in-stock products and find the store |
+
 <Cards>
   <Card title="Getting started" href="/docs/openfront/cannabis/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
   <Card title="Data model" href="/docs/openfront/cannabis/data-model" description="Data model, lifecycles, GraphQL commands, and access control." />

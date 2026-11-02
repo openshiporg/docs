@@ -5,6 +5,11 @@ icon: Route
 ---
 
 import { Card, Cards } from 'fumadocs-ui/components/card';
+import { IntroDiagram } from "../../../../components/IntroDiagram";
+import { ShopDiagram } from "../../../../components/ShopDiagram";
+import { ChannelDiagram } from "../../../../components/ChannelDiagram";
+import { LinkDiagram } from "../../../../components/LinkDiagram";
+import { MatchDiagram } from "../../../../components/MatchDiagram";
 
 [Source](https://github.com/openshiporg/openship) · [Getting started](/docs/openship/ecommerce/getting-started)
 
@@ -29,6 +34,39 @@ Provider-specific behavior belongs behind shop and channel platform handlers. Op
 7. record tracking, cancellation, fulfillment or error state from the channel boundary.
 
 Idempotency, signature verification, credential isolation, retries and reconciliation need to be proved for each adapter.
+
+
+## Routing at a glance
+
+<IntroDiagram />
+
+## Shops
+
+A Shop is one user-owned order source. Its ShopPlatform selects product, order, update, and webhook handlers. The shop holds connection-specific identity and credentials.
+
+<ShopDiagram />
+
+See [Shops](/docs/openship/ecommerce/shops) for the current adapter and credential limitations.
+
+## Channels
+
+A Channel is one user-owned fulfillment destination. Its ChannelPlatform selects catalog, purchase, cancellation, webhook, and tracking handlers. Creating a Channel row does not establish a working provider connection.
+
+<ChannelDiagram />
+
+See [Channels](/docs/openship/ecommerce/channels) for compiled adapters, custom execution, and reconciliation requirements.
+
+## Links
+
+A Link connects one owned shop to one owned channel and supplies the routing relationship used for order work.
+
+<LinkDiagram />
+
+## Matches
+
+A Match maps one exact shop product/variant to one exact channel product/variant. Routing uses that mapping to decide which destination item can fulfill a source line. Operators can replace a match without changing the source catalog, but historical order/purchase identities should not drift when the current mapping changes.
+
+<MatchDiagram />
 
 <Cards>
   <Card title="Shops" href="/docs/openship/ecommerce/shops" description="Configure order sources and their platform handlers." />

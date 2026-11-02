@@ -12,6 +12,19 @@ It runs on Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start with 
 
 The app serves one store per deployment. A migration creates the Store row `store_juniper`, and production requires `PUBLIC_STORE_ID=store_juniper`. Data is scoped to that Store, but there is no organization or multi-location model.
 
+
+## Who uses what
+
+| User | Surface | Jobs |
+| --- | --- | --- |
+| Shopper | Storefront | Browse, build a basket, choose pickup or delivery, pay, answer substitution requests, check in at the curb |
+| Picker | Fulfillment | Pick items, record weights, propose substitutions |
+| Order manager | Orders, pickup, subscriptions, messages | Advance orders, cancel, run recurring baskets, answer messages |
+| Delivery coordinator | Delivery | Slots, routes, stop outcomes |
+| Inventory and buying | Inventory, suppliers, purchasing | Lots, counts, recalls, purchase orders, receiving |
+| Finance | Payments, reports | Refunds, voids, close, statement import |
+| Admin | Settings, staff, communications | Store profile, delivery policy, invitations |
+
 ## Customer and operator surfaces
 
 - **Storefront** (`app/(storefront)`, logic in `features/storefront`): home, departments, products, specials, delivery and pickup times, basket, checkout, order tracking, guest order access, account, lists, favorites, recurring baskets, help, and policies. See [External storefronts](/docs/openfront/grocery/external-storefront) for the route table.

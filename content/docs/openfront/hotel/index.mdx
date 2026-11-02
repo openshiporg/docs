@@ -12,6 +12,20 @@ It is built with Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start
 
 One database holds one property. There is no Organization, Property, or Location model. `HotelSettings` is a singleton row, roles are global, and the property key `the-alder-house` is a fixed constant used to label audit, outbox, business-date, and night-audit records. There are no native Booking.com or Expedia adapters.
 
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Room type | What guests book: rate, occupancy, bed configuration, images |
+| Room | A physical room of one type, with a floor and operational status |
+| Rate plan | Price rules for a room type: stay limits, cancellation policy, meal plan, dates, promo code |
+| Booking | A reservation with snapshot amounts in minor units. Written only by named commands |
+| Folio | The ledger for a booking or group. Entries are posted and reversed, never edited |
+| Business date | The date the property is trading on. Night audit moves it forward |
+| Approval | A second user with `canApproveHotelExceptions` authorizes refunds, write-offs, and similar exceptions |
+| Idempotency key | Sent with most staff mutations so a retry does not repeat the action |
+
 ## Code layout
 
 | Path | What it holds |

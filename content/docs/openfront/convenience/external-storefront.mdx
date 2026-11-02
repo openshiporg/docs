@@ -1,6 +1,7 @@
 ---
 title: External storefronts
 description: Give an LLM the Convenience storefront skill to adapt the built-in catalog site or create a separate client.
+icon: AppWindow
 ---
 
 To create a custom Convenience storefront, copy the skill and give it to your LLM. The skill will explain how `features/storefront` and the routes in `app/(shop)` and `app/page.tsx` implement Convenience's current public catalog, and which backend queries it reads.
@@ -15,7 +16,7 @@ Route files are thin. Screens live in `features/storefront/screens` (`Storefront
 
 | Route | Customer journey |
 |---|---|
-| `/` | Store home: name, tagline, address with a directions link, phone, opening hours, fuel prices if the store has fuel, and the first three aisles. Shows "Coming soon" when no storefront is published |
+| `/` | Store home: name, tagline, address with a directions link, phone, opening hours, fuel prices if the store has fuel, and the first three aisles. Shows an unpublished state when no storefront is published |
 | `/shop` | Aisles and products. Search with `q`, filter with `category`, 48 products per page |
 | `/shop/[productId]` | Product detail: photo, description, sizes with price, and "In stock" or "Ask at counter" for tracked items |
 | `/basket`, `/checkout` | Redirect to `/shop` |

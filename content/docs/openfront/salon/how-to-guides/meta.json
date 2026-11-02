@@ -6,5 +6,7 @@
     "refund-a-sale",
     "sell-a-membership",
     "pay-out-commissions"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

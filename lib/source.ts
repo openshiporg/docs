@@ -1,6 +1,17 @@
 import { docs } from '../.source/server';
 import { type InferPageType, loader, source as makeSource } from 'fumadocs-core/source';
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
+import type { Item } from 'fumadocs-core/page-tree';
+
+// Product roots already name the application. Preserve full article titles.
+const overviewNavigation = {
+  file(node: Item, filePath?: string) {
+    return filePath && /^(openfront|openship)\/[^/]+\/index\.mdx$/.test(filePath)
+      ? { ...node, name: 'Overview' }
+      : node;
+  },
+};
+const pageTree = { transformers: [overviewNavigation] };
 
 const baseSource = docs.toFumadocsSource();
 const allFiles = baseSource.files ?? [];
@@ -23,6 +34,7 @@ const openshipVirtualSource = makeSource({
 });
 
 export const openfrontSource = loader(openfrontVirtualSource, {
+  pageTree,
   baseUrl: '/docs/openfront',
   url(slugs) {
     return '/docs/openfront/' + slugs.slice(1).join('/');
@@ -31,6 +43,7 @@ export const openfrontSource = loader(openfrontVirtualSource, {
 });
 
 export const openshipSource = loader(openshipVirtualSource, {
+  pageTree,
   baseUrl: '/docs/openship',
   url(slugs) {
     return '/docs/openship/' + slugs.slice(1).join('/');
@@ -39,6 +52,7 @@ export const openshipSource = loader(openshipVirtualSource, {
 });
 
 export const source = loader(baseSource, {
+  pageTree,
   baseUrl: '/docs',
   url(slugs) {
     return '/docs/' + slugs.join('/');

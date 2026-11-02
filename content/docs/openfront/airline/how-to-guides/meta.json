@@ -6,5 +6,7 @@
     "settle-and-ticket",
     "run-a-departure",
     "handle-a-disruption"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

@@ -7,5 +7,7 @@
     "handle-a-recall",
     "refund-an-order",
     "close-a-trading-period"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

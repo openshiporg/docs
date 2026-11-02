@@ -12,6 +12,19 @@ It is built with Next.js 16, React 19, Keystone 6, GraphQL, Prisma, and PostgreS
 
 Card payments use Stripe with `sk_test_` and `pk_test_` keys. Calendar exchange uses iCalendar text. Outbox events wait for a dispatcher you register in `features/keystone/workers/outboxDispatchers.ts`.
 
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Host organization | The tenant. Host-scoped records are visible through an active `HostMembership` |
+| Property and unit | The building and the bookable `AccommodationUnit` inside it |
+| Listing | The public page for a unit, with `bookingMode` `instant` or `request` |
+| Rate plan | Nightly rate, stay limits, notice, window, and a cancellation policy |
+| Quote | A `StayQuote` snapshot of dates, rates, fees, taxes, deposit, and guests |
+| Reservation | A stay created from a quote |
+| Trip link | A 48-character private token for the guest's trip, agreement, and messages |
+
 ## Guest and host surfaces
 
 The storefront lives at `/` and is built from `features/storefront`. Its main routes are `/search`, `/stays/[slug]`, `/collections`, `/compare`, `/checkout/[quoteToken]`, `/trips`, `/trips/[token]`, `/agreements/[token]`, `/messages/[token]`, `/account`, `/help`, and `/policies`. See [External storefronts](/docs/openfront/rental/external-storefront) for the full table.

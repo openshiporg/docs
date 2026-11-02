@@ -126,7 +126,7 @@ function ModelNode({ data }: NodeProps<ModelNodeType>) {
                   {col.displayType}
                 </span>
                 {col.defaultValue && (
-                  <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">
+                  <span className="text-emerald-600 dark:text-emerald-400 text-xs">
                     = {col.defaultValue}
                   </span>
                 )}

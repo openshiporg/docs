@@ -4,9 +4,8 @@
   "icon": "Sparkles",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-salon",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -39,7 +38,7 @@
     "how-to-guides/refund-a-sale",
     "how-to-guides/sell-a-membership",
     "how-to-guides/pay-out-commissions",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

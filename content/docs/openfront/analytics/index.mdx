@@ -12,6 +12,15 @@ Openfront Analytics is a self-hosted web analytics application. You add a small 
 The tracker sets no cookies and uses no browser storage for tracking. A visitor is identified by a hash of a daily salt, the site, the IP address, and the User-Agent. The IP address is not stored.
 </Callout>
 
+
+## Privacy model
+
+- No cookies and no browser storage for tracking.
+- A visitor is `sha256(daily salt, site, IP, User-Agent)`. The salt comes from `SESSION_SECRET` and the UTC date. The IP is never stored.
+- Global Privacy Control is always honored. Bots are ignored by User-Agent.
+- Hits are accepted only from the site's domain and its subdomains.
+- A visit closes after 30 minutes of inactivity.
+
 ## Who it is for
 
 - **Site owners and their teams:** people who want to see traffic, sources, goals, funnels, and performance for one or more websites, and who manage sites, shared links, and API keys.

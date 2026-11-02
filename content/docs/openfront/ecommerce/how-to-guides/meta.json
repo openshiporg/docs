@@ -4,5 +4,7 @@
     "custom-shipping-provider",
     "create-payment-integration",
     "create-shipping-integration"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

@@ -4,7 +4,7 @@
   "icon": "Scissors",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
     "getting-started",
     "deployment",
@@ -36,7 +36,7 @@
     "how-to-guides/check-out-a-visit",
     "how-to-guides/pay-barbers",
     "how-to-guides/receive-stock",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

@@ -4,9 +4,8 @@
   "icon": "Landmark",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-financial",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -36,7 +35,7 @@
     "how-to-guides/review-compliance",
     "how-to-guides/connect-a-paper-broker",
     "how-to-guides/issue-an-agent-key",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

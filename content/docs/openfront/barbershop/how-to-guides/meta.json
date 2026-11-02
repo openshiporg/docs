@@ -7,5 +7,7 @@
     "check-out-a-visit",
     "pay-barbers",
     "receive-stock"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

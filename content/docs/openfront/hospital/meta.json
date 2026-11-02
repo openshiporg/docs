@@ -4,9 +4,8 @@
   "icon": "HeartHandshake",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-hospital",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -36,7 +35,7 @@
     "how-to-guides/record-and-correct-a-result",
     "how-to-guides/submit-a-claim",
     "how-to-guides/connect-a-webhook",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

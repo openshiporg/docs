@@ -12,6 +12,19 @@ To install it, see [Getting started](/docs/openfront/real-estate/getting-started
 
 Escrow, title, mortgage, commission, and syndication records hold what staff enter and track.
 
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Brokerage | The tenant. The storefront serves the primary one |
+| Membership | A user's seat: `owner`, `admin`, `team_lead`, `agent`, `coordinator`, `analyst` |
+| Property | A listing, `sale` or `rent` |
+| Authority records | License, listing engagement, publication, and representation records that gate publishing and actions |
+| Lead | A person with an interest, deduplicated per listing by an email or phone identity key |
+| Deal | A transaction with offers, milestones, documents, and closing records |
+| Ledger | Append-only commission entries |
+
 ## Tenancy
 
 - `Brokerage` is the tenant. Operational records have a required or derived `brokerage` relation. Child records such as media, inspections, and milestones take their brokerage from the parent.

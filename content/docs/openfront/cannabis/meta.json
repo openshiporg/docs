@@ -4,9 +4,8 @@
   "icon": "Leaf",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-cannabis",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -38,7 +37,7 @@
     "how-to-guides/refund-a-sale",
     "how-to-guides/close-a-shift",
     "how-to-guides/handle-a-recall",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

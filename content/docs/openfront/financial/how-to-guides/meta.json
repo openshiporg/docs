@@ -1,1 +1,12 @@
-{ "pages": ["set-up-the-firm","fund-an-account","place-and-fill-an-order","review-compliance","connect-a-paper-broker","issue-an-agent-key"] }
+{
+  "pages": [
+    "set-up-the-firm",
+    "fund-an-account",
+    "place-and-fill-an-order",
+    "review-compliance",
+    "connect-a-paper-broker",
+    "issue-an-agent-key"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}

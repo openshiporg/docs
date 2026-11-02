@@ -4,9 +4,8 @@
   "icon": "ChartLine",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-analytics",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -34,7 +33,7 @@
     "how-to-guides/send-server-side-events",
     "how-to-guides/import-historical-visits",
     "how-to-guides/delete-visitor-data",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

@@ -1,7 +1,7 @@
 ---
 title: Regulated checkout
 description: How the release gate, the decision engine, and per-cart evidence decide whether an order can be placed.
-icon: ShieldCheck
+icon: ShieldEllipsis
 ---
 
 Every cart containing a regulated product (`Product.regulatedCommerceRequired`, default true) is evaluated by the decision engine in `features/regulated-commerce/core/decision-engine.ts`. A decision is `allow`, `deny`, or `manual_review`, stored as an immutable `ComplianceDecision` with a snapshot and reason codes, and valid for at most five minutes.

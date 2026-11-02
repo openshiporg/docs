@@ -7,5 +7,7 @@
     "transfer-prescription",
     "run-recall",
     "payment-at-pickup"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

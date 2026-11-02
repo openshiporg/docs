@@ -4,9 +4,8 @@
   "icon": "Scale",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-law-firm",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -35,7 +34,7 @@
     "how-to-guides/reconcile-a-trust-account",
     "how-to-guides/invite-a-client-to-the-portal",
     "how-to-guides/place-a-legal-hold",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

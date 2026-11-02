@@ -4,9 +4,8 @@
   "icon": "Sparkles",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-medspa",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -47,7 +46,7 @@
     "how-to-guides/receive-a-purchase-order",
     "how-to-guides/sell-a-membership-or-package",
     "how-to-guides/handle-a-patient-rights-request",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

@@ -1,3 +1,13 @@
 {
-  "pages": ["set-up-rates","take-a-walk-in-booking","turn-over-a-room","handle-a-cancellation-refund","run-a-group-block","close-the-day","reconcile-a-payout"]
+  "pages": [
+    "set-up-rates",
+    "take-a-walk-in-booking",
+    "turn-over-a-room",
+    "handle-a-cancellation-refund",
+    "run-a-group-block",
+    "close-the-day",
+    "reconcile-a-payout"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

@@ -4,9 +4,8 @@
   "icon": "PanelsTopLeft",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-uikit",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -36,7 +35,7 @@
     "how-to-guides/refund-and-revoke",
     "how-to-guides/issue-registry-key",
     "how-to-guides/install-a-component",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

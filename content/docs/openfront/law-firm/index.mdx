@@ -10,6 +10,19 @@ Openfront Law Firm is an open-source app for running a law practice. Staff handl
 
 To install it, see [Getting started](/docs/openfront/law-firm/getting-started).
 
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Firm | The tenant. Every firm-owned record carries a `firm` and cannot link to another firm's records |
+| Membership and role | Staff access comes from an active `FirmMembership` and its `Role` (39 `can*` flags) |
+| Matter team | `MatterTeamMember` rows with `canEdit`, `canBill`, `canAccessRestricted` |
+| Ethical wall | Blocks named users from a matter, even administrators |
+| Controlled record | Status, money, access, and evidence fields change only through named mutations with a serializable transaction and an `AuditEvent` |
+| Minor units | Money is integer minor units plus a currency code |
+| Trust ledger | Client or matter ledger inside a trust account, posted with balanced entries |
+
 ## Stack
 
 Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API, Prisma with PostgreSQL, Tailwind CSS 4, and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies.

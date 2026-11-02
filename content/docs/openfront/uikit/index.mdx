@@ -10,6 +10,15 @@ Openfront UIKit is a storefront and registry for one studio's shadcn-compatible 
 - Live site: [uikit.openship.org](https://uikit.openship.org)
 - Setup: [Getting started](/docs/openfront/uikit/getting-started)
 
+
+## What a studio sells
+
+A **product** (`KitProduct`) is one installable item. Its `registryType` is one of `ui`, `block`, `component`, `hook`, `lib`, `page`, `file`, `theme`, `style`, `base`, or `item`. Its `accessType` is `free` or `paid`. Each product has a stable `code` (the registry name used in URLs and the CLI), a `slug` (the storefront path), and a `kitKey` (the entitlement identity).
+
+Source files live on a **release** (`ComponentRelease`) with a semantic version. Only the latest `stable` release is delivered to customers. Each file records `path`, optional `target` (for example `@ui/`, `@components/`, `@lib/`, `@hooks/` placeholders), `fileType`, `language`, `content`, `sourceHash`, and `sizeBytes`.
+
+Products can belong to a **design system** with named **tokens**, so a kit's colors, spacing, and radii ship with it.
+
 ## Stack
 
 Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, PostgreSQL through Prisma 6, Tailwind CSS 4. Sessions are Keystone stateless cookie sessions that last 30 days.

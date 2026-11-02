@@ -4,7 +4,7 @@
   "icon": "Car",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
     "getting-started",
     "deployment",
@@ -27,6 +27,8 @@
     "---Integrations---",
     "payment-providers",
     "integrations",
+    "---Features---",
+    "roles-permissions",
     "---How-to Guides---",
     "how-to-guides/set-up-fleet",
     "how-to-guides/onboard-driver-vehicle",
@@ -34,9 +36,7 @@
     "how-to-guides/run-trip",
     "how-to-guides/cancel-and-reassign",
     "how-to-guides/collect-payment-refund",
-    "---Advanced Features---",
-    "roles-permissions",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

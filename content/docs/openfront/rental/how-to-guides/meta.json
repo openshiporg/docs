@@ -1,1 +1,12 @@
-{"pages":["list-a-home","take-a-direct-booking","handle-a-cancellation","turn-over-a-stay","sync-an-ical-calendar","pay-an-owner"]}
+{
+  "pages": [
+    "list-a-home",
+    "take-a-direct-booking",
+    "handle-a-cancellation",
+    "turn-over-a-stay",
+    "sync-an-ical-calendar",
+    "pay-an-owner"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}

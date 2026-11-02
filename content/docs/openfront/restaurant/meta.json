@@ -3,7 +3,7 @@
   "description": "Menu, ordering, POS, service floor, kitchen, inventory, staff, and reporting",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
     "getting-started",
     "---Dashboard---",
@@ -25,5 +25,6 @@
     "external-storefront",
     "---Integrations---",
     "payment-providers"
-  ]
+  ],
+  "icon": "UtensilsCrossed"
 }

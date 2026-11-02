@@ -4,9 +4,8 @@
   "icon": "House",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-real-estate",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -32,7 +31,7 @@
     "how-to-guides/write-an-offer",
     "how-to-guides/close-a-deal",
     "how-to-guides/set-up-the-team",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

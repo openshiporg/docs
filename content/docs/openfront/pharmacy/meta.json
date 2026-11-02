@@ -4,7 +4,7 @@
   "icon": "Pill",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
     "getting-started",
     "deployment",
@@ -29,6 +29,8 @@
     "---Integrations---",
     "payment-providers",
     "integrations",
+    "---Features---",
+    "roles-permissions",
     "---How-to Guides---",
     "how-to-guides/prepare-to-dispense",
     "how-to-guides/fill-prescription",
@@ -37,9 +39,7 @@
     "how-to-guides/transfer-prescription",
     "how-to-guides/run-recall",
     "how-to-guides/payment-at-pickup",
-    "---Advanced Features---",
-    "roles-permissions",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

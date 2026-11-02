@@ -4,9 +4,8 @@
   "icon": "Bed",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-hotel",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -35,7 +34,7 @@
     "how-to-guides/run-a-group-block",
     "how-to-guides/close-the-day",
     "how-to-guides/reconcile-a-payout",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

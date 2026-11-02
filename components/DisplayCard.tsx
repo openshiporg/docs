@@ -104,7 +104,7 @@ function DisplayCard({
             <h3 className="flex items-center font-medium text-gray-900 dark:text-gray-100 tracking-tight text-sm sm:text-[15px]">
               <div className="flex flex-col">
                 {icon}
-                <span className="ml-3 sm:ml-7 -mt-1 text-[6px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                <span className="ml-3 sm:ml-7 -mt-1 text-xs sm:text-xs font-bold text-gray-400 uppercase tracking-wider">
                   {title}
                 </span>
               </div>

@@ -6,5 +6,7 @@
     "run-trip",
     "cancel-and-reassign",
     "collect-payment-refund"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

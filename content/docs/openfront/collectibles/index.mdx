@@ -53,6 +53,17 @@ A deployment is one shop. Collectibles commands such as catalog import, repricin
 
 Staff access is controlled by role permissions such as `canManageCatalog`, `canManageProducts`, `canManageInventory`, `canManageConsignments`, `canManageEvidence`, and `canReadCollectibles`. Customer records are owner-scoped: binders, binder cards, want-list items, and saved searches are created against the signed-in user and filtered to that user on read, update, and delete. Inventory units, movements, reservations, and listings cannot be created or edited through generic GraphQL CRUD; they change only through named commands.
 
+
+## Stock kinds
+
+| Kind | How it is stocked |
+|---|---|
+| Single (`raw`) | A quantity on a `ProductVariant` with `cardCondition`, `cardFinish` and `cardLanguage` |
+| Graded slab (`graded`) | One serialized `InventoryUnit` with a `Specimen` and `GradeObservation` (company, grade, certificate) |
+| Sealed (`sealed`) | A quantity per `sealedFormat`, with optional pre-order settings |
+
+Conditions are NM, LP, MP, HP and DMG. Finishes are normal, holofoil, reverse holofoil, 1st edition holofoil, 1st edition, unlimited holofoil and unlimited.
+
 <Cards>
   <Card title="Getting started" href="/docs/openfront/collectibles/getting-started" description="Requirements, environment, migrations, first user, onboarding, and deployment." />
   <Card title="Data model" href="/docs/openfront/collectibles/data-model" description="Data model, operator workflows, GraphQL commands, and access control." />

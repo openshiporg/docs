@@ -4,7 +4,7 @@
   "icon": "Plane",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
     "getting-started",
     "deployment",
@@ -37,7 +37,7 @@
     "how-to-guides/settle-and-ticket",
     "how-to-guides/run-a-departure",
     "how-to-guides/handle-a-disruption",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

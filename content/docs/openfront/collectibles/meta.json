@@ -4,9 +4,8 @@
   "icon": "Layers",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-collectibles",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -37,7 +36,7 @@
     "how-to-guides/receive-a-graded-slab",
     "how-to-guides/buy-cards-from-a-customer",
     "how-to-guides/take-a-consignment",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

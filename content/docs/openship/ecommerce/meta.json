@@ -4,9 +4,8 @@
   "icon": "ShoppingCart",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-openship",
     "getting-started",
     "comparisons",
     "deployment",
@@ -19,10 +18,10 @@
     "product-matching",
     "---How-to Guides---",
     "how-to-guides/create-custom-shop",
-    "how-to-guides/create-custom-channel", 
+    "how-to-guides/create-custom-channel",
     "how-to-guides/integrate-shop-platform",
     "how-to-guides/integrate-channel-platform",
-    "---API---",
+    "---API Reference---",
     "schema-visualizer",
     "api-reference"
   ]

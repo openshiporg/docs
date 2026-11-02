@@ -4,9 +4,8 @@
   "icon": "KeyRound",
   "root": true,
   "pages": [
-    "---Introduction---",
+    "---Overview---",
     "index",
-    "what-is-rental",
     "getting-started",
     "deployment",
     "---Dashboard---",
@@ -33,7 +32,7 @@
     "how-to-guides/turn-over-a-stay",
     "how-to-guides/sync-an-ical-calendar",
     "how-to-guides/pay-an-owner",
-    "---API---",
+    "---API Reference---",
     "data-model",
     "api-reference",
     "troubleshooting"

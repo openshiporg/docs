@@ -6,5 +6,7 @@
     "refund-and-revoke",
     "issue-registry-key",
     "install-a-component"
-  ]
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
 }

@@ -1,6 +1,7 @@
 ---
 title: Implement a payment adapter
 description: Implement the current payment contract in a local module or external route app.
+icon: Webhook
 ---
 
 Use `features/keystone/utils/paymentProviderAdapter.ts` as the dispatch contract and the built-in `stripe.ts`, `paypal.ts` and `manual.ts` modules in `features/integrations/payment` as examples. A payment app can also live outside Openfront: store its HTTPS URLs in the operation fields of the `PaymentProvider` record.
