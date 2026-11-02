@@ -95,7 +95,7 @@ Each record is written through the `ensureOnboardingRecord` mutation. It reuses 
 2. Open the site's **Settings** tab and copy the tracking snippet. It looks like this:
 
 ```html
-<script defer src="https://analytics.openship.org/assets/script.js" data-site-id="site_..."></script>
+<script defer src="https://your-analytics-host/assets/script.js" data-site-id="site_..."></script>
 ```
 
 3. Add it to the head of every page. Hits from `localhost` are skipped unless the script tag has `data-allow-localhost="true"`.
