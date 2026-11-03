@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Comedy Club operator dashboard or create a 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-comedy-club> (private; the user needs access to a checkout).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Status: no hosted app, no demo. Payments use Stripe test mode in development. The storefront is a plain placeholder.
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Club-specific operator navigation, screens, server actions, and workflows mounted into that shell: `features/platform`.

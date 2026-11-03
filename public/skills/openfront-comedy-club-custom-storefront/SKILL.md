@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Comedy Club storefront or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-comedy-club> (private; the user needs access to a checkout).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Status: no hosted app, no demo. Payments use Stripe test mode in development. The built-in storefront is a plain placeholder with default styles, waiting for a designed replacement.
 - Built-in customer experience, forms, data loaders, and server actions: `features/storefront`.
 - Thin customer-facing route entry points: `app/(storefront)/**`. Data loader and request wrapper: `features/storefront/lib/data.ts`. Server actions: `features/storefront/lib/actions.ts` and `clientActions.ts`. Client components: `features/storefront/components` (`HoldForm`, `CheckoutForm`, `Confirmation`, `LookupForm`, `OpenMicForm`).

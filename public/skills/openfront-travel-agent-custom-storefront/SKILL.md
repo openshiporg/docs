@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Travel Agent storefront or create a separat
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-travel-agent> (private; the user needs access). There is no hosted app and no demo. Payments are Stripe test mode in development.
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - The storefront is a plain placeholder with the starter's default look, waiting for a design. It exists to make the whole loop work, so treat the markup as a behavior reference only.
 - Thin route entry points: `app/(storefront)/**`, with the shared `layout.tsx`. Screens: `features/storefront/screens`. Interactive components: `features/storefront/components`. Server actions: `features/storefront/actions.ts`. GraphQL client for the public operations: `features/storefront/lib/graphql.ts` (no session, no cookie).
 - Server contract: `features/keystone/mutations/travel.ts` (public operations at the end of the file), `features/keystone/mutations/index.ts`, `features/keystone/access.ts`, and `schema.graphql`.

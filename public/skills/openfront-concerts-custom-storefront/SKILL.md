@@ -11,7 +11,7 @@ Use this skill to design the Concerts storefront or build a separately deployed 
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-concerts> (private; the user must supply a checkout).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Built-in customer screens: `features/storefront/screens` (`EventsHome`, `EventBuy`, `OrderView`, `LookupPage`). The browser GraphQL helper and price and time formatting are in `features/storefront/lib/api.ts`.
 - Thin route entry points: `app/page.tsx`, `app/events/[id]/page.tsx`, `app/orders/[id]/page.tsx`, `app/lookup/page.tsx`.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`; storefront operations are in `inventory.ts` and `checkout.ts`), `features/keystone/lib/guest-proof.ts`, and `schema.graphql`.

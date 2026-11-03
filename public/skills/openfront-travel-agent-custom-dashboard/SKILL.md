@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Travel Agent dashboard or create a separate
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-travel-agent> (private; the user needs access). There is no hosted app and no demo. Payments are Stripe test mode in development.
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Generic Keystone dashboard shell, list and item screens, authentication helpers, and admin client: `features/dashboard`.
 - Agency-specific screens, server actions, and navigation mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard/(admin)/platform/**`. Each page exports one screen from `features/platform/<slice>/screens`. Sidebar entries come from `features/platform/lib/navigation.ts`.

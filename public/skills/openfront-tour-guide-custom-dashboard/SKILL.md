@@ -11,12 +11,12 @@ Use this skill to adapt the built-in Tour Guide operator dashboard or create a s
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-tour-guide> (private; the user needs access).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Tour Guide operator navigation, screens, server actions, and workflows mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route file imports one screen. There is no per-route role guard; `canAccessDashboard` gates sign-in and each custom operation checks its own flag.
 - Sidebar entries: `features/platform/lib/navigation.ts`.
-- Server contract: `features/keystone/models/**` (40 lists), `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`, typed as `JSON`), `features/keystone/lib/**` (locks, money math, schedule expansion), and `schema.graphql`.
+- Server contract: `features/keystone/models/**` (41 lists), `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`, typed as `JSON`), `features/keystone/lib/**` (locks, money math, schedule expansion), and `schema.graphql`.
 - Providers: `features/integrations/payment` (`stripe`, `manual`), webhook route `app/api/webhooks/payment/[provider]`, assistant `app/api/completion` and `app/api/mcp-transport/[transport]`.
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience.

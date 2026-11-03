@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Sports Agents dashboard or create a separat
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-sports-agents>. It is private, so the user must supply a checkout. There is no hosted app or demo.
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Generic Keystone dashboard shell, list/item screens, authentication helpers, and admin client: `features/dashboard`.
 - Agency-specific operator screens, server actions, and navigation mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route imports one screen from `features/platform/<slice>/screens/*`. There are no per-route permission wrappers; access comes from list access and athlete scope.

@@ -296,7 +296,7 @@
     "description": "Agency software for athlete rosters, recruiting, contracts, endorsement deals, and commission billing with an append-only ledger, approvals, and Stripe test-mode invoice payment; repository is private.",
     "color": "#4f46e5",
     "href": "/docs/openfront/sports-agents",
-    "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
+    "sourceUrl": null,
     "catalogUrl": null
   },
   {
@@ -306,7 +306,7 @@
     "description": "Shows and lineups, ticket holds and Stripe test checkout, table seating, door check-in, drink-minimum checks, comedian payouts, and the nightly close. Private repository, no hosted app yet.",
     "color": "#e11d48",
     "href": "/docs/openfront/comedy-club",
-    "sourceUrl": "https://github.com/openshiporg/openfront-comedy-club",
+    "sourceUrl": null,
     "catalogUrl": null
   },
   {
@@ -316,7 +316,7 @@
     "description": "Ticketing, artist deals, and post-show settlement for an independent promoter: date holds, seat maps, Stripe TEST checkout, door scan, and settlements.",
     "color": "#be123c",
     "href": "/docs/openfront/concerts",
-    "sourceUrl": "https://github.com/openshiporg/openfront-concerts",
+    "sourceUrl": null,
     "catalogUrl": null
   },
   {
@@ -326,7 +326,7 @@
     "description": "Inquiries, proposals, trips, supplier bookings, client payments, refunds, and commission tracking for a travel agency.",
     "color": "#0ea5e9",
     "href": "/docs/openfront/travel-agent",
-    "sourceUrl": "https://github.com/openshiporg/openfront-travel-agent",
+    "sourceUrl": null,
     "catalogUrl": null
   },
   {
@@ -336,7 +336,7 @@
     "description": "Scheduled tours with capacity, guides and fleet, waivers, reseller channels, refunds, and guide payouts.",
     "color": "#0d9488",
     "href": "/docs/openfront/tour-guide",
-    "sourceUrl": "https://github.com/openshiporg/openfront-tour-guide",
+    "sourceUrl": null,
     "catalogUrl": null
   }
 ]

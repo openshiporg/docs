@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Sports Agents public site or create a separ
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-sports-agents>. It is private, so the user must supply a checkout. There is no hosted app or demo.
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - The built-in public site is a plain placeholder with no design. Screens and composition: `features/storefront/screens`. Every data call: `features/storefront/lib/data.ts`.
 - Thin route entry points: `app/page.tsx`, `app/athletes/[id]`, `app/invoice`, `app/invoice/[id]`, `app/invoice/[id]/confirmation`.
 - Server contract: `features/keystone/mutations/portal.ts` (all public and portal operations), `features/keystone/lib/invoiceProof.ts` (signed guest proof), `features/keystone/lib/invoiceReceipt.ts` (the one receipt path), `features/keystone/mutations/handlePaymentProviderWebhook.ts`, `features/keystone/models/**`, `features/keystone/access.ts`, and `schema.graphql`.

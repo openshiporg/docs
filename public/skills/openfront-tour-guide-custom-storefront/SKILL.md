@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Tour Guide storefront or create a separatel
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-tour-guide> (private; the user needs access).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Built-in customer experience: `features/storefront` (screens, components, and the server-side data layer `features/storefront/lib/data.ts`).
 - Thin route entry points: `app/(storefront)/**`. Screens: `features/storefront/screens`. The shared layout shows the operator name from settings.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`, typed as `JSON`), and `schema.graphql`.

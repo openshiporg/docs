@@ -11,7 +11,7 @@ Use this skill to adapt the built-in Concerts operator dashboard or create a sep
 
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
-- Repository: <https://github.com/openshiporg/openfront-concerts> (private; the user must supply a checkout).
+- Repository: private; the user must supply a local checkout. There is no hosted app or demo.
 - Generic Keystone dashboard shell, list and item screens, authentication helpers, and admin client: `features/dashboard`.
 - Concerts operator screens, server reads, and workflows mounted into that shell: `features/platform`.
 - Thin route entry points: `app/dashboard`, especially `app/dashboard/(admin)/platform/**`. Each route exports one `features/platform/<slice>/screens/*` component. The routes do not check role flags.
