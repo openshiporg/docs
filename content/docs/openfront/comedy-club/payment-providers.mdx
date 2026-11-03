@@ -1,0 +1,59 @@
+---
+title: Payment providers
+description: The Stripe and manual adapters, how checkout uses them, and what is not built.
+icon: Plug
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Adapters live in `features/integrations/payment`: `stripe` and `manual`. A `PaymentProvider` record stores the adapter name for each action (create, capture, refund, status, link, webhook), a code, and an installed flag. The screen at `/dashboard/platform/payment-providers` lists the providers, whether each is installed, its adapter, and whether Stripe keys are set. *Add provider* opens the generic create form.
+
+## Status
+
+Stripe runs in test mode while you develop. Only test keys have been used. The storefront checkout looks up the provider with the code `pp_stripe`.
+
+## Stripe
+
+Needs `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_KEY`. Checkout:
+
+1. `startTicketCheckout` freezes the quote and creates a `pending_payment` order and its line copies.
+2. Outside any database transaction, it creates a Stripe payment intent. The key is a hash of the order, so a retry reuses the same intent.
+3. The browser shows Stripe's card form and confirms the payment.
+4. `completeTicketCheckout` asks Stripe for the intent. It must be `succeeded`, and the amount and currency must match the frozen quote. Only then does the order become `paid`, the tickets are created, and the hold is converted.
+
+If Stripe cannot be reached or the answer is unclear, the order stays `pending_payment`. A timeout never marks it paid. The hold sweeper later asks again. See [Deployment](/docs/openfront/comedy-club/deployment).
+
+If a payment fails and Stripe confirms it can no longer succeed, `abandonTicketCheckout` cancels the order and releases the hold and any promo use.
+
+Refunds go through the same adapter. The refund is recorded as `processing` first, sent to Stripe with a stable key, and finalized from the answer.
+
+## Manual
+
+No credentials. The adapter returns a pending payment and succeeds on refund. The setup dialog creates a `pp_manual` provider. Seeded history uses it for payment records. The storefront does not use it: checkout only uses `pp_stripe`.
+
+## Set up
+
+<Steps>
+<Step>
+### Run the setup dialog
+It creates two providers: `pp_stripe` (Stripe, installed) and `pp_manual` (manual, installed).
+</Step>
+<Step>
+### Set the Stripe test keys
+Add them to `.env` and restart.
+</Step>
+<Step>
+### Test a payment
+Buy a ticket with the card `4242 4242 4242 4242`.
+</Step>
+</Steps>
+
+## What is not built
+
+- There is no webhook route. Payment is confirmed when the guest returns and when the sweeper runs.
+- Only Stripe takes card payments at checkout. There is no PayPal adapter.
+- Card-present payments and point-of-sale hardware are not supported. Checks record the amount but do not take payment.
+
+## Permissions
+
+Provider records need `canManagePayments`. `Payment`, `Refund`, `PaymentSession`, `PaymentCollection`, and `PaymentWebhookEvent` block generated writes. Provider credentials are never readable through GraphQL.

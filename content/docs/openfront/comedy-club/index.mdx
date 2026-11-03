@@ -1,0 +1,83 @@
+---
+title: Openfront Comedy Club
+description: Shows, lineups, table seating, tickets, the door, checks with a drink minimum, comedian pay, and the nightly close.
+icon: Drama
+---
+
+[Source](https://github.com/openshiporg/openfront-comedy-club) (private repository)
+
+Openfront Comedy Club is a self-hostable app for one comedy venue. It covers the show calendar, who is on the bill, ticket sales, table seating, the door, the table check with its two-item minimum, comedian pay, and the nightly close.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/comedy-club/getting-started).
+
+## Status
+
+- The source repository is private. There is no hosted app and no public demo.
+- Payments use Stripe in test mode while you develop. Nothing here has been run with live money.
+- The storefront is a plain placeholder. It makes the buying flow work and has no designed look. It is meant to be replaced.
+- The app runs one venue. It has no tenant or organization model.
+
+## Who uses what
+
+| User | Surface | Typical jobs |
+| --- | --- | --- |
+| Guest | Storefront | Browse shows, hold tickets or tables, pay, look up an order, sign up for open mic |
+| Door staff | Tonight | Check tickets in, seat parties |
+| Servers | Tonight, show detail | Add items to a check, close it |
+| Booker | Shows, Lineups and talent, Open mic | Generate shows, offer slots, run the open mic lottery |
+| Manager | Everything | Refunds, payouts, settings, closing the night |
+
+## Surfaces
+
+- **Storefront** at `/`: shows, a show page, checkout, order page, order lookup, and open mic. See [External storefronts](/docs/openfront/comedy-club/external-storefront).
+- **Dashboard** at `/dashboard`: eleven screens under `/dashboard/platform/*`, plus the generic Keystone list screens at `/dashboard/[listKey]`. See [External dashboards](/docs/openfront/comedy-club/external-dashboard).
+- **GraphQL** at `/api/graphql`.
+- **Hold sweeper** at `POST /api/cron/expire-holds`.
+- **Dashboard assistant** at `/api/completion`, with an MCP endpoint at `/api/mcp-transport/[transport]`.
+
+## What it does
+
+**Calendar and booking.** One venue with rooms. A room seats guests at tables or is general admission. Weekly show templates generate eight weeks of shows. A headliner run groups shows for one headliner. Open mic nights have a signup window and a lottery.
+
+**Lineups.** A show has slots for a host, openers, guest sets, a feature, and a headliner. One host and one headliner per show. Each slot copies the comedian's fee when it is booked, so a later change to the default fee does not change past pay.
+
+**Selling.** Price tiers carry capacity counters that only the server changes. A hold lasts 10 minutes by default and is taken under a per-show database lock, so two buyers cannot take the same seat or table. Checkout freezes the quote, takes payment through the payment adapter, and turns the hold into tickets only after the provider confirms payment.
+
+**The night.** Door check-in by ticket code or scan token. A second scan returns `duplicate`. Seat a party at one or more tables. A check tracks the two-item minimum per guest.
+
+**Money out.** Closing a show creates one payout per performing comedian and a settlement. Closing a headliner run creates one run-fee payout. See [Payouts](/docs/openfront/comedy-club/payouts).
+
+## Models
+
+The schema has 40 lists in `features/keystone/models`. Most business lists block generated create, update, and delete. They change only through custom mutations that check the role, take an idempotency key, and write an audit event. Money is stored as integer cents with a currency code. Percentages are basis points.
+
+| Area | Lists |
+| --- | --- |
+| Identity | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+| Venue and floor | `Venue`, `VenueSettings`, `Room`, `Section`, `Table` |
+| Talent | `Comedian`, `Run`, `LineupSlot`, `OpenMicSignup` |
+| Shows and sales | `ShowTemplate`, `Show`, `PriceTier`, `InventoryHold`, `PromoCode`, `PromoRedemption` |
+| Orders and the door | `TicketOrder`, `TicketOrderLine`, `Ticket`, `Comp`, `CheckIn`, `SeatingAssignment`, `TableOccupancy` |
+| Food and drink | `MenuItem`, `Check`, `CheckItem` |
+| Money | `ComedianPayout`, `ShowSettlement`, `Payment`, `PaymentCollection`, `PaymentSession`, `PaymentProvider`, `PaymentWebhookEvent`, `Refund` |
+| Control | `AuditEvent`, `IdempotencyKey`, `ManagerApproval` |
+
+See [Data model](/docs/openfront/comedy-club/data-model) for fields and states.
+
+## Tenancy and roles
+
+There is one venue per deployment. Access comes from boolean flags on `Role`. The first user created at `/dashboard/init` gets an Admin role with every flag. See [Roles and permissions](/docs/openfront/comedy-club/roles-permissions).
+
+## Main workflow
+
+1. Set up the venue, rooms, sections, tables, menu, and payment provider (the setup dialog does this).
+2. Create show templates and generate shows.
+3. Book comedians into slots and confirm them.
+4. Publish shows. Guests buy tickets or tables.
+5. On the night, open doors, check tickets in, seat parties, and run checks.
+6. Close each show to create payouts and the settlement.
+7. When every show in a headliner run is settled, close the run.
+
+## Setup dialog
+
+New dashboard users see a setup card in the sidebar. The dialog offers two templates: **Complete** and **Basic**. Both run through `ensureClubOnboardingRecord` and `seedClubOperations`. It needs `canManageOnboarding`. Records are matched by name or code, so a second run reuses what exists. See [Getting started](/docs/openfront/comedy-club/getting-started).

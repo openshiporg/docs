@@ -1,0 +1,34 @@
+---
+title: Close a headliner run
+description: Pay the headliner's run fee once, after every show in the run is settled or cancelled.
+icon: BadgeDollarSign
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+A run groups a headliner's shows, for example Thursday to Sunday. The headliner is paid one run fee for the whole run. The per-show payouts only carry bonuses for that headliner.
+
+<Steps>
+<Step>
+### Settle or cancel every show
+Close each show in the run with *Close night*, or cancel it. A run with any other show state cannot be closed.
+</Step>
+<Step>
+### Open Payouts
+Go to `/dashboard/platform/payouts`. The run is listed under *Headliner runs*, and shows how many shows are left to settle.
+</Step>
+<Step>
+### Press Close run
+It appears once no show is left. It needs `canManagePayouts`.
+</Step>
+</Steps>
+
+## Result
+
+- The run becomes `closed`.
+- One draft payout is created for the headliner at the run fee, with the unique key `run:<runId>:<headlinerId>`.
+- If the headliner performed none of the run's shows, or the run fee is zero, no payout is created. An audit entry is written either way.
+
+Pressing the button again, or sending the same idempotency key, cannot create a second payout. A closed run is refused with "Run already closed".
+
+The payout starts as `draft`. This app records payouts but does not send money.

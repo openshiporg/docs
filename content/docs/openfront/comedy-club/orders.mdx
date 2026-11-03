@@ -1,0 +1,37 @@
+---
+title: Orders
+description: Ticket orders by status, order detail, and staff refunds.
+icon: Ticket
+---
+
+Routes: `/dashboard/platform/orders` and `/dashboard/platform/orders/[id]`.
+
+## The list
+
+Tabs filter by `?tab=` and show a count: `paid`, `pending payment`, `partially refunded`, `refunded`, `cancelled`, and `comp`. Each row shows the order number, name, show, date, party size, total, and a status label. The newest 60 are listed.
+
+## Order detail
+
+The detail page shows the status, name, email, show, and the totals: subtotal, fees, discount, and total. It lists:
+
+- **Lines**: quantity, tier name, and line total. Lines are copies made at purchase. Later price changes do not change them.
+- **Tickets**: ticket code and status.
+- **Refunds**: reason, amount, and status.
+
+## Refunding
+
+For `paid` and `partially_refunded` orders the page has a refund panel. Pick some tickets, or none to refund every remaining valid ticket. Enter a reason and, when needed, an approval ID. *Refund* calls `refundTicketOrder`.
+
+- It needs `canIssueRefunds`.
+- Only `valid` tickets can be refunded. A checked-in ticket cannot.
+- Refunds above the venue's approval threshold need an approval from a different user. See [Roles and permissions](/docs/openfront/comedy-club/roles-permissions).
+- The refund is recorded first, then sent to the provider. The order, payment, tickets, and capacity change only when the provider says the refund succeeded. If the provider's answer is unclear, the refund stays `unknown` and nothing else changes.
+- A successful refund voids those tickets, frees their capacity once, and moves the order to `partially_refunded` or `refunded`.
+
+## Order states
+
+`pending_payment`, `paid`, `partially_refunded`, `refunded`, `cancelled`, and `comp`. A `pending_payment` order moves to `paid` after the provider confirms payment, or to `cancelled` when the provider confirms it cannot succeed. Orders are never edited by hand: the list blocks generated create, update, and delete.
+
+## Comps
+
+`issueComp` creates a `Comp` and a `comp` order at zero cents. It still uses show and tier capacity. A comp for more tickets than the venue's comp limit (default 4) needs an approval. It needs `canManageOrders`. The dashboard has no comp form yet. Use the GraphQL operation.

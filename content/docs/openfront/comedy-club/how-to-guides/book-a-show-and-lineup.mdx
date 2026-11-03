@@ -1,0 +1,30 @@
+---
+title: Book a show and a lineup
+description: Generate shows from a template, offer and confirm comedian slots, and publish.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Generate shows
+Open `/dashboard/platform/shows`. On the Upcoming or Draft tab, press *Generate* next to a template. The next eight weeks of matching days become `draft` shows. Pressing it again adds nothing.
+</Step>
+<Step>
+### Offer slots
+Open `/dashboard/platform/talent`. Pick a show, a comedian, and a role, then press *Offer slot*. The slot starts as `offered` with the comedian's default fee. A show can have only one host and one headliner.
+</Step>
+<Step>
+### Confirm slots
+Open the show at `/dashboard/platform/shows/[id]`. Press *Confirm* on each `offered` slot.
+</Step>
+<Step>
+### Publish
+Press *Publish* on the show page. The show moves to `on_sale` and guests can buy.
+</Step>
+</Steps>
+
+The fee on a slot is copied when you offer it. Changing the comedian's default fee later does not change slots already offered. To change a booked slot's fee, use the `LineupSlot` record through a custom operation. There is no screen for it yet.
+
+A show is not shown to guests while it is `draft`. Tiers are copied from the template, so check prices and capacities before you publish.

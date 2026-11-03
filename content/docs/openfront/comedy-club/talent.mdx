@@ -1,0 +1,33 @@
+---
+title: Lineups and talent
+description: Comedians, the booking grid, and offering slots.
+icon: Clapperboard
+---
+
+Route: `/dashboard/platform/talent`.
+
+## Offer a slot
+
+Three popovers pick a show, a comedian, and a role (`host`, `opener`, `guest_set`, `feature`, `headliner`, or `bringer`). *Offer slot* calls `offerSlot`. The slot starts as `offered` with the comedian's default fee copied into it. The page offers a 10 minute set at position 9. Reorder with `setLineup`.
+
+Only one headliner and one host are allowed per show, counting slots that are not cancelled or declined. Offers on cancelled, completed, or settled shows are refused.
+
+## Booking grid
+
+Rows are comedians. Columns are the next 30 shows that are not cancelled or settled. A cell shows the slot status or a dot if the comedian is not booked. The grid scrolls sideways inside its own box.
+
+## Comedians
+
+The list shows stage name, home city, default fee, and whether payee details are on file (a checkbox only, not the details). Add or edit a comedian at `/dashboard/comedians` (generic list screen).
+
+## Slot states
+
+`offered`, `confirmed`, `declined`, `cancelled`, `performed`, `no_show`. `confirmSlot` moves `offered` to `confirmed` and records the time (on the show page). Closing a show sets every confirmed slot to `performed`. There is no screen button for declining or marking a no-show yet. The `LineupSlot` list is read-only to generated writes.
+
+## Fees are copied
+
+A slot stores its own `feeCents` and `bonusCents`. Editing a comedian's `defaultFeeCents` later does not change slots already booked, so past pay stays the same.
+
+## Permissions
+
+`offerSlot`, `confirmSlot`, `setLineup`, and `runOpenMicLottery` need `canManageTalent`. Comedians use the generated list screen under the same flag.

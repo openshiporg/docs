@@ -298,5 +298,15 @@
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
     "catalogUrl": null
+  },
+  {
+    "id": "comedy-club",
+    "repository": "openfront-comedy-club",
+    "name": "Comedy Club",
+    "description": "Shows and lineups, ticket holds and Stripe test checkout, table seating, door check-in, drink-minimum checks, comedian payouts, and the nightly close. Private repository, no hosted app yet.",
+    "color": "#e11d48",
+    "href": "/docs/openfront/comedy-club",
+    "sourceUrl": "https://github.com/openshiporg/openfront-comedy-club",
+    "catalogUrl": null
   }
 ]

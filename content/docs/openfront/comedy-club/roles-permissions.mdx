@@ -1,0 +1,94 @@
+---
+title: Roles and permissions
+description: Role flags, which operations they guard, and the approval flow for refunds, comps, voids, and waivers.
+icon: ShieldCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Access comes from boolean flags on the `Role` list. A `User` has one role. The first user created at `/dashboard/init` gets an Admin role with every flag. Manage roles at `/dashboard/roles` (needs `canManageRoles`).
+
+## Flags
+
+| Flag | Unlocks |
+| --- | --- |
+| `canAccessDashboard` | Sign in to the dashboard. Without it, a user lands on `/dashboard/no-access`. |
+| `canManageShows` | Shows and templates, `publishShow`, `pauseSales`, `generateShowsFromTemplate`, `cancelShow` |
+| `canManageTalent` | Comedians, runs, lineup slots, open mic signups, `offerSlot`, `confirmSlot`, `setLineup`, `runOpenMicLottery` |
+| `canManageDoor` | `checkInTicket`, `seatParty`, tickets, check-ins, seating |
+| `canManageChecks` | `openCheck`, `addCheckItem`, `closeCheck`, `voidCheckItem` (with an approval), menu items |
+| `canManageOrders` | Orders, comps, promo codes, holds, `issueComp` |
+| `canManagePayouts` | `closeShow`, `closeRun`, payouts, settlements |
+| `canManageSettings` | Venue, settings, rooms, sections, tables. Also lets a user approve requests. |
+| `canManagePayments` | Payment providers, payments, webhook events |
+| `canReadPayments` | Read-only access to payments, refunds, and providers |
+| `canIssueRefunds` | `refundTicketOrder`. Also required with `canManageShows` to cancel a show. |
+| `canReadAudit` | Read the audit log |
+| `canManageOnboarding` | The setup dialog (`ensureClubOnboardingRecord`, `seedClubOperations`) |
+| `canManagePeople`, `canManageRoles`, `canSeeOtherPeople`, `canEditOtherPeople` | Users and roles |
+
+There is no manager override flag. Each operation checks its own flag on the server. The dashboard screens show data to anyone who can read the lists, but every button calls a mutation that checks its flag again.
+
+## Guests
+
+A guest has no account and no role. The storefront calls custom operations that check proof before they read or write anything:
+
+- A **hold** returns a secret `cartToken`. Only its hash is stored. The guest's browser keeps the token and sends it to apply a promo and to start checkout.
+- An **order** returns an `orderSecret` when checkout starts. Its hash is stored. The guest needs it to complete or abandon the checkout and to open the confirmation.
+- **Lookup** and **self-cancel** need the order number and the email on the order.
+- **Ticket codes** are random. Scan tokens are never stored. Only a hash is.
+
+The raw lists for holds, orders, tickets, and payments are not open to guests.
+
+## Approvals
+
+`ManagerApproval` is for actions that need a second person. The actions are `void_item`, `comp_tickets`, `waive_minimum`, and `refund_payment`.
+
+<Steps>
+<Step>
+### Request
+A user with the right flag calls `requestApproval` with the action, the target ID, a reason, and an amount if there is one. `refund_payment` needs `canIssueRefunds`, `comp_tickets` needs `canManageOrders`, and the other two need `canManageChecks`. The request lasts 15 minutes.
+</Step>
+<Step>
+### Approve
+A different user calls `approveRequest`. The approver needs the action's flag and `canManageSettings`. Nobody can approve their own request.
+</Step>
+<Step>
+### Use it once
+The requester passes the approval ID to the operation. The operation checks that the action, target, reason, and amount match the request, and that it has not expired. It then marks the approval `consumed`, so it works once.
+</Step>
+</Steps>
+
+An approval is needed for:
+
+- a staff refund above the venue's `approvalThresholdCents`;
+- a comp for more tickets than `compApprovalQuantity`;
+- voiding a check item;
+- waiving the drink minimum when closing a check.
+
+The dashboard does not have a screen for requesting or approving yet. Use the GraphQL operations `requestApproval` and `approveRequest`.
+
+## Audit
+
+Every state change writes an `AuditEvent` with the actor, action, target list and ID, before and after values, and a reason. The list blocks generated create, update, and delete. It is readable with `canReadAudit` at `/dashboard/audit-events`.
+
+## Suggested roles
+
+<Steps>
+<Step>
+### Door
+`canAccessDashboard`, `canManageDoor`.
+</Step>
+<Step>
+### Server
+`canAccessDashboard`, `canManageChecks`, `canManageDoor`.
+</Step>
+<Step>
+### Booker
+`canAccessDashboard`, `canManageShows`, `canManageTalent`.
+</Step>
+<Step>
+### Manager
+All flags except people and role management, plus `canManageSettings` to approve.
+</Step>
+</Steps>

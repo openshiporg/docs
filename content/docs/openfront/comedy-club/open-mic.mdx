@@ -1,0 +1,31 @@
+---
+title: Open mic
+description: The signup list, the lottery, and the public signup form.
+icon: MicVocal
+---
+
+Route: `/dashboard/platform/open-mic`.
+
+## The page
+
+It lists up to six upcoming open mic shows. Each has its signup list: lottery number, name, method, and a status label. The header shows when signup opens. *Run lottery* calls `runOpenMicLottery` for that show.
+
+## Signup rules
+
+Guests sign up on the storefront at `/open-mic` with a name and an email. The signup works only when:
+
+- the show is marked as an open mic;
+- the show has a signup-opens time and it has passed;
+- the show has not started.
+
+Each person gets one place per show. The key is the comedian, or the lower-cased email. If a comedian ID is given, the email must match that comedian's email. A signup starts as `waiting` with method `online_list`.
+
+Generated shows from an open mic template open signup seven days before the show.
+
+## The lottery
+
+`runOpenMicLottery` takes every signup that is `waiting`, shuffles them with a secure random source, and numbers them from 1 (up to 1,000 at a time). It needs `canManageTalent` and an idempotency key. It reports how many people it numbered.
+
+## States
+
+`waiting`, `called`, `performed`, `skipped`, `withdrawn`. The `bringerGuestsRequired` and `bringerGuestsArrived` fields exist on the model for bringer shows, but no screen or operation uses them yet. The dashboard has no button to call, skip, or withdraw a signup yet.

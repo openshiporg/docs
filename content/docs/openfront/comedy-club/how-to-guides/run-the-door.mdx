@@ -1,0 +1,40 @@
+---
+title: Run the door and the floor
+description: Open doors, check tickets in, seat parties, and work a check with the drink minimum.
+icon: DoorOpen
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Open doors
+On `/dashboard/platform/tonight`, pick the show and press *Open doors*.
+</Step>
+<Step>
+### Check tickets in
+Type the ticket code, or scan the token into the door field, and press *Check in*. `admitted` means the guest is in. `duplicate` means the ticket was already used. `wrong_show` means it is for another show.
+</Step>
+<Step>
+### Seat the party
+In *Seating*, choose the waiting party, tap one or more tables with enough seats, and press *Seat party*. Seated tables turn green.
+</Step>
+<Step>
+### Open a check
+Open a check for the seated party with `openCheck`. The dashboard has no button for it yet, so use the GraphQL operation. It copies the drink minimum rules for the party size.
+</Step>
+<Step>
+### Add items
+On the show page, find the check, press *Add item*, and choose a menu item. Items that count toward the minimum are marked in the menu.
+</Step>
+<Step>
+### Close the check
+Enter an optional tip and press *Close check*. If the party did not order enough qualifying items, the shortfall is added to the check at the cheapest qualifying price. Waiving it needs an approval.
+</Step>
+<Step>
+### Start the show
+Press *Start show* when the first comic goes on, and *End show* at the end.
+</Step>
+</Steps>
+
+Closing a check frees its tables and closes the seating. The check records the amount only. The app does not take card payment for checks.

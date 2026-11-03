@@ -1,0 +1,58 @@
+---
+title: External storefronts
+description: The plain placeholder storefront, its routes, and the skill for building a designed one.
+icon: AppWindow
+---
+
+To create a designed Comedy Club storefront, copy the skill and give it to your LLM. The skill explains how the placeholder in `features/storefront` and `app/(storefront)` works, then asks what the replacement should look like.
+
+## Status
+
+The built-in storefront is a plain placeholder. It uses default styles and no brand. It makes the buying flow work end to end so the rest of the system can be tested. A designed storefront is expected to replace it. The repository is private and nothing is hosted.
+
+## Routes
+
+Route files live in `app/(storefront)/**`. Screens and forms are in `features/storefront`.
+
+| Route | What it does |
+| --- | --- |
+| `/` | Upcoming shows on sale with the lowest open price |
+| `/shows/[id]` | Lineup, tier choice, and table choice when the room has tables. *Hold tickets* starts a hold. |
+| `/checkout?hold=<holdKey>` | Hold timer, name and email, optional seating request and occasion, promo code, age confirmation, and Stripe's card form |
+| `/orders/[orderNumber]` | Confirmation with the order number, ticket codes, scan tokens, and the money breakdown |
+| `/lookup` | Find an order by email and order number. Cancel it if still inside the refund window. |
+| `/open-mic` | Open mic signup forms |
+
+The order link carries the order secret in the URL fragment (`#...`), so it never goes to the server in a request path. The page also reads a copy saved in the browser's session storage. The confirmation page shows each ticket's code and scan token as text. It does not draw QR images.
+
+## Operations
+
+The storefront calls only custom GraphQL operations from server actions (`features/storefront/lib/data.ts`, `actions.ts`, `clientActions.ts`):
+
+| Area | Operations |
+| --- | --- |
+| Browse | `showsOnSale`, `showAvailability(showId)`, `openMicShows` |
+| Hold | `createTicketHold`, `applyPromoToHold` |
+| Pay | `startTicketCheckout`, `completeTicketCheckout`, `abandonTicketCheckout` |
+| Order | `ticketOrderConfirmation`, `lookupTicketOrder`, `cancelMyTicketOrder` |
+| Open mic | `openMicSignup` |
+
+Browse operations return JSON built for the page. Writes take an idempotency key, which the storefront server action creates for each call.
+
+## Rules to keep
+
+- Holds and orders are proved with secrets, not IDs. The `cartToken` and `orderSecret` are returned once and only their hashes are stored. A guessed ID does nothing.
+- A hold lasts `holdMinutes` (default 10). The page counts down. An expired hold is refused at checkout.
+- A show with an age rule needs the age box ticked. The server stores `ageAttested`.
+- Table tiers sell whole tables. The seats must add up to the ticket quantity.
+- Payment is confirmed on the server by asking Stripe. The browser's word is not trusted.
+- Raw lists are closed to guests. Guests use only these operations.
+- Errors that are not business messages are replaced with a generic message, so database detail never reaches the page.
+
+## Hold sweeper
+
+`POST /api/cron/expire-holds` releases expired holds and finishes or cancels pending orders. It is called by a scheduler with `CRON_SECRET`, not by the storefront.
+
+## Skill
+
+Copy the skill from [`/skills/openfront-comedy-club-custom-storefront/SKILL.md`](/skills/openfront-comedy-club-custom-storefront/SKILL.md).

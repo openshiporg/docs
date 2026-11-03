@@ -1,0 +1,55 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Comedy Club on a Node host.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Deploys are not set up yet. There is no hosted app. This page lists what any host needs.
+
+## Any host
+
+<Steps>
+<Step>
+### Provision services
+PostgreSQL, and S3-compatible storage if you upload images.
+</Step>
+<Step>
+### Set environment
+`DATABASE_URL`, `SESSION_SECRET`, the Stripe keys, `CRON_SECRET`, and optional integrations. See [Getting started](/docs/openfront/comedy-club/getting-started). Use Stripe test keys until you have tested a full payment, refund, and webhook cycle.
+</Step>
+<Step>
+### Back up, build, migrate, start
+```bash
+npm run build
+npm run migrate
+npm start
+```
+</Step>
+<Step>
+### Create the first user
+Open `/dashboard/init`, then run the setup dialog or enter your own data.
+</Step>
+<Step>
+### Schedule the hold sweeper
+Call `POST /api/cron/expire-holds` with `Authorization: Bearer $CRON_SECRET` about once a minute.
+</Step>
+</Steps>
+
+## What the sweeper does
+
+The route calls two custom operations:
+
+- `expireHolds` releases holds past their expiry. Holds whose order is still waiting on a payment are kept.
+- `sweepPendingCheckouts` looks at orders still `pending_payment` whose hold expired more than five minutes ago. It asks the payment provider what happened. If the payment succeeded it finishes the order. If the provider says it was cancelled or needs a new payment method, it cancels the order and releases the hold. If the answer is unclear, it leaves the order alone.
+
+It returns `401` if `CRON_SECRET` is missing or wrong.
+
+## Stripe webhook
+
+This app does not have a Stripe webhook route. It confirms payment itself, when the guest returns to the order page and when the sweeper runs. The provider adapter has a webhook function and the models include `PaymentWebhookEvent`, but nothing in `app/` receives webhooks yet. Do not point a Stripe webhook at this app.
+
+## Shared settings
+
+All app processes must share the same database, `SESSION_SECRET`, and storage settings. `SESSION_SECRET` also signs the ticket scan tokens, so changing it invalidates tokens already issued to guests.

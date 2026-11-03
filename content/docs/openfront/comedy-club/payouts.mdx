@@ -1,0 +1,56 @@
+---
+title: Payouts and settlements
+description: Comedian payouts, headliner runs, and the nightly settlement.
+icon: Wallet
+---
+
+Route: `/dashboard/platform/payouts`. Tabs filter payouts by `?tab=`: `draft`, `approved`, `paid`, `void`.
+
+## Payouts
+
+Each row shows the comedian, the show (or "Run fee" and the run), the payment method, a reference, and the amount.
+
+There are two kinds, both created by closing:
+
+- **Per-show payout.** `closeShow` creates one payout for each comedian who performed. The amount is the sum of that comedian's slot fees and bonuses. If the show is part of a headliner run and the comedian is the run's headliner, the per-show payout holds only the bonuses, because the run fee is paid once by closing the run.
+- **Run payout.** `closeRun` creates one payout for the headliner. The amount is the run's fee.
+
+Payouts start as `draft`. The model allows `approved`, `paid`, and `void`, plus a method (`check`, `ach`, or `venmo`), a paid date, and a reference. The app records these. It does not move money. There is no button yet to approve or mark a payout paid. The `ComedianPayout` list blocks generated writes, so those states have no way to change from the dashboard today.
+
+Each payout has a unique key. Per-show payouts use `<showId>:<comedianId>`. A run payout uses `run:<runId>:<headlinerId>`. Running a close twice cannot create a second payout.
+
+## Headliner runs
+
+A *Headliner runs* section lists up to ten runs with the headliner, the run fee, the number of shows, and the run status: `scheduled`, `in_progress`, or `closed`. A run moves to `in_progress` when its first show is settled. When no show is left to settle, an open run shows a *Close run* button.
+
+`closeRun`:
+
+- needs `canManagePayouts` and an idempotency key;
+- takes a database lock for the run;
+- refuses until every show in the run is `settled` or `cancelled`, and refuses a run that is already closed;
+- creates one draft payout for the headliner at the run fee, or none if the headliner performed none of the run's shows, or if the fee is zero;
+- writes an audit event, including when it creates no payout.
+
+Closing with the same idempotency key returns the same result. See [Close a headliner run](/docs/openfront/comedy-club/how-to-guides/close-a-headliner-run).
+
+## Nightly settlements
+
+Each settled show has one settlement, with these figures:
+
+| Figure | Meaning |
+| --- | --- |
+| Tickets | Order subtotals for paid, partly refunded, and refunded orders |
+| Fees | Order fees |
+| Discounts | Order discounts |
+| Refunds | Succeeded refunds for the show |
+| Food and drink | Check subtotals for paid checks, less the minimum shortfall |
+| Minimum shortfall | Revenue from the drink minimum, from closed checks |
+| Tips | Tips on paid checks. Not part of net |
+| Talent | The sum of this show's payouts |
+| Net | Tickets + fees − discounts − refunds + food and drink + minimum shortfall − talent |
+
+Tax and tips are not part of net. A closed settlement is frozen. `closeShow` refuses when a check is still open, when an order is still `pending_payment`, when a hold is still active, or when a refund is still `processing` or `unknown`.
+
+## Permissions
+
+`closeShow` and `closeRun` need `canManagePayouts`. The screen needs read access to those lists.

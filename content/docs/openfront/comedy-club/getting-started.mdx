@@ -1,0 +1,115 @@
+---
+title: Getting started with Comedy Club
+description: Clone the source, set the environment, apply migrations, create the first user, run setup, and test a Stripe test payment.
+icon: Terminal
+---
+
+## Status
+
+The repository is private and there is no hosted app or demo. You run it yourself. Payments run against Stripe test mode while you develop.
+
+## Requirements
+
+- Node.js 20 or later (`package.json` sets `"node": ">=20.0.0"`).
+- npm.
+- A PostgreSQL database you can migrate.
+- Stripe test keys, if you want to try checkout.
+
+## Clone and install
+
+You need access to the private repository.
+
+```bash
+git clone https://github.com/openshiporg/openfront-comedy-club.git
+cd openfront-comedy-club
+npm install
+```
+
+## Environment
+
+There is no `.env.example` file. Create `.env` yourself.
+
+Required:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_comedy_club
+SESSION_SECRET=replace-with-a-long-random-string
+PUBLIC_SIGNUPS_ALLOWED=false
+```
+
+Checkout and payments:
+
+```bash
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+Other variables the code reads:
+
+| Variable | Used for |
+| --- | --- |
+| `CRON_SECRET` | The bearer secret for `POST /api/cron/expire-holds`. Without it the sweep always refuses. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to let anyone create a dashboard user. Keep it `false`. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Image storage for comedian headshots and menu images. Placeholder defaults are used if unset, so uploads will not work until you set real values. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard assistant at `/api/completion`. |
+
+The app does not send order confirmation email. Guests see their order on the confirmation page and can look it up later.
+
+Never commit `.env`.
+
+## Migrations
+
+The repo has one baseline migration and later ones in `migrations/`. Apply them with:
+
+```bash
+npm run migrate
+```
+
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`. It changes whatever database `DATABASE_URL` points at. `npm run migrate:gen` creates new development migrations after a model change. Run it only against a disposable database.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+Next picks the port and prints it. Use that address for:
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+- GraphQL: `/api/graphql`
+
+## First user
+
+On an empty database, open `/dashboard/init`. The form asks for name, email, and password. That user gets an Admin role with every permission flag. Create other staff and roles from the dashboard and give each only the flags the job needs.
+
+## Setup dialog
+
+After sign-in, the sidebar shows a setup card for users with `canManageOnboarding`. The card hides once setup is finished or dismissed, or once any show exists. Pick a template:
+
+- **Complete**: venue "The Laugh Track" (Austin, `America/Chicago`), a 180-seat Main Room with four sections and 32 tables, a 60-seat general-admission Back Room, 12 comedians, 20 menu items, four show templates, two promo codes, two payment providers (Stripe and Manual), a headliner run, upcoming shows with lineups, and recent history with paid orders, check-ins, checks, payouts, settlements, and one cancelled show with refunds.
+- **Basic**: the venue, the Main Room with one section and four tables, four comedians, eight menu items, one show template, and two shows.
+
+The dialog saves records one at a time with `ensureClubOnboardingRecord`, then calls `seedClubOperations`. Records match by name or code, so a second run reuses them. The history it creates is starter data. Replace the venue name, prices, comedians, and menu with your own before real use.
+
+The comedian emails in the seed use the reserved `example.invalid` domain, and the starter guest orders are made with a manual payment record, not a card.
+
+## Try a test payment
+
+With Stripe test keys set, open `/`, pick a show, hold tickets, and pay with the Stripe test card `4242 4242 4242 4242`, any future expiry, any CVC, and any ZIP. You land on the order page with ticket codes.
+
+## Checks
+
+```bash
+npx tsc --noEmit
+node --import tsx --test features/keystone/lib/money.test.ts features/keystone/lib/time.test.ts
+npm run build
+```
+
+`npm run build` runs `keystone build --no-ui`, then `npm run migrate`, then `next build`, so it needs a database.
+
+## Hold sweeper
+
+Call `POST /api/cron/expire-holds` with `Authorization: Bearer $CRON_SECRET` on a schedule, for example every minute. It releases expired holds and settles pending payments that never finished. See [Deployment](/docs/openfront/comedy-club/deployment).

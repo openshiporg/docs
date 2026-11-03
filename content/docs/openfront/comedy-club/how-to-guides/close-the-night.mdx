@@ -1,0 +1,34 @@
+---
+title: Close the night
+description: Close a show to create comedian payouts and the settlement.
+icon: Moon
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Close every check
+Every check must be closed. Open ones block the close.
+</Step>
+<Step>
+### Settle payments and refunds
+No order may be `pending_payment`, no hold may be active, and no refund may be `processing` or `unknown`.
+</Step>
+<Step>
+### Close the show
+On the show page, press *Close night*. It needs `canManagePayouts`.
+</Step>
+</Steps>
+
+## What happens
+
+- Every confirmed slot becomes `performed`.
+- One draft payout is created for each comedian who performed. The amount is the sum of their slot fees and bonuses.
+- The settlement is written: tickets, fees, discounts, refunds, food and drink, minimum shortfall, tips, talent cost, and net. See [Payouts](/docs/openfront/comedy-club/payouts).
+- The show becomes `settled`.
+- If the show is in a headliner run, the run moves from `scheduled` to `in_progress`.
+
+A show can only be closed once. A closed settlement is frozen.
+
+For the headliner of a run, the show payout holds only bonuses. The run fee is paid when the run closes. See [Close a headliner run](/docs/openfront/comedy-club/how-to-guides/close-a-headliner-run).
