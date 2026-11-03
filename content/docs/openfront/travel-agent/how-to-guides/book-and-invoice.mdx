@@ -1,0 +1,40 @@
+---
+title: Book components and invoice the client
+description: Book supplier items, build the payment schedule, issue an invoice, and take a card payment.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageTrips` and `canManagePayments`.
+
+<Steps>
+<Step>
+### Book each component
+Book with the supplier outside the app, then call `bookComponent` with the net cost and confirmation number. Set the payment model to `agency_collects` if you take the client's money for it. The trip moves to `booked` when the first component is booked on an accepted trip.
+</Step>
+<Step>
+### Know the limits on due dates
+Deposit and final amounts and due dates live on the component. This repository has no screen or mutation to set them, because raw updates are closed on components. Seeded trips have them. The schedule is built only from components that have them.
+</Step>
+<Step>
+### Generate the schedule
+On the **Payments** tab, click **Generate schedule**. Rows and reminder tasks appear. Running it again adds nothing new.
+</Step>
+<Step>
+### Issue an invoice
+Call `issueClientInvoice` with the lines to bill. Copy the invoice link it returns and send it to the client.
+</Step>
+<Step>
+### The client pays
+The client opens `/invoice/<token>` and pays by card (Stripe test card `4242 4242 4242 4242` in development). The invoice becomes `paid` and the confirmation shows the invoice number and trip code.
+</Step>
+<Step>
+### Pay the supplier
+Pay the supplier outside the app, then call `recordSupplierPayment`. It cannot exceed the net cost, and the trip's client funds must cover it.
+</Step>
+<Step>
+### Move the trip along
+Use the header button through `final_payment_due` and `paid_in_full`. `paid_in_full` is refused while the client balance is above zero.
+</Step>
+</Steps>

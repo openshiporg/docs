@@ -1,0 +1,20 @@
+---
+title: Suppliers
+description: Hotels, cruise lines, tour operators and other suppliers with commission terms.
+icon: Building2
+---
+
+`/dashboard/platform/suppliers` lists suppliers in name order. A row shows the name, kind, notes, contact emails, default commission rate, payment terms, and the number of components booked.
+
+Supplier kinds: `hotel`, `cruise_line`, `tour_operator`, `dmc`, `airline`, `consolidator`, `insurer`, `transfer`.
+
+## Fields
+
+- `defaultCommissionBps`: the usual commission rate in basis points.
+- `commissionPaymentTermsDays`: how long the supplier usually takes to pay.
+- `hostAgencyRelation`, `bookingPortalUrl`, and `iataCliaNotes`: free text.
+- Contacts (`SupplierContact`): name, email, phone, and title.
+
+Writing suppliers needs `canManageSuppliers`. The list page is read-only; create and edit suppliers from the generic list screen at `/dashboard/suppliers`. Deleting is closed.
+
+Recording a payment to a supplier needs `canManagePayments`, and recording a commission receipt needs `canManageCommissions`.

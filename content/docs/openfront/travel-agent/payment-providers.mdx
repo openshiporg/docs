@@ -1,0 +1,34 @@
+---
+title: Payment providers
+description: The Stripe and manual adapters, test mode, and what is not built.
+icon: Plug
+---
+
+Adapters live in `features/integrations/payment`: `stripe` and `manual`. A `PaymentProvider` record stores a name, a code starting `pp_`, whether it is installed, and the adapter name for each operation (create, capture, refund, status, link, webhook). The list page at `/dashboard/platform/payment-providers` shows each provider and whether its keys are present: `configured`, `missing keys`, or `disabled`.
+
+Seeded providers are `pp_stripe` (Stripe, test) and `pp_manual` (check or wire).
+
+## Stripe test mode
+
+Card payment on an invoice uses Stripe in test mode in development. Set `NEXT_PUBLIC_STRIPE_KEY` to a `pk_test_` key and `STRIPE_SECRET_KEY`. The payment form does not load unless the publishable key starts with `pk_test_`.
+
+The flow:
+
+1. The client opens `/invoice/<token>`. `payInvoice` creates a Stripe payment intent for the balance and saves a payment session, keyed so a repeat returns the same intent.
+2. The browser loads Stripe.js and shows the payment element. Stripe test card `4242 4242 4242 4242` works.
+3. After payment Stripe returns the client to the invoice page with the payment intent in the URL.
+4. `confirmInvoicePayment` asks Stripe for the intent, checks that it succeeded and that the amount and currency match, then records the payment, updates the invoice, and posts a client funds receipt. Repeating it does not add a second payment.
+
+## Refunds
+
+Refunds go through the same adapter to the original payment. See [Approvals and refunds](/docs/openfront/travel-agent/approvals-refunds).
+
+## Manual
+
+`recordClientPayment` records a check, wire, or cash payment taken outside the app. The adapter exists for symmetry but manual payments are not refunded through it.
+
+## Not built
+
+- There is no webhook route. The `PaymentWebhookEvent` list and the adapter's webhook function exist, but nothing receives Stripe events. Confirmation relies on the redirect and on asking Stripe.
+- Payment provider changes need `canManagePayments`, and credentials are never readable through GraphQL.
+- Live Stripe keys are not part of this documentation.

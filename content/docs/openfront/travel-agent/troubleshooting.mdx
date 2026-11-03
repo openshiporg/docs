@@ -1,0 +1,78 @@
+---
+title: Troubleshooting
+description: Error messages from trips, payments, refunds, approvals, and setup, with causes and fixes.
+icon: LifeBuoy
+---
+
+## Trips and proposals
+
+| Message | Cause and fix |
+| --- | --- |
+| Client balance must be zero before this status | The client still owes the planning fee or an `agency_collects` component. Record the payment first |
+| Invalid transition X → Y | Each state has one next state. Check the order in [Trips](/docs/openfront/travel-agent/trips) |
+| Trip changed concurrently | Another action moved the trip. Reload and retry |
+| Only draft proposals may be sent | The proposal was already sent. Build a new version |
+| Proposal not found, Itinerary not found, Invoice not found | The link is wrong, too short, or no longer valid. Send a new link |
+| Proposal no longer available | The proposal was superseded or declined |
+| Component cannot be booked | Only `quoted` or `held` components can be booked |
+
+## Payments and funds
+
+| Message | Cause and fix |
+| --- | --- |
+| Idempotency key required | Operator mutations need `idempotencyKey` in `input` |
+| Invoice not payable | The invoice is `void` or already `paid` |
+| Invalid payment amount | Amount is zero, or above what is still owed |
+| Manual payments require check, wire, or cash evidence | Use one of those methods |
+| Payment reference required | Add a reference to a manual payment |
+| Insufficient trip client funds | The movement would take the trip's balance below zero |
+| Supplier payment exceeds remaining net cost | The component's net cost is already paid |
+| Planning fee transfer exceeds paid planning invoices | Collect and pay the planning fee first |
+| Component is not collected by this trip | The component is not `agency_collects`, or belongs to another trip |
+| External funds require a corresponding reconciled cash movement | Receipts, supplier payments, and refunds cannot be reversed |
+| Entry already reversed | The entry has a reversal |
+
+Card payment does not appear when the publishable key is missing or does not start with `pk_test_`, or when `STRIPE_SECRET_KEY` is missing. The page then shows "Payments are not configured".
+
+## Refunds
+
+| Message | Cause and fix |
+| --- | --- |
+| Refund exceeds the amount still refundable | Paid less refunded less refunds still processing. Lower the amount |
+| Refund amount must be positive | Enter at least one cent |
+| Payment is not refundable | The payment has not succeeded |
+| Manual payments are refunded outside the system | Only card payments refund through the app |
+| Idempotency key was already used with a different refund | Use a new key for a different amount or reason |
+| Independent manager approval is required | The amount is above the refund threshold. Request and get an approval |
+| Refund exceeds the amount refundable after the cancellation penalty | The refund on a cancellation is above the sell price less the penalty |
+
+A refund with status `unknown` means Stripe did not answer clearly. Do not retry with a new key; check the payment in Stripe first.
+
+## Approvals
+
+| Message | Cause and fix |
+| --- | --- |
+| The requester cannot decide their own approval | Ask another person |
+| Not authorized to decide approvals | Deciding needs `canManageSettings` |
+| Approval does not match this request | The action, target, amount, or reason differs from the request |
+| Approval must come from a different user | The approver is the requester |
+| Approval is consumed, Approval was already used or has expired | Each approval works once. Request a new one |
+| Approval has expired | Approvals expire after one hour |
+
+## Commissions
+
+| Message | Cause and fix |
+| --- | --- |
+| Receipt allocations must equal amount | The allocations do not add up to the receipt |
+| Allocation supplier/currency mismatch | A component belongs to another supplier or currency |
+| Only expected or short-paid commission can be written off | The component is already `received` or `written_off` |
+| Reason required | Write-offs and refunds need a reason |
+
+## Setup
+
+| Symptom | Cause and fix |
+| --- | --- |
+| Setup card is missing | The user lacks `canManageOnboarding`, onboarding is `completed` or `dismissed`, or trips already exist |
+| Unknown setup phase | The phase or template name is wrong |
+| Seeded advisors cannot sign in | They have a random password. Reset it |
+| Build changes the database | `npm run dev` and `npm run build` run migrations. Use a disposable database |

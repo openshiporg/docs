@@ -1,0 +1,41 @@
+---
+title: Proposals
+description: Build options, send a private link, and what happens when the client accepts.
+icon: Send
+---
+
+A proposal is a versioned set of options for one trip. Each option (A, B, C) holds items: hotel, cruise, tour, flight, transfer, rail, insurance, activity, or fee. An item has a supplier, a title, details, a sell price in cents, and an estimated commission rate in basis points.
+
+The dashboard lists proposals on the trip's **Proposals** tab. Building and sending are GraphQL mutations; the Send button on a draft proposal calls `sendProposal`.
+
+## Build
+
+`buildProposal` takes `tripId`, an optional intro note, and `options`, each with `items`. It creates the next version number in `draft`. Prices must be whole cents and rates between 0 and 10000.
+
+## Send
+
+`sendProposal` works only on a `draft`. It:
+
+- creates a random token and stores only its SHA-256 hash;
+- marks any earlier `sent` or `viewed` proposal on the trip `superseded`;
+- sets the proposal to `sent` and moves a `planning` trip to `proposal_sent`;
+- returns the token once. Build the client link as `/proposal/<token>`. The dashboard shows it after you click Send.
+
+The raw token is not stored. If you lose the link, build and send a new version.
+
+## The client page
+
+`/proposal/[token]` shows the options with their items and totals. The first view moves the proposal from `sent` to `viewed`. The client picks an option, types a full name, and accepts.
+
+## Accept
+
+`acceptProposal` (token, option, name, idempotency key) runs in one transaction under a lock on the trip:
+
+- It stores an immutable snapshot of the chosen option and a hash of that snapshot, plus the name and time.
+- It creates one trip component per item, in `quoted` status with `client_pays_supplier` and the commission amount worked out from the item's rate.
+- It moves a `proposal_sent` trip to `accepted`.
+- Accepting twice returns the same result.
+
+The accepted snapshot is never edited. A change after acceptance is a new proposal version or a component edit, and either is audited.
+
+Accepting is a click with a name and time. It is not an e-signature.

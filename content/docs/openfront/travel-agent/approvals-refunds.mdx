@@ -1,0 +1,47 @@
+---
+title: Approvals and refunds
+description: Second-person approvals, client refunds to the original card, and the thresholds that apply.
+icon: ShieldCheck
+---
+
+## Approvals
+
+`/dashboard/platform/approvals` lists requests with tabs for `requested`, `approved`, `rejected`, and `consumed`. Each row shows the action, amount, reason, requester, and decider.
+
+A `ManagerApproval` is for one action on one target:
+
+| Action | Used for |
+| --- | --- |
+| `refund_payment` | A refund above the threshold |
+| `commission_overpayment` | A commission allocation above the expected amount |
+| `commission_writeoff` | Giving up unreceived commission |
+
+Rules:
+
+- The request records the action, target, amount, and reason, and expires after one hour.
+- A different person decides it. Your own request shows "Waiting for another person". Deciding needs `canManageSettings`.
+- To use an approval, the requester repeats the exact same action, target, amount, and reason. Any difference is refused with "Approval does not match this request".
+- An approval works once. It is marked `consumed` in the same transaction as the action it allows.
+- Requesting needs `canIssueRefunds` for refunds and `canManageCommissions` for the commission actions.
+
+## Refund a client
+
+On a trip's **Payments** tab, a card payment shows a **Refund** button when money is still refundable. `refundClientPayment` (also reachable from `cancelComponent`) needs `canIssueRefunds`. It:
+
+1. Locks the trip and checks the payment is a succeeded or partly refunded card payment. Manual payments are refunded outside the system.
+2. Checks the amount: positive, and within the amount paid less money already refunded and refunds still processing.
+3. Compares the amount with `AgencySettings.refundApprovalThresholdCents` (default 50000, which is $500.00). Above it, an approved, unused approval is required and is consumed here.
+4. Saves a `Refund` row as `processing`, keyed by the idempotency key.
+5. Asks Stripe to refund the original payment. This call happens outside the database transaction.
+6. On success, adds to the payment's refunded amount, sets it to `refunded` or `partially_refunded`, posts a `refund_to_client` entry to client funds, and writes an audit event.
+
+If Stripe does not answer clearly, the refund stays `unknown` instead of being treated as failed. Repeating the call with the same key returns the same refund. Using the same key with a different amount is refused.
+
+## Below the threshold
+
+A refund at or below the threshold needs no approval, only `canIssueRefunds`.
+
+## The dialogs
+
+- **Write off** on the Commissions board: if you have a matching approved request, the dialog uses it and the button reads **Confirm**. Otherwise the button reads **Request approval**, and you repeat the action after another person approves.
+- **Refund** on the Payments tab: for an amount over the threshold the dialog says "This needs approval from another person" and the button reads **Request approval**. The refund dialog does not pass an approved request back, so after it is approved, complete the refund by calling `refundClientPayment` with the `approvalId` through GraphQL or MCP. Refunds at or below the threshold finish in the dialog.

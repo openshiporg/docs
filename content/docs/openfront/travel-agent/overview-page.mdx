@@ -1,0 +1,19 @@
+---
+title: Dashboard overview
+description: The agency dashboard with payments due, commissions, trips traveling, and open inquiries.
+icon: LayoutDashboard
+---
+
+`/dashboard/platform/overview` is the first agency page. `/dashboard/platform` redirects to it. It reads the lists directly and shows:
+
+- **Due in 7 days** and **Due in 30 days**: the sum and count of payment schedule rows with status `due`.
+- **Commission expected** and **Commission received**: totals across components that are not cancelled, and the amount still outstanding.
+- **Payments due**: the next eight schedule rows with the trip, kind, date, and amount.
+- **Traveling now**: trips with status `traveling` and their return date.
+- **Open inquiries**: inquiries in `new`, `qualifying`, or `proposal`.
+
+Each row links to the trip or the inquiry list. The page has no action buttons.
+
+## Navigation
+
+The sidebar comes from `features/platform/lib/navigation.ts`: Dashboard, Inquiries, Trips, Commissions, Invoices, Approvals, Tasks, then Directory (Clients & Travelers, Suppliers) and Configuration (Payment Providers, Settings).

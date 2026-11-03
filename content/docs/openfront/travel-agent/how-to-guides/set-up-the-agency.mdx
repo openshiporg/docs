@@ -1,0 +1,32 @@
+---
+title: Set up the agency
+description: Create the first user, load starter data, and replace it with your own.
+icon: Wrench
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need access to the repository and a PostgreSQL database. See [Getting started](/docs/openfront/travel-agent/getting-started).
+
+<Steps>
+<Step>
+### Create the first user
+Open `/dashboard/init` on an empty database. This user gets an Admin role with every flag.
+</Step>
+<Step>
+### Load starter data
+Sign in and use the setup card in the sidebar. Pick **Full agency** to see every status, or **Minimal** for a small start.
+</Step>
+<Step>
+### Set a password for each seeded user
+Seeded advisors and the manager have random passwords. Set a new one for each in the Users list before they sign in.
+</Step>
+<Step>
+### Replace the sample details
+Open `/dashboard/platform/settings`, then edit the agency record in the generic list screen. Set your name, address, planning fee, refund threshold, and host-agency split. Replace the sample suppliers and their commission terms.
+</Step>
+<Step>
+### Check roles
+Give each person only the flags they need. Approvals need a second person with `canManageSettings`.
+</Step>
+</Steps>

@@ -1,0 +1,49 @@
+---
+title: Trips
+description: The trip list and the trip workspace with its tabs.
+icon: Route
+---
+
+## Trip list
+
+`/dashboard/platform/trips` has a tab for each status plus `all`. Each row shows the title, status label, trip number, client, advisor, dates, total sell, and the balance due.
+
+Money shown on a trip:
+
+- **Total sell**: the planning fee plus every component that is not cancelled.
+- **Collected**: what the client has paid across invoices.
+- **Balance due**: only what the agency collects, meaning the planning fee plus components set to `agency_collects`, less what has been collected. Components the client pays to the supplier directly are not counted.
+- **Commission expected**: the sum over components that are not cancelled.
+
+## Trip workspace
+
+`/dashboard/platform/trips/[id]` has ten tabs in the URL (`?tab=`):
+
+| Tab | Shows |
+| --- | --- |
+| Overview | Money cards, advisor, destinations, planning fee, client, next payments |
+| Travelers | Names, nationality, passport on file or missing |
+| Proposals | Every version with its options, items, and totals |
+| Components | Supplier items with booking status, payment model, confirmation number, and a Cancel action |
+| Itinerary | Days and their items, with **Share itinerary** |
+| Payments | Invoices with their card payments and a Refund action, **Generate schedule**, and the schedule rows |
+| Client funds | The balance held and every ledger entry |
+| Commissions | Expected and received commission per component |
+| Documents | Titles and kinds |
+| Tasks | Reminders and follow-ups |
+
+A header button moves the trip to its next state: `planning` to `proposal_sent`, `accepted` to `booked`, `booked` to `final_payment_due`, `final_payment_due` to `paid_in_full`, through `transitionTrip`. `proposal_sent` to `accepted` normally happens when the client accepts a proposal.
+
+The trip's completed view shows commission received against expected, and the short amount.
+
+## Rules
+
+- Allowed moves are fixed: each state has one next state, and `cancelled` is allowed from every state except `completed` and `cancelled`.
+- The header button offers the next state up to `paid_in_full`. `traveling` and `completed` are reached by `sweepTripDates`, and cancelling is a `transitionTrip` call with `status: cancelled`.
+- Moving to `paid_in_full`, `traveling`, or `completed` fails with "Client balance must be zero before this status" while the client owes money the agency collects.
+- `sweepTripDates` moves `paid_in_full` trips to `traveling` once the start date passes and `traveling` trips to `completed` once the end date has passed. It is a mutation you run; no scheduler is built in.
+- Every transition is compare-and-set and writes an `AuditEvent`.
+
+## What the dashboard cannot set
+
+The planning fee, travelers, and component due dates are set by the seed. No screen or mutation edits them, and raw updates are closed on trips, components, and travelers. A new trip from an inquiry starts with a zero planning fee and no travelers.

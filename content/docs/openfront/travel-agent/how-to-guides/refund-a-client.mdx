@@ -1,0 +1,36 @@
+---
+title: Refund a client
+description: Refund part of a card payment, with an approval above the threshold.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canIssueRefunds`. Only card payments are refunded in the app.
+
+<Steps>
+<Step>
+### Open the payment
+Open the trip, then the **Payments** tab. A card payment with money still refundable shows a **Refund** button.
+</Step>
+<Step>
+### Enter the amount and reason
+The amount cannot exceed what was paid less what is already refunded. A reason is required.
+</Step>
+<Step>
+### Under the threshold: confirm
+At or below `refundApprovalThresholdCents` (default $500.00), click **Confirm**. The refund goes to the original card, the payment shows its refunded amount, and a `refund_to_client` entry appears in client funds.
+</Step>
+<Step>
+### Over the threshold: request approval
+The button reads **Request approval**. Another person with `canManageSettings` opens **Approvals** and approves it.
+</Step>
+<Step>
+### Finish an approved refund
+Call `refundClientPayment` with the same `paymentId`, `amountCents`, and `reason`, plus the `approvalId`. The approval is used once.
+</Step>
+<Step>
+### If the status is unknown
+Check the payment in Stripe before trying again. Do not use a new key for the same refund.
+</Step>
+</Steps>

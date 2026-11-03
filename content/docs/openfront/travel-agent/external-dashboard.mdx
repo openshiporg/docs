@@ -1,0 +1,41 @@
+---
+title: External dashboards
+description: Give an LLM the Travel Agent dashboard skill to adapt the built-in experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Travel Agent dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` holds the agency screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules, and provider boundaries in your copy of the code before proposing work.
+
+## Current platform routes
+
+Route files live in `app/dashboard/(admin)/platform/**` and are thin: each one exports a screen from `features/platform/<slice>/screens`.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/dashboard/platform` | redirect | Goes to `/dashboard/platform/overview` |
+| `/dashboard/platform/overview` | `OverviewPage` | Payments due, commissions, trips traveling, open inquiries |
+| `/dashboard/platform/inquiries` | `InquiryListPage` | Pipeline with status tabs; Create trip |
+| `/dashboard/platform/trips` | `TripListPage` | Trips with status tabs |
+| `/dashboard/platform/trips/[id]` | `TripWorkspacePage` | Ten-tab workspace; Send, Share itinerary, Cancel, Refund, Generate schedule |
+| `/dashboard/platform/commissions` | `CommissionBoardPage` | Status board, receipts, advisor payouts, Write off |
+| `/dashboard/platform/invoices` | `InvoiceListPage` | Invoices with status tabs |
+| `/dashboard/platform/approvals` | `ApprovalListPage` | Approve or reject requests |
+| `/dashboard/platform/tasks` | `TaskListPage` | Open tasks |
+| `/dashboard/platform/clients` | `ClientListPage` | Clients and travelers (read-only) |
+| `/dashboard/platform/suppliers` | `SupplierListPage` | Suppliers (read-only) |
+| `/dashboard/platform/payment-providers` | `PaymentProviderListPage` | Providers and key status (read-only) |
+| `/dashboard/platform/settings` | `SettingsPage` | Agency settings (read-only) |
+
+These screens are server components that read with a bounded GraphQL document through `features/platform/lib/data.ts`. Client components call server actions in `features/platform/actions`: `runOperator` (an allow-listed set of agency mutations, each with a fresh idempotency key), `requestApproval`, and `decideApproval`.
+
+Other dashboard routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`. The platform route pages here do not wrap a role check of their own; the server enforces flags on every list and mutation.
+
+## Notes for a separate dashboard
+
+- Use the custom mutations for every state change and money movement. Raw create and update are closed on the agency lists.
+- Send a fresh idempotency key with each operator call.
+- Do not rely on hiding a button. Permission is checked again on the server.
+- Treat private links and tokens as shown once. Only their hashes are stored.
+- There is one agency per deployment. No tenant scope is passed.

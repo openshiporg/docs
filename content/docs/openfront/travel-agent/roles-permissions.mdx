@@ -1,0 +1,44 @@
+---
+title: Roles and permissions
+description: Role flags, what each one unlocks, and which lists and mutations they guard.
+icon: KeyRound
+---
+
+Access comes from boolean flags on the `Role` list. A user has one role. The first user created at `/dashboard/init` gets an Admin role with every flag. Seeded roles are Admin (all), Manager, Advisor, and Customer (no flags).
+
+## Flags
+
+| Flag | Unlocks |
+| --- | --- |
+| `canAccessDashboard` | Sign in to the dashboard |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople` | Read other users, edit other users, create and delete users |
+| `canManageRoles` | Create and edit roles. Also lets a user see every traveler and document |
+| `canManageOnboarding` | The setup card and its mutations |
+| `canManageTrips` | Inquiries, trips, proposals, components, itinerary, and destinations; `createTripFromInquiry`, `buildProposal`, `sendProposal`, `bookComponent`, `cancelComponent`, `shareItinerary`, `transitionTrip`, `sweepTripDates` |
+| `canManageClients` | Clients and travelers |
+| `canManageSuppliers` | Suppliers, contacts, and supplier payment records |
+| `canManageDocuments` | Documents |
+| `canManageTasks` | Tasks |
+| `canManagePayments` | Invoices, schedule, funds, payment providers; `generatePaymentSchedule`, `issueClientInvoice`, `recordClientPayment`, `recordSupplierPayment`, `postClientFundsEntry`, `reverseEntry` |
+| `canReadPayments` | Read payments, refunds, and providers |
+| `canIssueRefunds` | `refundClientPayment`, and requesting a refund approval |
+| `canManageCommissions` | Receipts, allocations, advisor ledger; `recordCommissionReceipt`, `writeOffCommission`, requesting commission approvals |
+| `canManageSettings` | Agency settings, and approving or rejecting approval requests |
+| `canReadAudit` | Reading `AuditEvent` rows |
+
+There is no manager flag that overrides the others. Each flag stands on its own.
+
+## What each seeded role holds
+
+- **Admin**: every flag.
+- **Advisor**: dashboard access, see other people, trips, clients, suppliers, commissions, documents, tasks, read payments, and manage payments.
+- **Manager**: the advisor flags plus `canIssueRefunds`, `canManageSettings`, and `canReadAudit`.
+- **Customer**: no flags and no dashboard access.
+
+## Rules that apply on top of flags
+
+- Every mutation checks its flag on the server, then runs in a transaction and needs an idempotency key.
+- An approver must be a different person from the requester.
+- Raw create and update on agency lists such as trips, components, invoices, funds, receipts, allocations, and audit events are closed to everyone. They change only through the mutations. Editable lists (clients, suppliers, contacts, tasks, itinerary, destinations, settings) accept updates from users with the matching flag.
+- Deleting is closed on every agency list.
+- Public pages never use a session. They use a private token or an email plus a code. See [GraphQL API](/docs/openfront/travel-agent/api-reference).
