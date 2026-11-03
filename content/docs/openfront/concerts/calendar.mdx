@@ -1,0 +1,22 @@
+---
+title: Calendar and holds
+description: Ranked date holds per venue and date, and how a first-ranked hold becomes an event.
+icon: CalendarDays
+---
+
+Route: `/dashboard/platform/calendar`.
+
+The page groups `DateHold` records by venue and date. Each row shows the rank (1st, 2nd, and so on), the artist, the status, and either the linked event or the expiry date.
+
+## Hold rules
+
+- A hold has a `rank`. The pair of venue, date, and rank is unique, so there is one 1st hold, one 2nd hold, and so on for each venue and date.
+- Statuses: `held`, `challenged`, `confirmed`, `released`.
+- `challengeHold` moves a `held` hold to `challenged`. It fails once the hold has expired.
+- `confirmHold` needs `held` or `challenged` status, an unexpired hold, and no earlier-ranked live hold on that venue and date ("Earlier ranked hold must be released"). It also needs a **published** seating chart that belongs to the same venue. It creates an event in `hold`, makes the hold's artist the headliner, and moves the hold to `confirmed`.
+
+## What the page does
+
+Only **Challenge** has a button, and only on a `held` row. Placing a hold (`placeDateHold`) and confirming one (`confirmHold`) are GraphQL commands with no button today. See [GraphQL API](/docs/openfront/concerts/api-reference).
+
+No command releases a hold.

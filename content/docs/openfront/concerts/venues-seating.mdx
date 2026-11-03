@@ -1,0 +1,24 @@
+---
+title: Venues and seating charts
+description: Venues, versioned seating charts, sections, and seats.
+icon: Building2
+---
+
+Route: `/dashboard/platform/venues`.
+
+The page lists each venue with city, capacity, and whether the promoter owns it or it is a partner venue. Under each venue it lists the seating charts with name, version, status, and each section's kind and capacity.
+
+## Model
+
+- `Venue`: name, city, `timezone`, address, `capacity`, `ownedByPromoter`, `defaultFacilityFeeCents`, `taxBps`, contact, `rentTermsDefault`.
+- `SeatingChart`: a versioned layout with status `draft`, `published`, or `retired`.
+- `ChartSection`: `kind` is `ga` (general admission, with a capacity) or `reserved` (seats).
+- `Seat`: `row`, `number`, `label`, `x`, `y`, `accessible`, `companion`, `obstructed`, and status `sellable` or `killed`. A killed seat is never sold.
+
+A seating chart is immutable once it leaves `draft`. Editing a chart, its sections, or its seats while it is not a draft fails with "Published seating charts are immutable; create a new version." An event keeps the chart it was created from.
+
+## Setup
+
+The page is read-only. Create venues and charts at `/dashboard/venues`, `/dashboard/seating-charts`, `/dashboard/chart-sections`, and `/dashboard/seats`. No seat-grid generator exists in the dashboard. Onboarding builds charts in code, with rows labeled A and up. It publishes them.
+
+`SeatingChart.status` cannot be edited through generated updates, and no command publishes a chart. A chart you create by hand stays a draft, and `confirmHold` needs a published chart.

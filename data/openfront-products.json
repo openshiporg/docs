@@ -298,5 +298,15 @@
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
     "catalogUrl": null
+  },
+  {
+    "id": "concerts",
+    "repository": "openfront-concerts",
+    "name": "Concerts",
+    "description": "Ticketing, artist deals, and post-show settlement for an independent promoter: date holds, seat maps, Stripe TEST checkout, door scan, and settlements.",
+    "color": "#be123c",
+    "href": "/docs/openfront/concerts",
+    "sourceUrl": "https://github.com/openshiporg/openfront-concerts",
+    "catalogUrl": null
   }
 ]

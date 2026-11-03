@@ -1,0 +1,37 @@
+---
+title: Events
+description: The event list, status tabs, and the detail page with overview, billing, pricing, seating, orders, expenses, and settlement tabs.
+icon: Ticket
+---
+
+Route: `/dashboard/platform/events` and `/dashboard/platform/events/[id]`.
+
+## List
+
+The list shows each event with its venue, show time (in the venue's time zone), and live counts: sold, open, and gross. Status tabs filter by `on_sale`, `presale`, `announced`, `hold`, `completed`, `settling`, `settled`, or `postponed`. A `cancelled` event only shows under **All**. Status is a mono uppercase label with a colored dot.
+
+## Detail tabs
+
+| Tab | Shows |
+| --- | --- |
+| Overview | Sold, held, open, gross, doors, curfew, age restriction, and the seating chart name and version |
+| Billing | Each billed artist with billing level, position, and set length |
+| Pricing | Each price level with price, service fee, sold, held, blocked (production holds), and capacity. Pricing phases show name, price, and sold of quantity |
+| Seating | A colored grid per section: open, held, sold, killed, comp, reserved hold. General-admission events show a note instead |
+| Orders | The first 100 orders for the event |
+| Expenses | Each expense with category, vendor, whether it is capped, actual against budget |
+| Settlement | Settlement versions with status, artist total, and balance due |
+
+## Actions
+
+The header shows buttons by status:
+
+- **Publish** when the event is in `hold`. It runs `publishEvent`.
+- **Postpone** when the event is `announced`, `presale`, `on_sale`, or `sold_out`. It runs `postponeEvent`.
+- **Cancel** unless the event is `cancelled`, `settled`, `completed`, or `settling`. It runs `cancelEvent`.
+
+`cancelEvent` refuses while any order is `paid` or `partially_refunded`. Refund those orders first with `refundTicketOrder`. See [Refund an order](/docs/openfront/concerts/how-to-guides/refund-an-order).
+
+## What the page does not do
+
+You cannot create or edit an event, price level, expense, or billing row on this page. Use the generic list screens at `/dashboard/events`, `/dashboard/price-levels`, and so on. Event status is read-only there. A booker creates events by confirming a date hold (`confirmHold`).

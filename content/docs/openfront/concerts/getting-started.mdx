@@ -1,0 +1,119 @@
+---
+title: Getting started with Concerts
+description: Clone the source, set the environment, apply migrations, create the first admin, and run setup.
+icon: Terminal
+---
+
+## Access
+
+The source repository is private at [openshiporg/openfront-concerts](https://github.com/openshiporg/openfront-concerts). There is no hosted app. You run it yourself.
+
+## Requirements
+
+- Node.js 20 or later (`package.json` sets `"node": ">=20.0.0"`).
+- npm.
+- A PostgreSQL database you can migrate.
+- A Stripe account in TEST mode, to try card payments.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-concerts.git
+cd openfront-concerts
+npm install
+```
+
+## Environment
+
+The repo has no `.env.example`. Create `.env` yourself.
+
+Required:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_concerts
+SESSION_SECRET=replace-with-at-least-32-random-characters
+```
+
+The checkout proof code refuses to run with a `SESSION_SECRET` shorter than 32 characters. Generate one with `openssl rand -hex 32`.
+
+Payments:
+
+```bash
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+Use TEST keys for development. Without the first two, the storefront reports that card payments are not configured.
+
+Other variables the code reads:
+
+| Variable | Used for |
+| --- | --- |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to let anyone create a dashboard user. Default is closed. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Image storage in `features/keystone/index.ts`. Placeholder values are used if unset. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard assistant. |
+
+Never commit `.env`.
+
+## Migrations
+
+The repo has two checked-in migrations: `init_concerts` (the baseline) and `seat_hold_key_index`. Apply them with:
+
+```bash
+npm run migrate
+```
+
+`npm run dev` runs `keystone build --no-ui`, then `npm run migrate`, then `next dev`. It changes whatever database `DATABASE_URL` points at, so point it at a disposable database while you try the app.
+
+`npm run migrate:gen` creates a new development migration after a model change. Run it only against a disposable database.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+Next.js uses port 3000, or the next free port. Read the port from the output.
+
+- Storefront: `/`
+- Dashboard: `/dashboard`
+
+## Create the first admin
+
+Open `/dashboard/init`. Enter a name, email, and password. The first user gets an `Admin` role with every flag.
+
+## Run setup
+
+Sign in. The sidebar shows a "Welcome to Openfront Concerts" card while onboarding is not completed or dismissed and no events exist. Choose **Get started**, pick a template, and confirm.
+
+| Template | What it creates |
+| --- | --- |
+| Complete | Promoter settings (Lantern Live), 6 roles, a Stripe provider record, 3 venues with published seating charts, 2 agencies, 10 artists, 2 tours, 17 events with deals and pricing, 5 date holds, 3 promo codes |
+| Basic | One general-admission venue, one agency, one artist, one event with a flat deal |
+| Custom | Edit the JSON yourself |
+
+The complete template builds:
+
+- **The Foundry:** 400 capacity, general admission.
+- **Halvorsen Theatre:** 1,200 reserved seats in Orchestra, Mezzanine, and Balcony.
+- **Riverbend Amphitheatre:** a 3,500 general-admission lawn and 1,500 reserved pavilion seats.
+- **Events:** doors at 7:00 PM and show at 8:00 PM in the venue's time zone. Five are past: three settled with final settlements, one in settling with a draft settlement, and one postponed. The rest are on sale, in presale, announced, or on hold.
+
+Seeded orders are written directly. They have no Stripe payment, so refunding one fails with "No captured payment".
+
+Setup needs the `canManageOnboarding` flag and runs in ordered steps. Running it again reuses records that match by name.
+
+## Try a purchase
+
+Open `/`, choose an on-sale event, hold seats or tickets, and pay with the Stripe test card `4242 4242 4242 4242`. See [Sell tickets](/docs/openfront/concerts/how-to-guides/sell-tickets).
+
+## Tests
+
+```bash
+node --import tsx --test features/keystone/lib/settlement.test.ts
+node --test tests/mcp-oauth.test.cjs tests/shared-dashboard.test.cjs tests/starter-security.test.cjs
+```
+
+The first covers the settlement math. `tests/dashboard-error-boundary.test.ts` currently fails to resolve `next/navigation` under the Node test runner.

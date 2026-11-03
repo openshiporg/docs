@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "sell-tickets",
+    "look-up-and-transfer",
+    "hold-a-date-and-publish",
+    "run-the-door",
+    "settle-a-show",
+    "refund-an-order"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}

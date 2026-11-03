@@ -1,0 +1,30 @@
+---
+title: Promo and presale codes
+description: Code fields, redemptions, and how a code is reserved, committed, and released.
+icon: Tag
+---
+
+Route: `/dashboard/platform/promo-codes`.
+
+The page lists codes with status, scope, discount type, value, and used count of the maximum.
+
+## Fields
+
+- `code`: unique, uppercase letters, numbers, `-` and `_`.
+- `discountType`: `percent_bps`, `amount_cents`, or `comp`. The storefront rejects `comp` codes.
+- `value`: basis points or cents.
+- `maxUses`, `usedCount`, `perOrderLimit`, `startsAt`, `endsAt`.
+- `status`: `active`, `paused`, `expired`.
+- Scope: an event, price levels, or a tour.
+
+## How a code is used
+
+When a customer holds tickets with a code, the server checks the code under the event lock. It must be active, in its date window, in scope, below `maxUses` (counting reserved and committed redemptions), and within `perOrderLimit`. It creates a `PromoRedemption` in `reserved`. It becomes `committed` when the order is paid, and `usedCount` goes up. It becomes `released` when the hold expires. The discount is saved on the order in `discountSnapshot`.
+
+## Presale
+
+An event in `presale` status, or before its `onSaleAt` time, needs a valid code. The code can be a promo code or the event's own `presaleCode`.
+
+## Setup
+
+The page is read-only. Create and edit codes at `/dashboard/promo-codes`.

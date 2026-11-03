@@ -1,0 +1,15 @@
+---
+title: Settings
+description: The promoter name, currency, and the refund approval threshold.
+icon: Settings
+---
+
+Route: `/dashboard/platform/settings`.
+
+The page shows three values from the single `StoreSettings` record: the promoter name, the currency, and the refund approval threshold.
+
+- **Promoter name** is the brand in the dashboard sidebar. If no settings exist, the sidebar shows "Openfront Concerts".
+- **Currency** is the `currencyCode` (default `USD`).
+- **Refund approval threshold** is in cents. A refund above it needs approval from a different user. At the seeded value of $200.00, a refund of $200.00 or less needs no approval. With no settings row the threshold is zero, so every refund needs an approver.
+
+The page is read-only. Edit the record at `/dashboard/store-settings` (the list screen). Onboarding creates it.

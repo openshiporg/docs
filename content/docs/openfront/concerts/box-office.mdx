@@ -1,0 +1,19 @@
+---
+title: Box office
+description: Find an order by number, email, or name.
+icon: Store
+---
+
+Route: `/dashboard/platform/box-office`.
+
+The page has one search box. Type an order number, an email, or a name. It returns up to 50 matching orders, newest first. Each row shows the order number, status, event, guest name and email, time placed, ticket count, total, and any refunded amount.
+
+Matching uses `orderNumber`, `guestEmail`, and `guestName` on `TicketOrder`.
+
+## Not on this page
+
+The page is read-only. It has no door sale, no comp, no refund, and no transfer button.
+
+- Refund an order with `refundTicketOrder`. See [Refund an order](/docs/openfront/concerts/how-to-guides/refund-an-order).
+- Transfers happen from the customer's order page. See [Look up and transfer](/docs/openfront/concerts/how-to-guides/look-up-and-transfer).
+- `TicketOrder.source` can be `box_office` or `comp`, and the seed uses `box_office`. No command creates such an order.

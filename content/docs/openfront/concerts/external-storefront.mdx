@@ -1,0 +1,50 @@
+---
+title: External storefronts
+description: The plain placeholder storefront, its routes and operations, and the skill for building a designed one.
+icon: AppWindow
+---
+
+To create a custom Concerts storefront, copy the skill and give it to your LLM. The skill explains how `features/storefront` and the customer routes implement the current buying loop.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. Skill file: `/skills/openfront-concerts-custom-storefront/SKILL.md`.
+
+## Status
+
+The current storefront is a plain placeholder. It uses the Next.js defaults and no brand design. It makes the loop work and waits for a design. There is no account area, no hosted version, and no demo.
+
+## Current routes
+
+Route files are in `app/`. Screens are in `features/storefront/screens`.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `EventsHome` | Upcoming events with venue, show time, doors time, and status |
+| `/events/[id]` | `EventBuy` | Price levels, seat grid, presale code, hold, details form, Stripe payment |
+| `/orders/[id]` | `OrderView` | Confirmation with order number, ticket codes, entry tokens, and transfer |
+| `/lookup` | `LookupPage` | Find an order by email and order number |
+
+Times show in the venue's time zone.
+
+## The buying loop
+
+1. **Browse.** `/` calls `eventsOnSale`.
+2. **Select.** `/events/[id]` calls `eventAvailability`. A general-admission level has a quantity picker (shown only when the event has such a level). A reserved level shows a seat grid in its own scrolling box under a STAGE bar, ordered by the chart's row and seat positions. Up to eight seats.
+3. **Hold.** `createGaHold` or `createSeatHold` holds the inventory for 10 minutes. The page shows a countdown and the full price breakdown.
+4. **Pay.** The customer enters a name and email. Under an age restriction they confirm it. `startTicketCheckout` creates the order and a Stripe payment intent, and the page loads Stripe's payment form from `js.stripe.com`. The order's hold is extended to 20 minutes while the customer pays.
+5. **Confirm.** After Stripe confirms, `completeTicketCheckout` checks the payment with Stripe and creates the tickets. The page goes to `/orders/[id]`.
+
+The confirmation page reads the order from the browser's `sessionStorage`. A reload in a new tab shows a message that sends the customer to `/lookup`.
+
+## Lookup and transfer
+
+`/lookup` calls `lookupTicketOrder(email, orderNumber)`. It shows status, event, total, refunded amount, and each ticket's code and status. It shows no entry tokens. Unknown order numbers and wrong emails return the same error.
+
+Transfer is on the confirmation page only. See [Look up and transfer](/docs/openfront/concerts/how-to-guides/look-up-and-transfer).
+
+## Guest proof
+
+A hold and an order return a `proof`: a signed, expiring string tied to that one hold or order. Every storefront mutation that takes an id also needs the proof. Raw lists such as orders, tickets, and holds are not readable by guests.
+
+## Not built
+
+No customer accounts, no saved orders, no QR image, no wallet pass, no resale, no email receipts, and no GA/seat mix in one hold.

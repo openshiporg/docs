@@ -1,0 +1,74 @@
+---
+title: Openfront Concerts
+description: Ticketing, artist deals, and post-show settlement for an independent promoter that runs its own venues and promotes at partner venues.
+icon: Music
+---
+
+[Source](https://github.com/openshiporg/openfront-concerts) (private repository)
+
+Openfront Concerts is a self-hostable ticketing and settlement app for one promoter. The promoter runs its own venues and also promotes shows at partner venues. Staff track calendar holds, artist offers, events, price levels, orders, tickets, door scans, and the settlement that closes each show.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL.
+
+## Current status
+
+- The repository is private. There is no hosted app and no public demo.
+- Payments use Stripe in TEST mode in development. Nothing here has been run with live keys.
+- The storefront is a plain, unstyled placeholder. It makes the buying loop work and waits for a design.
+- Some pages are read-only lists. Where a page has no button for a job, this documentation says so and names the GraphQL command instead.
+
+Start with [Getting started](/docs/openfront/concerts/getting-started).
+
+## Who uses what
+
+| User | Surface | Typical jobs |
+| --- | --- | --- |
+| Customer | Storefront | Browse events, hold tickets or seats, pay, look up an order, transfer a ticket |
+| Booker | Calendar, events, deals | Place and challenge holds, send offers, publish events |
+| Box office | Orders, refunds | Find orders and issue refunds (refunds are a GraphQL command) |
+| Door staff | Door scan | Scan ticket codes at the gate |
+| Settlement manager | Settlements | Compute, review, sign, and pay out |
+| Owner | Everything | Roles, setup, payments |
+
+## Surfaces
+
+- **Storefront** at `/`, `/events/[id]`, `/orders/[id]`, and `/lookup`. See [External storefronts](/docs/openfront/concerts/external-storefront).
+- **Dashboard** at `/dashboard`: concert pages under `/dashboard/platform/*` plus the generic Keystone list screens at `/dashboard/[listKey]`. See [External dashboards](/docs/openfront/concerts/external-dashboard).
+- **GraphQL** at `/api/graphql`. See [GraphQL API](/docs/openfront/concerts/api-reference).
+- **Payment webhook** at `/api/integrations/payment/[providerCode]/webhook`.
+- **Assistant and MCP** at `/api/completion` and `/api/mcp-transport/[transport]`.
+
+## Architecture
+
+The schema has 41 lists in `features/keystone/models`. Domain lists that move money or inventory block generated create, update, and delete. They change only through custom mutations in `features/keystone/mutations`. Each mutation checks the role, takes an idempotency key, and writes an audit event. See [Data model](/docs/openfront/concerts/data-model).
+
+- **Money** is integer cents with a `currencyCode` (default `USD`). Percentages are basis points, so 1% is 100.
+- **Times** are stored as instants (UTC). Screens show them in the venue's `timezone`.
+- **Capacity** changes run in one database transaction under a per-event advisory lock, and counters are recounted under that lock.
+- **Settlement math** is a pure function in `features/keystone/lib/settlement.ts` with unit tests.
+- **Status fields** (event, offer, hold, ticket, settlement) cannot be edited through generated updates. Commands move them and write an `AuditEvent`.
+
+## Tenancy and ownership
+
+One promoter runs one deployment. There is no organization or tenant list. `Venue.ownedByPromoter` marks a venue the promoter operates, as opposed to a partner venue. Access comes from flags on `Role`. See [Roles and permissions](/docs/openfront/concerts/roles-permissions).
+
+Customers need no account. A guest gets a signed, expiring proof for a hold or an order. Signed-in users keep the same flow.
+
+## Main workflow
+
+1. A booker places ranked date holds on a venue and date, then confirms the first-ranked hold. That creates an event in `hold`.
+2. The booker prices the event with price levels, publishes it, and sends offers to artists. Publishing creates seat inventory for reserved sections.
+3. Customers hold tickets for 10 minutes, then pay with Stripe. A paid order creates tickets with a code and a hashed entry token.
+4. At the door, staff scan ticket codes.
+5. After the show, a settlement manager computes the settlement, signs it, and records the artist's payment.
+
+## Current limits
+
+These are gaps in the code today, so plan around them.
+
+- No command moves an event from `announced` to on sale, doors, in progress, or completed. `Event.status` is not writable through GraphQL. The seed creates events at each stage.
+- No command releases a date hold or publishes a seating chart. Onboarding publishes the charts it creates.
+- The dashboard has no box-office sale, comp, or refund button. Refunds run through `refundTicketOrder`.
+- The door page takes a typed ticket code. It has no camera scanner.
+- Tickets show a code and an entry token as text. There is no QR image and there are no wallet passes.
+- The flags `canManageVenues` and `canManageArtists` exist on `Role` but no list or command checks them.

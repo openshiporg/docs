@@ -1,0 +1,13 @@
+---
+title: Customers and staff
+description: Users and roles.
+icon: Users
+---
+
+Route: `/dashboard/platform/customers`.
+
+The page lists the first 200 users with name, email, and role, and then the roles with the number of users assigned. Users with no role show as Customer. A role row links to its edit page at `/dashboard/roles/[id]`.
+
+Customers who buy tickets do not need a user. A guest checkout stores the name and email on the order. A signed-in user's order links to their `User` record.
+
+Create users and assign roles at `/dashboard/users` and `/dashboard/roles`. Those need `canManagePeople` and `canManageRoles`. See [Roles and permissions](/docs/openfront/concerts/roles-permissions).

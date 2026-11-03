@@ -1,0 +1,50 @@
+---
+title: Settlements
+description: The worksheet from gross to artist balance, the sign-off steps, and what freezes a settlement.
+icon: FileSpreadsheet
+---
+
+Route: `/dashboard/platform/settlements` and `/dashboard/platform/settlements/[id]`.
+
+A `Settlement` is the money document for one event. The list has tabs: Open (everything but `void`), draft, reviewed, promoter signed, artist signed, final.
+
+## The worksheet
+
+The detail page shows each figure and then the lines behind it:
+
+| Figure | Meaning |
+| --- | --- |
+| Gross tickets | Paid order totals less refunds |
+| Pass-through fees | Service and facility fees. They are never part of the artist split |
+| Tax | Tax on paid orders |
+| Net box office | Gross less tax and pass-through fees |
+| Counted expenses | Capped expenses up to the cap, plus uncapped expenses |
+| Breakeven | Counted expenses, guarantee, and promoter profit allowance |
+| Split base | The amount the percentage applies to |
+| Artist guarantee, overage, total | What the artist earns |
+| Venue merch share | The venue's cut of soft and hard merchandise |
+| Deposits paid | Deposits recorded as paid |
+| Balance due to artist | Artist total less deposits and payments |
+| Promoter net | What is left for the promoter |
+
+Integer cents only. Each percentage rounds down. The rounding remainder is saved on a `rounding` line.
+
+## Computing
+
+`computeSettlement` needs the event in `completed` or `settling`, and at least one accepted artist deal. It reads the paid orders, the expenses, the merch record, and the paid artist payments. It saves a `computedSnapshot` with a `hash` and moves a `completed` event to `settling`. Recomputing a `draft` or `reviewed` settlement voids it and creates the next version. The command checks that the artist lines add up to the balance due.
+
+## Sign-off
+
+`signSettlement` moves a settlement one step: `draft`, `reviewed`, `signed_promoter`, `signed_artist`, `final`. The button label names the next step. The artist signature must come from a different user than the promoter signature. Before each step it checks that the saved snapshot still matches its hash.
+
+A signed settlement (`signed_promoter` or later) is frozen. `computeSettlement` and `recordMerchSales` refuse to change it.
+
+## Corrections and payments
+
+These are GraphQL commands. The page has no form for them.
+
+- `adjustSettlement` creates a new draft version with an adjustment line. It needs a reason and a different user with `canApproveAdjustments` as approver.
+- `recordMerchSales` stores soft and hard merchandise gross and computes the venue share from the frozen deal terms.
+- `recordArtistPayment` records a deposit or a balance. A paid balance needs a `final` settlement and cannot exceed the balance due. Paying the balance in full moves the event and its offers to `settled`. Money is recorded, not moved. No payout runs.
+
+The page lists existing artist payments with kind, reference, status, and amount.

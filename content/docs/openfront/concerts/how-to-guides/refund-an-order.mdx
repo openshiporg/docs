@@ -1,0 +1,36 @@
+---
+title: Refund an order
+description: Refund a paid order through Stripe, with approval above the threshold.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Refunds are a GraphQL command, `refundTicketOrder`. The dashboard has no refund button. The caller needs `canIssueRefunds`.
+
+<Steps>
+<Step>
+### Find the order
+Search at `/dashboard/platform/box-office` and copy the order id from the generic list at `/dashboard/ticket-orders`.
+</Step>
+<Step>
+### Send the command
+Input: `orderId`, `reason`, `idempotencyKey`, and optionally `amountCents` (default is the full unrefunded balance) and `approvedById`.
+</Step>
+<Step>
+### Approval
+If the amount is above `StoreSettings.refundApprovalThresholdCents`, `approvedById` must be a different user with `canApproveAdjustments`.
+</Step>
+</Steps>
+
+## What happens
+
+1. The command reserves a `Refund` as `processing`, so two requests cannot refund more than the payment holds.
+2. It asks Stripe for the refund with the same idempotency key. If Stripe is unreachable the refund is marked `unknown`. Check Stripe before retrying.
+3. On success it records the refund. A refund of the whole order sets the order to `refunded`, marks each ticket `refunded` with its token cleared, reopens sold seats, and lowers the sold counts. A partial refund sets `partially_refunded` and leaves tickets valid.
+
+The order must be `paid` or `partially_refunded` and have a captured payment. Seeded orders have none, so they cannot be refunded.
+
+## Cancelling an event
+
+`cancelEvent` refuses while any paid order remains. Refund each paid order first, then cancel.

@@ -1,0 +1,42 @@
+---
+title: Hold a date and publish an event
+description: Place ranked holds, confirm one into an event, price it, and publish it.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Most of these steps are GraphQL commands with no button yet. Send them to `/api/graphql` as a signed-in user with the right flag. Each takes an `OperatorCommandInput` with a fresh `idempotencyKey`.
+
+<Steps>
+<Step>
+### Make sure the venue has a published seating chart
+Charts are created at `/dashboard/seating-charts`. No command publishes one, and `SeatingChart.status` is read-only in the dashboard. Setup publishes the charts it creates.
+</Step>
+<Step>
+### Place a hold
+`placeDateHold` with `venueId`, `date`, `rank`, and optionally `artistId`, `agencyId`, and `expiresAt`. The default expiry is seven days. Needs `canManageEvents`.
+</Step>
+<Step>
+### Challenge or confirm
+`challengeHold` with `holdId` marks a hold challenged. `confirmHold` with `holdId`, `seatingChartId`, `title`, and optionally `showAt`, `doorsAt`, and `ageRestriction` creates an event in `hold`. Earlier-ranked live holds must be gone first.
+</Step>
+<Step>
+### Price it
+Create price levels at `/dashboard/price-levels`. Each needs an event, a name, a price, fees, a capacity, and the chart sections it covers. Every section needs at least one level before publishing. Optional tiers go in `/dashboard/price-level-phases`.
+</Step>
+<Step>
+### Publish
+Press **Publish** on the event page (`publishEvent`). It creates one seat record for each seat in each reserved section, marks killed seats `killed`, and moves the event to `announced`.
+</Step>
+</Steps>
+
+## After publishing
+
+No command moves an event from `announced` to on sale. Event status is read-only through GraphQL and the dashboard, so a newly published event stays `announced` and cannot be held by customers. This is a known gap. See [Current limits](/docs/openfront/concerts#current-limits).
+
+You can block seats or quantity before sale with `setProductionHold` (`levelId`, `holdType`, and `seatInventoryIds` or `quantity`) and free them with `releaseProductionHold`. Needs `canManageInventory`.
+
+## Offers
+
+`sendOffer` and `acceptOffer` with `offerId`. Accepting freezes the terms. See [Deals](/docs/openfront/concerts/deals).

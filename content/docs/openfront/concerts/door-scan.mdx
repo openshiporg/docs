@@ -1,0 +1,31 @@
+---
+title: Door scan
+description: Scan ticket codes at the gate and see the admitted count.
+icon: ScanLine
+---
+
+Route: `/dashboard/platform/door`.
+
+The page lists events that are on sale, sold out, at doors, in progress, or completed. Pick one. It shows three counts: admitted, tickets, and venue capacity, then a list of the last 15 scans.
+
+## Scanning
+
+The scan form appears only while the event status is `doors` or `in_progress`. Type a ticket code and a gate name, then press **Scan**. This calls `scanTicket`, which needs `canScanTickets`.
+
+The result is one of:
+
+| Result | Meaning |
+| --- | --- |
+| `admitted` | The ticket was `valid` and is now `checked_in` |
+| `duplicate` | The ticket was already checked in and the event does not allow re-entry |
+| `reentry` | The ticket was already checked in and the event has `allowReentry` on |
+| `wrong_event` | The ticket belongs to another event |
+| `void` | The ticket is `void`, `refunded`, or `transferred` |
+
+Every scan writes a `ScanEvent` with the gate, the scanner, and the time. An unknown code returns an error and writes nothing. Admitting a ticket fails with "Doors are not open" unless the event is in `doors` or `in_progress`.
+
+## Tokens
+
+`scanTicket` also accepts a `token` instead of a code. It hashes the token and looks up `Ticket.tokenHash`. The page only sends codes. It has no camera.
+
+No command moves an event into `doors` or `in_progress`. The seed has no event in either status, so the form does not appear on seeded data.

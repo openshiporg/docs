@@ -1,0 +1,86 @@
+---
+title: Troubleshooting
+description: Error messages from holds, checkout, door scans, settlement, and setup, with causes and fixes.
+icon: LifeBuoy
+---
+
+## Holds and checkout
+
+| Message | Cause and fix |
+| --- | --- |
+| Event is not on sale | Only `presale` and `on_sale` events can be held. Event status has no command to change it |
+| Select 1–8 distinct seats | A seat hold takes one to eight different seats |
+| Select open seats in one price level | A seat is taken, or the seats sit in different levels |
+| Invalid level or quantity | The quantity is above the level's per-order limit (default 8), or the level is not active |
+| Select reserved seats | The level covers reserved sections. Use `createSeatHold` |
+| Sales window closed | The level's start or end time blocks sales |
+| Presale code required | The event is in presale or before `onSaleAt`. Enter a valid code |
+| Invalid or exhausted code | The code is paused, expired, out of scope, over `maxUses` or `perOrderLimit`, or is a `comp` code |
+| Capacity exhausted / Section capacity exhausted | Sold, held, and blocked tickets already fill the level or section |
+| Pricing phase exhausted | Every pricing phase has sold out |
+| Hold expired | The 10-minute hold ran out. Start again |
+| Age confirmation required | The event has an age limit. Tick the age box |
+| Card payments are not configured | `NEXT_PUBLIC_STRIPE_KEY` and `STRIPE_SECRET_KEY` are not set |
+| Idempotency key was already used with a different request | A retry changed the request. Use a new key |
+| Payment succeeded after the hold was released | Stripe took the payment after the hold expired. Refund the order |
+
+## Orders and transfers
+
+| Message | Cause and fix |
+| --- | --- |
+| Order not found | Wrong email or number, or the proof is invalid or expired |
+| Hold not found | The proof is missing, wrong, or expired |
+| Ticket cannot be transferred | The ticket is not `valid`, or not on that order |
+| Open this order from the lookup page… | The confirmation page lost its browser session. Use `/lookup` |
+
+## Refunds
+
+| Message | Cause and fix |
+| --- | --- |
+| Permission required: canIssueRefunds | The caller lacks the flag |
+| Order is not refundable | The order is not `paid` or `partially_refunded` |
+| No captured payment | The order has no succeeded payment. Seeded orders are written without one |
+| Refund exceeds unrefunded balance | The amount is above what is left |
+| A different manager must approve this refund | The amount is above the threshold. Pass an `approvedById` for another user |
+| Approver lacks manager permission | The approver needs `canApproveAdjustments` |
+
+## Events, holds, and offers
+
+| Message | Cause and fix |
+| --- | --- |
+| Earlier ranked hold must be released | A lower-ranked live hold exists for that venue and date |
+| Hold cannot be confirmed | The hold is not `held` or `challenged`, or it has expired |
+| Published venue chart required | The chart must be `published` and belong to the hold's venue |
+| Confirmed event and published chart required | `publishEvent` needs an event in `hold` with a published chart |
+| Every section requires pricing | Add a price level for every section |
+| Published seating charts are immutable | Create a new chart version |
+| Event cannot transition | The event is already `cancelled` or `settled` |
+| Refund all paid orders before cancelling | Paid orders remain. Refund them first |
+| `Invalid <list> transition from X` | A command found the record in a different state than it expected, for example a second sign-off on the same step. Reload and retry |
+
+## Door and settlement
+
+| Message | Cause and fix |
+| --- | --- |
+| Doors are not open | The event is not in `doors` or `in_progress` |
+| Ticket not found | The code is wrong |
+| Completed event required | Settlement needs `completed` or `settling` |
+| Accepted artist deal required | No offer is `accepted`, `contracted`, or `settled` |
+| Accepted deal terms hash mismatch | The offer changed after acceptance. Make a new offer version |
+| Settlement is frozen | The settlement is signed. Use `adjustSettlement` |
+| Signed settlement is frozen; create an approved adjustment | `computeSettlement` refuses a signed settlement |
+| Settlement snapshot hash mismatch | The saved snapshot was altered |
+| Artist signature requires a different user | Sign as the artist with another user |
+| Final settlement required | Pay a balance only after `final` |
+| Payment exceeds the balance due | Lower the amount |
+| A different manager must approve | An adjustment needs an `approvedById` other than the caller |
+
+## Setup
+
+| Message | Cause and fix |
+| --- | --- |
+| Permission required: canManageOnboarding | The role needs the flag |
+| Setup requires promoter settings, venues and events | The JSON is missing sections |
+| Missing venue or artist for an event | An event names a venue or artist not in the same JSON |
+| Setup sales exceed level capacity | A seeded sale exceeds a level's capacity |
+| The dashboard shows a generic error page | A server query failed. Check the server log and that migrations ran |

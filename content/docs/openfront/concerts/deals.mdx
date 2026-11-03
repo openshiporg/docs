@@ -1,0 +1,34 @@
+---
+title: Deals
+description: Artist offers by status, the four deal types, and the calculator preview.
+icon: Handshake
+---
+
+Route: `/dashboard/platform/deals`.
+
+An `Offer` is one artist deal for one event. The page lists offers with status tabs: draft, sent, accepted, contracted, settled. `declined` is a valid status but has no tab.
+
+## Deal types
+
+| `dealType` | Artist is paid |
+| --- | --- |
+| `flat_guarantee` | The guarantee |
+| `versus` | The larger of the guarantee and a percentage of net box office after expenses |
+| `plus` | The guarantee plus a percentage of what is left after breakeven (expenses, guarantee, and the promoter profit allowance) |
+| `door_deal` | A percentage of net box office |
+
+Other fields on an offer: `guaranteeCents`, `percentageBps`, `promoterProfitBps`, `expenseCapCents`, `merchSplitBps`, `hardMerchSplitBps`, `hospitalityRiderCents`, `depositCents`, `depositDueAt`, `radiusClause`, `breakevenBasis`, `notes`, and `version`.
+
+## Lifecycle
+
+`sendOffer` moves `draft` to `sent`. `acceptOffer` moves `sent` to `accepted` and freezes the terms. It copies the deal fields into `acceptedTerms` and stores a hash in `acceptedTermsHash`. Settlement reads the frozen terms and refuses to run if the hash no longer matches. A change needs a new offer version.
+
+Both commands need `canManageDeals`. They have no buttons on this page.
+
+## Calculator preview
+
+Each row shows what the artist and the promoter would take at a projected gross. The default projection is $20,000.00. Add `?gross=<cents>` to the URL to change it. The preview runs the same `computeSettlement` function the real settlement uses, with no tax, no pass-through fees, and the expense cap counted in full.
+
+## Not here
+
+The page cannot create or edit an offer. Use `/dashboard/offers`. Offer status is read-only there. The `declined` and `contracted` statuses have no command that sets them.

@@ -1,0 +1,45 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Concerts on a Node host. No hosted app exists yet.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+There is no hosted Openfront Concerts app. These steps describe how you would run it yourself. Payments are tested with Stripe TEST keys.
+
+## Railway file
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run on each start. No Railway project is set up for this repo.
+
+## Any host
+
+<Steps>
+<Step>
+### Provision services
+PostgreSQL, and S3-compatible storage if you want image uploads.
+</Step>
+<Step>
+### Set environment
+`DATABASE_URL`, `SESSION_SECRET` (32 or more characters), and the Stripe keys. See [Getting started](/docs/openfront/concerts/getting-started).
+</Step>
+<Step>
+### Back up, build, migrate, start
+```bash
+npm run build
+npm run migrate
+npm start
+```
+`npm run build` runs `keystone build --no-ui`, then `npm run migrate`, then `next build`, so the build needs database access.
+</Step>
+<Step>
+### Create the first admin
+Open `/dashboard/init`, then run setup from the sidebar.
+</Step>
+<Step>
+### Register the Stripe webhook
+Point it at `/api/integrations/payment/pp_stripe_stripe/webhook`. See [Payment providers](/docs/openfront/concerts/payment-providers).
+</Step>
+</Steps>
+
+All app processes must share the same database and `SESSION_SECRET`. The secret signs guest proofs for holds and orders, so changing it invalidates open holds and order links.
