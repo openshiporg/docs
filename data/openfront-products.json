@@ -328,5 +328,15 @@
     "href": "/docs/openfront/travel-agent",
     "sourceUrl": "https://github.com/openshiporg/openfront-travel-agent",
     "catalogUrl": null
+  },
+  {
+    "id": "tour-guide",
+    "repository": "openfront-tour-guide",
+    "name": "Tour Guide",
+    "description": "Scheduled tours with capacity, guides and fleet, waivers, reseller channels, refunds, and guide payouts.",
+    "color": "#0d9488",
+    "href": "/docs/openfront/tour-guide",
+    "sourceUrl": "https://github.com/openshiporg/openfront-tour-guide",
+    "catalogUrl": null
   }
 ]

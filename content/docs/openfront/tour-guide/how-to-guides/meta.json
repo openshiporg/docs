@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "set-up-a-tour",
+    "generate-departures",
+    "staff-a-departure",
+    "take-a-phone-booking",
+    "check-guests-in",
+    "cancel-a-departure",
+    "refund-a-booking"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}

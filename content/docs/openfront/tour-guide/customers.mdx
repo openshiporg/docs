@@ -1,0 +1,13 @@
+---
+title: Customers
+description: The generic user list. Guests book without an account.
+icon: UserRound
+---
+
+`/dashboard/platform/customers` is a generic Keystone list screen for `User`. It is the same list as the dashboard's Users model.
+
+Guests do not need an account. A booking stores the lead booker's name, email, and phone. A signed-in user who books has the booking linked to them through `customer`. The storefront has no sign-in or sign-up page.
+
+Who can see users depends on the `Role` flags `canSeeOtherPeople` and `canEditOtherPeople`. `canManageCustomers` exists as a flag but no screen or operation reads it.
+
+Bookings, participants, and waivers contain personal data. Participant medical notes are readable only with `canReadMedicalNotes`.

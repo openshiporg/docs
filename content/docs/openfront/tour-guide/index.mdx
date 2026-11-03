@@ -1,0 +1,78 @@
+---
+title: Openfront Tour Guide
+description: Tours, scheduled departures, guides, fleet, bookings, waivers, reseller channels, refunds, and payouts.
+icon: Compass
+---
+
+[Source](https://github.com/openshiporg/openfront-tour-guide) (private repository)
+
+Openfront Tour Guide is a self-hostable app for a tour or activity operator. It sells scheduled departures with limited seats. It tracks which guides and vehicles each departure needs, collects waivers, and settles money with guests, guides, and resellers.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/tour-guide/getting-started).
+
+## Status
+
+- The repository is private. There is no hosted app and no public demo.
+- Payments use Stripe in test mode while the app is in development.
+- The storefront is a plain placeholder for the booking loop. It has no designed look yet.
+- Some dashboard pages are generic list screens, not purpose-built screens. [External dashboards](/docs/openfront/tour-guide/external-dashboard) says which.
+
+## Who uses what
+
+| User | Surface | Typical jobs |
+| --- | --- | --- |
+| Guest | Storefront | Pick a tour and date, hold seats, pay, find a booking, sign waivers, cancel |
+| Reservations staff | Bookings, Today | Phone and walk-up sales, refunds |
+| Operations manager | Calendar, Guides, Resources | Generate departures, staff them, cancel for weather |
+| Guide | Check-in | Open the manifest and check guests in |
+| Finance | Bookings, Channels | Refunds, reseller statements |
+
+## Surfaces
+
+- **Storefront** at `/`: tours, a tour page, checkout, booking page, lookup, and waiver. See [External storefronts](/docs/openfront/tour-guide/external-storefront).
+- **Dashboard** at `/dashboard`: operator pages under `/dashboard/platform/*` plus the generic Keystone list screens at `/dashboard/[listKey]`. See [External dashboards](/docs/openfront/tour-guide/external-dashboard).
+- **GraphQL** at `/api/graphql`.
+- **Payment webhook** at `/api/webhooks/payment/[provider]`.
+- **Dashboard assistant** at `/api/completion`, with an MCP endpoint at `/api/mcp-transport/[transport]` and OAuth routes under `/oauth` and `/.well-known`.
+
+## Models
+
+The schema has 40 lists in `features/keystone/models`. See [Data model](/docs/openfront/tour-guide/data-model).
+
+| Area | Lists |
+| --- | --- |
+| Identity | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+| Catalog | `Tour`, `TicketType`, `AddOn`, `MeetingPoint`, `CancellationPolicy`, `PricingRule`, `Schedule` |
+| Capacity and staffing | `Departure`, `Guide`, `GuideCertification`, `GuideAvailability`, `GuideAssignment`, `Resource`, `ResourceAssignment`, `GuidePayout` |
+| Booking | `Booking`, `BookingLine`, `InventoryHold`, `Participant`, `WaiverTemplate`, `WaiverSignature`, `PromoCode`, `PromoRedemption` |
+| Operations | `Channel`, `ChannelStatement`, `OperationalTask`, `NotificationPreference`, `StoreSettings`, `AuditEvent`, `ManagerApproval` |
+| Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent`, `IdempotencyKey` |
+
+Bookings, holds, departures, participants, assignments, payouts, and audit events cannot be created or edited through generated GraphQL. They change only through custom operations.
+
+## One operator per deployment
+
+There is one operator per deployment. There is no organization or tenant list. Access comes from boolean flags on `Role`. See [Roles and permissions](/docs/openfront/tour-guide/roles-permissions).
+
+## Main workflow
+
+1. Set up the operator: settings, payment provider, meeting points, cancellation policies, waiver, guides, fleet, and tours with ticket types and a schedule.
+2. Generate departures from the schedules, 60 days ahead.
+3. Offer guides to departures and assign a vehicle or boat. The vehicle sets the seat limit.
+4. Guests hold seats for 10 minutes, then pay. Staff can also book by phone or walk-up, or for a reseller.
+5. Each guest signs a waiver through a link.
+6. On the day, guides check guests in from the manifest.
+7. Close the finished departure. Draft guide payouts are created.
+8. Refund or cancel by policy. Weather cancellations refund in full or offer a rebook credit.
+9. Generate reseller statements.
+
+## Onboarding
+
+The sidebar shows a setup card to a user with `canManageOnboarding` while there are no tours. The dialog offers two templates: a complete operator setup and a minimal one. Both create records through allow-listed setup operations and report each step. See [Getting started](/docs/openfront/tour-guide/getting-started).
+
+## What the code does not do
+
+- No live connection to resale marketplaces. Resellers are channels with a commission rate you enter.
+- No gift certificates, SMS, dynamic pricing, or multi-day lodging.
+- No automatic move of a departure to `in_progress`. The status exists but no operation sets it.
+- No email is sent for bookings. Password reset email needs SMTP settings.

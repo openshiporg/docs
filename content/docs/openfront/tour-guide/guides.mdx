@@ -1,0 +1,26 @@
+---
+title: Guides
+description: The guide roster with certifications and upcoming assignments.
+icon: Users
+---
+
+`/dashboard/platform/guides` lists up to 100 guides, ordered by name. It reads the generated `guides` query, so it needs `canManageGuides`.
+
+Each card shows the guide's name and status, languages, pay rate (per tour or per hour), each certification with its expiry, and up to five offered or accepted assignments. A certification that expires within 30 days is highlighted.
+
+## Assignments
+
+The page does not offer or accept assignments. Use these GraphQL operations:
+
+- `assignGuide` (needs `canManageGuides`) offers a departure to a guide as `lead`, `assistant`, or `driver`. It refuses an inactive guide, a closed departure, an expired required certification, an overlapping accepted or worked assignment, and a time-off block.
+- `respondToAssignment` lets the guide's own user, or a user with `canManageGuides`, move an `offered` assignment to `accepted` or `declined`. Acceptance re-checks overlap and certifications.
+
+The pay for an assignment is copied when it is offered: the per-tour rate, or the hourly rate times the departure length.
+
+## Payouts
+
+`closeDeparture` creates one draft `GuidePayout` for each accepted guide and marks the assignment `worked`. There is no screen for approving or paying a payout. `GuidePayout` has `draft`, `approved`, and `paid` statuses, but no operation moves it past `draft`.
+
+## Other lists
+
+`GuideCertification` and `GuideAvailability` are generic lists. A guide's `status` is set at creation and cannot be changed by update. Availability blocks are read from the `unavailable` field as a list of `startAt` and `endAt` pairs. The `weeklyRules` field is stored but not read.

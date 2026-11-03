@@ -1,0 +1,38 @@
+---
+title: Set up a tour
+description: Create a tour with a meeting point, policy, ticket types, add-ons, and a schedule.
+icon: MapPin
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+This guide uses the generic list screens. You need `canManageTours`, `canManageDepartures`, and `canManageWaivers` if the tour needs a waiver.
+
+<Steps>
+<Step>
+### Create a meeting point
+Add a `MeetingPoint` with a name, address, and instructions. Guests see it on the tour page and the booking page.
+</Step>
+<Step>
+### Create a cancellation policy
+Add a `CancellationPolicy`. Set `rules` as a list, for example `[{"hoursBefore":24,"refundBps":10000},{"hoursBefore":0,"refundBps":0}]`. This refunds in full more than 24 hours out and nothing after.
+</Step>
+<Step>
+### Publish a waiver (optional)
+Create a `WaiverTemplate` with the body and the status `published`. Status cannot be changed after creation, and a published version cannot be edited. Make a new template to change the text.
+</Step>
+<Step>
+### Create the tour
+Add a `Tour`. Set the kind, duration, time zone, minimum and maximum group, guests per guide, and the resource kind it needs. Link the meeting point, policy, and waiver. Set the status to `active` when you create it, since update cannot change it.
+</Step>
+<Step>
+### Add ticket types and add-ons
+Add at least one active `TicketType` with a price in cents. Use `seatsUsed` of 2 for a tandem kayak. Add any `AddOn`.
+</Step>
+<Step>
+### Add a schedule
+Add a `Schedule` with `startTimes` such as `["09:00","14:00"]`. Add `BYDAY=MO,WE,FR` to the rule to limit the weekdays.
+</Step>
+</Steps>
+
+The tour appears on the storefront once it is active and has an on-sale departure. Next, [generate departures](/docs/openfront/tour-guide/how-to-guides/generate-departures).

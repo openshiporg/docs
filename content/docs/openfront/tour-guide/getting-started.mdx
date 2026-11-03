@@ -1,0 +1,93 @@
+---
+title: Getting started with Tour Guide
+description: Clone the source, set the environment, apply migrations, create the first user, and run setup.
+icon: Terminal
+---
+
+## Availability
+
+The repository is private. There is no hosted app and no public demo. You need access to `openshiporg/openfront-tour-guide`.
+
+## Requirements
+
+- Node.js 20 or later.
+- npm.
+- A PostgreSQL database you can migrate.
+- A Stripe account in test mode for card payments.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-tour-guide.git
+cd openfront-tour-guide
+npm install
+```
+
+## Environment
+
+There is no example env file. Create `.env`:
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_tour_guide
+SHADOW_DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_tour_guide_shadow
+SESSION_SECRET=replace-with-at-least-48-random-characters
+PUBLIC_SIGNUPS_ALLOWED=false
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+`SESSION_SECRET` must be at least 32 characters. Checkout proof and waiver links are signed with it. `SHADOW_DATABASE_URL` is needed only when you create migrations.
+
+Optional variables the code reads:
+
+| Variable | Used for |
+| --- | --- |
+| `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open the dashboard sign-up page |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email. Nothing else sends email |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard assistant at `/api/completion` |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Image storage declared in the Keystone config. No screen uploads files yet |
+
+Never commit `.env`.
+
+## Migrations
+
+The repo has checked-in Prisma migrations. Apply them with:
+
+```bash
+npm run migrate
+```
+
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database `DATABASE_URL` points at. Use `npm run migrate:gen` only against a disposable database.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+Next picks the first free port and prints it. The storefront is at `/`, the dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
+
+## First user
+
+On an empty database open `/dashboard/init`. The first user gets an Admin role with every flag, including `canManageOnboarding`.
+
+## Setup
+
+After you sign in, the sidebar shows a setup card while there are no tours. Open it and choose a template:
+
+- **Complete operator setup**: the operator "Harbor Lights Tours", with 6 tours, 8 guides, 2 vans, a 16-kayak pool and a boat, 2 channels, 2 cancellation policies, a waiver, a promo code, three roles, and about 60 bookings across upcoming departures.
+- **Minimal setup**: the settings, payment provider, and three roles, plus one meeting point, one policy, one guide, one tour with a schedule, and three departures. It makes no bookings.
+
+The dialog runs these steps in order and shows each one: settings, payment provider, roles, meeting points, policies, waiver, promo codes, channels, fleet, guides, tours, then departures and bookings. Every step is idempotent by name, so running it again reuses existing records. The complete template also creates three weeks of departures, check-ins on the nearest ones, a weather-cancelled departure with refunds, and completed past departures with draft guide payouts.
+
+The seed is a starting point. Replace the names, prices, and times with your own before you sell.
+
+## Checks
+
+```bash
+node --import tsx --test features/keystone/lib/*.test.ts
+npm run build
+```
+
+The unit tests include the money math (basis points, commission, refund by policy, the minimum-participants decision, and quote totals) and the internal-origin check. `scripts/refund-approval.runtime.ts` is a scripted check you run against a disposable database with `DATABASE_URL` set.
