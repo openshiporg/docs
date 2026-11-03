@@ -1,0 +1,25 @@
+---
+title: Recruiting
+description: The prospect board by stage, with the contact window.
+icon: Target
+---
+
+The board at `/dashboard/platform/recruiting` lists athletes with status `prospect` or `recruiting`, grouped by `recruitingStage`: `identified`, `contacted`, `meeting`, `pitched`, `verbal`, `signed`, and `lost`.
+
+## Each row
+
+- Status label, name, league, lead agent, and the latest interaction.
+- A **Move to** button for the next stage. It calls `moveRecruitingStage`. The last two stages (`signed`, `lost`) have no button on the board.
+- A note when the contact window has not opened, for example "Contact opens Dec 14, 2026".
+
+## Contact window
+
+`Athlete.contactAllowedFrom` holds the first date you may contact the athlete. `moveRecruitingStage` refuses any move except to `lost` before that date. The error is "Contact window has not opened". Some unions and NCAA state laws restrict contact. Set the date from the rules that apply to you. The app does not look them up.
+
+## Interactions
+
+An `Interaction` logs a `call`, `meeting`, `email`, `text`, `visit`, or `note` with a summary and an optional next step date. Interactions appear on the athlete's Timeline tab. The public inquiry form also creates one. See [Public site and invoice payment](/docs/openfront/sports-agents/public-site).
+
+## History
+
+Each stage move writes an `AuditEvent` with the before and after athlete rows.

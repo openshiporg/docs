@@ -1,0 +1,32 @@
+---
+title: Override an exclusivity clash
+description: Request an override, have a second person approve it, and activate the deal.
+icon: Stamp
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need two users. The requester needs `canManageEndorsements`. The approver needs `canApproveActions`.
+
+<Steps>
+<Step>
+### Find the blocked deal
+Open `/dashboard/platform/endorsements`. A deal that clashes shows **Request override** where **Activate** would be.
+</Step>
+<Step>
+### Request the override
+Choose **Request override**, give a reason, and submit. The request waits on `/dashboard/platform/approvals`.
+</Step>
+<Step>
+### Approve as another user
+A different user opens Approvals and chooses **Approve**. You cannot approve your own request.
+</Step>
+<Step>
+### Activate the deal
+The requester opens Approvals and chooses **Activate deal** on the approved request. The approval is consumed and the deal becomes `active`.
+</Step>
+</Steps>
+
+## Check
+
+The audit log has a `deal.exclusivity_overridden` event that lists the conflicting deals. The approval shows as consumed and cannot be used again. Requests expire after one hour.

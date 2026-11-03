@@ -1,0 +1,66 @@
+---
+title: Onboarding seed
+description: What setup creates, in what order, and how to re-run it safely.
+icon: Wand
+---
+
+Setup lives in `features/platform/onboarding`. The sidebar card opens the dialog from the dashboard layout. The seed is in `lib/seed.json` with two templates, `full` and `minimal`.
+
+## Phases
+
+The dialog runs these in order. Each record is checked first, so a second run reuses existing rows.
+
+1. Agency
+2. Roles
+3. Staff
+4. Certifications
+5. Teams
+6. Athletes
+7. Representation agreements
+8. Contacts
+9. Brands
+10. Playing contracts, with years and incentives
+11. Endorsement deals, with deliverables
+12. Agent splits
+13. Payment providers
+14. Schedules, invoices, and ledger
+
+The server side is the `ensureOnboardingRecord` mutation. It needs `canManageOnboarding`. The status moves from `not_started` to `in_progress` to `completed`, or `dismissed` from the card. These updates go through `updateActiveUser`, which only accepts `email`, `name`, `phone`, `password`, and `onboardingStatus`.
+
+## The money phase
+
+The last phase runs the same commands an operator would:
+
+- generate payment schedules for signed contracts and active deals;
+- mark due payments received, three per athlete up to 14;
+- draft invoices and move them to `draft`, `sent`, `partially_paid`, `paid`, and `void`;
+- post one wire receipt and its exact reversal on an open invoice;
+- post a trust deposit for one athlete;
+- generate reminder tasks.
+
+Because the commands do the work, the seeded balances match their states. A paid invoice has a zero balance and its payments are received.
+
+## Full template
+
+| Record | Count |
+| --- | --- |
+| Roles | 5 (Owner, Agent, Marketing Rep, Accountant, Customer) |
+| Staff | 5, with no known passwords |
+| Certifications | 4, one expiring soon |
+| Teams | 9 |
+| Athletes | 14, across NFL, NBA, WNBA, MLS, NCAA, and NWSL |
+| Agreements | 10 |
+| Playing contracts | 6 |
+| Brands and contacts | 9 brands, 4 contacts |
+| Endorsement deals | 12, one blocked by an exclusivity clash |
+| Agent splits | 20 |
+
+Seeded staff get random passwords. Set real ones with a password reset or from the user record.
+
+## Basic template
+
+The same roles and providers, plus one agent, one athlete, one agreement, one contract, one brand, and one deal.
+
+## Names
+
+Seed names, emails, and brands are made up for setup. They are not real people or companies. Replace them before real use.

@@ -293,7 +293,7 @@
     "id": "sports-agents",
     "repository": "openfront-sports-agents",
     "name": "Sports Agents",
-    "description": "Early repository on the Openfront dashboard, auth, roles, AI chat, and MCP foundation; the sports-agency domain is not built yet.",
+    "description": "Agency software for athlete rosters, recruiting, contracts, endorsement deals, and commission billing with an append-only ledger, approvals, and Stripe test-mode invoice payment; repository is private.",
     "color": "#4f46e5",
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
