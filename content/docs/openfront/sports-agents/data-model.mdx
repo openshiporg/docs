@@ -1,14 +1,78 @@
 ---
 title: Data model
-description: The four Keystone lists and their relationships.
+description: The Keystone lists, their statuses, and the rules that protect money.
 icon: Database
 ---
 
-| List | Fields | Relationships |
-|---|---|---|
-| `User` | `name`, `email` (unique), `password`, reset token fields | `role` to `Role.assignedTo`; `tasks` to `Todo.assignedTo` |
-| `Role` | `name`, `canAccessDashboard`, `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canManageRoles`, `canCreateTodos`, `canManageAllTodos` | `assignedTo` users |
-| `Todo` | `label`, `description`, `isComplete`, `status`, `priority`, `tags`, `dueDate`, `weight`, `budget`, `isPrivate`, `largeNumber`, `metadata`, `secretNote`, `coverImage` | `assignedTo` user; `todoImages` |
-| `TodoImage` | `image`, `imagePath`, `altText`, `metadata` | `todos` |
+All lists are in `features/keystone/models`. Most use the helper `domainList` in `domainFields.ts`, which adds tracking fields, athlete scope, and write limits. The generated schema is `schema.graphql`. The checked-in migrations are in `migrations/`.
 
-Seven Prisma migrations create the schema. Keystone config lives in `features/keystone/index.ts`, re-exported from `keystone.ts`. The generated schema is `schema.graphql`.
+## Conventions
+
+- Money is integer cents with a `currencyCode` (ISO 4217, default `USD`). Ledger and trust amounts are `bigInt`.
+- Rates are basis points from 0 to 10000.
+- Status fields cannot be set by generated writes. They change through commands.
+- Every list has `createdAt` and `updatedAt`.
+- Customer-facing numbers are random: `INV-` plus 16 hex characters.
+
+## Clients
+
+| List | Key fields |
+| --- | --- |
+| `Athlete` | `fullName`, `sport`, `league`, `status`, `recruitingStage`, `leadAgent`, `supportStaff`, `portalUser`, `isPublic`, `contactAllowedFrom` |
+| `RepresentationAgreement` | `athlete`, `agent`, `scope`, `playingCommissionBps`, `marketingCommissionBps`, `capBps`, `effectiveAt`, `expiresAt`, `status` |
+| `Contact` | `name`, `org`, `role`, `email`, `phone`, `athletes`, `doNotContact` |
+| `Brand` | `name`, `category`, `contacts`, `website` |
+| `Interaction` | `athlete`, `contact`, `brand`, `user`, `kind`, `occurredAt`, `summary`, `nextStepAt` |
+| `Team` | `name`, `league`, `city` |
+
+Agreement statuses: `draft`, `sent`, `signed`, `filed_with_union`, `active`, `terminated`, `expired`. Athlete statuses: `prospect`, `recruiting`, `client`, `former`, `lost`.
+
+## Contracts and deals
+
+| List | Key fields |
+| --- | --- |
+| `PlayingContract` | `athlete`, `team`, `contractType`, `startSeason`, `endSeason`, `totalValueCents`, `guaranteedCents`, `signingBonusCents`, `commissionBps`, `representationAgreement`, `status` |
+| `ContractYear` | `contract`, `season`, base, guaranteed, roster, and workout cents, `payPeriods`, `paySchedule` |
+| `Incentive` | `contract`, `description`, `amountCents`, `likelyToBeEarned`, `status`, `earnedAt`, `evidence` |
+| `EndorsementDeal` | `athlete`, `brand`, `owner`, `termStart`, `termEnd`, `totalValueCents`, `commissionBps`, `exclusivityCategory`, `territory`, `status` |
+| `Deliverable` | `deal`, `kind`, `dueAt`, `status`, `completedAt`, `proofLink`, `proof`, `notes` |
+
+Contract statuses: `negotiating`, `signed`, `active`, `completed`, `terminated`, `released`. Deal statuses: `prospect`, `negotiating`, `signed`, `active`, `completed`, `terminated`.
+
+## Money
+
+| List | Key fields |
+| --- | --- |
+| `ScheduledPayment` | `sourceKey` (unique), `contractYear`, `endorsementDeal`, `incentive`, `athlete`, `dueAt`, `grossCents`, `commissionBps`, `commissionCents`, `remainder`, `receivedAt`, `invoice`, `status` |
+| `CommissionInvoice` | `athlete`, `number` (unique), `issuedAt`, `dueAt`, `totalCents`, `paidCents`, `status`, `paymentCollection` |
+| `CommissionInvoiceLine` | `invoice`, `scheduledPayment`, `description`, `grossCents`, `commissionBps`, `commissionCents`, `quantity`, `unitPriceCents`, `feesCents`, `taxCents` |
+| `CommissionLedgerEntry` | `entryKey` (unique), `athlete`, `invoice`, `scheduledPayment`, `entryType`, `amountCents`, `payeeUser`, `reverses`, `reversalKey` (unique), `reason`, `preparedBy`, `approvedBy`, `occurredAt` |
+| `AgentSplit` | `athlete`, `deal`, `user`, `shareBps` |
+| `ClientTrustAccount` | `athlete`, `name`, `currencyCode` |
+| `ClientTrustEntry` | `account`, `athlete`, `invoice`, `entryType`, `amountCents`, `reference`, `reverses`, `reversalKey` (unique) |
+
+Invoice statuses: `draft`, `sent`, `partially_paid`, `paid`, `void`, `written_off`. Invoice lines snapshot the description, gross, rate, and commission at the time of invoicing. A later change to the payment or contract does not alter a line.
+
+Ledger entries and trust entries are append-only. A correction is an exact reversal, and the unique `reversalKey` makes a second reversal fail at the database.
+
+## Records and control
+
+| List | Key fields |
+| --- | --- |
+| `AuditEvent` | `actor`, `action`, `targetList`, `targetId`, `before`, `after`, `reason`, `requestId` |
+| `ManagerApproval` | `actionType`, `targetId`, `amountCents`, `reason`, `requestFingerprint`, `status`, `requestedBy`, `approvedBy`, `expiresAt`, `consumedAt` |
+| `IdempotencyKey` | Request key, method, path, fingerprint, response, recovery point. Hidden, no access |
+| `Document` | `athlete`, `contract`, `deal`, `agreement`, `kind`, `version`, `sha256`, `storageKey` (never readable), `uploadedBy` |
+| `Task` | `title`, `athlete`, `deal`, `contract`, `assignee`, `dueAt`, `status`, `priority`, `autoKey` (unique) |
+| `Agency` | `name`, default rates, `currencyCode`, `fiscalYearStart`, `refundApprovalThresholdCents` |
+| `AgentCertification` | `user`, `body`, `number`, `issuedAt`, `expiresAt`, `status`, `document` |
+
+## Payment lists
+
+`PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, and `PaymentWebhookEvent` come from the Restaurant lineage. A `Payment` points at its `CommissionInvoice` through `order`. A `PaymentCollection` points at an invoice. Providers keep credentials in a field that GraphQL never returns.
+
+## Concurrency and replay
+
+Every money command runs in one database transaction, takes a Postgres advisory lock on the athlete (`pg_advisory_xact_lock`), and records an idempotency key. The same key with a changed request is refused. A completed key replays the stored result. Status changes compare the current status first and fail if another request changed it.
+
+`docs/REUSE.md` in the source repo lists which sibling Openfront products each piece was adapted from.

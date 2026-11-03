@@ -1,15 +1,48 @@
 ---
 title: External storefronts
-description: Use the skill to plan a customer-facing site and see which public routes exist.
+description: Give an LLM the Sports Agents storefront skill to adapt the public site or create a separate client.
 icon: AppWindow
 ---
 
-To create a custom Sports Agents storefront, copy the skill and give it to your LLM. The skill will explain that a storefront starts from the Keystone schema and access rules, with routes added under `app/` and screens under `features/storefront`.
+To create a custom public site or client portal, copy the skill and give it to your LLM. The skill explains how `features/storefront` and the public routes implement the current placeholder, and where the invoice payment boundary sits.
 
-After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, GraphQL schema, access rules, sessions, and provider boundaries in the supplied Sports Agents codebase before proposing work.
+After that source orientation, it asks what you dislike, what should stay, who the visitors are, and what the replacement should look like. It then traces the routes, GraphQL operations, proof handling, and Stripe boundary before proposing work.
 
-Skill file: [`/skills/openfront-sports-agents-custom-storefront/SKILL.md`](/skills/openfront-sports-agents-custom-storefront/SKILL.md)
+The skill is `public/skills/openfront-sports-agents-custom-storefront/SKILL.md` in the docs repository.
 
-## Public routes
+## Current state
 
-See [Public routes](/docs/openfront/sports-agents/storefront) for what answers without a session. A storefront needs public data (an access rule that exposes only what customers may see), customer identity (sign-up creates a `User` with no role), and routes and UI.
+The public site is a plain placeholder with no design. Keep the data contract and replace the presentation.
+
+## Current routes
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `HomePage` | Published athletes |
+| `/athletes/[id]` | `AthletePage` | One athlete and the inquiry form |
+| `/invoice` | `LookupPage` | Invoice lookup by email and number |
+| `/invoice/[id]` | `InvoicePage` | Invoice and Stripe card form |
+| `/invoice/[id]/confirmation` | `ConfirmationPage` | Confirmation code |
+
+## Named operations
+
+All calls are in `features/storefront/lib/data.ts` and use only custom operations.
+
+| Function | Operation |
+| --- | --- |
+| `getRoster` | `agencyRoster`, `agencyName` |
+| `getAthlete` | `agencyAthlete`, `agencyName` |
+| `sendInquiry` | `submitInquiry` |
+| `lookupInvoiceAction` | `lookupInvoice`, then a redirect with the proof |
+| `getInvoice` | `guestInvoice`, `agencyName` |
+| `startPayment` | `payCommissionInvoice` |
+| `confirmPayment` | `confirmCommissionPayment` |
+
+## Rules
+
+- Do not expose raw list CRUD. The invoice, payment, and ledger lists are staff-only.
+- The proof is the only guest credential. It is bound to one invoice and expires after two hours. Keep it out of logs and analytics.
+- The card form runs in the browser with Stripe.js and the publishable key. The server never receives card data.
+- Confirm payment only through `confirmCommissionPayment`. The server verifies the amount with Stripe before it posts a receipt.
+- A signed-in athlete linked through `Athlete.portalUser` can use `myAthleteSummary`, `myDeliverables`, and `myInvoices`. No built-in screen uses them.
+- There is no hosted storefront. The invoice page needs an installed Stripe provider and test keys.

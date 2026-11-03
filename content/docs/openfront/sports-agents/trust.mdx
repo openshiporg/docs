@@ -1,0 +1,33 @@
+---
+title: Trust
+description: Client trust accounts and entries for money held on an athlete's behalf.
+icon: Landmark
+---
+
+Use trust when the agency collects endorsement money for an athlete. The screen at `/dashboard/platform/trust` is read-only. It lists each `ClientTrustAccount` with its balance and the latest 50 entries. The athlete record's Trust tab shows the same entries.
+
+## Entries
+
+`ClientTrustEntry.entryType` is one of:
+
+| Type | Sign | Meaning |
+| --- | --- | --- |
+| `deposit` | plus | Money received for the athlete |
+| `commission_transfer` | minus | Commission moved against a sent invoice |
+| `disbursement_to_client` | minus | Money paid out to the athlete |
+| `reversal` | opposite | Exact reversal of an earlier entry |
+
+## Rules
+
+`postTrustEntry` enforces:
+
+- The balance never goes below zero.
+- A `commission_transfer` needs a `sent` or `partially_paid` invoice for the same athlete and currency, and the total transferred cannot exceed the invoice total.
+- A reversal must name an entry in the same account. An entry is reversed once, and a reversal cannot be reversed.
+- Every entry needs a reference and a positive whole-cent amount, and takes an idempotency key.
+
+The command needs `canManageTrust` and access to the athlete. The accountant role has `canManageTrust`. A `commission_transfer` does not itself post a receipt on the invoice. Record the receipt separately.
+
+## No screen for posting
+
+The dashboard has no form to post entries. Post them through the GraphQL command or the generic list screens. The seed creates one account with a deposit.

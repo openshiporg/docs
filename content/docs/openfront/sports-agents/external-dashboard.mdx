@@ -4,12 +4,59 @@ description: Give an LLM the Sports Agents dashboard skill to adapt the built-in
 icon: PanelsTopLeft
 ---
 
-To create a custom Sports Agents dashboard, copy the skill and give it to your LLM. The skill will explain how `features/dashboard` supplies the Keystone administration shell, and where product-specific operator pages would be added under `features/platform`.
+To create a custom Sports Agents dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the agency-specific operator screens.
 
-After that source orientation, it will ask what you dislike, what should stay, what workflows and users matter, and what the replacement should look and feel like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in the supplied Sports Agents codebase before proposing work.
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, access rules, and payment boundaries in your copy of the source before proposing work.
 
-Skill file: [`/skills/openfront-sports-agents-custom-dashboard/SKILL.md`](/skills/openfront-sports-agents-custom-dashboard/SKILL.md)
+The skill is `public/skills/openfront-sports-agents-custom-dashboard/SKILL.md` in the docs repository.
 
-## Current dashboard pages
+## Current platform routes
 
-All dashboard work happens on the shared shell pages. See [Dashboard overview](/docs/openfront/sports-agents/overview) for the route table.
+Route files live in `app/dashboard/(admin)/platform/**`. Each one imports a screen from `features/platform` and exports it. There are no per-route permission wrappers. Access comes from list access and the athlete scope, so a page shows what the user's role can read.
+
+| Route | Slice | What it does |
+| --- | --- | --- |
+| `/dashboard` | dashboard | Money view |
+| `/dashboard/platform/clients` | clients | Roster with status and league filters |
+| `/dashboard/platform/clients/[id]` | clients | Athlete record with nine tabs |
+| `/dashboard/platform/recruiting` | recruiting | Prospect board by stage |
+| `/dashboard/platform/contracts` | contracts | Contracts by status |
+| `/dashboard/platform/contracts/[id]` | contracts | Terms, years, incentives, signing, schedule |
+| `/dashboard/platform/endorsements` | endorsements | Deal pipeline and deliverables |
+| `/dashboard/platform/brands` | brands | Brands and contacts |
+| `/dashboard/platform/commissions` | commissions | Payments, invoices, ledger, payouts |
+| `/dashboard/platform/trust` | trust | Trust accounts and entries (read-only) |
+| `/dashboard/platform/approvals` | approvals | Request, approve, reject, use |
+| `/dashboard/platform/payment-providers` | payment-providers | Provider list |
+| `/dashboard/platform/tasks` | tasks | Open tasks and reminder generation |
+| `/dashboard/platform/certifications` | certifications | Agent certifications by expiry |
+| `/dashboard/platform/settings` | settings | Agency record (read-only) |
+
+Sidebar entries come from `features/platform/lib/navigation.ts`. The shared shell routes are `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`. The generic screens are the starter's list pages and work for any list the user can access.
+
+## How screens get data
+
+Screens are server components. They call GraphQL through `platformQuery` in `features/platform/lib/query.ts`. Actions go through `runAgencyCommand` in `features/platform/actions/agency.ts`, which holds a fixed set of mutation documents. Approval actions are in `actions/approvals.ts`. A button creates one idempotency key per click and reuses it on retry.
+
+## Named operations by slice
+
+| Slice | Reads | Commands |
+| --- | --- | --- |
+| dashboard | `MoneyView` (invoices, scheduled payments, deliverables, certifications, agreements) | None |
+| clients | `Clients`, `ClientDetail` | `signRepresentationAgreement`, `markPaymentReceived` |
+| recruiting | Athletes by status | `moveRecruitingStage` |
+| contracts | `playingContracts`, `playingContract` | `recordContractSigned`, `generatePaymentSchedule` |
+| endorsements | `endorsementDeals`, `deliverables` | `activateEndorsementDeal`, `completeDeliverable` |
+| commissions | Payments, invoices, ledger, payouts | `markPaymentReceived`, `draftCommissionInvoice`, `sendCommissionInvoice`, `recordInvoicePayment`, `reverseLedgerEntry` |
+| approvals | `managerApprovals` | `requestManagerApproval`, `decideManagerApproval`, `activateEndorsementDeal`, `writeOffCommissionInvoice` |
+| tasks | `tasks` | `generateAutoTasks` |
+| trust, brands, certifications, payment-providers, settings | Lists only | None |
+| onboarding | `ensureOnboardingRecord` | `updateActiveUser` |
+
+## Notes for a separate dashboard
+
+- Use the custom commands for every money or status change. Generated writes for those lists are blocked.
+- Re-check permission and athlete scope on the server. The navigation does not enforce them.
+- Send an idempotency key with every command.
+- Do not copy the placeholder proof link that the built-in **Mark completed** button sends.
+- There is one agency per deployment. There is no tenant id to pass.

@@ -1,27 +1,56 @@
 ---
 title: Roles and permissions
-description: The seven role flags and the access rules built on them.
-icon: ShieldCheck
+description: The role checkboxes, athlete scope, and which list each permission opens.
+icon: Shield
 ---
 
-Route: `/dashboard/roles`. Fields: `name`, `assignedTo`, and seven checkboxes. Any signed-in user can read roles; changing them needs `canManageRoles`.
+Roles are records with checkboxes. Manage them at `/dashboard/roles`. Any signed-in user can read roles. Changing them needs `canManageRoles`. Permissions are listed in `features/keystone/access.ts`.
+
+## Permissions
 
 | Flag | Allows |
-|---|---|
-| `canAccessDashboard` | Use `/dashboard` and the shared AI chat |
+| --- | --- |
+| `canAccessDashboard` | Use `/dashboard` and the dashboard assistant |
 | `canManagePeople` | Create and delete users, set roles, change other users' passwords |
 | `canSeeOtherPeople` | Read other users |
 | `canEditOtherPeople` | Update other users |
 | `canManageRoles` | Create, update, delete roles |
-| `canCreateTodos` | Create todos; create, update, delete todo images |
-| `canManageAllTodos` | Read and change todos assigned to others, and set `assignedTo` |
+| `canManageAthletes` | Athletes, teams, contacts, interactions, tasks, documents |
+| `canManageContracts` | Representation agreements, playing contracts, years, incentives, certifications |
+| `canManageEndorsements` | Brands, endorsement deals, deliverables |
+| `canManageCommissions` | Scheduled payments, invoices, the ledger, agent splits, and payment collections and sessions |
+| `canManageTrust` | Client trust accounts and entries |
+| `canViewAllClients` | See every athlete, not only assigned ones |
+| `canManagePayments` | Read payment providers, payments, refunds, and webhook events. Create or change a provider |
+| `canReadPayments` | Read payment providers, payments, and refunds |
+| `canIssueRefunds` | Request refund approvals. No refund command exists |
+| `canReadAudit` | Read `AuditEvent` rows |
+| `canManageOnboarding` | Run setup and read or edit the `Agency` record |
+| `canApproveActions` | Approve or reject approval requests |
 
-## Rules (`features/keystone/access.ts`)
+## Athlete scope
 
-- Most operations need a signed-in user.
-- `rules.canReadPeople` and `rules.canUpdatePeople` limit users without the flag to their own record.
-- `rules.canReadTodos`: without `canManageAllTodos` you see your own todos. With it you also see unassigned private todos and all non-private todos.
-- `rules.canManageTodos` limits update and delete the same way.
-- Keystone's `ui.isAccessAllowed` and the route guard both require `canAccessDashboard`.
+Athletes and the lists that hang off them are filtered. A user sees an athlete only if they are the lead agent or on the support staff, unless the role has `canViewAllClients`. The filter applies to query and update on `Athlete`, agreements, contracts, years, incentives, deals, deliverables, interactions, tasks, documents, scheduled payments, invoices, invoice lines, ledger entries, agent splits, trust accounts, and trust entries.
 
-The first user gets an `Admin` role with every flag on. Give other roles only what they need, because the AI chat and MCP tools act with the same permissions.
+Commands check the same scope again. A command for an athlete you cannot see returns "Athlete not found".
+
+Lists with no athlete link are not scoped: `Agency`, `AgentCertification`, `Team`, `Contact`, `Brand`, `AuditEvent`.
+
+## Write rules
+
+- Status fields on most lists cannot be set through generated create or update. They change through commands.
+- `ScheduledPayment`, `CommissionInvoice`, `CommissionInvoiceLine`, `CommissionLedgerEntry`, `AgentSplit`, `ClientTrustEntry`, `Document`, and `AuditEvent` have no generated create or delete in GraphQL, and their operation access denies generated create and update.
+- No list allows generated delete for staff.
+- `ManagerApproval` cannot be created or updated through generated GraphQL. Requests and decisions go through commands.
+
+## Seed roles
+
+| Role | Permissions |
+| --- | --- |
+| Owner | All, including `canApproveActions` |
+| Agent | Dashboard, see other people, athletes, contracts, endorsements, read payments |
+| Marketing Rep | Dashboard, see other people, athletes, endorsements |
+| Accountant | Dashboard, see other people, view all clients, commissions, trust, payments, refunds, audit, approve actions |
+| Customer | None. No dashboard |
+
+The first user created at `/dashboard/init` gets an `Admin` role with every permission on. Give other roles only what the job needs, because the assistant and MCP tools act with the same permissions.

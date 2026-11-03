@@ -1,0 +1,42 @@
+---
+title: Payment providers
+description: The Stripe and manual adapters, the provider records, and the webhook.
+icon: Plug
+---
+
+Adapters live in `features/integrations/payment`: `stripe` and `manual`. The Restaurant payment models and adapter pattern are reused here, with the invoice standing in for the order.
+
+## Records
+
+A `PaymentProvider` has a name, a `code`, an `isInstalled` flag, and a function name for each operation: create, capture, refund, get status, payment link, and webhook. Setup creates two providers:
+
+| Name | Code | Adapter |
+| --- | --- | --- |
+| Stripe | `pp_stripe_stripe` | `stripe` |
+| Manual / Wire | `pp_system_default` | `manual` |
+
+`PaymentProvider.credentials` is never readable through GraphQL. `Payment`, `PaymentCollection`, `PaymentSession`, `Refund`, and `PaymentWebhookEvent` cannot be created, changed, or deleted through generated GraphQL.
+
+The Payment providers screen lists providers by name and code. Each row links to the generic record screen.
+
+## Stripe
+
+Needs `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_KEY`, and `STRIPE_WEBHOOK_SECRET`. Development uses test keys only. Card payment needs an installed provider with code `pp_stripe_stripe`. Without one, `payCommissionInvoice` returns "Card payments are not configured".
+
+The adapter creates the payment intent with an idempotency key, reads its status, and has capture, refund, cancel, and webhook functions. Only create, status, and webhook are called by the product today.
+
+## Manual
+
+The manual adapter records nothing with a processor. The staff **Record payment** button does not use a provider. It posts the receipt directly.
+
+## Webhook
+
+Route: `/api/integrations/payment/[providerCode]/webhook`. For the seeded Stripe provider, that is `/api/integrations/payment/pp_stripe_stripe/webhook`.
+
+The route reads the raw body, verifies the Stripe signature, and stores each event once in `PaymentWebhookEvent` by event id. For a `payment_intent.succeeded` event it finds the payment by its provider id and runs the same finalize path the confirmation page uses. A repeated event is ignored. If the payment is not found yet, the route returns 409 so Stripe retries.
+
+Other event types are stored and ignored. The webhook has not been run against a live signing secret in development. The confirmation path is what the invoice page uses.
+
+## Refunds
+
+The refund models and adapter function exist. No command or screen refunds a card payment.

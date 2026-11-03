@@ -1,0 +1,58 @@
+---
+title: Commissions
+description: Scheduled payments, invoices, the append-only ledger, agent splits, and payouts.
+icon: Receipt
+---
+
+Commission is earned when the athlete is paid. The screen at `/dashboard/platform/commissions` has four tabs: **Payments**, **Invoices**, **Ledger**, and **Payouts**.
+
+## Lifecycle
+
+1. A contract or deal produces `ScheduledPayment` rows (`generatePaymentSchedule`).
+2. When the athlete is paid, **Mark received** runs `markPaymentReceived`. It computes the commission and posts an `accrual` ledger entry.
+3. **Create invoice** groups an athlete's received, uninvoiced payments into a draft invoice (`draftCommissionInvoice`).
+4. **Send** moves the invoice to `sent`.
+5. The agency collects: staff record a payment (`recordInvoicePayment`), or the payer pays by card on the public site.
+6. Each receipt posts a `receipt` entry and one `split_to_agent` entry per agent split.
+
+## Commission math
+
+The commission on a payment is `floor(gross x bps / 10000)`. The remainder is stored on the payment. The rate is the one copied onto the payment when it was scheduled. The math is exact integer math in `features/keystone/lib/commission.ts`.
+
+Agent splits sum to 10000 basis points. Each receipt is divided among the agents by largest remainder, ties broken by user id, so every cent is allocated.
+
+## Payments tab
+
+Lists up to 80 scheduled payments with status, athlete, due date, rate, and gross. A **Ready to invoice** block groups received, uninvoiced payments by athlete. Payment statuses are `scheduled`, `received`, `late`, and `waived`. The seed marks overdue payments `late`. No command sets `late` or `waived`.
+
+## Invoices tab
+
+Each invoice shows its number, status, athlete, and paid against total.
+
+| Status | Buttons |
+| --- | --- |
+| `draft` | Send |
+| `sent`, `partially_paid` | Record payment, Write off |
+| `paid`, `void`, `written_off` | None |
+
+**Record payment** records the full remaining balance. **Write off** asks for a reason and files an approval request. See [Approvals](/docs/openfront/sports-agents/approvals).
+
+Invoice numbers are `INV-` plus 16 random hex characters. They are not sequential.
+
+`voidCommissionInvoice` voids a `draft` or `sent` invoice that has no payments and frees its payments to be invoiced again. It has a GraphQL command but no button on the screen.
+
+## Ledger tab
+
+The ledger is append-only. Entry types: `accrual`, `invoice`, `receipt`, `split_to_agent`, `reversal`, and `write_off`. Amounts are signed `bigInt` cents. A receipt is negative, because it reduces what the athlete owes. An accrual is positive.
+
+**Reverse** on an `accrual` or `receipt` entry runs `reverseLedgerEntry`. It posts an exact opposite entry, once. A reversed entry cannot be reversed again, and a reversal cannot be reversed. Reversing a receipt also reduces the invoice's paid amount and reverses its agent splits. Reversing an accrual is refused while the payment is on an invoice.
+
+The `invoice` entry type exists in the list but no command posts it.
+
+## Payouts tab
+
+The payout report totals `split_to_agent` entries by agent. It reads the ledger. It does not move money.
+
+## Permission
+
+All of these need `canManageCommissions`. The accountant role has it. Staff see only commissions for athletes they can see.

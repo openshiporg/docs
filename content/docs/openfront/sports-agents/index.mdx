@@ -1,46 +1,63 @@
 ---
 title: Openfront Sports Agents
-description: A self-hosted Openfront workspace with a role-based dashboard, user and role management, task records with images, GraphQL, AI chat, and MCP.
-icon: Bot
+description: Athlete roster, recruiting, contracts, endorsement deals, and commission billing that follows the money.
+icon: Trophy
 ---
 
-import { Card, Cards } from 'fumadocs-ui/components/card';
+[Source](https://github.com/openshiporg/openfront-sports-agents) (private repository)
 
-Openfront Sports Agents is a self-hosted Openfront application built on Next.js, Keystone, GraphQL, Prisma, and PostgreSQL. The source is at [github.com/openshiporg/openfront-sports-agents](https://github.com/openshiporg/openfront-sports-agents).
+Openfront Sports Agents is agency software for sports agents and NIL agencies. Staff track athletes and recruiting, representation agreements, playing contracts, and endorsement deals. The money side follows one rule: commission is earned when the athlete is paid, not when a deal is signed.
 
-## What it contains
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL.
 
-- **Dashboard** at `/dashboard`: list, create, and item pages for every Keystone list, first-user setup, sign-in, optional sign-up, password reset, and a no-access page.
-- **Users and roles:** `User` and `Role` lists with seven permission flags. The first user gets an `Admin` role with every flag on.
-- **Task records:** `Todo` (assignee, status, priority, tags, dates, budget, notes, cover image) and `TodoImage` (image library attached to tasks).
-- **AI chat:** a dashboard sidebar that calls `/api/completion` through OpenRouter.
-- **MCP endpoint:** `/api/mcp-transport/[transport]` exposes generic GraphQL tools using the caller's session.
-- **GraphQL API:** `/api/graphql`, served by GraphQL Yoga with the Keystone schema.
-- **Image storage:** `Todo.coverImage` and `TodoImage.image` use an S3-compatible bucket.
+## Status
+
+- The repository is private. There is no hosted app and no demo.
+- Payments run on Stripe in test mode in development. No live payment setup is shipped.
+- The public site is a plain placeholder. It has no design yet.
+- The docs describe what the code does today.
+
+## Who uses what
+
+| User | Surface | Typical jobs |
+| --- | --- | --- |
+| Agent | Dashboard | Roster, recruiting, agreements, contracts, deals |
+| Marketing rep | Dashboard | Endorsement deals and deliverables |
+| Accountant | Dashboard | Payments, invoices, ledger, trust, approvals |
+| Owner | Dashboard | Everything, including setup and approvals |
+| Brand or athlete | Public site | Send an inquiry, find an invoice, pay it by card |
 
 ## Surfaces
 
-| Surface | Path | Purpose |
-|---|---|---|
-| Landing page | `/` | Links to `/dashboard` and `/api/graphql` |
-| Dashboard | `/dashboard` | Home with list counts, plus generic list pages |
-| Sign-in | `/dashboard/signin`, `/dashboard/signup`, `/dashboard/reset` | Authentication |
-| GraphQL | `/api/graphql` | Keystone CRUD plus `redirectToInit` |
-| AI and MCP | `/api/completion`, `/api/mcp-transport/[transport]` | Assistant and tools |
+- **Dashboard** at `/dashboard`: the money view, clients, recruiting, contracts, endorsements, commissions, trust, approvals, brands, tasks, certifications, payment providers, and settings. See [Dashboard](/docs/openfront/sports-agents/dashboard-money) and [External dashboards](/docs/openfront/sports-agents/external-dashboard).
+- **Public site** at `/`: published athletes with an inquiry form, and invoice lookup and payment. See [Public site and invoice payment](/docs/openfront/sports-agents/public-site).
+- **GraphQL** at `/api/graphql`. See [API reference](/docs/openfront/sports-agents/api-reference).
+- **Payment webhook** at `/api/integrations/payment/[providerCode]/webhook`.
+- **Assistant and MCP** at `/api/completion` and `/api/mcp-transport/[transport]`. See [MCP and assistant](/docs/openfront/sports-agents/mcp-assistant).
 
-## Ownership and tenancy
+## Models
 
-One deployment has one database and one set of users. Access is controlled by the role attached to each user:
+The schema has 35 lists in `features/keystone/models`. Money is stored as integer cents. Ledger amounts are `bigInt`. Rates are basis points, so 1% is 100.
 
-- A user can always read and edit their own `User` record. Seeing or editing other people needs `canSeeOtherPeople` or `canEditOtherPeople`.
-- A `Todo` belongs to the user in `assignedTo`. Users without `canManageAllTodos` only see and change their own.
-- Only roles with `canAccessDashboard` can use the dashboard.
+| Area | Lists |
+| --- | --- |
+| Identity | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+| Agency | `Agency`, `AgentCertification`, `Team` |
+| Clients | `Athlete`, `RepresentationAgreement`, `Contact`, `Brand`, `Interaction` |
+| Contracts | `PlayingContract`, `ContractYear`, `Incentive` |
+| Endorsements | `EndorsementDeal`, `Deliverable` |
+| Money | `ScheduledPayment`, `CommissionInvoice`, `CommissionInvoiceLine`, `CommissionLedgerEntry`, `AgentSplit`, `ClientTrustAccount`, `ClientTrustEntry` |
+| Records | `Document`, `Task`, `AuditEvent`, `ManagerApproval`, `IdempotencyKey` |
+| Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent` |
 
-<Cards>
-  <Card title="Getting started" href="/docs/openfront/sports-agents/getting-started" description="Requirements, environment, migrations, first user." />
-  <Card title="Deployment" href="/docs/openfront/sports-agents/deployment" description="Hosting and release steps." />
-  <Card title="Roles and permissions" href="/docs/openfront/sports-agents/roles-permissions" description="Seven flags and access rules." />
-  <Card title="Integrations" href="/docs/openfront/sports-agents/integrations" description="S3, SMTP, OpenRouter, MCP." />
-  <Card title="Data model" href="/docs/openfront/sports-agents/data-model" description="User, Role, Todo, TodoImage." />
-  <Card title="API reference" href="/docs/openfront/sports-agents/api-reference" description="GraphQL operations." />
-</Cards>
+Money lists are not writable through generated create, update, or delete. They change only through custom mutations. See [Data model](/docs/openfront/sports-agents/data-model).
+
+## One agency per deployment
+
+There is one agency per deployment. The `Agency` list holds its settings. There is no organization or tenant model. Client visibility is scoped by assignment instead. See [Roles and permissions](/docs/openfront/sports-agents/roles-permissions).
+
+## Where to start
+
+- [Getting started](/docs/openfront/sports-agents/getting-started) to run the app and seed it.
+- [Commission lifecycle](/docs/openfront/sports-agents/commissions) to see how payments become invoices and ledger entries.
+- [Approvals](/docs/openfront/sports-agents/approvals) for exclusivity overrides and write-offs.

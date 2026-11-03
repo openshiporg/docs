@@ -1,0 +1,26 @@
+---
+title: Write off an invoice
+description: Request a write-off, get it approved, and post it to the ledger.
+icon: Eraser
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The requester needs `canManageCommissions`. The approver needs `canApproveActions` and must be a different user.
+
+<Steps>
+<Step>
+### Request the write-off
+On the **Invoices** tab at `/dashboard/platform/commissions`, choose **Write off** on a sent or partly paid invoice. Give a reason and submit.
+</Step>
+<Step>
+### Approve it
+A different user approves it on `/dashboard/platform/approvals`.
+</Step>
+<Step>
+### Use the approval
+The requester returns to Approvals and chooses **Write off**. A `write_off` ledger entry for minus the unpaid balance is posted. The invoice becomes `written_off`.
+</Step>
+</Steps>
+
+The reason is part of the approval. Changing it, or the balance, after approval makes the command refuse.

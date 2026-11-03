@@ -1,23 +1,41 @@
 ---
 title: Deployment
-description: Build, migrate, and run Sports Agents on any Node.js and PostgreSQL host.
+description: What to know before running Sports Agents anywhere other than a development machine.
 icon: Rocket
 ---
 
-1. Create the PostgreSQL database and, for images, an S3-compatible bucket.
-2. Set the environment variables from [Getting started](/docs/openfront/sports-agents/getting-started): `DATABASE_URL`, `SESSION_SECRET`, the five `S3_*` values, and optionally SMTP and OpenRouter.
-3. Build: `npm run build` (or `keystone build --no-ui && next build` if the build step cannot reach the database).
-4. Migrate: `npm run migrate` (`prisma migrate deploy`).
-5. Start: `npm start`.
+## Status
 
-`railway.toml` does this split for Railway: build command `keystone build --no-ui && next build`, start command `npm run migrate && next start`.
+Deploys are not set up. There is no hosted app and no demo. This page lists what the code needs. It is not a record of a live deployment.
 
-## After deploy
+## What the code expects
 
-Open `/dashboard/init` and create the first user. Then:
+- PostgreSQL with the checked-in migrations applied.
+- `DATABASE_URL`, `SESSION_SECRET` (32 or more characters), and `PUBLIC_SIGNUPS_ALLOWED=false`.
+- Stripe keys if you take card payments. Only test keys have been used.
+- All app processes share the same database and `SESSION_SECRET`.
 
-- set `PUBLIC_SIGNUPS_ALLOWED=true` only if you want open registration at `/dashboard/signup`; new sign-ups have no role until an admin assigns one
-- set `SMTP_HOST` and `SMTP_STORE_LINK` so password reset emails carry a working link
-- set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` for the shared AI chat
+## Build and start
 
-Make `SESSION_SECRET` long and random in every environment. Sessions are stateless signed cookies with a 360-day maximum age.
+`railway.toml` is inherited from the starter. It builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. For any host:
+
+```bash
+npm run build
+npm run migrate
+npm start
+```
+
+Back up the database before you migrate.
+
+## After the first start
+
+1. Open `/dashboard/init` and create the first admin.
+2. Run setup from the sidebar, or enter your own agency, staff, and clients.
+3. Create `PaymentProvider` records through setup. Setup creates a Stripe provider and a manual provider.
+4. For card payments, register the webhook at `/api/integrations/payment/pp_stripe_stripe/webhook`. See [Payment providers](/docs/openfront/sports-agents/payment-providers).
+
+## Before real money
+
+- Replace Stripe test keys with live keys only after you have reviewed the payment flow yourself.
+- The webhook route has not been exercised against a live webhook secret in development.
+- Apply your own legal, tax, and union-rule review. The app does not make compliance claims.

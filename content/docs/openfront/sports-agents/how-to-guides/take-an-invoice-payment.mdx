@@ -1,0 +1,32 @@
+---
+title: Take an invoice payment
+description: Test the public invoice flow with a Stripe test card.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Use Stripe test keys only. You need an installed provider with code `pp_stripe_stripe` and a `sent` invoice.
+
+<Steps>
+<Step>
+### Set the keys
+Put `NEXT_PUBLIC_STRIPE_KEY` (`pk_test_...`) and `STRIPE_SECRET_KEY` (`sk_test_...`) in `.env`, then restart.
+</Step>
+<Step>
+### Find the invoice
+Open `/invoice`. Enter the athlete's email and the invoice number.
+</Step>
+<Step>
+### Pay
+The invoice page shows the lines and balance with a card form. Enter `4242 4242 4242 4242`, any future date, any three-digit code, and any ZIP.
+</Step>
+<Step>
+### Read the confirmation
+The confirmation page shows the invoice number as the code. In the dashboard, the invoice is `paid` and the Ledger tab has a receipt and split entries.
+</Step>
+</Steps>
+
+## If it fails
+
+See the invoice payment rows in [Troubleshooting](/docs/openfront/sports-agents/troubleshooting).
