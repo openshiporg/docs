@@ -1,0 +1,34 @@
+---
+title: Promo codes
+description: Discount and comp codes, and how a hold reserves a use.
+icon: Tag
+---
+
+Route: `/dashboard/platform/promo-codes`. It lists codes with the discount, uses so far, the limit, and a status label. *Add code* opens `/dashboard/promo-codes/create`. Each row opens its edit page.
+
+## Fields
+
+| Field | Meaning |
+| --- | --- |
+| `code` | Unique. Entered in upper case. |
+| `discountType` | `percent_bps` (100 = 1%), `amount_cents`, or `comp` (the whole subtotal) |
+| `value` | The percent in basis points, or the amount in cents |
+| `maxUses` | Empty means unlimited |
+| `usedCount` | Changed only by the server |
+| `perOrderLimit` | Stored, not used yet |
+| `startsAt`, `endsAt` | The valid window |
+| `status` | `active`, `paused`, `expired` |
+| `show`, `template` | Optional scope to one show or one show template |
+
+## How a code is used
+
+1. A guest enters a code at checkout. `applyPromoToHold` takes a lock for the show, checks the status, window, scope, and uses left, and records a `PromoRedemption` as `reserved`. A reservation counts against `maxUses` right away.
+2. At checkout the discount is worked out and copied onto the order and its line.
+3. When payment is confirmed the redemption becomes `committed` and `usedCount` goes up by one.
+4. If the hold expires or payment fails, the redemption is `released` and the use is given back.
+
+A hold has one code at a time. Applying another releases the first. A discount can never take a subtotal below zero. An order whose total would be zero is refused at checkout; use a comp instead.
+
+## Permissions
+
+Codes need `canManageOrders`. They use generated create and update. `PromoRedemption` is changed only by the server.

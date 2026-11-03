@@ -1,0 +1,44 @@
+---
+title: Sell tickets
+description: What a guest does, what the server checks, and how to follow an order.
+icon: ShoppingCart
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The storefront is a plain placeholder, but it runs the whole flow.
+
+<Steps>
+<Step>
+### Choose a show and a tier
+The guest opens `/`, picks a show, and picks a tier. A table tier shows tables to choose from. A general tier shows a quantity.
+</Step>
+<Step>
+### Hold
+*Hold tickets* creates a hold for 10 minutes by default. The seats or tables are reserved for that guest alone.
+</Step>
+<Step>
+### Details and promo
+At `/checkout` the guest gives a name and email, adds an optional promo code, and ticks the age box if the show has an age rule.
+</Step>
+<Step>
+### Pay
+Stripe's card form appears. In test mode use `4242 4242 4242 4242`. After payment, the server asks Stripe to confirm. When it does, the tickets are created.
+</Step>
+<Step>
+### Confirmation
+The guest lands on `/orders/[orderNumber]` with the order number and one ticket code per seat.
+</Step>
+</Steps>
+
+## Follow an order
+
+Open `/dashboard/platform/orders` and use the tabs. A `pending_payment` order is waiting on Stripe. Do nothing: the sweeper settles it. If it stays pending for a long time, see [Troubleshooting](/docs/openfront/comedy-club/troubleshooting).
+
+## When a show sells out
+
+When sales reach the show's capacity, the show moves to `sold_out` by itself. If a refund frees seats it moves back to `on_sale`.
+
+## Guests who lose the link
+
+Guests can use `/lookup` with their email and order number to see their tickets. Staff can read the order on the orders screen.

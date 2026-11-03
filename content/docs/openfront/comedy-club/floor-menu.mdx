@@ -1,0 +1,31 @@
+---
+title: Floor and menu
+description: Rooms, sections, tables, and menu items.
+icon: UtensilsCrossed
+---
+
+Route: `/dashboard/platform/floor-menu`. It is a read view. Edits happen on the generic list screens it links to.
+
+## Rooms, sections, and tables
+
+Each room shows its name, capacity, and seating mode: `tables` or `ga` (general admission). Under it, each section lists its tables as small tiles with the label and seat count. Round tables are drawn round. The *Edit* link opens the room on `/dashboard/rooms/[id]`, and each table tile opens `/dashboard/tables/[id]`.
+
+- **Room**: venue, name, capacity, seating mode, and an active flag.
+- **Section**: room, name, and sort order. A section can link to the price tier it belongs to.
+- **Table**: section, label, seats, an x and y position for the floor map, a shape (`round`, `square`, `rectangle`), and a list of tables it can combine with.
+
+A show's capacity starts at its room's capacity and can only be lowered.
+
+### How tables are sold
+
+When a tier is a table tier, a guest chooses whole tables from the section whose name matches the tier name. The seats of the chosen tables must add up to the ticket quantity. A table cannot be held or seated twice for one show. This is enforced by a unique key on show and table (`TableOccupancy`), which is cleared when a hold expires or is released, or when the check is closed.
+
+## Menu
+
+Menu items show name, category (`drink`, `food`, `na`), price, whether the item counts toward the minimum, and an active label. *Add item* opens `/dashboard/menu-items/create`. Each row opens its edit page.
+
+`countsTowardMinimum` marks the items that count toward the venue's drink minimum. An image field uses the configured S3 storage.
+
+## Permissions
+
+Rooms, sections, tables, and the venue need `canManageSettings`. Menu items need `canManageChecks`. These lists use generated create and update, because they are plain setup data.

@@ -1,0 +1,129 @@
+---
+title: Troubleshooting
+description: Error messages from holds, checkout, the door, checks, refunds, and closing, with causes and fixes.
+icon: LifeBuoy
+---
+
+Business messages come straight from the server. Anything that looks like a database or driver error shows as "Unable to complete the request. Please try again." The real error is in the server log.
+
+## Holds and checkout
+
+| Message | Cause and fix |
+| --- | --- |
+| Choose 1–20 tickets | The quantity is outside 1 to 20 |
+| Tickets unavailable | The show is not `on_sale`, the tier is not on sale, the tier is not in this show, or the show has started |
+| Sales closed | The tier's sales window has not started or has ended |
+| Not enough capacity | The tier or the show is full |
+| Choose a table | A table tier needs table IDs |
+| Invalid tables | A table is not in the show's room, or is not in the section matching the tier name |
+| Reserve every seat at the selected tables | The seats of the chosen tables do not add up to the ticket quantity |
+| Table occupied | A table was taken for this show between the hold and the seating |
+| Hold expired | The hold is past its expiry or the show left `on_sale`. Start again. |
+| Hold cannot be changed | A promo cannot be added after checkout started or after the hold expired |
+| Checkout already started | The hold already has an order |
+| Age confirmation required | The show has an age rule and `ageAttested` was not set |
+| Name and email required | The checkout form was missing the name or a valid email |
+| Payment is not required for this order; contact the venue | The total is zero. Issue a comp instead. |
+| Payment provider unavailable | No installed provider has the code `pp_stripe`. Run the setup dialog or add it. |
+| Payment not started | The order has no payment session yet |
+| Not found | The `cartToken` or `orderSecret` is wrong. The order is not shown to anyone without it. |
+
+## Promo codes
+
+| Message | Cause |
+| --- | --- |
+| Invalid promotion | No code with that text |
+| Promotion unavailable | The code is not `active`, is outside its window, is scoped to another show or template, or has no uses left (reserved uses count) |
+
+## Payment status
+
+| Result | Meaning |
+| --- | --- |
+| `pending` | The provider has not finished. The order stays `pending_payment`. |
+| `unknown` | The provider could not be read. The order stays `pending_payment` and is never marked paid. The sweeper asks again after the hold has expired by five minutes. |
+| `failed` | The provider says the payment cannot succeed. Use `abandonTicketCheckout`, or wait for the sweeper, to release the hold. |
+| Order cannot be completed; operator reconciliation required | The order is not `pending_payment`, or its hold is no longer `active`. Check the payment in Stripe and fix the order by hand. |
+
+If the provider's amount or currency does not match the frozen quote, the order is not completed. The message says the amount does not match the reserved checkout quote.
+
+## The door
+
+| Message or result | Cause |
+| --- | --- |
+| Ticket not found | No ticket with that code or token |
+| `wrong_show` | The ticket is for another show |
+| `duplicate` | The ticket was already checked in |
+| `void` | The ticket is `void` or `refunded` |
+
+## Seating and checks
+
+| Message | Cause |
+| --- | --- |
+| Party unavailable | The order is not paid or comp, or is already seated |
+| Invalid table capacity | The tables are in another room or do not have enough seats |
+| Check unavailable | The seating is not `seated`, or it already has an open check |
+| Qualifying minimum item required | The venue needs items but no active menu item counts toward the minimum |
+| Invalid check item | The check is not `open`, the item is not active, or the quantity is not 1 to 100 |
+| Check cannot be closed | The check is not `open` or `presented` |
+| Item cannot be voided | The item is voided already or the check is not `open` |
+| Independent manager approval is required | A waive or void needs an approval ID. See [Roles and permissions](/docs/openfront/comedy-club/roles-permissions). |
+| Manager approval does not match this correction request | The approval was for a different action, target, reason, or amount |
+| Correction requires approval by a different manager | The approver and the requester are the same person |
+| Manager approval has expired | The 15 minute window passed. Request again. |
+
+## Refunds
+
+| Message | Cause |
+| --- | --- |
+| Order is not refundable | The order is not `paid` or `partially_refunded` |
+| No captured payment | The order has no succeeded payment |
+| Only valid tickets can be refunded | A chosen ticket is checked in, void, or already refunded |
+| Invalid refund amount | The amount is below 1 or above what remains on the payment |
+| The self-cancel window has closed; contact the venue | The show starts sooner than `refundWindowHours` from now. Staff can still refund. |
+| Reason required | The staff refund had no reason |
+
+A refund that shows `unknown` means the provider's answer was unclear. The order and tickets have not changed. Check the refund in Stripe before you try again.
+
+## Closing
+
+| Message | Cause |
+| --- | --- |
+| Show cannot be closed | The show is not `doors_open`, `in_progress`, or `completed` |
+| Settlement already closed | The show was closed before |
+| Close all checks first | A check is still `open` or `presented` |
+| Resolve pending payments and holds first | An order is `pending_payment` or a hold is `active` |
+| Reconcile refunds first | A refund is `processing` or `unknown` |
+| Run not found | The run ID does not exist |
+| Run already closed | The run is closed |
+| N shows in the run not settled or cancelled yet | Close or cancel the remaining shows first |
+| Run has no shows | Add shows to the run |
+
+## Shows and lineups
+
+| Message | Cause |
+| --- | --- |
+| Invalid state transition | The status move is not in the table on [Shows](/docs/openfront/comedy-club/shows) |
+| Sales are not open | `pauseSales` needs `on_sale` or `sold_out` |
+| Show cannot be cancelled | The show is completed, settled, or already cancelled |
+| Only one host and headliner allowed | The show already has that role |
+| Show or comedian unavailable | The show is cancelled, completed, or settled, or the comedian ID is wrong |
+| Weekly BYDAY rule required | The template rule is not `FREQ=WEEKLY` with `BYDAY=` days like `TU,WE` |
+| Signup closed | The show is not an open mic, signup has not opened, or the show has started |
+| Comedian email does not match | The signup email differs from the comedian's email |
+
+## Idempotency
+
+| Message | Cause |
+| --- | --- |
+| Idempotency key required | A mutation was called without a key |
+| Idempotency key was already used with a different request | The key was reused with other input. Use a new key. |
+
+## Setup and access
+
+| Message | Cause |
+| --- | --- |
+| Not authorized | The caller lacks the flag for that operation |
+| Unsupported setup record | The setup dialog sent a record type the server does not know |
+| Seeded orders must each have a matching payment | The setup history check failed |
+
+If a page sends you to `/dashboard/no-access`, the role does not have `canAccessDashboard`. If the setup card is missing, the user lacks `canManageOnboarding`, or setup is done, or a show already exists.

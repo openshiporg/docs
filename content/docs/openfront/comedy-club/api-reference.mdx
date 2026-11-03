@@ -1,0 +1,100 @@
+---
+title: API reference
+description: Custom GraphQL queries and mutations, who may call them, and the rules each one enforces.
+icon: Braces
+---
+
+GraphQL is at `/api/graphql`. The operations below are defined in `features/keystone/mutations` and registered in `mutations/index.ts`. Their results are typed `JSON`. Generated Keystone queries and mutations also exist for the lists, but most business lists block generated writes. See [Data model](/docs/openfront/comedy-club/data-model).
+
+## Conventions
+
+- **Idempotency key.** Every mutation that moves money, capacity, or state takes an `idempotencyKey`. The same key with the same input returns the stored answer. The same key with different input is refused: "Idempotency key was already used with a different request".
+- **Locks.** Operations that touch capacity or a show's money run in a transaction under a database lock named for the show (`show:<id>`). Closing a run uses `run:<id>`. Opening a check uses `seating:<id>`.
+- **Audit.** State changes write an `AuditEvent`.
+- **Errors.** Business messages reach the caller. Anything that looks like database or driver detail is replaced with "Unable to complete the request. Please try again." See [Troubleshooting](/docs/openfront/comedy-club/troubleshooting).
+- **Auth.** Staff operations check a role flag on the server. Guest operations check proof: a `cartToken`, an `orderSecret`, or the order number with its email.
+
+## Queries
+
+| Query | Who | Returns |
+| --- | --- | --- |
+| `showsOnSale` | Anyone | Upcoming shows in `on_sale` or `sold_out` with room, age rule, and tiers (price, fee, capacity, sold, held, status). Releases expired holds first. |
+| `showAvailability(showId)` | Anyone | One show that is `on_sale`, `sold_out`, or `doors_open`: lineup (confirmed slots), tiers, the room's sections and tables, and tables currently taken. Other states return "Show not available". |
+| `openMicShows` | Anyone | Up to six open mic shows that are on sale, sold out, or doors open and that start no earlier than three hours ago |
+| `ticketOrderConfirmation(orderNumber, orderSecret)` | Guest with the secret | The order, show, lines, and tickets with `ticketCode`, `status`, and a scan `token` |
+| `lookupTicketOrder(email, orderNumber)` | Guest with the email | The order without the email: status, totals, show, lines, and tickets |
+| `redirectToInit` | Anyone | `true` when no user exists yet |
+
+## Guest mutations
+
+| Mutation | Proof | What it does |
+| --- | --- | --- |
+| `createTicketHold(showId, tierId, quantity, tableIds, idempotencyKey)` | None | Holds 1 to 20 tickets. Needs the show `on_sale`, the tier `on_sale` and inside its sales window, and room under both the tier and show capacity. Table tiers need `tableIds` whose seats add up to the quantity. Returns `holdKey`, `cartToken`, and `expiresAt`. |
+| `applyPromoToHold(holdKey, cartToken, code, idempotencyKey)` | `cartToken` | Reserves a promo use on the hold. |
+| `startTicketCheckout(holdKey, cartToken, customer, ageAttested, seatingRequest, occasion, idempotencyKey)` | `cartToken` | Freezes the quote, creates the `pending_payment` order and lines, then a Stripe payment intent. Returns `orderNumber`, `orderSecret`, `totalCents`, `clientSecret`, and `publishableKey`. |
+| `completeTicketCheckout(orderNumber, orderSecret)` | `orderSecret` | Asks the provider about the payment. If it succeeded and matches the quote, creates the tickets, moves the hold to `converted`, and sets the order to `paid`. Returns a `status` of `paid`, `pending`, `failed`, or `unknown`, and the order number. |
+| `abandonTicketCheckout(orderNumber, orderSecret)` | `orderSecret` | Cancels the order and releases the hold, but only after the provider confirms the payment cannot succeed. |
+| `cancelMyTicketOrder(orderNumber, email, idempotencyKey)` | Email | A full refund inside the refund window |
+| `openMicSignup(showId, name, email, comedianId, idempotencyKey)` | None | Adds a waiting signup |
+
+Holds are refused when the hold is not `active`, has expired, or the show is no longer `on_sale`. A show with an age rule needs `ageAttested: true`. An order whose total would be zero is refused.
+
+## Staff mutations
+
+| Mutation | Flag | What it does |
+| --- | --- | --- |
+| `generateShowsFromTemplate(templateId, from, idempotencyKey)` | `canManageShows` | Creates draft shows for the next 56 days. Returns how many it created. |
+| `publishShow(showId, nextStatus, idempotencyKey)` | `canManageShows` | Moves a show along the allowed transitions. `nextStatus` defaults to `on_sale`. |
+| `pauseSales(showId, idempotencyKey)` | `canManageShows` | Sets every tier on the show to `paused` while the show is `on_sale` or `sold_out`. There is no operation to resume tiers. A refund that frees seats sets that tier back to `on_sale`. |
+| `cancelShow(showId, reason, idempotencyKey)` | `canManageShows` and `canIssueRefunds` | Cancels the show, closes tiers, cancels slots that have not performed, and releases active holds that have no order. It then refunds each paid order in full. Refunds made this way do not need an approval, whatever the amount. Returns `cancelled`, and counts of `refunded` and `failed`. A failed refund can be retried from the order page. |
+| `offerSlot(...)` | `canManageTalent` | Creates an `offered` slot. One host and one headliner per show. |
+| `confirmSlot(slotId, idempotencyKey)` | `canManageTalent` | `offered` to `confirmed` |
+| `setLineup(showId, slots, idempotencyKey)` | `canManageTalent` | Sets position and set length for existing slots. Returns a warning when the sets exceed the show length. |
+| `runOpenMicLottery(showId, idempotencyKey)` | `canManageTalent` | Numbers waiting signups in a random order |
+| `issueComp(...)` | `canManageOrders` | Comp tickets at zero cents. Uses capacity. Over the limit needs `approvalId`. |
+| `checkInTicket(tokenOrCode, showId, method, idempotencyKey)` | `canManageDoor` | Admits a ticket by code or token. Returns the `CheckIn` with result `admitted`, `duplicate`, `wrong_show`, or `void`. |
+| `seatParty(orderId, tableIds, showId, serverId, idempotencyKey)` | `canManageDoor` | Seats a paid or comp order at tables |
+| `openCheck(seatingAssignmentId, idempotencyKey)` | `canManageChecks` | Opens a check for a seated party and copies the minimum rules |
+| `addCheckItem(checkId, menuItemId, qty, idempotencyKey)` | `canManageChecks` | Adds 1 to 100 of an active item to an open check |
+| `voidCheckItem(itemId, checkId, reason, approvalId, idempotencyKey)` | `canManageChecks` | Voids an item on an open check. Needs an approval. |
+| `closeCheck(checkId, tipCents, waive, reason, approvalId, idempotencyKey)` | `canManageChecks` | Works out the shortfall, totals, tax, and tip. Closes the check and the seating, and frees the tables. `waive: true` needs an approval. |
+| `closeShow(showId, idempotencyKey)` | `canManagePayouts` | Creates payouts and the settlement, and sets the show `settled` |
+| `closeRun(runId, idempotencyKey)` | `canManagePayouts` | Closes a headliner run and pays the run fee once |
+| `refundTicketOrder(orderId, amountCents, ticketIds, reason, approvalId, idempotencyKey)` | `canIssueRefunds` | Refunds tickets through the provider |
+| `requestApproval(actionType, targetId, reason, amount)` | The action's flag | Creates a pending approval for 15 minutes |
+| `approveRequest(approvalId)` | The action's flag and `canManageSettings` | Approves another user's request |
+| `ensureClubOnboardingRecord(entity, data)` | `canManageOnboarding` | Creates one setup record if it does not exist |
+| `seedClubOperations(template)` | `canManageOnboarding` | Creates shows, lineups, the runs, and history for `full` or `minimal` |
+| `updateActiveUser(data)` | Signed in | Updates name, email, password, `onboardingStatus`, or `notificationPreference` for the caller |
+| `expireHolds(showId)` | None | Releases expired holds. Holds with an order waiting on payment are kept. |
+| `sweepPendingCheckouts(secret)` | `CRON_SECRET` | Settles old `pending_payment` orders. Refuses without the secret. |
+
+`expireHolds` needs no permission because it only releases holds that have already expired.
+
+## Money rules in the code
+
+- **Quote.** Subtotal = price × quantity. Fees = fee × quantity + the venue service fee on the subtotal. The discount is capped at the subtotal. Tax is on the subtotal after discount. Basis points round half up.
+- **Self-cancel window.** Allowed only when the show starts at least `refundWindowHours` from now.
+- **Refund amount.** Defaults to the whole remaining payment when every valid ticket is refunded, and otherwise to the share of the order for the chosen tickets. It cannot exceed what remains on the payment.
+- **Run payout.** The run fee, once, to the headliner. See [Payouts](/docs/openfront/comedy-club/payouts).
+
+The pure functions are in `features/keystone/lib/money.ts` and `time.ts`, with Node tests: `node --import tsx --test features/keystone/lib/money.test.ts features/keystone/lib/time.test.ts`.
+
+## Hold sweeper route
+
+`POST /api/cron/expire-holds` with `Authorization: Bearer <CRON_SECRET>`. It calls `expireHolds` and `sweepPendingCheckouts` and returns both results as JSON. It answers `401` when the secret is wrong.
+
+## MCP
+
+`/api/mcp-transport/[transport]` accepts a signed-in session or an OAuth bearer token. Without one it returns the OAuth challenge. After that, the generic tools run as the caller: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`. Club tools call the custom operations above with the same checks:
+
+| Tool | Operation |
+| --- | --- |
+| `showsOnSale` | `showsOnSale` |
+| `showAvailability` | `showAvailability` |
+| `publishShow` | `publishShow` |
+| `checkInTicket` | `checkInTicket` |
+| `closeShow` | `closeShow` |
+| `refundTicketOrder` | `refundTicketOrder` |
+
+The tools create their own idempotency key for each call.

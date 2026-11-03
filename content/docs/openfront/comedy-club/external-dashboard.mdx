@@ -1,0 +1,54 @@
+---
+title: External dashboards
+description: Give an LLM the Comedy Club dashboard skill to adapt the built-in experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Comedy Club dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` holds the club's own operator screens.
+
+After that orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the routes, slices, GraphQL calls, schema, and access rules in your copy of the source before it proposes work.
+
+The source repository is private, so the skill works from a checkout you have access to.
+
+## Current platform routes
+
+Route files live in `app/dashboard/(admin)/platform/**` and stay thin: each one re-exports a screen from `features/platform/<slice>/screens`. They are not wrapped in a permission check. The mutations they call check flags on the server.
+
+| Route | Slice | What it does |
+| --- | --- | --- |
+| `/dashboard/platform/tonight` | tonight | Show switcher, door check-in, running order, seating map, open checks |
+| `/dashboard/platform/shows` | shows | Show list with status tabs and template generation |
+| `/dashboard/platform/shows/[id]` | shows | Tiers, lineup, holds, orders, checks, settlement, and show buttons |
+| `/dashboard/platform/orders` | orders | Orders by status tab |
+| `/dashboard/platform/orders/[id]` | orders | Lines, tickets, refunds, and the refund panel |
+| `/dashboard/platform/talent` | talent | Offer a slot, booking grid, comedian list |
+| `/dashboard/platform/open-mic` | open-mic | Signups and the lottery |
+| `/dashboard/platform/floor-menu` | floor-menu | Rooms, sections, tables, and menu (read view) |
+| `/dashboard/platform/payouts` | payouts | Payouts, headliner runs with Close run, settlements |
+| `/dashboard/platform/promo-codes` | promo-codes | Code list |
+| `/dashboard/platform/customers` | customers | Buyers grouped by email |
+| `/dashboard/platform/settings` | settings | Venue and sales settings (read view) |
+| `/dashboard/platform/payment-providers` | payment-providers | Provider list |
+
+`/dashboard` redirects to Tonight. Sidebar entries come from `features/platform/lib/navigation.ts`. The other routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`.
+
+Several screens link to the generic list screens for edits: rooms, tables, menu items, promo codes, venues, the sales settings record, and payment providers. Those generic screens use the Keystone list access rules, not custom operations.
+
+## How screens talk to the server
+
+- **Reads** use the signed-in session through `features/dashboard/lib/keystoneClient`, with explicit field selections, so list access still applies.
+- **Writes** go through one server action, `features/platform/actions/commands.ts`. It has a fixed allow-list of custom operations, builds the mutation, and adds a fresh idempotency key to each call. Screens never send raw list mutations.
+
+The allow-list covers `publishShow`, `pauseSales`, `cancelShow`, `generateShowsFromTemplate`, `offerSlot`, `confirmSlot`, `issueComp`, `checkInTicket`, `seatParty`, `openCheck`, `addCheckItem`, `closeCheck`, `voidCheckItem`, `runOpenMicLottery`, `closeShow`, `closeRun`, `refundTicketOrder`, `requestApproval`, and `approveRequest`. Not every one has a button yet. See the dashboard pages.
+
+## Setup dialog
+
+The sidebar card and dialog live in `features/platform/onboarding`, with `lib/seed.json` as the data. See [Getting started](/docs/openfront/comedy-club/getting-started).
+
+## Assistant and MCP
+
+`/api/completion` is the dashboard assistant. It needs a signed-in user with `canAccessDashboard`. The MCP endpoint at `/api/mcp-transport/[transport]` runs as the caller. It has the generic tools `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. These can only do what the caller's list access allows. It adds six club tools that call the same custom operations as the dashboard: `showsOnSale`, `showAvailability`, `publishShow`, `checkInTicket`, `closeShow`, and `refundTicketOrder`. See [API reference](/docs/openfront/comedy-club/api-reference).
+
+## Skill
+
+Copy the skill from [`/skills/openfront-comedy-club-custom-dashboard/SKILL.md`](/skills/openfront-comedy-club-custom-dashboard/SKILL.md).

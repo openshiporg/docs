@@ -1,0 +1,15 @@
+---
+title: Customers
+description: Buyers grouped by email, from paid orders.
+icon: Users
+---
+
+Route: `/dashboard/platform/customers`.
+
+This is a read-only roll-up. It reads the newest 500 orders that are `paid`, `partially_refunded`, or `comp`, groups them by lower-cased email, and shows each buyer's name, email, total spent, order count, and guest count. Buyers are listed by total spent.
+
+Guests buy without an account, so there is no customer list model. The guest's email and name live on each order. If a buyer was signed in when they checked out, the order is also linked to their `User`.
+
+The `User` list holds dashboard users. Manage them at `/dashboard/users` with `canManagePeople`, and roles at `/dashboard/roles` with `canManageRoles`.
+
+The `notificationPreference` checkbox on `User` is stored for later use. Nothing sends reminders yet.

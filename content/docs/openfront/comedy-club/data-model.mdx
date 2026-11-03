@@ -1,0 +1,86 @@
+---
+title: Data model
+description: The 40 lists, their key fields, states, and the rules that protect money and capacity.
+icon: Database
+---
+
+The schema lives in `features/keystone/models`. Every list has `createdAt` and `updatedAt`. Money is an integer in cents with a currency code (default `USD`). Percentages are basis points (100 = 1%). Lists marked **command only** block generated create, update, and delete. They change only through the custom operations in [API reference](/docs/openfront/comedy-club/api-reference). On the other lists, any state field that moves through a lifecycle (for example `Show.status`, `Run.status`, and `Comedian.status`) cannot be set by generated create or update either. A state change on those goes through a custom operation. `PromoCode.status` is a plain editable field. No show, order, ticket, check, payout, or settlement list allows generated delete. Setup and identity lists are the exception: `User`, `Role`, `OAuthApp`, `OAuthToken`, and `PaymentProvider` can be deleted by the people who manage them.
+
+## Venue and floor
+
+| List | Key fields | Notes |
+| --- | --- | --- |
+| `Venue` | `name`, `timezone`, `address`, `defaultAgeRestriction`, `drinkMinimumItems`, `drinkMinimumCentsFloor`, `serviceFeeBps`, `taxBps`, `policies` | One venue. Needs `canManageSettings`. |
+| `VenueSettings` | `refundWindowHours`, `holdMinutes`, `approvalThresholdCents`, `compApprovalQuantity`, `currencyCode` | A single record (a Keystone singleton). Id is 1. |
+| `Room` | `name`, `capacity`, `seatingMode` (`tables` or `ga`), `active` | Has sections, shows, and templates. |
+| `Section` | `name`, `sort`, room, price tier | A group of tables. |
+| `Table` | `label`, `seats`, `x`, `y`, `shape`, `combinableWith` | Floor-map tile. |
+
+## Talent
+
+| List | Key fields | States and notes |
+| --- | --- | --- |
+| `Comedian` | `stageName`, `legalName`, `email`, `phone`, `bio`, `headshot`, `socials`, `homeCity`, `defaultFeeCents`, `notes`, `payeeDetailsOnFile`, `status` | `active`, `inactive`. Needs `canManageTalent`. Payee details are a checkbox only. No operation changes `status`, so new comedians stay `active`. |
+| `Run` | `headliner`, `status`, `startAt`, `endAt`, `runFeeCents`, `closedAt`, `notes` | `scheduled`, `in_progress`, `closed`. The status is set by the server. |
+| `LineupSlot` | `role`, `position`, `setMinutes`, `feeCents`, `bonusCents`, `status`, `confirmedAt` | Command only. Roles: `host`, `opener`, `guest_set`, `feature`, `headliner`, `bringer`. States: `offered`, `confirmed`, `declined`, `cancelled`, `performed`, `no_show`. |
+| `OpenMicSignup` | `signupKey`, `name`, `email`, `method`, `lotteryNumber`, `status`, `bringerGuestsRequired`, `bringerGuestsArrived` | Command only. States: `waiting`, `called`, `performed`, `skipped`, `withdrawn`. `signupKey` is unique per show and person. |
+
+## Shows and sales
+
+| List | Key fields | States and notes |
+| --- | --- | --- |
+| `ShowTemplate` | `title`, `recurrenceRule`, `startTime`, `duration`, `defaultAgeRestriction`, `isOpenMic`, default price tiers | The weekly rule is text such as `FREQ=WEEKLY;BYDAY=TU`. |
+| `Show` | `title`, `occurrenceKey` (unique), `startsAt`, `doorsAt`, `endsAt`, `signupOpensAt`, `ageRestriction`, `capacity`, `status`, `isOpenMic`, `publicNote` | States: `draft`, `on_sale`, `sold_out`, `doors_open`, `in_progress`, `completed`, `settled`, `cancelled`. Virtual fields `soldCount`, `heldCount`, `checkedInCount`, `remaining`. |
+| `PriceTier` | `name`, `priceCents`, `feeCents`, `capacity`, `sold`, `held`, `isTableTier`, `seatsPerUnit`, `salesStartAt`, `salesEndAt`, `status` | Command only. States: `on_sale`, `paused`, `sold_out`, `closed`. `sold` and `held` are changed only by the server. |
+| `InventoryHold` | `holdKey` (unique), `quantity`, `status`, `expiresAt`, `cartToken` (a hash), `quote`, tables | Command only. States: `active`, `converted`, `released`, `expired`. |
+| `PromoCode` | `code`, `discountType`, `value`, `maxUses`, `usedCount`, `perOrderLimit`, `startsAt`, `endsAt`, `status` | `percent_bps`, `amount_cents`, `comp`. See [Promo codes](/docs/openfront/comedy-club/promo-codes). |
+| `PromoRedemption` | `amountCents`, `status`, promo, hold, order | Command only. States: `reserved`, `committed`, `released`. |
+
+## Orders and the door
+
+| List | Key fields | States and notes |
+| --- | --- | --- |
+| `TicketOrder` | `orderNumber` (unique), `email`, `name`, `phone`, `status`, `subtotalCents`, `feesCents`, `discountCents`, `taxCents`, `totalCents`, `currencyCode`, `source`, `partySize`, `seatingRequest`, `birthdayOrOccasion`, `ageAttested`, `secretKey` (a hash) | Command only. States: `pending_payment`, `paid`, `partially_refunded`, `refunded`, `cancelled`, `comp`. Sources: `online`, `box_office`, `comp`, `bringer`. |
+| `TicketOrderLine` | `tierName`, `unitPriceCents`, `unitFeeCents`, `quantity`, `lineTotalCents`, `discountCents`, `taxCents`, `priceTierId` | A copy of what was bought. The live tier is kept only as `priceTierId`. |
+| `Ticket` | `ticketCode` (unique), `tokenHash`, `holderName`, `status` | Command only. States: `valid`, `checked_in`, `void`, `refunded`. One ticket per seat. |
+| `Comp` | `recipientName`, `recipientEmail`, `quantity`, `reason`, `approval` | Command only. Reasons: `industry`, `comic_guest`, `press`, `service_recovery`. |
+| `CheckIn` | `at`, `method` (`scan`, `manual`), `result` | Command only. Results: `admitted`, `duplicate`, `wrong_show`, `void`. |
+| `SeatingAssignment` | `partySize`, `status`, `seatedAt`, tables, server | Command only. States: `unseated`, `seated`, `closed`. |
+| `TableOccupancy` | `occupancyKey` | Command only. The key is `showId:tableId` while a table is held or seated, and is cleared after. It is unique, so a table cannot be double-booked. |
+
+## Food and drink
+
+| List | Key fields | Notes |
+| --- | --- | --- |
+| `MenuItem` | `name`, `category` (`drink`, `food`, `na`), `priceCents`, `countsTowardMinimum`, `active`, `image` | Needs `canManageChecks`. |
+| `Check` | `status`, `guestCount`, `minimumItemsRequired`, `minimumShortfallCents`, `minimumUnitPriceCents`, `minimumCentsFloor`, `subtotalCents`, `taxBps`, `taxCents`, `tipCents`, `totalCents` | Command only. States: `open`, `presented`, `paid`, `voided`. The minimum values are copied when the check is opened. Virtual field `minimumItemsMet`. |
+| `CheckItem` | `name`, `priceCents`, `qty`, `countsTowardMinimum`, `voided`, `voidReason` | Command only. Copies of the menu item at the time it was added. |
+
+## Money
+
+| List | Key fields | Notes |
+| --- | --- | --- |
+| `ComedianPayout` | `amountCents`, `status`, `paidAt`, `method`, `reference`, `payoutKey` (unique), comedian, show, run, lineup slots | Command only. States: `draft`, `approved`, `paid`, `void`. Methods: `check`, `ach`, `venmo`. |
+| `ShowSettlement` | `ticketGrossCents`, `feesCents`, `discountsCents`, `refundsCents`, `compsCount`, `foodBeverageGrossCents`, `minimumShortfallRevenueCents`, `tipsCents`, `talentCostCents`, `netCents`, `status`, `closedBy` | Command only. States: `open`, `closed`. |
+| `Payment`, `Refund`, `PaymentSession`, `PaymentCollection`, `PaymentWebhookEvent` | See [Payment providers](/docs/openfront/comedy-club/payment-providers) | Read-only to generated writes. `PaymentWebhookEvent` exists but nothing writes to it yet. |
+| `PaymentProvider` | `name`, `code`, `isInstalled`, adapter names, `credentials` (never readable), `metadata` | Needs `canManagePayments`. |
+
+## Control
+
+| List | Key fields | Notes |
+| --- | --- | --- |
+| `AuditEvent` | `actor`, `action`, `targetList`, `targetId`, `before`, `after`, `reason`, `requestId`, `eventKey` | Append only. Readable with `canReadAudit`. |
+| `IdempotencyKey` | Key, request path, request parameters, response, recovery point | Hidden. Never readable or writable through GraphQL. |
+| `ManagerApproval` | Action type, target, reason, amount, fingerprint, status, expiry | Hidden. States: `pending`, `approved`, `rejected`, `consumed`, `expired`. |
+
+## Identity
+
+`User` has `name`, `email`, `password`, a `role`, `onboardingStatus`, `notificationPreference`, and links to orders, comps, seatings, checks, check-ins, settlements, and audit events. `Role` holds the permission flags. `OAuthApp` and `OAuthToken` back the MCP sign-in.
+
+## Rules the server enforces
+
+- **Capacity.** Hold, comp, and checkout take a database lock named for the show. Under the lock they check that sold plus held plus the new quantity fits the tier and the show.
+- **Idempotency.** Every money or inventory operation takes an idempotency key. Reusing a key with different input is refused. The same key returns the stored answer.
+- **Copies at purchase.** Orders, lines, and checks store the price, fees, tax, and rules in force. Later edits to the menu, tiers, or venue do not change them.
+- **Compare and set.** Status changes check the current state in the write, so two people acting at once cannot both win.
+- **Audit.** State changes write an `AuditEvent`.

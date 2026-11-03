@@ -1,0 +1,49 @@
+---
+title: Settings
+description: Venue details, the drink minimum, fees, tax, and the sales and approval limits.
+icon: Settings
+---
+
+Route: `/dashboard/platform/settings`. It is a read view with *Edit* links to the generic list screens.
+
+## Venue
+
+Edited at `/dashboard/venues/[id]`.
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `address`, `timezone` | The venue. Show times and generated shows use the time zone. |
+| `defaultAgeRestriction` | `all`, `18`, or `21` |
+| `drinkMinimumItems` | Items per guest. Default 2. |
+| `drinkMinimumCentsFloor` | An optional amount per guest as an alternative to the item count |
+| `serviceFeeBps` | Service fee in basis points, added to each order |
+| `taxBps` | Tax in basis points |
+| `policies` | Free text |
+
+## Sales and approvals
+
+One settings record, edited at `/dashboard/venue-settings-items/[id]`.
+
+| Field | Meaning | Default |
+| --- | --- | --- |
+| `refundWindowHours` | Guests can cancel on their own until this many hours before the show | 24 |
+| `holdMinutes` | How long a hold lasts | 10 |
+| `approvalThresholdCents` | Refunds above this amount by staff need an approval from another user | 10000 |
+| `compApprovalQuantity` | Comps for more tickets than this need an approval | 4 |
+
+The setup dialog creates this record. Without it the defaults above are used.
+
+## The drink minimum
+
+When a check is opened for a seated party, it copies the rules:
+
+- **Items required** = guests × `drinkMinimumItems`.
+- The cheapest active item that counts toward the minimum is saved as the price for any shortfall.
+- Floor = `drinkMinimumCentsFloor` × guests.
+- The venue's tax rate is saved on the check.
+
+When the check is closed, the shortfall is the larger of the missing items times that cheapest price, and the missing floor amount. It is added to the check as revenue. Waiving it needs an approval for `waive_minimum`. Later menu or venue changes do not change a check that is already open. Opening a check is refused if the venue requires items but no menu item counts toward the minimum.
+
+## Permissions
+
+The venue, rooms, sections, tables, and sales settings need `canManageSettings`.

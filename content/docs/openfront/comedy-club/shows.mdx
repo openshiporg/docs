@@ -1,0 +1,60 @@
+---
+title: Shows
+description: Show list with status tabs, template generation, and the show detail page.
+icon: CalendarDays
+---
+
+Routes: `/dashboard/platform/shows` and `/dashboard/platform/shows/[id]`.
+
+## The list
+
+Tabs filter by `?tab=`: **Upcoming**, **Draft**, **Sold out**, **Past** (completed or settled), and **Cancelled**, each with a count. Each row shows title, start time, room, age rule, the first lineup names, sold and remaining counts, and a status label.
+
+On the Upcoming and Draft tabs there is one button per show template, for example *Generate Tuesday Showcase*. It calls `generateShowsFromTemplate`.
+
+### Generating from a template
+
+A template has a weekly rule such as `FREQ=WEEKLY;BYDAY=TU`, a start time, and a duration. Generation walks the next 56 days in the venue's time zone and creates a show for each matching day. Rules without `FREQ=WEEKLY` and `BYDAY` are refused. Each show gets a key made from the template and date, so running it twice does not create duplicates. New shows start as `draft` and copy the template's price tiers. A room's capacity caps each tier.
+
+## Show detail
+
+The detail page shows:
+
+- Status, time, room, age rule, and template.
+- Sold, held, remaining, and checked-in counts.
+- **Ticket tiers** with price, fee, sold, held, and capacity.
+- **Lineup** with each slot's role, set length, fee, and status. An `offered` slot has a *Confirm* button.
+- **Active holds** with their expiry.
+- **Orders** (the latest 50), each linking to the order page.
+- **Checks** with their items. A check can take a new item and be closed here.
+- The **settlement** status and net, once the show is settled.
+
+### Buttons
+
+| Button | Shows when | Calls |
+| --- | --- | --- |
+| Publish | `draft` | `publishShow` (moves to `on_sale`) |
+| Pause sales | `on_sale` or `sold_out` | `pauseSales` (sets every tier `paused`) |
+| Close night | `doors_open`, `in_progress`, or `completed` | `closeShow` |
+| Cancel show | any state before `completed` | `cancelShow` |
+
+Cancel asks for confirmation and refunds every paid order. See [Refund or cancel](/docs/openfront/comedy-club/how-to-guides/refund-or-cancel).
+
+## Show states
+
+`draft`, `on_sale`, `sold_out`, `doors_open`, `in_progress`, `completed`, `settled`, `cancelled`.
+
+| From | Allowed next |
+| --- | --- |
+| `draft` | `on_sale`, `cancelled` |
+| `on_sale` | `sold_out`, `doors_open`, `cancelled` |
+| `sold_out` | `on_sale`, `doors_open`, `cancelled` |
+| `doors_open` | `in_progress`, `cancelled` |
+| `in_progress` | `completed`, `cancelled` |
+| `completed` | `settled` |
+
+A show becomes `sold_out` on its own when sales reach capacity, and returns to `on_sale` after a refund frees seats. `settled` is set by `closeShow`. Any other move is refused with "Invalid state transition".
+
+## Permissions
+
+`publishShow`, `pauseSales`, `generateShowsFromTemplate`, and `cancelShow` need `canManageShows`. `cancelShow` also needs `canIssueRefunds`. `closeShow` needs `canManagePayouts`. `confirmSlot` needs `canManageTalent`.

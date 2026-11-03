@@ -1,0 +1,36 @@
+---
+title: Tonight
+description: The default screen. Pick a show, check tickets in, seat parties, and watch open checks and the running order.
+icon: Radio
+---
+
+Route: `/dashboard/platform/tonight`. The dashboard home redirects here. Optional `?show=<id>` picks a show.
+
+## What it shows
+
+The page lists shows that start within the last six hours or later and are `on_sale`, `sold_out`, `doors_open`, `in_progress`, or `completed`. The show switcher is a searchable popover. It opens on the earliest one.
+
+For the chosen show it shows:
+
+- **Status and facts**: status label, room, doors time, show time, and age rule.
+- **Counts**: checked in out of sold, remaining, held, and open checks.
+- **Show buttons**: *Open doors* (from `on_sale` or `sold_out`), *Start show* (from `doors_open`), and *End show* (from `in_progress`). Each calls `publishShow`.
+- **Door**: a field for a ticket code or a scanner. *Check in* calls `checkInTicket`.
+- **Running order**: the lineup by position, with set lengths, a status label, and the total minutes of sets.
+- **Seating**: a table map by section. Tables are free, held by a ticket hold, or seated. Pick tables, pick a waiting party, and press *Seat party*.
+- **Open checks**: checks with status `open` or `presented`, their table, guest count, and whether the minimum is met.
+
+## Door results
+
+A scan returns one of `admitted`, `duplicate`, `wrong_show`, or `void`. A second scan of the same ticket returns `duplicate`. The check-in is saved as a `CheckIn` row each time.
+
+## Seating rules
+
+- A party must be a paid, comp, or partly refunded order with no seating yet.
+- Chosen tables must be in the show's room and hold at least as many seats as the party.
+- A table cannot be seated twice for one show. A table held by this order's own ticket hold can be seated by that order.
+- A general-admission room shows no table map.
+
+## Permissions
+
+The page itself needs a signed-in user who can read the lists it queries. The buttons call mutations that check `canManageShows` (show buttons) and `canManageDoor` (check-in and seating).

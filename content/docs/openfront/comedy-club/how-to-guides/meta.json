@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "book-a-show-and-lineup",
+    "sell-tickets",
+    "run-the-door",
+    "refund-or-cancel",
+    "close-the-night",
+    "close-a-headliner-run"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}
