@@ -1,0 +1,71 @@
+---
+title: Payment providers
+description: The Stripe adapter, the webhook, test mode, and what is and is not wired.
+icon: Plug
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Payment code comes from Openfront Restaurant. Adapters live in `features/integrations/payment` (`stripe`, `paypal`, `manual`). A `PaymentProvider` record names the adapter functions it uses.
+
+## What is wired
+
+Only Stripe, only for online checkout. The checkout code looks for a provider with code `pp_stripe_stripe`. If none exists and the Stripe keys are set, it creates one. The PayPal and manual adapter files are present but nothing in checkout calls them.
+
+## Test mode
+
+Development uses Stripe TEST keys. Use card `4242 4242 4242 4242`, any future expiry, any CVC. Nothing in this repository has been run with live keys.
+
+## Environment
+
+```bash
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+## Payment flow
+
+`startTicketCheckout` creates the order, a payment collection, and a payment session, then creates a Stripe payment intent. It uses a stable idempotency key so a retry does not create a second intent. `completeTicketCheckout` and the webhook both end in the same function. It reads the payment from Stripe, checks that the amount and currency match the order, and checks the refund history. Then, inside one transaction under the event lock, it:
+
+- creates a ticket order line and one ticket per seat or quantity;
+- moves held seats to `sold` and the level's held count to sold;
+- commits promo redemptions;
+- records a `Payment` as `succeeded` and sets the order to `paid`.
+
+If the hold was already released when payment arrived, the order is set to `cancelled`, a payment row notes that a refund is required, and the call fails. Refund that order with `refundTicketOrder`.
+
+## Webhook
+
+Register this URL in Stripe:
+
+```
+/api/integrations/payment/pp_stripe_stripe/webhook
+```
+
+The route reads the raw body, verifies the Stripe signature with `STRIPE_WEBHOOK_SECRET`, stores each event once in `PaymentWebhookEvent`, and handles `payment_intent.succeeded` by completing the matching order. A repeat of a processed event is ignored. Other event types are stored and marked processed without any action. Refund and dispute events are not applied.
+
+## Refunds
+
+`refundTicketOrder` reserves a `Refund`, calls Stripe, then records the result. See [Refund an order](/docs/openfront/concerts/how-to-guides/refund-an-order).
+
+## Set up
+
+<Steps>
+<Step>
+### Set the three Stripe variables
+Use TEST keys.
+</Step>
+<Step>
+### Run setup or start a checkout
+Both create the Stripe provider record if it is missing.
+</Step>
+<Step>
+### Register the webhook
+Use the URL above and the signing secret as `STRIPE_WEBHOOK_SECRET`.
+</Step>
+</Steps>
+
+## Dashboard screen
+
+`/dashboard/platform/payment-providers` is the Restaurant provider list screen. Reading and editing providers needs `canManagePayments`. The `credentials` field is never returned to the browser.

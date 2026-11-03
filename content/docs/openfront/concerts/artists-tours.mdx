@@ -1,0 +1,20 @@
+---
+title: Artists and tours
+description: Artists, agencies, and tours.
+icon: Mic
+---
+
+Route: `/dashboard/platform/artists`.
+
+The page lists artists with genre, agency, and agent email, then lists tours with artist and dates.
+
+## Model
+
+- `Agency`: name and contacts (JSON).
+- `Artist`: name, `genreTags`, agent name and email, manager, bio, image, socials, and an agency.
+- `Tour`: a name, an artist, start and end dates, and notes. An event can sit outside a tour.
+- `EventArtist`: one billed artist on an event, with billing level (`headliner`, `co_headliner`, `support`, `opener`), position, set time, and set minutes.
+
+## Setup
+
+The page is read-only. Create and edit these at `/dashboard/agencies`, `/dashboard/artists`, `/dashboard/tours`, and `/dashboard/event-artists`. Those lists need `canManageEvents` to create or update.

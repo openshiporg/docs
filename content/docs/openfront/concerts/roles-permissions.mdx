@@ -1,0 +1,68 @@
+---
+title: Roles and permissions
+description: Role flags, what each one unlocks, which are enforced today, and the roles the setup creates.
+icon: ShieldCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Access comes from boolean flags on the `Role` list. A `User` has one role. The first user created at `/dashboard/init` gets an `Admin` role with every flag. Manage roles at `/dashboard/roles` (needs `canManageRoles`).
+
+## Flags
+
+| Flag | What the code checks today |
+| --- | --- |
+| `canAccessDashboard` | Sign in to the dashboard. Also lets a user read the command-only lists (orders, tickets, holds, settlements, merch, and so on) |
+| `canManageEvents` | Create and update the catalog lists (events, venues, charts, artists, offers, price levels, promo codes, and so on). Runs `placeDateHold`, `challengeHold`, `confirmHold`, `publishEvent`, `postponeEvent`, `cancelEvent` |
+| `canManageDeals` | `sendOffer`, `acceptOffer` |
+| `canManageInventory` | `setProductionHold`, `releaseProductionHold` |
+| `canScanTickets` | `scanTicket` |
+| `canManageSettlements` | `recordMerchSales`, `computeSettlement`, `adjustSettlement`, `signSettlement`, `recordArtistPayment` |
+| `canApproveAdjustments` | Can be named as approver on a settlement adjustment or a refund above the threshold |
+| `canIssueRefunds` | `refundTicketOrder` |
+| `canManagePayments` | Create and update `PaymentProvider`. Read payments, refunds, and webhook events |
+| `canReadPayments` | Read `Payment`, `Refund`, and `PaymentProvider` |
+| `canReadAudit` | Read `AuditEvent` |
+| `canManageOrders` | Read `PaymentCollection` and `PaymentSession` only |
+| `canManageOnboarding` | Run setup (`seedConcerts`) and see the sidebar card |
+| `canManagePeople`, `canEditOtherPeople`, `canSeeOtherPeople` | Create and delete users, edit others, read others |
+| `canManageRoles` | Create and edit roles |
+| `canManageVenues`, `canManageArtists` | Defined on `Role` and in the setup roles. No list or command checks them yet |
+
+Flags do not imply each other. A user with `canManageEvents` cannot scan tickets unless `canScanTickets` is also set.
+
+## Where flags are checked
+
+The pages under `/dashboard/platform/*` are not wrapped in a per-page guard. Any user who can reach the dashboard can open them. What they can read is decided by list access, and what they can change is decided by each command. Rely on the server checks, not on which pages show.
+
+## Roles created by setup
+
+The complete and basic templates create these roles:
+
+| Role | Flags |
+| --- | --- |
+| Owner | Every flag |
+| Booker | `canAccessDashboard`, `canManageEvents`, `canManageDeals`, `canManageVenues`, `canManageArtists`, `canManageInventory` |
+| Box Office | `canAccessDashboard`, `canManageOrders`, `canIssueRefunds`, `canScanTickets` |
+| Door Staff | `canAccessDashboard`, `canScanTickets` |
+| Settlement Manager | `canAccessDashboard`, `canManageSettlements`, `canApproveAdjustments`, `canReadAudit`, `canReadPayments` |
+| Customer | None. The role has no dashboard access |
+
+## Refund and adjustment approval
+
+Two actions need a second person with `canApproveAdjustments`:
+
+<Steps>
+<Step>
+### Refunds above the threshold
+`refundTicketOrder` compares the amount with `StoreSettings.refundApprovalThresholdCents`. Above it, the request must name an `approvedById` that is a different user with `canApproveAdjustments`.
+</Step>
+<Step>
+### Settlement adjustments
+`adjustSettlement` always needs a reason and an `approvedById` that is a different user with `canApproveAdjustments`.
+</Step>
+</Steps>
+
+## Customers
+
+Customers need no user and no role. Guests hold and pay through signed proofs. A user with no role cannot sign in to the dashboard.

@@ -1,0 +1,19 @@
+---
+title: Orders
+description: All ticket orders with status tabs.
+icon: ReceiptText
+---
+
+Route: `/dashboard/platform/orders`.
+
+The page lists the latest 100 orders with order number, status, event, guest name, time placed, and total. Tabs filter by `paid`, `pending_payment`, `partially_refunded`, and `refunded`.
+
+An order has line items, tickets, and a payment collection. Each line saves the event title, level name, phase name, seat labels, unit price, fees, tax, quantity, and total as they were at purchase. Later catalog changes do not alter a paid order.
+
+## Order statuses
+
+`pending_payment`, `paid`, `partially_refunded`, `refunded`, `cancelled`, `comp`. A checkout creates a `pending_payment` order. A confirmed Stripe payment makes it `paid`. Refunds move it to `partially_refunded` or `refunded`. Status cannot be edited through generated updates.
+
+## Not on this page
+
+It is read-only. Find a single order with [Box office](/docs/openfront/concerts/box-office). Refund with `refundTicketOrder`.

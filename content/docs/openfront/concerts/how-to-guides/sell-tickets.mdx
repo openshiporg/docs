@@ -1,0 +1,46 @@
+---
+title: Sell tickets
+description: Walk a purchase through the storefront with the Stripe test card and check the result in the dashboard.
+icon: ShoppingCart
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+This guide uses Stripe TEST keys and the placeholder storefront.
+
+<Steps>
+<Step>
+### Pick an event that is on sale
+Open `/`. Events in `on_sale` or `presale` can be held. An `announced` event shows its page but cannot be held.
+</Step>
+<Step>
+### Select
+For a general-admission level, set a quantity and press **Hold**. For a reserved level, click up to eight open seats and press **Hold seats**. Seats in one hold must share one price level.
+</Step>
+<Step>
+### Add a code if you have one
+A presale event needs a valid presale or promo code before its on-sale time.
+</Step>
+<Step>
+### Hold
+The page shows the price breakdown and a 10-minute countdown. When it reaches zero the hold expires and the seats reopen.
+</Step>
+<Step>
+### Enter details and pay
+Enter a name and email. For an age-restricted event, tick the age box. Press **Continue to payment**, enter card `4242 4242 4242 4242`, any future expiry, any CVC, then press **Pay**.
+</Step>
+<Step>
+### Confirm
+The page shows the order number and each ticket code. Keep the order number and email. Entry tokens show once on this page.
+</Step>
+</Steps>
+
+## Check it in the dashboard
+
+- `/dashboard/platform/orders` shows the order as `paid`.
+- The event's **Pricing** tab shows the sold count went up. The **Seating** tab shows the seats as sold.
+- The `Payment` record is `succeeded`.
+
+## If something fails
+
+See [Troubleshooting](/docs/openfront/concerts/troubleshooting). A card payment needs `NEXT_PUBLIC_STRIPE_KEY` and `STRIPE_SECRET_KEY`.

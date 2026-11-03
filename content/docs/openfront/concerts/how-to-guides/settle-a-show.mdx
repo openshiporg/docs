@@ -1,0 +1,40 @@
+---
+title: Settle a show
+description: Record merchandise, compute the settlement, sign it, and record the artist payment.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Needs `canManageSettlements`. Commands go to `/api/graphql` unless a button is named.
+
+<Steps>
+<Step>
+### Check the inputs
+The event must be `completed` or `settling` and have an accepted offer. Expenses are on the event's **Expenses** tab. Enter actual amounts at `/dashboard/event-expenses`.
+</Step>
+<Step>
+### Record merchandise
+`recordMerchSales` with `eventId`, `softGrossCents`, and `hardGrossCents`. The venue share comes from the deal's frozen merch split.
+</Step>
+<Step>
+### Record deposits
+`recordArtistPayment` with `kind` `deposit`, an amount, and a reference, for each deposit paid before the show. Deposits count when computing the balance.
+</Step>
+<Step>
+### Compute
+Press **Recompute** on the settlement page, or send `computeSettlement` with `eventId`. A draft settlement appears and the event moves to `settling`.
+</Step>
+<Step>
+### Review and sign
+On `/dashboard/platform/settlements/[id]` press the button for the next step: **Mark reviewed**, **Sign as promoter**, **Sign for artist**, **Finalize**. The artist signature must be a different user from the promoter signature.
+</Step>
+<Step>
+### Pay the balance
+`recordArtistPayment` with `kind` `balance` and the amount due, once the settlement is `final`. The payment is recorded only. Pay the artist outside the app. When the balance reaches zero the event and its offers become `settled`.
+</Step>
+</Steps>
+
+## Corrections
+
+A signed settlement is frozen. To correct it, send `adjustSettlement` with `settlementId`, `amountCents`, `reason`, and `approvedById`. The approver must be a different user with `canApproveAdjustments`. It creates the next version as a draft with an adjustment line.

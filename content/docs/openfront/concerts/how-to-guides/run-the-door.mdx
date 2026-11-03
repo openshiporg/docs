@@ -1,0 +1,32 @@
+---
+title: Run the door
+description: Scan tickets at the gate with the door page.
+icon: DoorOpen
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+### Give door staff the right role
+A user needs `canAccessDashboard` and `canScanTickets`. The seeded Door Staff role has both.
+</Step>
+<Step>
+### Open the door page
+Go to `/dashboard/platform/door` and pick the event. The counts show admitted, tickets, and capacity.
+</Step>
+<Step>
+### Scan
+Type or paste the ticket code, set the gate name, and press **Scan**. The page shows the result and the admitted count.
+</Step>
+<Step>
+### Handle each result
+`admitted`: let the guest in. `duplicate`: the ticket was already used. `reentry`: allowed because the event allows re-entry. `wrong_event` or `void`: refuse.
+</Step>
+</Steps>
+
+## Limits
+
+- The scan form shows only while the event is in `doors` or `in_progress`. No command sets those statuses today, so a live event needs its status set in the database.
+- The page takes typed codes. It has no camera scanner and no QR reader.
+- Every scan, including refused ones, is saved as a `ScanEvent`.

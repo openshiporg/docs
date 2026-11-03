@@ -1,0 +1,147 @@
+---
+title: Data model
+description: Lists, relationships, statuses, and the append-only rules of the Concerts schema.
+icon: Database
+---
+
+The schema has 41 lists in `features/keystone/models`. Generated GraphQL names come from Keystone, with a few plurals changed to avoid clashes.
+
+## Rules
+
+- Money is integer cents. Percentages are basis points. Each money list has a `currencyCode` (default `USD`).
+- Times are instants. Local time comes from `Venue.timezone`.
+- Every list has `createdAt` and `updatedAt`.
+- Command-only lists block generated create, update, and delete. Catalog lists allow create and update with `canManageEvents`. Status fields are never writable through generated updates.
+- Customer-visible codes are random and not sequential: `orderNumber` and `ticketCode`. Entry tokens are stored only as a SHA-256 hash in `tokenHash`.
+- `AuditEvent` rows are created by commands only. They cannot be updated or deleted.
+- Paid records keep a snapshot. `TicketOrderLine` stores title, level, phase, seat labels, prices, fees, tax, and quantity. An accepted `Offer` stores its terms and a hash. A `Settlement` stores its computed snapshot and a hash.
+
+## Core relationships
+
+| From | To |
+| --- | --- |
+| `Venue` | `SeatingChart`, `Event`, `DateHold` |
+| `SeatingChart` | `ChartSection`, which has `Seat` |
+| `Event` | `Venue`, `SeatingChart`, `Tour`, `EventArtist`, `Offer`, `EventExpense`, `PriceLevel`, `SeatInventory`, `ProductionHold`, `InventoryHold`, `TicketOrder`, `Ticket`, `ScanEvent`, `MerchSales`, `Settlement` |
+| `PriceLevel` | `ChartSection` (many), `PriceLevelPhase`, `SeatInventory` |
+| `SeatInventory` | `Event`, `Seat`, `PriceLevel`. One record per seat per event |
+| `InventoryHold` | `Event`, `PriceLevel`, `SeatInventory` (many), `TicketOrder`, `PromoRedemption` |
+| `TicketOrder` | `Event`, `TicketOrderLine`, `Ticket`, `PaymentCollection`, `Payment`, `PromoRedemption` |
+| `Ticket` | `TicketOrder`, `TicketOrderLine`, `SeatInventory`, and `transferredFrom` another `Ticket` |
+| `Settlement` | `Event`, `SettlementLine`, `ArtistPayment`, and `previousVersion` another `Settlement` |
+| `Offer` | `Event`, `Artist`, `EventArtist` |
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Event` | `hold`, `announced`, `presale`, `on_sale`, `sold_out`, `doors`, `in_progress`, `completed`, `settling`, `settled`, `cancelled`, `postponed` |
+| `SeatingChart` | `draft`, `published`, `retired` |
+| `Seat` | `sellable`, `killed` |
+| `DateHold` | `held`, `challenged`, `confirmed`, `released` |
+| `Offer` | `draft`, `sent`, `accepted`, `declined`, `contracted`, `settled` |
+| `PriceLevel` | `active`, `paused`, `closed` |
+| `SeatInventory` | `open`, `held`, `sold`, `killed`, `comp`, `reserved_hold` |
+| `ProductionHold` | `active`, `released` |
+| `InventoryHold` | `active`, `converted`, `released`, `expired` |
+| `PromoCode` | `active`, `paused`, `expired` |
+| `PromoRedemption` | `reserved`, `committed`, `released` |
+| `TicketOrder` | `pending_payment`, `paid`, `partially_refunded`, `refunded`, `cancelled`, `comp` |
+| `Ticket` | `valid`, `checked_in`, `void`, `refunded`, `transferred` |
+| `ScanEvent` result | `admitted`, `duplicate`, `wrong_event`, `void`, `reentry` |
+| `Settlement` | `draft`, `reviewed`, `signed_promoter`, `signed_artist`, `final`, `void` |
+| `ArtistPayment` | `deposit` or `balance`; `scheduled`, `paid`, `void` |
+| `Payment` | `pending`, `processing`, `authorized`, `unknown`, `succeeded`, `failed`, `cancelled`, `refunded`, `partially_refunded` |
+| `Refund` | `processing`, `succeeded`, `failed`, `unknown` |
+| `User` onboarding | `not_started`, `in_progress`, `completed`, `dismissed` |
+
+Some values have no command that sets them yet: `Event` beyond `announced`, `postponed` back to sale, `DateHold` `released`, `Offer` `declined` and `contracted`, `SeatInventory` `comp`, `Ticket` `void`, and `SeatingChart` `published` and `retired`. See [Current limits](/docs/openfront/concerts#current-limits).
+
+## Lists and fields
+
+### Venues and seating
+
+| List | Fields |
+| --- | --- |
+| `Venue` | `name`, `city`, `timezone`, `address`, `contact`, `capacity`, `defaultFacilityFeeCents`, `taxBps`, `ownedByPromoter`, `rentTermsDefault` |
+| `SeatingChart` | `name`, `version`, `status` |
+| `ChartSection` | `name`, `capacity`, `sort`, `kind` |
+| `Seat` | `row`, `number`, `label`, `x`, `y`, `accessible`, `companion`, `obstructed`, `status` |
+
+### Talent and deals
+
+| List | Fields |
+| --- | --- |
+| `Agency` | `name`, `contacts` |
+| `Artist` | `name`, `genreTags`, `agentName`, `agentEmail`, `manager`, `bio`, `image`, `socials` |
+| `Tour` | `name`, `notes`, `startAt`, `endAt` |
+| `Event` | `title`, `presaleCode`, `image`, `description`, `isCoPro`, `allowReentry`, `doorsAt`, `showAt`, `curfewAt`, `announceAt`, `onSaleAt`, `presaleAt`, `refundWindowEndsAt`, `status` … |
+| `EventArtist` | `position`, `setMinutes`, `setTime`, `billing` |
+| `DateHold` | `rankKey`, `rank`, `date`, `expiresAt`, `status` |
+| `Offer` | `breakevenBasis`, `radiusClause`, `notes`, `acceptedTermsHash`, `version`, `guaranteeCents`, `percentageBps`, `promoterProfitBps`, `expenseCapCents`, `merchSplitBps`, `hardMerchSplitBps`, `hospitalityRiderCents`, `depositCents`, `acceptedTerms` … |
+| `EventExpense` | `vendor`, `receipt`, `notes`, `budgetCents`, `actualCents`, `isCapped`, `category` |
+
+### Pricing and inventory
+
+| List | Fields |
+| --- | --- |
+| `PriceLevel` | `name`, `priceCents`, `feeCents`, `facilityFeeCents`, `capacity`, `sold`, `held`, `perOrderLimit`, `productionHeld`, `salesStartAt`, `salesEndAt`, `status` |
+| `PriceLevelPhase` | `name`, `priceCents`, `quantity`, `sold`, `sort`, `startsAt` |
+| `SeatInventory` | `holdKey`, `occupancyKey`, `eventSeatKey`, `status` |
+| `ProductionHold` | `quantity`, `releaseAt`, `holdType`, `status` |
+| `InventoryHold` | `holdKey`, `secretHash`, `presaleCode`, `quantity`, `quoteSnapshot`, `expiresAt`, `status` |
+| `PromoCode` | `code`, `discountType`, `value`, `maxUses`, `usedCount`, `perOrderLimit`, `startsAt`, `endsAt`, `status` |
+| `PromoRedemption` | `amountCents`, `status` |
+
+### Orders and admission
+
+| List | Fields |
+| --- | --- |
+| `TicketOrder` | `orderNumber`, `guestEmail`, `guestName`, `secretKey`, `subtotalCents`, `serviceFeesCents`, `facilityFeesCents`, `taxCents`, `discountCents`, `totalCents`, `refundedCents`, `ageAttested`, `status`, `source` … |
+| `TicketOrderLine` | `title`, `levelName`, `phaseName`, `seatLabel`, `unitPriceCents`, `serviceFeeCents`, `facilityFeeCents`, `taxCents`, `quantity`, `discountCents`, `totalCents` |
+| `Ticket` | `ticketCode`, `tokenHash`, `holderName`, `holderEmail`, `status` |
+| `ScanEvent` | `gate`, `at`, `result` |
+
+### Settlement
+
+| List | Fields |
+| --- | --- |
+| `MerchSales` | `softGrossCents`, `hardGrossCents`, `venueSoftSplitBps`, `venueHardSplitBps`, `venueShareCents`, `sellerFeeCents`, `countIn`, `countOut` |
+| `BarSales` | `grossCents`, `promoterShareBps` |
+| `Settlement` | `hash`, `version`, `ticketGrossCents`, `ticketFeesCents`, `taxCents`, `compCount`, `paidCount`, `netBoxOfficeCents`, `totalExpensesCents`, `cappedExpensesCents`, `breakevenCents`, `splitPointCents`, `artistGuaranteeCents`, `artistOverageCents` … |
+| `SettlementLine` | `label`, `sourceRef`, `reason`, `amountCents`, `roundingRemainder`, `kind` |
+| `ArtistPayment` | `method`, `reference`, `amountCents`, `kind`, `status` |
+
+### Platform
+
+| List | Fields |
+| --- | --- |
+| `AuditEvent` | `action`, `targetList`, `targetId`, `reason`, `requestId`, `before`, `after` |
+| `IdempotencyKey` | `idempotencyKey`, `requestMethod`, `requestParams`, `requestPath`, `responseCode`, `responseBody`, `recoveryPoint`, `lockedAt` |
+| `StoreSettings` | `name`, `refundApprovalThresholdCents` |
+| `User` | `name`, `email`, `password`, `onboardingStatus` |
+| `Role` | `name` |
+
+### Payments (Restaurant lineage)
+
+| List | Fields |
+| --- | --- |
+| `PaymentProvider` | `name`, `code`, `isInstalled`, `credentials`, `metadata`, `createPaymentFunction`, `capturePaymentFunction`, `refundPaymentFunction`, `getPaymentStatusFunction`, `generatePaymentLinkFunction`, `handleWebhookFunction` |
+| `PaymentCollection` | `description`, `amount`, `authorizedAmount`, `refundedAmount`, `metadata` |
+| `PaymentSession` | `isSelected`, `isInitiated`, `amount`, `data`, `idempotencyKey`, `paymentAuthorizedAt` |
+| `Payment` | `idempotencyKey`, `reservedAt`, `refundedAmount`, `amount`, `data`, `status`, `paymentMethod`, `providerPaymentId`, `cardLast4`, `cardBrand`, `tipAmount`, `isSplitPayment`, `splitPaymentIndex`, `splitTotal` … |
+| `Refund` | `idempotencyKey`, `amount`, `status`, `reason`, `providerRefundId`, `providerData`, `processedAt` |
+| `PaymentWebhookEvent` | `eventKey`, `providerCode`, `providerEventId`, `eventType`, `status`, `payload`, `rawBody`, `error`, `attempts`, `receivedAt`, `processedAt` |
+
+### MCP OAuth
+
+| List | Fields |
+| --- | --- |
+| `OAuthApp` | `name`, `clientId`, `clientSecret`, `tokenEndpointAuthMethod`, `redirectUris`, `scopes`, `webhookUrl`, `status`, `installUrl`, `uninstallUrl`, `description`, `metadata`, `developerEmail`, `privacyPolicyUrl` … |
+| `OAuthToken` | `tokenType`, `token`, `clientId`, `scopes`, `redirectUri`, `resource`, `expiresAt`, `isRevoked`, `authorizationCode`, `refreshToken`, `accessToken`, `state`, `codeChallenge`, `codeChallengeMethod` |
+
+Fields are listed without relationship fields. Read `schema.graphql` in the repo for the full shape.
+
+## Virtual fields
+
+`Event` has computed `sold`, `held`, `open`, `kills`, and `gross`. `sold` and `held` add up the event's price levels. `open` is capacity less sold, held, and blocked. `kills` counts killed seat records. `gross` sums paid order totals.

@@ -1,0 +1,45 @@
+---
+title: Look up and transfer
+description: Find an order by email and order number, and transfer a ticket to someone else.
+icon: Search
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Look up an order
+
+<Steps>
+<Step>
+### Open the lookup page
+Go to `/lookup`.
+</Step>
+<Step>
+### Enter the email and order number
+Use the email given at checkout, in any letter case, and the order number such as `CN-…`.
+</Step>
+<Step>
+### Read the result
+The page shows status, event, total, any refunded amount, and each ticket code with its status.
+</Step>
+</Steps>
+
+An unknown order and a wrong email return the same message, so the page does not confirm which orders exist. Lookup shows no entry tokens.
+
+## Transfer a ticket
+
+Transfer is on the confirmation page at `/orders/[id]`, opened right after paying in the same browser.
+
+<Steps>
+<Step>
+### Press Transfer next to a ticket
+Enter the recipient's name and email.
+</Step>
+<Step>
+### Send
+The old ticket becomes `transferred` and its token is cleared. A new ticket is issued with a new code and token, linked to the old one. The page shows the new code and token.
+</Step>
+</Steps>
+
+Only a `valid` ticket on that order can be transferred. A checked-in, void, or refunded ticket cannot. There is no email: the new code and token are shown on screen only.
+
+The `transferTicket` command needs the order's proof, which the confirmation page holds in its browser session. Lookup returns a proof that expires after 15 minutes, but the lookup page has no transfer button.

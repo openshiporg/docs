@@ -1,0 +1,58 @@
+---
+title: External dashboards
+description: Give an LLM the Concerts dashboard skill to adapt the built-in experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Concerts dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` holds the concert-specific operator screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, feature slices, GraphQL calls, schema, access rules, sessions, and provider boundaries in your Concerts checkout before it proposes work.
+
+Skill file: `/skills/openfront-concerts-custom-dashboard/SKILL.md`.
+
+## Current platform routes
+
+Route files live in `app/dashboard/(admin)/platform/**`. Each is a thin wrapper that exports one screen from `features/platform/<slice>/screens`. They do not check role flags themselves.
+
+| Route | Slice | What it does |
+| --- | --- | --- |
+| `/dashboard/platform/events` | events | Event list with status tabs |
+| `/dashboard/platform/events/[id]` | events | Tabs: overview, billing, pricing, seating, orders, expenses, settlement. Publish, postpone, cancel |
+| `/dashboard/platform/calendar` | calendar | Ranked date holds. Challenge button |
+| `/dashboard/platform/deals` | deals | Offers with status tabs and a calculator preview |
+| `/dashboard/platform/box-office` | box-office | Order search |
+| `/dashboard/platform/door` | door | Event picker, counts, scan form, recent scans |
+| `/dashboard/platform/settlements` | settlements | Settlement list with status tabs |
+| `/dashboard/platform/settlements/[id]` | settlements | Worksheet, lines, artist payments. Sign and recompute buttons |
+| `/dashboard/platform/venues` | venues | Venues and seating charts (read-only) |
+| `/dashboard/platform/artists` | artists | Artists and tours (read-only) |
+| `/dashboard/platform/orders` | orders | Orders with status tabs |
+| `/dashboard/platform/promo-codes` | promo-codes | Codes and use counts (read-only) |
+| `/dashboard/platform/customers` | customers | Users and roles |
+| `/dashboard/platform/payment-providers` | payment-providers | Payment providers list (the Restaurant provider screen) |
+| `/dashboard/platform/settings` | settings | Promoter name, currency, refund threshold (read-only) |
+
+Sidebar entries come from `features/platform/lib/navigation.ts`. The sidebar shows the promoter name from `StoreSettings`. Other dashboard routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`.
+
+The platform screens read through generic Keystone list queries with explicit field selections. Their buttons call GraphQL commands from the browser through `features/platform/lib/commands.ts`, each with a fresh idempotency key.
+
+## Commands the screens use
+
+| Screen | Command |
+| --- | --- |
+| Event detail | `publishEvent`, `postponeEvent`, `cancelEvent` |
+| Calendar | `challengeHold` |
+| Settlement detail | `signSettlement`, `computeSettlement` |
+| Door scan | `scanTicket` |
+| Setup | `seedConcerts`, `updateActiveUser` |
+
+## Commands with no button
+
+`placeDateHold`, `confirmHold`, `sendOffer`, `acceptOffer`, `setProductionHold`, `releaseProductionHold`, `recordMerchSales`, `adjustSettlement`, `recordArtistPayment`, and `refundTicketOrder` exist in GraphQL only. A replacement dashboard is the natural place to add screens for them.
+
+## Notes for a separate dashboard
+
+- Use the commands for every status change and money change. Generated create, update, and delete on those lists are blocked.
+- Re-check permission on the server. The screens do not guard by flag.
+- No command sets event status past `announced`, publishes a chart, or releases a hold. A custom dashboard needs a backend contract for those.
+- There is no tenant scope to pass.

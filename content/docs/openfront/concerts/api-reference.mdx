@@ -1,0 +1,87 @@
+---
+title: GraphQL API
+description: Endpoint, authentication, generated CRUD, and the custom Concerts queries and mutations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. The checked-in `schema.graphql` is the reference for a revision.
+
+## Authentication
+
+Sessions use the `keystonejs-session` cookie. Sign in with `authenticateUserWithPassword`, sign out with `endSession`. Storefront operations need no session. They use a signed proof for the hold or order. Operator commands check the role flag again on the server. See [Roles and permissions](/docs/openfront/concerts/roles-permissions).
+
+## Generated CRUD
+
+Keystone generates queries and mutations for every list. Two access styles apply:
+
+- **Catalog lists** (events, venues, seating charts, sections, seats, artists, agencies, tours, event artists, date holds, offers, expenses, price levels, phases, promo codes, settings): any user with `canAccessDashboard` can read them. Create and update need `canManageEvents`. Delete is blocked.
+- **Command-only lists** (orders, lines, tickets, scans, holds, seat inventory, production holds, redemptions, merch, bar sales, settlements and lines, artist payments): readable with `canAccessDashboard`. Create, update, and delete are blocked. Only commands change them.
+
+Status fields cannot be updated through generated mutations, even on catalog lists. The audit list is readable only with `canReadAudit` and is append-only. Raw cart and order lists are not a storefront API.
+
+`StoreSettings`, `MerchSales`, and `BarSales` use the plural names `storeSettingsRecords`, `merchSalesRecords`, and `barSalesRecords`. `PromoRedemption` uses `promoRedemptionRecords`.
+
+## Storefront queries
+
+| Query | Arguments | Purpose |
+| --- | --- | --- |
+| `eventsOnSale` | none | Events in `announced`, `presale`, `on_sale`, `sold_out`, or `postponed`, with venue and time zone |
+| `eventAvailability` | `eventId` | Event, active price levels with sections and phases, and every seat with its status |
+| `lookupTicketOrder` | `email`, `orderNumber` | Order, tickets, lines, and a 15-minute proof. Same error for an unknown order and a wrong email |
+
+These return the `JSON` scalar.
+
+## Storefront mutations
+
+| Mutation | Arguments | Purpose |
+| --- | --- | --- |
+| `createGaHold` | `eventId`, `levelId`, `qty`, `presaleCode`, `idempotencyKey` | Hold general-admission tickets for 10 minutes. Returns `id`, `proof`, `expiresAt`, and the priced `quote` |
+| `createSeatHold` | `eventId`, `seatInventoryIds`, `presaleCode`, `idempotencyKey` | Hold one to eight seats in one price level |
+| `startTicketCheckout` | `StartTicketCheckoutInput`: `holdId`, `proof`, `email`, `name`, `ageAttested`, `idempotencyKey` | Create the order and Stripe intent. Returns `clientSecret`, `publishableKey`, `orderNumber`, and an order `proof` |
+| `completeTicketCheckout` | `CompleteTicketCheckoutInput`: `orderId`, `proof` | Verify payment with Stripe and create tickets |
+| `transferTicket` | `TransferTicketInput`: `ticketCode`, `orderId`, `proof`, `toEmail`, `toName`, `idempotencyKey` | Void the old ticket and issue a new one |
+
+## Operator commands
+
+Each takes one `OperatorCommandInput` with a required `idempotencyKey`, and returns JSON. The permission is checked first.
+
+| Mutation | Needs | Key inputs |
+| --- | --- | --- |
+| `placeDateHold` | `canManageEvents` | `venueId`, `date`, `rank`, `artistId`, `agencyId`, `expiresAt` |
+| `challengeHold` | `canManageEvents` | `holdId` |
+| `confirmHold` | `canManageEvents` | `holdId`, `seatingChartId`, `title`, `showAt`, `doorsAt`, `ageRestriction` |
+| `sendOffer`, `acceptOffer` | `canManageDeals` | `offerId` |
+| `publishEvent` | `canManageEvents` | `eventId` |
+| `setProductionHold` | `canManageInventory` | `eventId`, `levelId`, `holdType`, `seatInventoryIds` or `quantity`, `releaseAt` |
+| `releaseProductionHold` | `canManageInventory` | `productionHoldId` |
+| `scanTicket` | `canScanTickets` | `eventId`, `ticketCode` or `token`, `gate` |
+| `recordMerchSales` | `canManageSettlements` | `eventId`, `softGrossCents`, `hardGrossCents`, `sellerFeeCents`, `countIn`, `countOut` |
+| `computeSettlement` | `canManageSettlements` | `eventId` |
+| `adjustSettlement` | `canManageSettlements` | `settlementId`, `amountCents`, `reason`, `approvedById` |
+| `signSettlement` | `canManageSettlements` | `settlementId` |
+| `recordArtistPayment` | `canManageSettlements` | `settlementId`, `kind`, `amountCents`, `reference`, `method`, `status` |
+| `postponeEvent`, `cancelEvent` | `canManageEvents` | `eventId`, `reason` |
+
+The create-hold command was named `placeDateHold` because Keystone already generates `createDateHold`.
+
+`refundTicketOrder(input: RefundTicketOrderInput!)` needs `canIssueRefunds` and takes `orderId`, `amountCents`, `reason`, `idempotencyKey`, and `approvedById`.
+
+## Setup and profile
+
+| Mutation | Purpose |
+| --- | --- |
+| `seedConcerts(section, data)` | One setup step. Needs `canManageOnboarding` |
+| `updateActiveUser(data)` | Update the signed-in user's `name`, `email`, `password`, or `onboardingStatus` |
+| `redirectToInit` (query) | True while there are no users |
+
+## Idempotency and concurrency
+
+Every command runs inside one transaction under an advisory lock (`event:<id>` for inventory and money, `date:<venue>:<day>` for holds). The idempotency key and a fingerprint of the request are stored. Replaying the same key with the same request returns the saved result. Reusing a key with a different request fails with "Idempotency key was already used with a different request".
+
+## Webhook
+
+`POST /api/integrations/payment/[providerCode]/webhook` takes the raw Stripe event. See [Payment providers](/docs/openfront/concerts/payment-providers).
+
+## MCP
+
+`/api/mcp-transport/[transport]` serves schema-driven tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. They go through the same GraphQL API with the caller's session, so list access rules still apply. OAuth bearer tokens carry the scopes `mcp:read` and `mcp:write`, and without `mcp:write` mutations are refused. No Concerts-specific tools exist.
