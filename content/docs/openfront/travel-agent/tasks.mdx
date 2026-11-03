@@ -1,0 +1,19 @@
+---
+title: Tasks
+description: Payment reminders, short-paid commission follow-ups, and other open work.
+icon: ListChecks
+---
+
+`/dashboard/platform/tasks` lists open tasks ordered by due date. A row shows the title, status, type, trip, assignee, and due date, and links to the trip's Tasks tab. The page is read-only.
+
+Task types: `deposit_due`, `final_due`, `passport_expiring`, `commission_overdue`, `follow_up`. Status: `open`, `completed`, `cancelled`.
+
+## Where tasks come from
+
+- `generatePaymentSchedule` creates a deposit or final reminder seven days before each due date. Each has a key, so running it twice does not repeat it.
+- `recordCommissionReceipt` opens a `commission_overdue` task when a component is short-paid.
+- The seed adds reminders for its schedule rows. Reminders for dates already past are marked `completed`.
+
+Nothing in the app creates `passport_expiring` tasks. The type exists on the list.
+
+Writing tasks needs `canManageTasks`.

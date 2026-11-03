@@ -298,5 +298,15 @@
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
     "catalogUrl": null
+  },
+  {
+    "id": "travel-agent",
+    "repository": "openfront-travel-agent",
+    "name": "Travel Agent",
+    "description": "Inquiries, proposals, trips, supplier bookings, client payments, refunds, and commission tracking for a travel agency.",
+    "color": "#0ea5e9",
+    "href": "/docs/openfront/travel-agent",
+    "sourceUrl": "https://github.com/openshiporg/openfront-travel-agent",
+    "catalogUrl": null
   }
 ]

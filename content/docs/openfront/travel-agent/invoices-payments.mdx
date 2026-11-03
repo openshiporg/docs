@@ -1,0 +1,32 @@
+---
+title: Invoices and payments
+description: The payment schedule, client invoices, card and manual payments, and the invoice list.
+icon: Receipt
+---
+
+## Payment schedule
+
+`generatePaymentSchedule` builds rows for a trip from its `agency_collects` components. There is one row for the planning fee (if it is above zero), one per deposit (with a deposit amount and due date), and one per final (with a final due date). Each row has a `scheduleKey` made from the component and kind, so running it again does not create duplicates. It also creates a reminder task seven days before each due date.
+
+Schedule status: `due`, `invoiced`, `paid`, `cancelled`. The Payments tab lists the rows.
+
+## Issue an invoice
+
+`issueClientInvoice` takes a trip and lines. Each line has a kind (`planning_fee`, `component_deposit`, `component_final`, or `insurance`), a description, and an amount in cents. It creates the invoice with an `INV-` number made from random characters, a payment collection, and a snapshot of every line (description, amount, quantity, fees, tax). It returns the invoice id, number, and a private token. The invoice link is `/invoice/<token>`. The token is stored only as a hash.
+
+Invoice status: `draft`, `sent`, `partially_paid`, `paid`, `void`. Issued invoices start as `sent`.
+
+## Take a payment
+
+- **Card.** The client opens the invoice link and pays with Stripe. See [Storefront](/docs/openfront/travel-agent/external-storefront) and [Payment providers](/docs/openfront/travel-agent/payment-providers).
+- **Manual.** `recordClientPayment` records a check, wire, or cash payment. It needs the invoice, an amount, a method (`check`, `wire`, or `cash`), and a reference. The amount cannot exceed what is still owed.
+
+Either way the payment adds to the invoice's collected amount, sets the invoice to `partially_paid` or `paid`, and posts a `receipt` entry to the trip's client funds.
+
+## Invoice list
+
+`/dashboard/platform/invoices` has tabs for `all`, `sent`, `partially_paid`, `paid`, and `void`. Each row shows the number, status, trip, client, due date, and collected against total, and links to the trip's Payments tab.
+
+## Refunds
+
+Refunds are started from the Payments tab. See [Approvals and refunds](/docs/openfront/travel-agent/approvals-refunds).

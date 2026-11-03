@@ -1,0 +1,64 @@
+---
+title: Openfront Travel Agent
+description: Inquiries, proposals, trips, supplier bookings, client payments, refunds, and commission tracking for an agency.
+icon: Plane
+---
+
+[Source](https://github.com/openshiporg/openfront-travel-agent)
+
+Openfront Travel Agent is a back office for an independent advisor or a small host agency that sells custom trips. A trip is built from supplier components (hotels, cruises, tours, flights, transfers, rail, insurance) plus the agency's planning fee.
+
+The repository is private. There is no hosted app and no public demo. The storefront is a plain set of pages that waits for a design. Card payments use Stripe test mode in development.
+
+It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/travel-agent/getting-started).
+
+## Two streams of money
+
+1. **Client payments.** The planning fee is agency revenue. Deposits and finals for components marked `agency_collects` are client money that the agency pays on to the supplier. Components marked `client_pays_supplier` never touch the agency.
+2. **Supplier commissions.** Each component stores an expected commission, set when it is booked. Suppliers pay it weeks or months after travel. The app tracks expected, invoiced, received, short-paid, and written-off amounts.
+
+Money is stored as whole cents with a currency code. Commission rates are basis points (1% = 100). Expected commission is the sell price times the rate, rounded down.
+
+## Who uses what
+
+| User | Surface | Typical jobs |
+| --- | --- | --- |
+| Advisor | Dashboard | Work inquiries, build and send proposals, book components, invoice clients, record commissions |
+| Manager | Dashboard | Approve refunds, over-payments, and write-offs; settings |
+| Client | Tokenised pages | Read a proposal and accept an option, view an itinerary, pay an invoice, look up a booking |
+| Visitor | Storefront | Browse destinations, send an inquiry |
+
+## Surfaces
+
+- **Dashboard** at `/dashboard`. Agency pages live under `/dashboard/platform/*`. The generic Keystone list screens at `/dashboard/[listKey]` stay available for every list. See [External dashboards](/docs/openfront/travel-agent/external-dashboard).
+- **Storefront** at `/`: destinations, an inquiry form, and client pages opened by a private link. See [External storefronts](/docs/openfront/travel-agent/external-storefront).
+- **GraphQL** at `/api/graphql`. See [GraphQL API](/docs/openfront/travel-agent/api-reference).
+- **MCP** at `/api/mcp-transport/[transport]`. See [MCP](/docs/openfront/travel-agent/mcp).
+- **Dashboard assistant** at `/api/completion`.
+
+## Lifecycle
+
+A trip moves through these states, and only through a custom mutation:
+
+`planning` → `proposal_sent` → `accepted` → `booked` → `final_payment_due` → `paid_in_full` → `traveling` → `completed`. A trip can also be `cancelled`.
+
+A trip cannot reach `paid_in_full`, `traveling`, or `completed` while the client still owes money the agency collects.
+
+A proposal moves `draft` → `sent` → `viewed` → `accepted`, or becomes `superseded` or `declined`. Sending a new version supersedes the older one.
+
+## Tenancy
+
+There is one agency per deployment. There is no organization or tenant list. Role flags apply to the whole agency. Travelers and documents are the exception: an advisor sees only the travelers and documents of trips assigned to them, and a user who can manage roles sees all.
+
+## Onboarding
+
+New dashboard users see a setup card in the sidebar. The dialog offers two templates, **Full agency** and **Minimal**. See [Getting started](/docs/openfront/travel-agent/getting-started).
+
+## Not built
+
+- Live air booking or any supplier API. Components are entered by hand.
+- Card authorisation forms.
+- Accounting sync.
+- E-signature. Accepting a proposal records a name and a time.
+- A Stripe webhook route. Payments are confirmed by asking Stripe about the payment intent.
+- A designed storefront.

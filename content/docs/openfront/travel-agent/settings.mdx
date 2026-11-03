@@ -1,0 +1,19 @@
+---
+title: Settings
+description: Agency details, default planning fee, refund threshold, and host-agency split.
+icon: Settings
+---
+
+`/dashboard/platform/settings` shows the first `AgencySettings` record. The page is read-only. Edit the record from the generic list screen, which needs `canManageSettings`.
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `address`, `email`, `phone` | Agency details |
+| `defaultPlanningFeeCents` | Planning fee in cents |
+| `refundApprovalThresholdCents` | Refunds above this need an approval. Default 50000 |
+| `hostAgencySplitBps` | The host agency's share of advisor commission, in basis points |
+| `currencyCode` | ISO currency code, default `USD` |
+
+The planning fee on a trip is its own field. The default here is a starting value to copy, not a rule applied automatically.
+
+Onboarding creates this record with the agency "Wayfarer & Co." and a 20% host split.

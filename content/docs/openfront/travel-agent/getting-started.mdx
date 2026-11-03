@@ -1,0 +1,93 @@
+---
+title: Getting started with Travel Agent
+description: Clone the source, set the environment, apply migrations, create the first user, and run onboarding.
+icon: Terminal
+---
+
+The repository `openshiporg/openfront-travel-agent` is private. You need access to it. There is no hosted app.
+
+## Requirements
+
+- Node.js 20 or later.
+- npm.
+- A PostgreSQL database you can migrate.
+- Stripe test keys if you want to try card payments.
+
+## Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-travel-agent.git
+cd openfront-travel-agent
+npm install
+```
+
+## Environment
+
+Create a `.env` file. Never commit it.
+
+```bash
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_travel_agent
+SESSION_SECRET=replace-with-at-least-32-random-characters
+PUBLIC_SIGNUPS_ALLOWED=false
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+Generate a secret with `openssl rand -hex 32`. Card payments only start when the publishable key begins with `pk_test_` and the secret key is set.
+
+| Variable | Used for |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection |
+| `SESSION_SECRET` | Sessions, and the private-link checks. At least 32 characters |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` opens dashboard sign-up and account creation on the MCP consent screen. Keep `false` for an agency |
+| `NEXT_PUBLIC_STRIPE_KEY` or `STRIPE_PUBLISHABLE_KEY` | Publishable key for the payment form |
+| `STRIPE_SECRET_KEY` | Stripe adapter |
+| `STRIPE_WEBHOOK_SECRET` | Read by the adapter's webhook helper. No webhook route is built, so nothing uses it today |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard assistant |
+
+## Migrations
+
+The repository has Prisma migrations in `migrations/`. Apply them with:
+
+```bash
+npm run migrate
+```
+
+`npm run dev` runs `keystone build`, then `npm run migrate`, then `next dev`. It changes the database `DATABASE_URL` points at, so use a disposable database while you try the app. `npm run migrate:gen` creates a new migration after a model change.
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+Next.js prints the port it chose. The storefront is at `/`, the dashboard at `/dashboard`, and GraphQL at `/api/graphql`.
+
+## First user
+
+On an empty database, open `/dashboard/init`. The first user gets an Admin role with every flag.
+
+## Onboarding
+
+Sign in. The sidebar shows a setup card. Open it and pick a template:
+
+- **Full agency**: the agency "Wayfarer & Co.", 3 advisors, 1 manager, 15 suppliers, 8 destinations, 20 clients, 6 inquiries, 9 trips (one in each status), invoices, payments, and commission receipts.
+- **Minimal**: 1 advisor, 1 supplier, 1 destination, 1 client, and 1 trip with a proposal.
+
+The dialog runs one phase at a time: agency, advisors, suppliers, destinations, clients, inquiries, trips, payment providers. Running it again reuses rows that already exist. It needs `canManageOnboarding`.
+
+The seeded advisors and manager get a random password. Reset it before they sign in.
+
+This is sample data. Replace the agency details, suppliers, and prices with your own before real use.
+
+## Checks
+
+```bash
+node --import tsx --test features/keystone/lib/travel-money.test.ts
+node --test tests/mcp-oauth.test.cjs
+npm run build
+```
+
+The money tests cover commission, advisor split, penalty tiers, client funds, supplier limits, refund limits, over-payment, and write-off math. They need no database.

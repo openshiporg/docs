@@ -1,0 +1,34 @@
+---
+title: Components and bookings
+description: Supplier items on a trip, booking them, and cancelling with a penalty.
+icon: Boxes
+---
+
+A trip component is one booked supplier item. It has a supplier, a kind, a title, start and end times, a confirmation number, a sell price, a net cost, a payment model, deposit and final due dates, a cancellation policy, a penalty schedule, and commission fields.
+
+Booking status: `quoted`, `held`, `booked`, `ticketed`, `cancelled`.
+
+Payment model:
+
+- `client_pays_supplier`: the client pays the supplier. The agency collects nothing for it.
+- `agency_collects`: the agency takes the client's money and pays the supplier.
+
+Commission status: `expected`, `invoiced`, `received`, `short_paid`, `written_off`.
+
+The Components tab lists each component with its supplier, payment model, confirmation number, and start date.
+
+## Book
+
+`bookComponent` takes the component, a net cost, a confirmation number, and optionally a commission rate and payment model. It works only on `quoted` or `held` components. It sets the status to `booked`, stores the expected commission, and saves a purchase snapshot (title, sell price, net cost, quantity, fees, tax, currency, commission). A trip in `accepted` moves to `booked`.
+
+The purchase snapshot keeps the title and price at booking time, so a later edit to a supplier or a proposal does not change it.
+
+## Cancel
+
+The **Cancel** button calls `cancelComponent`. It works out a penalty from the component's `cancelPenaltySchedule` (tiers of days before the start and a penalty in basis points) and the date. It marks the component `cancelled`, writes an audit event, and returns the penalty and the amount that could be refunded.
+
+To refund the client in the same step, call it with `refundCents` and the `paymentId`. The refund cannot exceed the amount refundable after the penalty. It then follows [the refund rules](/docs/openfront/travel-agent/approvals-refunds). The dashboard Cancel button does not send a refund; use the Payments tab for that.
+
+## Supplier payments
+
+`recordSupplierPayment` records money the agency paid a supplier for an `agency_collects` component. It checks that the payment does not exceed the net cost less what was already paid, and takes the money out of the trip's client funds. The payment is recorded only; the app does not send it.

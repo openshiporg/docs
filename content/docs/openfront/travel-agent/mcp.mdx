@@ -1,0 +1,38 @@
+---
+title: MCP
+description: The MCP endpoint, its tools, OAuth connections, and the agency operation tool.
+icon: Bot
+---
+
+The MCP endpoint is `/api/mcp-transport/[transport]` (for example `/api/mcp-transport/mcp`). It accepts JSON-RPC over POST. Every call runs as one Keystone user: the signed-in session cookie, or an MCP OAuth access token. Without either it answers 401 with an OAuth challenge.
+
+## Tools
+
+| Tool | Purpose |
+| --- | --- |
+| `listModels` | List GraphQL types and their operations |
+| `searchModels` (`searchTerm`) | Find types by name |
+| `getFieldsForType` | Fields of a type |
+| `lookupInputType` | Fields of an input type |
+| `queryData` | Run a list query with the fields you choose |
+| `modelSpecificSearch` | Search one model |
+| `createData`, `updateData`, `deleteData` | Generic create, update, delete |
+| `travelOperation` | Run one agency operation through its custom mutation |
+
+The generic tools go through the same access rules as the dashboard. On agency lists that block raw writes, `createData` and `updateData` are refused. Use `travelOperation` instead.
+
+## `travelOperation`
+
+It takes `operation` and `input` (a JSON string). It adds an idempotency key when you leave one out. The allowed operations are: `createTripFromInquiry`, `buildProposal`, `sendProposal`, `bookComponent`, `generatePaymentSchedule`, `issueClientInvoice`, `recordClientPayment`, `recordSupplierPayment`, `recordCommissionReceipt`, `postClientFundsEntry`, `reverseEntry`, `cancelComponent`, `transitionTrip`, `shareItinerary`. Any other name is refused. It calls the same GraphQL mutation as the dashboard, so permissions, audit, and approvals apply in full.
+
+`refundClientPayment`, `writeOffCommission`, `requestManagerApproval`, and `decideManagerApproval` are not in this allow list. Call them through GraphQL.
+
+## OAuth connections
+
+Routes `/oauth/authorize`, `/oauth/token`, `/oauth/register`, `/oauth/revoke`, and `/oauth/connections` let an MCP client connect as a user. Scopes are `mcp:read` and `mcp:write`. Without `mcp:write`, mutations are refused. A connected app can never sign in, change passwords or emails, or manage tokens. Everything else is decided by the user's own role.
+
+Consent shows the app and what it can do. Account creation on the consent screen follows `PUBLIC_SIGNUPS_ALLOWED`.
+
+## Dashboard assistant
+
+`/api/completion` powers the assistant in the dashboard. It needs a signed-in user, plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or a key the user enters locally. It uses the same MCP endpoint.

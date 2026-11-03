@@ -1,0 +1,27 @@
+---
+title: Inquiries
+description: The lead pipeline from first contact to a trip.
+icon: Inbox
+---
+
+`/dashboard/platform/inquiries` lists inquiries with tabs for `all`, `new`, `qualifying`, `proposal`, `won`, and `lost`, each with a count. A row shows the name, status, trip type, destinations, party size, budget, earliest travel date, email, and assigned advisor.
+
+## Where inquiries come from
+
+The storefront form at `/inquiry` calls `submitInquiry`. It creates an inquiry with status `new` and source `website`. Seeded inquiries and any created in the dashboard use the same list.
+
+An inquiry has a trip type: `honeymoon`, `family`, `group`, `corporate`, `cruise`, or `adventure`.
+
+## Create a trip
+
+On a row in `new`, `qualifying`, or `proposal`, **Create trip** calls `createTripFromInquiry`. It:
+
+- uses the inquiry's client, or creates one from the contact details;
+- creates a trip in `planning`, assigned to the inquiry's advisor (or to you), with the travel window as its dates;
+- moves the inquiry to `proposal`.
+
+If the inquiry already has a trip, the row shows **Open trip** instead. The action needs `canManageTrips`.
+
+## Status changes
+
+Inquiry `status` cannot be changed by a raw update. The dashboard changes it only through `createTripFromInquiry`. The generic list screen can read inquiries.
