@@ -1,0 +1,49 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Tour Guide on a Node host.
+icon: Rocket
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+There is no hosted instance of this app. These steps are for running your own.
+
+## Railway file
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run on each start. Note that `npm run build` itself also runs `npm run migrate`, so it needs the database reachable.
+
+## Any host
+
+<Steps>
+<Step>
+### Provision PostgreSQL
+Create an empty database.
+</Step>
+<Step>
+### Set environment
+`DATABASE_URL`, `SESSION_SECRET` (32 or more characters), and the Stripe values for card payments. See [Getting started](/docs/openfront/tour-guide/getting-started).
+</Step>
+<Step>
+### Back up, build, start
+```bash
+npm run build
+npm start
+```
+</Step>
+<Step>
+### Create the first user
+Open `/dashboard/init`, then run the setup dialog or enter your own data.
+</Step>
+<Step>
+### Add the Stripe webhook
+Register `/api/webhooks/payment/pp_stripe`. See [Payment providers](/docs/openfront/tour-guide/payment-providers).
+</Step>
+</Steps>
+
+All app processes must share the same database and `SESSION_SECRET`. Waiver and rebook links and checkout proof depend on that secret, so changing it invalidates links already sent.
+
+## What is not set up
+
+- There is no scheduled job. `generateDepartures` and `sweepDepartures` are operations you call yourself. Run them from a scheduler if you want them daily.
+- Holds expire by time but are released only when the next hold for that departure is placed or when a departure is cancelled.
+- No email is sent for bookings.

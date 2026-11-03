@@ -1,0 +1,33 @@
+---
+title: Cancel a departure
+description: Cancel for weather, the operator, or a missed minimum. Refund every booking or offer a rebook credit.
+icon: CloudRain
+---
+
+Cancelling needs `canManageDepartures`. Refunds and credits then run for every live booking.
+
+## From the Today page
+
+Open the departure's **Cancel departure** popover and choose **Weather cancel** or **Operator cancel**. Both refund every booking in full.
+
+## From GraphQL
+
+```graphql
+mutation Cancel($departureId: ID!) {
+  cancelDeparture(input: { departureId: $departureId, reason: "weather", offerCredit: true }, idempotencyKey: "cancel-1")
+}
+```
+
+`reason` is `weather`, `operator`, or `min_not_met`. Weather sets the departure to `weather_cancelled`. The others set it to `cancelled`.
+
+What happens:
+
+- Active holds are released, along with their promo reservations.
+- Bookings still awaiting payment are cancelled.
+- Offered and accepted guide assignments are cancelled.
+- Each confirmed, checked-in, or partly refunded booking is refunded for the amount not yet refunded. With `offerCredit: true`, a booking from a direct sale is cancelled and given a rebook token instead of a refund. The call returns the token for each booking. Pass it to `rebookWithCredit` for a departure of the same tour.
+- Bookings from a reseller are always refunded, never credited.
+
+Running the call again does not refund twice. The refund keys include the departure and booking.
+
+A departure that has completed or is in progress cannot be cancelled.

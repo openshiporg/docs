@@ -1,0 +1,25 @@
+---
+title: Bookings
+description: Bookings by status, with refunds. Phone and walk-up sales use the GraphQL API.
+icon: Ticket
+---
+
+`/dashboard/platform/bookings` lists the latest 100 bookings. It reads the generated `bookings` query, so it needs `canManageBookings`.
+
+## Status tabs
+
+One tab per status, plus all, each with a count:
+
+`pending_payment`, `confirmed`, `checked_in`, `completed`, `no_show`, `cancelled`, `refunded`, `partially_refunded`.
+
+Each row shows the guest, booking code, tour, date, total, refunded amount, seats, and source (`online`, `phone`, `walk_up`, or `reseller`).
+
+## Refund
+
+Rows in `confirmed`, `checked_in`, `completed`, `no_show`, or `partially_refunded` have a **Refund** button. Enter an amount in dollars (it defaults to the full remaining amount) and a reason, then choose **Refund** or **Refund and cancel**. The page calls `refundBooking`, which needs `canIssueRefunds`.
+
+A refund above the approval threshold needs a manager approval from a different user. The page has no approval form. Request and approve it with `requestRefundApproval` and `approveRefund`, then pass the approval id to `refundBooking`. See [Refund a booking](/docs/openfront/tour-guide/how-to-guides/refund-a-booking).
+
+## Phone and walk-up sales
+
+There is no booking form in the dashboard. Staff sales go through `createChannelBooking`, which takes a source of `phone`, `walk_up`, or `reseller`. See [Take a phone booking](/docs/openfront/tour-guide/how-to-guides/take-a-phone-booking).

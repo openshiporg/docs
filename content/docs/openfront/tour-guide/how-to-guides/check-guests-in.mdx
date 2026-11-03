@@ -1,0 +1,18 @@
+---
+title: Check guests in
+description: Use the manifest on a phone to check guests in and mark no-shows.
+icon: ListChecks
+---
+
+You need `canCheckIn`. A guide's role from setup has it.
+
+1. Open `/dashboard/platform/check-in`. It lists today's departures.
+2. Open the departure. Each booking lists its guests.
+3. Read the flags: dietary notes, a medical flag, and "Waiver missing".
+4. Select **Check in** for each guest who arrives. A missing waiver warns but does not stop check-in.
+5. When every guest in a booking is checked in, the booking becomes `checked_in`.
+6. For a booking that did not show up, select **No show**.
+
+Medical notes show only to a role with `canReadMedicalNotes`. Viewing a manifest that includes them is written to the audit log.
+
+After the departure ends, a manager calls `closeDeparture`. See [Guides](/docs/openfront/tour-guide/guides) for what it does to payouts.

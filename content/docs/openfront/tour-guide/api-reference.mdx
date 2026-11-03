@@ -1,0 +1,105 @@
+---
+title: GraphQL API
+description: Endpoint, authentication, generated CRUD, and every custom Tour Guide query and mutation.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. The checked-in `schema.graphql` in the repo is the reference for a revision. The custom operations return a `JSON` scalar, so read their shapes from the source in `features/keystone/mutations/tour-*.ts`.
+
+## Authentication
+
+Staff sessions use the `keystonejs-session` cookie. Sign in with `authenticateUserWithPassword`, sign out with `endSession`. MCP clients can also use OAuth bearer tokens. Operator operations check the caller's `Role` flags. See [Roles and permissions](/docs/openfront/tour-guide/roles-permissions).
+
+Guests have no session. The guest operations use proof:
+
+- **Hold token.** `createDepartureHold` takes a `token` of 32 to 256 characters that the caller makes up. Only its SHA-256 hash is stored. `checkoutHold`, `startBookingCheckout`, and `completeBookingCheckout` need the same token.
+- **Booking code and email.** `lookupBooking` and `cancelMyBooking` need both. A wrong pair returns "Booking not found".
+- **Link tokens.** Waiver and rebook tokens are derived on the server. `waiverForToken`, `signWaiver`, and `rebookWithCredit` take one.
+
+## Queries
+
+| Query | Arguments | Access | Purpose |
+| --- | --- | --- | --- |
+| `toursOnSale` | none | Public | Active tours with an upcoming on-sale departure, with ticket types, add-ons, meeting point, and policy |
+| `tourAvailability` | `tourId`, `from`, `to` | Public | Bookable departures with seats left. At most 92 days |
+| `checkoutHold` | `holdId`, `token` | Hold token | The held quote, expiry, and booking code if any |
+| `lookupBooking` | `bookingRef`, `email` | Code and email | Booking, lines, guests, meeting point, waiver links, refund if cancelled now |
+| `waiverForToken` | `token` | Link token | Waiver text for one participant |
+| `operatorName` | none | Public | Operator name from settings |
+| `tourTotal` | none | Signed in (returns 0 without a session) | Number of tours, used by the setup card |
+| `departuresInRange` | `from`, `to` | `canCheckIn` | Departures with booked and held seats, guides, waiver gaps, staffing. At most 31 days |
+| `departureManifest` | `departureId` | `canCheckIn` | Bookings and participants for a departure |
+| `redirectToInit` | none | Public | True while there are no users |
+
+## Mutations
+
+Every mutation that changes data takes an `idempotencyKey` of up to 200 characters. Reusing a key with the same input returns the first result. Reusing it with different input fails.
+
+| Mutation | Access | What it does |
+| --- | --- | --- |
+| `createDepartureHold(input, idempotencyKey)` | Public | Holds seats for 10 minutes and returns a quote. Optional promo code |
+| `startBookingCheckout(input, idempotencyKey)` | Hold token | Creates a `pending_payment` booking and a Stripe payment intent. Returns the client secret |
+| `completeBookingCheckout(input, idempotencyKey)` | Hold token | Confirms the payment with Stripe and the seats |
+| `cancelMyBooking(bookingRef, email, idempotencyKey)` | Code and email | Cancels by policy and refunds |
+| `signWaiver(input, idempotencyKey)` | Link token | Records a waiver signature |
+| `rebookWithCredit(input, idempotencyKey)` | Link token | Books a departure of the same tour with a credit |
+| `createChannelBooking(input, idempotencyKey)` | `canManageBookings` | Phone, walk-up, or reseller booking |
+| `generateDepartures(input, idempotencyKey)` | `canManageDepartures` | Creates departures from schedules |
+| `sweepDepartures(idempotencyKey)` | `canManageDepartures` | Flags short departures, closes past the cutoff |
+| `resizeDeparture(input, idempotencyKey)` | `canManageDepartures` | Changes capacity |
+| `cancelDeparture(input, idempotencyKey)` | `canManageDepartures` | Cancels and refunds, or offers credit |
+| `closeDeparture(input, idempotencyKey)` | `canManageDepartures` | Completes an ended departure and drafts guide payouts |
+| `assignGuide(input, idempotencyKey)` | `canManageGuides` | Offers a departure to a guide |
+| `respondToAssignment(input, idempotencyKey)` | Guide or `canManageGuides` | Accepts or declines |
+| `assignResource(input, idempotencyKey)` | `canManageResources` | Assigns a vehicle or pool |
+| `checkInParticipant(input, idempotencyKey)` | `canCheckIn` | Checks one guest in |
+| `markNoShow(input, idempotencyKey)` | `canCheckIn` | Marks a booking no-show |
+| `generateChannelStatement(input, idempotencyKey)` | `canManageChannels` | Builds a reseller statement |
+| `requestRefundApproval(bookingId, reason, amount)` | `canIssueRefunds` | Opens a refund approval |
+| `approveRefund(approvalId)` | `canIssueRefunds` | Approves it, as a different user |
+| `refundBooking(input, idempotencyKey)` | `canIssueRefunds` | Refunds. Returns the booking code and refund id |
+| `ensureTourOnboardingRecord(entity, data)` | `canManageOnboarding` | Setup helper, allow-listed entities only |
+| `seedTourActivity(template, seed)` | `canManageOnboarding` | Setup helper for departures and bookings |
+| `updateActiveUser(data)` | Signed in | Updates the user's name or onboarding status only |
+
+## Input shapes
+
+```graphql
+input DepartureHoldInput { departureId: ID!, tickets: [TourTicketChoice!]!, addOns: [TourTicketChoice!], promoCode: String, token: String! }
+input StartBookingCheckoutInput { holdId: ID!, token: String!, lead: BookingLeadInput!, participants: [BookingParticipantInput!]! }
+input RefundBookingInput { bookingId: ID!, amountCents: Int!, reason: String!, approvalId: ID, cancelBooking: Boolean }
+input CancelDepartureInput { departureId: ID!, reason: String!, offerCredit: Boolean }
+```
+
+`requestRefundApproval` and `approveRefund` take no `idempotencyKey`.
+
+## Example: hold seats
+
+```graphql
+mutation Hold($input: DepartureHoldInput!) {
+  createDepartureHold(input: $input, idempotencyKey: "hold-123")
+}
+```
+
+```json
+{
+  "input": {
+    "departureId": "…",
+    "tickets": [{ "id": "…", "qty": 2 }],
+    "token": "a-random-string-of-at-least-32-characters"
+  }
+}
+```
+
+## Capacity, in short
+
+Seats left for a departure are its capacity minus booked seats, minus seats in unexpired holds, minus unsold channel allocation. Every operation that changes seats takes a transaction lock on the departure and counts again before it writes.
+
+## Generated CRUD
+
+Lists keep generated queries. Generated create and update are blocked for command-only lists: `Booking`, `BookingLine`, `InventoryHold`, `Departure`, `Participant`, `WaiverSignature`, `GuideAssignment`, `ResourceAssignment`, `GuidePayout`, `ChannelStatement`, `OperationalTask`, `PromoRedemption`, and `AuditEvent`. No list allows generated delete. Status select fields can be set at creation but not changed by update.
+
+## Webhook and assistant
+
+- `POST /api/webhooks/payment/[provider]` for Stripe events.
+- `/api/completion` is the dashboard assistant. `/api/mcp-transport/[transport]` is its MCP endpoint. It has generic tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) and runs as the caller, so list access still applies. It adds no tour-specific tools. A request without a session or token gets 401.

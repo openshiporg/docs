@@ -1,0 +1,76 @@
+---
+title: Data model
+description: Lists, relationships, statuses, and the rules of the Tour Guide schema.
+icon: Database
+---
+
+The schema has 40 lists in `features/keystone/models`.
+
+## Rules
+
+- Money is whole cents (integers) with a currency code. Percentages are basis points, where 100 is 1%.
+- Every list has `createdAt` and `updatedAt`.
+- Status fields can be set when a record is created, but generated update cannot change them. Statuses that matter to sales (booking, departure, hold, assignment) change through custom operations. Tour, waiver, promo, guide, and resource statuses have no operation, so a change after creation needs a direct database edit.
+- A booking copies tour name, ticket and add-on lines, tax, discount, and the cancellation policy when it is created. Later edits to the tour do not change it.
+- Customer-facing codes are random, not sequential. A booking code looks like `TG-` followed by eight letters and digits.
+- Tokens are stored as hashes: the hold proof, the waiver link, and the rebook credit.
+- Audit events are append-only.
+
+## Core relationships
+
+| From | To |
+| --- | --- |
+| `Tour` | `MeetingPoint`, `CancellationPolicy`, `WaiverTemplate`, `TicketType`, `AddOn`, `PricingRule`, `Schedule`, `Departure`, `PromoCode` |
+| `Departure` | `Tour`, `Schedule`, `GuideAssignment`, `ResourceAssignment`, `InventoryHold`, `Booking`, `OperationalTask` |
+| `Guide` | `User`, `GuideCertification`, `GuideAvailability`, `GuideAssignment`, `GuidePayout` |
+| `GuidePayout` | `Guide`, `GuideAssignment` |
+| `Booking` | `Departure`, `User` (customer), `Channel`, `PaymentCollection`, `Payment`, `Refund`, `Participant`, `BookingLine`, `InventoryHold`, `ChannelStatement`, `PromoRedemption` |
+| `Participant` | `Booking`, `WaiverSignature` |
+| `WaiverSignature` | `Participant`, `WaiverTemplate` |
+| `Channel` | `Booking`, `ChannelStatement` |
+| `PromoCode` | `Tour`, `PromoRedemption` |
+| `PaymentCollection` | `PaymentSession`, `Payment` |
+| `Refund` | `Payment`, `Booking`, `User` (requester and approver) |
+
+`Departure` has virtual fields `booked`, `held`, `remaining`, `guidesNeeded`, and `staffed`.
+
+## Status values
+
+| List | Values |
+| --- | --- |
+| `Tour` | `draft`, `active`, `archived` |
+| `Departure` | `scheduled`, `on_sale`, `min_not_met`, `confirmed`, `full`, `closed`, `in_progress`, `completed`, `cancelled`, `weather_cancelled` |
+| `Booking` | `pending_payment`, `confirmed`, `checked_in`, `completed`, `no_show`, `cancelled`, `refunded`, `partially_refunded` |
+| `Booking.source` | `online`, `phone`, `walk_up`, `reseller` |
+| `InventoryHold` | `active`, `converted`, `released`, `expired` |
+| `Participant.waiverStatus` | `required`, `signed`, `not_required` |
+| `Participant.checkInStatus` | `pending`, `checked_in`, `no_show` |
+| `WaiverTemplate` | `draft`, `published`, `archived` |
+| `GuideAssignment` | `offered`, `accepted`, `declined`, `cancelled`, `worked` |
+| `Guide` | `active`, `inactive` |
+| `Resource` | `active`, `maintenance` |
+| `GuidePayout` | `draft`, `approved`, `paid` |
+| `Channel.paymentModel` | `channel_collects`, `we_collect` |
+| `ChannelStatement` | `open`, `invoiced`, `paid` |
+| `OperationalTask` | `open`, `resolved` |
+| `PromoCode` | `active`, `paused`, `expired` |
+| `PromoRedemption` | `reserved`, `committed`, `released` |
+| `ManagerApproval` | `pending`, `approved`, `rejected`, `consumed`, `expired` |
+
+Some values have no operation that sets them: a departure never becomes `in_progress` by itself, a guide payout stays `draft`, a statement stays `open`, and an approval is never set to `rejected`.
+
+## Departure status in practice
+
+- `generateDepartures` creates departures as `on_sale`.
+- A hold or booking that changes the booked count moves a departure between `on_sale`, `confirmed` (the minimum is reached), and `full`.
+- `sweepDepartures` sets `min_not_met` and `closed`.
+- `cancelDeparture` sets `cancelled` or `weather_cancelled`.
+- `closeDeparture` sets `completed`, but only for a `closed` or `in_progress` departure whose end time has passed.
+
+## Holds
+
+A hold lasts 10 minutes. Starting checkout extends it to 15 minutes. Expired holds free their seats at once, because the seat count ignores them. They are marked `expired` the next time a hold is placed on that departure.
+
+## Lists with no behavior yet
+
+`PricingRule`, `NotificationPreference`, and the `GuideAvailability.weeklyRules` field are stored and editable, but no operation reads them.

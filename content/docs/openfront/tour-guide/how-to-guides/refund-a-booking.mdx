@@ -1,0 +1,42 @@
+---
+title: Refund a booking
+description: Refund a booking, including the manager approval needed above the threshold.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canIssueRefunds`.
+
+## Under the threshold
+
+Open the Bookings page, find the booking, and choose **Refund**. Enter an amount and a reason, then **Refund** or **Refund and cancel**.
+
+## Over the threshold
+
+A refund above `refundApprovalThresholdCents` in settings (10000, or $100, by default) needs an approval from a different user.
+
+<Steps>
+<Step>
+### Request
+The person refunding calls `requestRefundApproval(bookingId, reason, amount)`. It returns an approval id.
+</Step>
+<Step>
+### Approve
+A different user with `canIssueRefunds` calls `approveRefund(approvalId)`. The same user cannot approve their own request. It expires after 15 minutes.
+</Step>
+<Step>
+### Refund
+The requester calls `refundBooking` with the approval id. The amount and reason must match the request exactly.
+</Step>
+</Steps>
+
+The approval is used up only when the refund is actually reserved. If the amount is more than was paid, or the call is repeated with the same idempotency key, the approval is not used up, and a repeat returns the first refund.
+
+## Guest cancellation
+
+A guest can cancel a confirmed booking from the booking page before the departure starts. The refund is worked out from the cancellation policy copied onto the booking, using the hours left before the start. The booking page shows the amount first.
+
+## If the provider does not answer
+
+A refund whose provider call fails is left as `unknown` and the booking is not changed. Check Stripe, then try again with the same key.

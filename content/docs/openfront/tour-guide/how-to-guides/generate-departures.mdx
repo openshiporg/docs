@@ -1,0 +1,25 @@
+---
+title: Generate departures
+description: Create departures from schedules, up to 60 days ahead.
+icon: CalendarPlus
+---
+
+Departures are created from schedules by the `generateDepartures` operation. It needs `canManageDepartures`. There is no button for it in the dashboard, so call GraphQL.
+
+```graphql
+mutation Generate($tourId: ID) {
+  generateDepartures(input: { tourId: $tourId, days: 60 }, idempotencyKey: "generate-2026-11-03")
+}
+```
+
+- Leave out `tourId` to cover every tour. Only `active` tours are used.
+- `days` is at most 60.
+- Start times are read in the tour's time zone, so they hold across daylight saving changes.
+- A departure that already exists for the same tour and start time is skipped, so the call is safe to repeat.
+- Each new departure starts as `on_sale`. Its capacity is the smaller of the schedule's capacity override and the tour maximum.
+
+Run it on a timer if you want departures to keep appearing. Nothing runs it for you.
+
+## The minimum check
+
+`sweepDepartures` looks at departures that start within about 25 hours. When the booked seats are below the tour's minimum, it sets the departure to `min_not_met` and creates an open task named "Run or cancel: minimum not met". It never cancels on its own. It also moves a departure to `closed` once the booking cutoff (60 minutes by default) has passed.

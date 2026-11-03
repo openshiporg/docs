@@ -1,0 +1,23 @@
+---
+title: Promo codes
+description: Discount codes with limits, a date window, and tour scope.
+icon: Tag
+---
+
+`/dashboard/platform/promo-codes` is a generic Keystone list screen for `PromoCode`. It needs `canManagePromos`.
+
+## Fields
+
+- `code`: uppercase letters, digits, dash, or underscore, 3 to 40 characters.
+- `discountType`: `percent_bps` (basis points), `amount_cents`, or `comp` (the whole ticket and add-on total).
+- `value`, `maxUses`, `startsAt`, `endsAt`, and `status` (`active`, `paused`, or `expired`). Set the status when you create the code. Update cannot change it.
+- `tours`: if any are linked, the code works only for those tours.
+- `usedCount`: set by the system.
+
+`perOrderLimit` exists on the list but no operation reads it.
+
+## How it is used
+
+A guest enters a code when holding seats. The code is checked and a `reserved` redemption is created under the same lock as the hold. When the booking is paid, the redemption becomes `committed` and `usedCount` goes up. A hold that expires, or a departure that is cancelled, releases it. A cancelled booking releases a committed redemption, but `usedCount` is not lowered.
+
+The discount is copied onto the booking. Tax is figured on the amount after the discount.

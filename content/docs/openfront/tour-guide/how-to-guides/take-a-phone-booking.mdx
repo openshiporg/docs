@@ -1,0 +1,38 @@
+---
+title: Take a phone booking
+description: Book a guest by phone, at the door, or for a reseller.
+icon: Phone
+---
+
+You need `canManageBookings`. The dashboard has no booking form, so use `createChannelBooking`.
+
+```graphql
+mutation PhoneBooking($input: ChannelBookingInput!) {
+  createChannelBooking(input: $input, idempotencyKey: "phone-1")
+}
+```
+
+Example input:
+
+```json
+{
+  "departureId": "…",
+  "source": "phone",
+  "paymentMethod": "cash",
+  "tickets": [{ "id": "…", "qty": 2 }],
+  "addOns": [],
+  "lead": { "name": "Avery Collins", "email": "avery@example.com", "phone": "843-555-0100" },
+  "participants": [
+    { "ticketTypeId": "…", "fullName": "Avery Collins", "age": 34 },
+    { "ticketTypeId": "…", "fullName": "Sam Collins", "age": 36 }
+  ]
+}
+```
+
+- `source` is `phone`, `walk_up`, or `reseller`. A reseller booking also needs `channelId`.
+- Give one participant for every ticket.
+- The booking is confirmed straight away. The seats are checked and held under the departure lock.
+- For `phone` and `walk_up` a payment record is created for the total. The payment is recorded as taken by staff. Nothing is charged by the server. If you set `paymentMethod` to anything other than `cash`, it is stored as a card payment with no provider reference.
+- For a reseller on a `channel_collects` channel, no payment record is created.
+
+Give the guest the booking code. They can look it up on the storefront with the code and email.

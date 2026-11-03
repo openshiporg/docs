@@ -1,0 +1,23 @@
+---
+title: Waivers
+description: Versioned waiver templates and the signatures collected from guests.
+icon: PenLine
+---
+
+`/dashboard/platform/waivers` is a generic Keystone list screen for `WaiverTemplate`. It needs `canManageWaivers`.
+
+## Templates
+
+A template has a name, a version number, a rich-text body, a body hash, and a status of `draft`, `published`, or `archived`. Status is set when the template is created and cannot be changed by update. Create the template as `published` when it is ready, and create a new version to change the text. The list also refuses any edit to a template that is already `published`. A tour points to the template it requires.
+
+## Signing
+
+When a tour requires a waiver, each participant is created with a waiver status of `required`, and gets a signing link. The link is shown on the booking confirmation page. It is derived from the participant id with the server secret, and only its hash is stored.
+
+A guest signs at `/waiver/[token]` by typing their name and agreeing. A parent or guardian can sign for a minor by entering the minor's name. The signature stores the template version, the body hash, the time, the IP address, and the browser string. A second signature for the same participant returns the first result.
+
+The template must be `published` for a signature to be accepted. The signature list is command-only.
+
+## At check-in
+
+A participant without a signed waiver shows "Waiver missing" on the manifest. Check-in still works.
