@@ -230,26 +230,6 @@
     "catalogUrl": "https://openship.org/products/openfront-medspa"
   },
   {
-    "id": "scheduling",
-    "repository": "openfront-scheduling",
-    "name": "Scheduling",
-    "description": "Event types, availability, bookings, teams, routing forms, payments, calendars, workflows, and embeds.",
-    "color": "#0284c7",
-    "href": "/docs/openfront/scheduling",
-    "sourceUrl": "https://github.com/openshiporg/openfront-scheduling",
-    "catalogUrl": "https://openship.org/products/openfront-scheduling"
-  },
-  {
-    "id": "social",
-    "repository": "openfront-social",
-    "name": "Social",
-    "description": "Creator-owned personal sites with collections, versioned publishing, destination consent, and privacy review.",
-    "color": "#8b5cf6",
-    "href": "/docs/openfront/social",
-    "sourceUrl": "https://github.com/openshiporg/openfront-social",
-    "catalogUrl": "https://openship.org/products/openfront-social"
-  },
-  {
     "id": "rideshare",
     "repository": "openfront-rideshare",
     "name": "Rideshare",
@@ -278,16 +258,6 @@
     "href": "/docs/openfront/financial",
     "sourceUrl": "https://github.com/openshiporg/openfront-financial",
     "catalogUrl": "https://openship.org/products/openfront-financial"
-  },
-  {
-    "id": "analytics",
-    "repository": "analytics",
-    "name": "Analytics",
-    "description": "Cookieless website analytics with goals, funnels, segments, web vitals, and shared dashboards.",
-    "color": "#f97316",
-    "href": "/docs/openfront/analytics",
-    "sourceUrl": "https://github.com/openshiporg/analytics",
-    "catalogUrl": "https://openship.org/products/openfront-analytics"
   },
   {
     "id": "sports-agents",

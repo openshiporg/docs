@@ -153,24 +153,6 @@
       "category": "openfront"
     },
     {
-      "id": "scheduling",
-      "name": "Openfront Scheduling",
-      "label": "Scheduling",
-      "category": "openfront"
-    },
-    {
-      "id": "social",
-      "name": "Openfront Social",
-      "label": "Social",
-      "category": "openfront"
-    },
-    {
-      "id": "analytics",
-      "name": "Openfront Analytics",
-      "label": "Analytics",
-      "category": "openfront"
-    },
-    {
       "id": "financial",
       "name": "Openfront Financial",
       "label": "Financial",

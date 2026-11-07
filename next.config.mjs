@@ -16,7 +16,6 @@ const config = {
   },
   async redirects() {
     return [
-      { source: '/docs/openfront/analytics/what-is-analytics', destination: '/docs/openfront/analytics', permanent: true },
       { source: '/docs/openfront/cannabis/what-is-cannabis', destination: '/docs/openfront/cannabis', permanent: true },
       { source: '/docs/openfront/collectibles/what-is-collectibles', destination: '/docs/openfront/collectibles', permanent: true },
       { source: '/docs/openfront/ecommerce/what-is-openfront', destination: '/docs/openfront/ecommerce', permanent: true },
