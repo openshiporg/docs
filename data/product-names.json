@@ -151,12 +151,6 @@
       "name": "Openfront Vape",
       "label": "Vape",
       "category": "openfront"
-    },
-    {
-      "id": "financial",
-      "name": "Openfront Financial",
-      "label": "Financial",
-      "category": "openfront"
     }
   ]
 }

@@ -250,16 +250,6 @@
     "catalogUrl": "https://openship.org/products/openfront-sportsbook"
   },
   {
-    "id": "financial",
-    "repository": "openfront-financial",
-    "name": "Financial",
-    "description": "Paper brokerage with a client portal, operator console, double-entry ledger, approvals, and compliance review.",
-    "color": "#15803d",
-    "href": "/docs/openfront/financial",
-    "sourceUrl": "https://github.com/openshiporg/openfront-financial",
-    "catalogUrl": "https://openship.org/products/openfront-financial"
-  },
-  {
     "id": "sports-agents",
     "repository": "openfront-sports-agents",
     "name": "Sports Agents",

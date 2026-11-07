@@ -19,7 +19,6 @@ const config = {
       { source: '/docs/openfront/cannabis/what-is-cannabis', destination: '/docs/openfront/cannabis', permanent: true },
       { source: '/docs/openfront/collectibles/what-is-collectibles', destination: '/docs/openfront/collectibles', permanent: true },
       { source: '/docs/openfront/ecommerce/what-is-openfront', destination: '/docs/openfront/ecommerce', permanent: true },
-      { source: '/docs/openfront/financial/what-is-financial', destination: '/docs/openfront/financial', permanent: true },
       { source: '/docs/openfront/grocery/what-is-grocery', destination: '/docs/openfront/grocery', permanent: true },
       { source: '/docs/openfront/hospital/what-is-hospital', destination: '/docs/openfront/hospital', permanent: true },
       { source: '/docs/openfront/hotel/what-is-hotel', destination: '/docs/openfront/hotel', permanent: true },
