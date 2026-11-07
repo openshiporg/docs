@@ -1,0 +1,36 @@
+---
+title: Endorsements
+description: The deal pipeline, deliverables, and the exclusivity check.
+icon: Handshake
+---
+
+The screen at `/dashboard/platform/endorsements` has two views: **Pipeline** and **Deliverables**.
+
+## Pipeline
+
+Deals are grouped by status: `prospect`, `negotiating`, `signed`, `active`, `completed`, `terminated`. Each row shows athlete, brand, exclusivity category, term, owner, and value.
+
+A deal in `prospect`, `negotiating`, or `signed` has one button:
+
+- **Activate** runs `activateEndorsementDeal`.
+- **Request override** replaces it when the deal clashes with another one. See [Approvals](/docs/openfront/sports-agents/approvals).
+
+## Exclusivity check
+
+Two deals clash when they have the same athlete, the same `exclusivityCategory`, overlapping terms (end dates included), and the other deal is `signed` or `active`. Activation is blocked with "Exclusivity conflict with an active deal". The block writes a `deal.conflict_blocked` audit event that lists the conflicting deal ids.
+
+`checkEndorsementConflicts(athleteId, category, start, end)` returns the conflicting deals for a term without changing anything.
+
+## Deliverables
+
+The Deliverables view lists all deliverables by due date. A deliverable has a kind (`social_post`, `appearance`, `photo_shoot`, `commercial`, `autograph_session`, `other`), a due date, and a status (`scheduled`, `completed`, `missed`, `waived`).
+
+**Mark completed** runs `completeDeliverable`. It needs an HTTPS proof link and moves a `scheduled` or `missed` deliverable to `completed`. The built-in button sends a placeholder proof link built from the deliverable id. Use the GraphQL command with a real link if you need the proof recorded.
+
+## Deal fields
+
+`athlete`, `brand`, `owner`, `status`, `termStart`, `termEnd`, `totalValueCents`, `commissionBps`, `exclusivityCategory`, `territory`, `document`, `paymentTerms`, and `currencyCode`. Seeded deals use a 15% rate (1500). There is no command that snapshots the rate at signing for deals. It is the value on the record.
+
+## Payments from a deal
+
+`generatePaymentSchedule` with a `dealId` writes a single scheduled payment for the deal's total value, due on the term start. Split a deal into several payments by editing the records.

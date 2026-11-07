@@ -1,0 +1,83 @@
+---
+title: Data model
+description: Lists, relationships, statuses, and the append-only rules of the Travel Agent schema.
+icon: Database
+---
+
+The schema has 37 lists in `features/keystone/models`. `schema.graphql` and `schema.prisma` in the repository are the reference for a revision.
+
+## Rules
+
+- Money is whole cents with a currency code. Rates are basis points.
+- Every list has `createdAt` and `updatedAt`.
+- Status fields cannot be written by a raw create or update. They change through custom mutations that check the current state, then write an `AuditEvent`.
+- Customer-visible codes (`tripNumber`, invoice `number`) are random, never sequential.
+- Link tokens are random and stored only as SHA-256 hashes.
+- Paid records keep a snapshot of what was bought. An invoice line stores description, amount, quantity, fees, and tax. A booked component stores a purchase snapshot. An accepted proposal stores a snapshot and its hash.
+
+## Lists
+
+| Area | Lists |
+| --- | --- |
+| Identity | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+| CRM | `Client`, `Traveler`, `Inquiry`, `Destination` |
+| Trip and proposal | `Trip`, `Proposal`, `ProposalOption`, `ProposalItem`, `TripComponent`, `ItineraryDay`, `ItineraryItem` |
+| Suppliers | `Supplier`, `SupplierContact` |
+| Money | `ClientInvoice`, `ClientInvoiceLine`, `PaymentSchedule`, `ClientFundsEntry`, `SupplierPayment`, `CommissionReceipt`, `CommissionAllocation`, `AdvisorCommissionLedger` |
+| Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent` |
+| Control | `ManagerApproval`, `AuditEvent`, `IdempotencyKey`, `AgencySettings` |
+| Work | `Document`, `Task` |
+
+## Core relationships
+
+| From | To |
+| --- | --- |
+| `Client` | `Traveler`, `Inquiry`, `Trip` |
+| `Trip` | `Client`, `User` (advisor), `Inquiry`, `Destination`, `Traveler`, `Proposal`, `TripComponent`, `ItineraryDay`, `ClientInvoice`, `PaymentSchedule`, `ClientFundsEntry`, `Task`, `Document` |
+| `Proposal` | `ProposalOption`, which has `ProposalItem` |
+| `TripComponent` | `Supplier`, `Traveler`, `PaymentSchedule`, `ClientFundsEntry`, `SupplierPayment`, `CommissionAllocation`, `AdvisorCommissionLedger`, `ItineraryItem` |
+| `ClientInvoice` | `ClientInvoiceLine`, `PaymentCollection`, `Payment`, `Refund` |
+| `Payment` | `PaymentProvider`, `Refund`, `PaymentWebhookEvent` |
+| `CommissionReceipt` | `Supplier`, `CommissionAllocation` |
+| `CommissionAllocation` | `TripComponent`, `ManagerApproval` |
+| `ClientFundsEntry` | `Trip`, `TripComponent`, and the entry it reverses |
+| `ManagerApproval` | `User` (requested by), `User` (approved by) |
+| `User` | `Role`, `Trip`, `Inquiry`, `Task`, `AuditEvent`, `AdvisorCommissionLedger` |
+
+## Status values
+
+| List | Field | Values |
+| --- | --- | --- |
+| `Trip` | `status` | `planning`, `proposal_sent`, `accepted`, `booked`, `final_payment_due`, `paid_in_full`, `traveling`, `completed`, `cancelled` |
+| `Inquiry` | `status` | `new`, `qualifying`, `proposal`, `won`, `lost` |
+| `Inquiry` | `tripType` | `honeymoon`, `family`, `group`, `corporate`, `cruise`, `adventure` |
+| `Proposal` | `status` | `draft`, `sent`, `viewed`, `accepted`, `superseded`, `declined` |
+| `ProposalItem`, `TripComponent` | `kind` | `hotel`, `cruise`, `tour`, `flight`, `transfer`, `rail`, `insurance`, `activity`, `fee` |
+| `TripComponent` | `bookingStatus` | `quoted`, `held`, `booked`, `ticketed`, `cancelled` |
+| `TripComponent` | `paymentModel` | `client_pays_supplier`, `agency_collects` |
+| `TripComponent` | `commissionStatus` | `expected`, `invoiced`, `received`, `short_paid`, `written_off` |
+| `Supplier` | `kind` | `hotel`, `cruise_line`, `tour_operator`, `dmc`, `airline`, `consolidator`, `insurer`, `transfer` |
+| `ClientInvoice` | `status` | `draft`, `sent`, `partially_paid`, `paid`, `void` |
+| `ClientInvoiceLine` | `kind` | `planning_fee`, `component_deposit`, `component_final`, `insurance` |
+| `PaymentSchedule` | `status` | `due`, `invoiced`, `paid`, `cancelled` |
+| `ClientFundsEntry` | `entryType` | `receipt`, `supplier_payment`, `refund_to_client`, `transfer_planning_fee`, `reversal` |
+| `AdvisorCommissionLedger` | `entryType` | `allocation`, `reversal` |
+| `Payment` | `status` | `pending`, `processing`, `authorized`, `unknown`, `succeeded`, `failed`, `cancelled`, `refunded`, `partially_refunded` |
+| `Refund` | `status` | `processing`, `succeeded`, `failed`, `unknown` |
+| `ManagerApproval` | `status` | `requested`, `approved`, `rejected`, `consumed` |
+| `ManagerApproval` | `actionType` | `refund_payment`, `commission_overpayment`, `commission_writeoff` |
+| `Task` | `type` | `deposit_due`, `final_due`, `passport_expiring`, `commission_overdue`, `follow_up` |
+| `Task` | `status` | `open`, `completed`, `cancelled` |
+| `Document` | `kind` | `passport`, `visa`, `insurance`, `supplier_confirmation`, `signed_terms` |
+
+## Computed fields
+
+- `Trip.totalSellCents`, `collectedCents`, `balanceDueCents`, and `expectedCommissionCents`. Cancelled components are left out. Balance counts only the planning fee and `agency_collects` components.
+- `Client.lifetimeValueCents`: the sum collected on the client's invoices.
+
+## Append-only and protected
+
+- `AuditEvent`, `ClientFundsEntry`, `AdvisorCommissionLedger`, `CommissionReceipt`, `CommissionAllocation`, `SupplierPayment`, invoices, and payments are never created or edited through the generic API.
+- `ManagerApproval` cannot be created or updated through the generic API either.
+- Traveler date of birth, passport expiry, and known traveler number cannot be read through the generic API.
+- Deleting is closed on every agency list.

@@ -1,0 +1,32 @@
+---
+title: Record a commission
+description: Record a supplier payment, handle a short pay or over-payment, and write off what will not arrive.
+icon: HandCoins
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageCommissions`.
+
+<Steps>
+<Step>
+### Check what is expected
+Open `/dashboard/platform/commissions`. The **expected** and **invoiced** tabs show what suppliers still owe.
+</Step>
+<Step>
+### Record the receipt
+Call `recordCommissionReceipt` with the supplier, the amount, a reference, and allocations that add up to the amount. A component that reaches its expected amount becomes `received`. One that falls short becomes `short_paid` and opens a follow-up task.
+</Step>
+<Step>
+### Over-payment
+If an allocation goes above the expected amount, first request a `commission_overpayment` approval for the excess, have another person approve it, then repeat the receipt with the `approvalId` and a reason on that allocation.
+</Step>
+<Step>
+### Write off a shortfall
+On a `short_paid` or `expected` row, click **Write off**. Another person must approve the request. After that, **Write off** confirms it and the component becomes `written_off`.
+</Step>
+<Step>
+### Read the payouts
+The **Advisor payouts** list totals each advisor's ledger after the host-agency split.
+</Step>
+</Steps>

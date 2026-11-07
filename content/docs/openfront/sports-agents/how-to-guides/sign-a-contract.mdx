@@ -1,0 +1,32 @@
+---
+title: Sign a contract
+description: Sign an agreement, record a contract as signed, and generate its payment schedule.
+icon: FileCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageContracts` for the first two steps and `canManageCommissions` for the schedule.
+
+<Steps>
+<Step>
+### Sign the agreement
+Open the athlete at `/dashboard/platform/clients`, go to the **Agreements** tab, and choose **Record signed** on the agreement. The playing rate must be at or below the cap. Another signed or active agreement for the same scope blocks it.
+</Step>
+<Step>
+### Link the agreement to the contract
+Open the contract in the generic list at `/dashboard/playingContracts` and set `representationAgreement` to the signed agreement. The agreement scope must be `playing` or `both`.
+</Step>
+<Step>
+### Record the contract as signed
+Open the contract at `/dashboard/platform/contracts/[id]` and choose **Record signed**. The agreement's playing rate is copied onto the contract.
+</Step>
+<Step>
+### Generate the payment schedule
+On the same page choose **Generate payment schedule**. One scheduled payment is created per pay period. Running it again adds nothing.
+</Step>
+</Steps>
+
+## Check
+
+The athlete's **Payments** tab lists the scheduled payments. The money view shows them under expected commission.

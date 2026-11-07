@@ -1,18 +1,89 @@
 ---
 title: Troubleshooting
-description: Common setup and access problems.
+description: Errors from setup, commissions, approvals, and invoice payment, with causes and fixes.
 icon: LifeBuoy
 ---
 
-| Symptom | Fix |
-|---|---|
-| Every dashboard URL redirects to `/dashboard/init` | No users exist. Create the first user |
-| Signed in but sent to `/dashboard/no-access` | The user's role lacks `canAccessDashboard`, or they have no role |
-| Cannot see other people or their todos | Needs `canSeeOtherPeople` or `canManageAllTodos` |
-| Cannot create a todo | Needs `canCreateTodos` |
-| Image uploads fail | Set all five `S3_*` variables |
-| Password reset says email is not available | Set `SMTP_HOST` |
-| Reset link has no host | Set `SMTP_STORE_LINK` |
-| Database errors at startup | `DATABASE_URL` must be a PostgreSQL URL |
-| AI chat unavailable | Set `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or enter keys in chat settings |
-| Sign-up page rejects | Set `PUBLIC_SIGNUPS_ALLOWED=true` |
+The API masks most custom errors as "Unexpected error." Check the server log for the real message. The dashboard shows the message for the cases below.
+
+## Sign-in and setup
+
+| Problem | Cause and fix |
+| --- | --- |
+| Redirects to `/dashboard/init` | No users yet. Create the first admin |
+| Redirects to `/dashboard/no-access` | The role lacks `canAccessDashboard` |
+| Dashboard shows an empty error page | Check the server log. A wrong `DATABASE_URL` or unapplied migration is the usual cause |
+| `npm run dev` failed to start | Another Next.js process holds the lock for this folder. Stop it, then retry |
+| Sidebar setup card is missing | The agency already has an athlete, onboarding is done or dismissed, or the role lacks `canManageOnboarding` |
+| Setup fails partway | Run it again. Saved records are reused |
+| Setup money phase is slow | It runs many commands one after another. A remote database makes it slower |
+
+## Commissions
+
+| Message | Cause and fix |
+| --- | --- |
+| Idempotency key required | Send an `idempotencyKey` |
+| Idempotency key was already used with a different request | Use a new key for different arguments |
+| Command already processing | The same key is in flight. Retry shortly |
+| Athlete not found | The athlete does not exist or you are not their lead agent or support staff |
+| Unique scheduled payments required | The list is empty or has duplicates |
+| Received uninvoiced payments in one currency required | A payment is not `received`, is already on an invoice, or the currencies differ |
+| Valid payment amount and reference required | The amount is zero, above the balance, or the reference is empty |
+| Invalid state transition | The record is not in a status that allows the change |
+| Record changed concurrently | Another request changed it first. Reload and retry |
+| Entry cannot be reversed twice | Reversals are exact and happen once |
+| Void the invoice before reversing its accrual | The payment is on an invoice |
+| Reverse payments before voiding a paid invoice | An invoice with payments cannot be voided |
+
+## Contracts and agreements
+
+| Message | Cause and fix |
+| --- | --- |
+| Playing commission exceeds union cap | Lower `playingCommissionBps` or raise `capBps` |
+| Active representation agreement already exists | Another signed, filed, or active agreement covers the same scope |
+| Active playing representation required | The contract needs a linked, in-date `playing` or `both` agreement that is signed, filed, or active |
+| Union commission cap exceeded | The agreement's playing rate is above its cap |
+| Signed source required | Schedules can be generated only for a `signed` or `active` contract or deal |
+
+## Recruiting and endorsements
+
+| Message | Cause and fix |
+| --- | --- |
+| Contact window has not opened | `contactAllowedFrom` is in the future |
+| Invalid recruiting stage | Unknown stage, or the athlete is already there |
+| Exclusivity conflict with an active deal | Another signed or active deal has the same category and an overlapping term. Request an override |
+| HTTPS proof required | Send a proof link that starts with `https://` |
+
+## Approvals
+
+| Message | Cause and fix |
+| --- | --- |
+| The requester cannot decide their own approval | A different user with `canApproveActions` must decide |
+| Approval is already approved, rejected, or consumed | A request is decided once |
+| Approval has expired | Requests last one hour. File a new one |
+| Approval does not match this request | The target, reason, or amount differs from the request |
+| Approval must come from a different user | The approver and the requester are the same person |
+| Approval was already used or has expired | An approval is single use |
+| Only an unpaid sent invoice can be written off | The invoice is not `sent` or `partially_paid`, or has no balance |
+
+## Trust
+
+| Message | Cause and fix |
+| --- | --- |
+| Insufficient client trust balance | The entry would take the balance below zero |
+| Sent athlete invoice required | A commission transfer needs a `sent` or `partially_paid` invoice for the same athlete |
+| Transfer exceeds invoice | Transfers against the invoice would pass its total |
+| Invalid trust entry | Wrong entry type, a zero or fractional amount, or no reference |
+
+## Invoice payment
+
+| Message | Cause and fix |
+| --- | --- |
+| No invoice matches those details | The email or invoice number is wrong, or the invoice is a draft or void |
+| Invoice not found | The proof is missing, expired, forged, or for another invoice |
+| Card payments are not configured | No installed provider with code `pp_stripe_stripe` |
+| Invoice is not payable | The invoice is not `sent` or `partially_paid`, or has no balance |
+| Invoice changed; reload and retry | The balance changed while the payment was being reserved |
+| Provider amount differs from the invoice payment | Stripe reports a different amount. The payment needs review |
+| Payment stuck as `unknown` | Stripe captured the money but the invoice could not take it. Review and fix by hand |
+| Card form does not appear | `NEXT_PUBLIC_STRIPE_KEY` is missing or not a publishable key |

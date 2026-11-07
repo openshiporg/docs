@@ -1,0 +1,27 @@
+---
+title: Check-in
+description: The mobile manifest for a departure, with check-in, no-show, dietary, medical, and waiver flags.
+icon: ClipboardCheck
+---
+
+`/dashboard/platform/check-in` lists today's departures. Open one with `?departure=<id>` to see its manifest. It needs `canCheckIn`. The layout works at 402 pixels wide.
+
+## The manifest
+
+Each booking shows the lead booker, booking code, status, pickup location, and special requests. Under it, each participant shows:
+
+- Name and a check-in state.
+- Dietary notes.
+- A medical flag. The note text shows only to a role with `canReadMedicalNotes`. Other staff see "Medical note".
+- "Waiver missing" when the participant has not signed.
+
+The manifest lists bookings in `confirmed`, `checked_in`, `completed`, `no_show`, and `partially_refunded`.
+
+## Actions
+
+- **Check in** (`checkInParticipant`) is available when the booking is `confirmed` or `checked_in`. A missing waiver warns but does not block. When every participant is checked in, the booking moves to `checked_in`.
+- **No show** (`markNoShow`) applies to a `confirmed` booking. It also marks its pending participants as no-show.
+
+## Audit
+
+When a manifest includes medical notes and the viewer can read them, the read is written to the audit log as `medical_notes.read`.

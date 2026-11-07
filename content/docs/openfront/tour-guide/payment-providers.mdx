@@ -1,0 +1,48 @@
+---
+title: Payment providers
+description: The Stripe and manual adapters, test-mode checkout, the webhook, and refunds.
+icon: Plug
+---
+
+Adapters live in `features/integrations/payment`. They are the same pattern as Openfront Restaurant. A `PaymentProvider` record names an adapter for each operation: create, capture, refund, status, link, and webhook.
+
+## Status
+
+Payments run against Stripe in test mode while the app is in development. Use the Stripe test card `4242 4242 4242 4242`. No live-mode flow has been exercised.
+
+## Adapters
+
+- **stripe**: needs `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_KEY` (the publishable key), and `STRIPE_WEBHOOK_SECRET`.
+- **manual**: no credentials. It records a result without moving money.
+
+Checkout looks up the provider with the code `pp_stripe` that is installed. If there is none, checkout fails with "Payment provider is not configured".
+
+## How a card payment flows
+
+1. `startBookingCheckout` creates a booking in `pending_payment`, a payment collection, and a payment session. It extends the hold to 15 minutes.
+2. The server creates a Stripe payment intent for the booking total, card only, with an idempotency key built from the hold.
+3. The storefront confirms the card with Stripe.
+4. `completeBookingCheckout` reads the intent back from Stripe. It requires status `succeeded` and an amount and currency that match the booking.
+5. In one transaction the server takes the departure lock, converts the hold, confirms the booking, records the payment, and commits any promo redemption.
+
+If the seats are gone by the time payment completes, the booking is cancelled and the payment is refunded.
+
+A booking whose total is zero (a full comp code or a rebook) skips Stripe.
+
+## Webhook
+
+Register this URL in Stripe:
+
+```
+/api/webhooks/payment/pp_stripe
+```
+
+The route checks the signature with `STRIPE_WEBHOOK_SECRET` and logs each event once in `PaymentWebhookEvent`. It acts on `payment_intent.succeeded`: it finds the booking from the payment intent and confirms it if the page did not. Other event types are logged and ignored. Refund and dispute events are not handled.
+
+## Refunds
+
+Refunds are reserved first, sent to the provider outside any database lock, then finished in a second transaction. A refund on a cash tender or a tender with no provider reference is recorded as manual. If the provider call fails, the refund is left as `unknown` and the booking is not changed, so it can be retried with the same key. See [Refund a booking](/docs/openfront/tour-guide/how-to-guides/refund-a-booking).
+
+## Setup
+
+Run onboarding to create the Stripe provider record, or create one with code `pp_stripe` and `stripe` as each adapter name. `PaymentProvider` can be edited by a user with `canManagePayments`. Credentials are never returned by GraphQL.

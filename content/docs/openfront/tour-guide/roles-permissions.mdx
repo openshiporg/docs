@@ -1,0 +1,54 @@
+---
+title: Roles and permissions
+description: Role flags, what each one unlocks, and which operations check them.
+icon: ShieldCheck
+---
+
+Access comes from boolean flags on the `Role` list. A `User` has one role. The first user created at `/dashboard/init` gets an Admin role with every flag. Manage roles at `/dashboard/roles` (needs `canManageRoles`).
+
+There is no manager override flag. Each flag stands alone, so an Admin role must list every one.
+
+## Flags
+
+| Flag | Used for |
+| --- | --- |
+| `canAccessDashboard` | Sign in to the dashboard |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles` | Users and roles |
+| `canManageOnboarding` | Setup operations and the settings list |
+| `canManageTours` | Tours, ticket types, add-ons, meeting points, cancellation policies, pricing rules |
+| `canManageDepartures` | Schedules, `generateDepartures`, `resizeDeparture`, `cancelDeparture`, `closeDeparture`, `sweepDepartures`, tasks |
+| `canManageBookings` | The Bookings screen, `createChannelBooking`, notification preferences |
+| `canManageGuides` | Guides, certifications, availability, payouts, `assignGuide`, `respondToAssignment` |
+| `canManageResources` | Resources and `assignResource` |
+| `canManageChannels` | Channels and `generateChannelStatement` |
+| `canCheckIn` | Today, Calendar, Check-in, manifest, `checkInParticipant`, `markNoShow`, participants, signatures |
+| `canReadMedicalNotes` | Reading participant medical notes |
+| `canManagePromos` | Promo codes and redemptions |
+| `canManageWaivers` | Waiver templates |
+| `canManagePayments`, `canReadPayments` | Payment providers, payments, refunds, webhook events (read) |
+| `canIssueRefunds` | `refundBooking`, `requestRefundApproval`, `approveRefund`, and the approval list |
+| `canReadAudit` | The audit event list |
+
+`canManageSettings` and `canManageCustomers` exist on `Role`, but no screen or operation reads them. Do not rely on them.
+
+## Onboarding roles
+
+Setup creates three roles:
+
+| Role | Flags |
+| --- | --- |
+| Operations Manager | `canAccessDashboard`, `canManageTours`, `canManageDepartures`, `canManageBookings`, `canManageGuides`, `canManageResources`, `canManageChannels`, `canManagePromos`, `canManageWaivers`, `canManageCustomers`, `canCheckIn`, `canReadMedicalNotes`, `canReadPayments`, `canReadAudit` |
+| Guide | `canAccessDashboard`, `canCheckIn`, `canReadMedicalNotes` |
+| Customer | none |
+
+Refund rights, payment setup, and role management are not in the manager role. Add `canIssueRefunds` and `canManagePayments` to the role of anyone who handles money.
+
+## Checks run on the server
+
+Every custom operation that changes data checks the flag in the resolver. The dashboard requires `canAccessDashboard` to sign in. Beyond that, route files have no extra per-page role guard, so a user without a flag gets empty data or an error from the server rather than a redirect.
+
+Public operations (`toursOnSale`, `tourAvailability`, `createDepartureHold`, `startBookingCheckout`, `completeBookingCheckout`, `lookupBooking`, `cancelMyBooking`, `signWaiver`, `waiverForToken`, `checkoutHold`, `rebookWithCredit`, `operatorName`) need no sign-in. They are protected by proof, described in the [GraphQL API](/docs/openfront/tour-guide/api-reference).
+
+## Refund approval
+
+A refund above `refundApprovalThresholdCents` needs a `ManagerApproval` made by one user and approved by another. The approval is tied to the booking, the amount, and the reason, and expires after 15 minutes. It is used up in the same transaction that reserves the refund.

@@ -1,0 +1,27 @@
+---
+title: Clients and travelers
+description: Client households, their travelers, and who can see traveler details.
+icon: Users
+---
+
+`/dashboard/platform/clients` ("Clients & Travelers") lists client households in name order. A row shows the name, email, phone, source, preferences, lifetime value, number of trips, and number of travelers. The list is read-only. Create and edit clients from the generic list screen at `/dashboard/clients`. Deleting is closed on every agency list.
+
+## Client
+
+Fields: name, email, phone, address, preferences (text), preference tags (JSON), loyalty numbers (JSON), marketing consent, and source. Lifetime value is a computed field: the sum collected on the client's invoices.
+
+Writing clients needs `canManageClients`.
+
+## Traveler
+
+A traveler belongs to a client household and can be on several trips and components. Fields: first and last name, nationality, notes, passport on file (yes or no), passport expiry, date of birth, and a known traveler number.
+
+- Date of birth, passport expiry, and known traveler number cannot be read through the generic GraphQL API at all. Their field read access is closed.
+- A user sees only travelers on trips assigned to them. A user with `canManageRoles` sees every traveler.
+- Travelers come from the seed. No mutation creates or edits them, and raw create, update, and delete are closed.
+
+The seed marks the first traveler on each trip as having a passport on file and gives each a future expiry.
+
+## Documents
+
+A `Document` has a title, kind (`passport`, `visa`, `insurance`, `supplier_confirmation`, `signed_terms`), storage key, media type, size, checksum, and a verified time. It belongs to a trip and can belong to a traveler. Documents follow the same rule as travelers: an advisor sees only documents on their own trips. The Documents tab lists titles and kinds. There is no upload screen in this repository.

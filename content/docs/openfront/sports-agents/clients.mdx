@@ -1,0 +1,41 @@
+---
+title: Clients
+description: The athlete roster and the nine-tab athlete record.
+icon: Users
+---
+
+Clients are `Athlete` records. Two screens cover them: the roster at `/dashboard/platform/clients` and the record at `/dashboard/platform/clients/[id]`.
+
+## Roster
+
+The roster lists up to 200 athletes by name. Filter by status (`client`, `recruiting`, `prospect`, `former`, `lost`) and by league. Each row shows the status label, name, league, position, team, and lead agent.
+
+Visibility is scoped. A user sees only athletes they lead or support, unless their role has `canViewAllClients`. See [Roles and permissions](/docs/openfront/sports-agents/roles-permissions).
+
+## Athlete record tabs
+
+| Tab | Shows | Actions |
+| --- | --- | --- |
+| Overview | Sport, league, position, team, lead agent, support staff, contact, recruiting stage, notes | None |
+| Agreements | Representation agreements with scope, rates, cap, dates | Record signed on a `draft` or `sent` agreement |
+| Contracts | Playing contracts for the athlete | Links to the contract record |
+| Endorsements | Deals with brand, category, term, value | None |
+| Payments | Up to 60 scheduled payments | Mark received on a `scheduled` or `late` payment |
+| Commissions | Invoices and the ledger | None |
+| Trust | Trust entries and balance | None |
+| Documents | Document records with version and a hash prefix | None |
+| Timeline | Interactions in date order | None |
+
+## Athlete fields
+
+`fullName`, `preferredName`, `sport`, `league` (`NFL`, `NBA`, `WNBA`, `MLB`, `NHL`, `MLS`, `NWSL`, `NCAA`, `Other`), `position`, `team`, `dateOfBirth`, `status`, `leadAgent`, `supportStaff`, `portalUser`, `email`, `phone`, `representationStartedAt`, `socialHandles`, `followerCounts`, `marketabilityNotes`, `image` (a text field), `eligibility`, `isPublic`, `recruitingStage`, and `contactAllowedFrom`.
+
+`status` and `recruitingStage` are read-only in generated writes. `recruitingStage` changes through `moveRecruitingStage`. `isPublic` publishes an athlete on the public site once the status is `client`.
+
+## Agreements
+
+A `RepresentationAgreement` has a `scope` (`playing`, `marketing`, or `both`), a playing and marketing rate in basis points, a union cap `capBps`, and dates. `signRepresentationAgreement` moves it from `draft` or `sent` to `signed`. It refuses when the playing rate is above the cap, or when another signed, filed, or active agreement already covers the same scope for that athlete.
+
+## Documents
+
+The `Document` list stores kind, version, a SHA-256 hash, and a private `storageKey`. There is no upload screen or upload mutation. Treat the list as a record shape, not a working file flow.

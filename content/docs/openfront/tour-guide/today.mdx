@@ -1,0 +1,25 @@
+---
+title: Today
+description: Departures for the current day with seats, guides, waiver gaps, and cancel actions.
+icon: CalendarClock
+---
+
+`/dashboard/platform/today` lists each departure that starts today in the operator's time zone (America/New_York). It needs `canCheckIn` because it reads the departure list that guides use.
+
+## What a card shows
+
+- Tour name, start and end time, and the departure status.
+- **Seats**: booked seats over capacity. Held seats are shown separately and do not count as booked.
+- **Guides**: accepted guides over the guides needed.
+- **Held**: seats in unexpired holds.
+
+Guides needed is the booked seats divided by the tour's guests-per-guide ratio, rounded up. The ratio is shown, not enforced. A departure that has bookings but too few accepted guides shows "Not staffed". A departure with unsigned waivers shows how many are missing. A departure in `min_not_met` shows "Minimum not met".
+
+## Actions
+
+- **Manifest** opens the [check-in](/docs/openfront/tour-guide/check-in) page for that departure.
+- **Cancel departure** opens a popover with two choices: **Weather cancel** and **Operator cancel**. Both call `cancelDeparture`, which needs `canManageDepartures`. See [Cancel a departure](/docs/openfront/tour-guide/how-to-guides/cancel-a-departure).
+
+## Notes
+
+The page reads `departuresInRange`. That query allows at most 31 days. It does not offer the "offer credit" choice that `cancelDeparture` supports. Use GraphQL for that.

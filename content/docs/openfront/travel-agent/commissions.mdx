@@ -1,0 +1,34 @@
+---
+title: Commissions
+description: The commission board, receipts and allocation, over-payment, advisor split, and write-offs.
+icon: Percent
+---
+
+`/dashboard/platform/commissions` is a board with a tab for each commission status: `expected`, `invoiced`, `received`, `short_paid`, `written_off`, each with a count. A row shows the component, supplier, trip, rate, travel end date, and received against expected. Below the board are the ten most recent receipts and an **Advisor payouts** list that totals each advisor's ledger.
+
+## Expected commission
+
+Expected commission is `floor(sell × rate / 10000)` and is stored when a component is booked or created from an accepted proposal. Rates come from the proposal item or the booking call. Suppliers carry a default rate and payment terms in days.
+
+## Record a receipt
+
+`recordCommissionReceipt` records money from a supplier. It takes the supplier, an amount, a reference, and allocations. The allocations must add up to the amount, and each component must belong to that supplier and use the same currency.
+
+For each allocation it:
+
+- adds a `CommissionAllocation` row;
+- sets the component to `received` when allocated money reaches the expected amount, otherwise `short_paid`;
+- writes an advisor ledger entry for the advisor's share, after the host-agency split in settings;
+- opens a `commission_overdue` task for a short-paid component.
+
+## Over-payment
+
+An allocation that would push a component above its expected commission needs an approved request. The part above expected is stored on the allocation as `overpaymentCents` and linked to the approval, and an audit event is written. Without an approval, the receipt is refused with "Independent manager approval is required". An approval is for one exact amount and works once.
+
+## Write off
+
+The **Write off** button on a row in `expected` or `short_paid` opens a dialog. The dashboard board has no screen for recording a receipt; use `recordCommissionReceipt` through GraphQL or MCP. `writeOffCommission` gives up the unreceived amount, moves the component to `written_off`, and writes an audit event. It always needs an approved request. See [Approvals and refunds](/docs/openfront/travel-agent/approvals-refunds).
+
+## Advisor split
+
+The advisor ledger is append-only. An advisor's share of each allocation is the amount less the host-agency share, where the host share is the allocation times `hostAgencySplitBps` from settings, rounded down. The two parts always add up to the allocation.

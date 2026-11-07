@@ -163,6 +163,24 @@
       "name": "Openfront Concerts",
       "label": "Concerts",
       "category": "openfront"
+    },
+    {
+      "id": "sports-agents",
+      "name": "Openfront Sports Agents",
+      "label": "Sports Agents",
+      "category": "openfront"
+    },
+    {
+      "id": "travel-agent",
+      "name": "Openfront Travel Agent",
+      "label": "Travel Agent",
+      "category": "openfront"
+    },
+    {
+      "id": "tour-guide",
+      "name": "Openfront Tour Guide",
+      "label": "Tour Guide",
+      "category": "openfront"
     }
   ]
 }

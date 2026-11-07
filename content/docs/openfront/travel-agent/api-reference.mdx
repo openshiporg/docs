@@ -1,0 +1,77 @@
+---
+title: GraphQL API
+description: Endpoint, authentication, and the custom Travel Agent queries and mutations.
+icon: Code
+---
+
+GraphQL is served at `/api/graphql`. The checked-in `schema.graphql` is the reference for a revision.
+
+## Authentication
+
+Sessions use the `keystonejs-session` cookie. Sign in with `authenticateUserWithPassword`. Each operator operation checks the caller's role flags on the server. See [Roles and permissions](/docs/openfront/travel-agent/roles-permissions). Public operations use no session.
+
+The custom operations return a JSON value (`TravelJSON`). Operator mutations take one `input` object. Every operator mutation requires `idempotencyKey` inside `input`.
+
+## Public queries
+
+| Query | Arguments | Returns |
+| --- | --- | --- |
+| `publicDestinations` | none | Destination name, slug, country, specialty |
+| `publicDestination` | `slug` | One destination |
+| `viewProposal` | `token` | Trip title, intro, options with items. Moves `sent` to `viewed` |
+| `viewItinerary` | `token` | Trip title, dates, days, items |
+| `viewInvoice` | `token` | Number, status, totals, due date, lines, trip title and code |
+| `lookupBooking` | `email`, `code` | Trip number, title, status, dates, invoice status and amounts. Needs both |
+| `redirectToInit` | none | True while there are no users |
+
+## Public mutations
+
+| Mutation | Arguments | Purpose |
+| --- | --- | --- |
+| `submitInquiry` | `input` | Create an inquiry with status `new` |
+| `acceptProposal` | `token`, `optionId`, `name`, `idempotencyKey` | Accept an option and create components |
+| `payInvoice` | `token`, `idempotencyKey` | Create a Stripe payment intent and return its client secret |
+| `confirmInvoicePayment` | `token`, `paymentIntentId` | Check the intent with Stripe and record the payment |
+
+## Operator mutations
+
+Each takes `input` and needs the flag shown. Replays with the same key return the stored result.
+
+| Mutation | Flag | Input highlights |
+| --- | --- | --- |
+| `createTripFromInquiry` | `canManageTrips` | `inquiryId`, optional `title` |
+| `buildProposal` | `canManageTrips` | `tripId`, `introNote`, `options` with `items` |
+| `sendProposal` | `canManageTrips` | `proposalId`. Returns the link token once |
+| `bookComponent` | `canManageTrips` | `componentId`, `netCostCents`, `confirmationNumber`, optional `commissionBps`, `paymentModel` |
+| `cancelComponent` | `canManageTrips` | `componentId`; optional `refundCents`, `paymentId`, `reason`, `approvalId` |
+| `shareItinerary` | `canManageTrips` | `tripId`. Returns the link token once |
+| `transitionTrip` | `canManageTrips` | `tripId`, `status` |
+| `sweepTripDates` | `canManageTrips` | Moves trips by date |
+| `generatePaymentSchedule` | `canManagePayments` | `tripId` |
+| `issueClientInvoice` | `canManagePayments` | `tripId`, `lines`, optional `dueAt`. Returns the link token once |
+| `recordClientPayment` | `canManagePayments` | `invoiceId`, `amountCents`, `method` (`check`, `wire`, `cash`), `reference` |
+| `recordSupplierPayment` | `canManagePayments` | `componentId`, `amountCents`, `method`, `reference` |
+| `postClientFundsEntry` | `canManagePayments` | `tripId`, `entryType` (only `transfer_planning_fee`), `amountCents` |
+| `reverseEntry` | `canManagePayments` | `entryId`, `reason` (only `transfer_planning_fee` entries) |
+| `recordCommissionReceipt` | `canManageCommissions` | `supplierId`, `amountCents`, `reference`, `allocations` (each `componentId`, `amountCents`, and `approvalId` plus `reason` for an over-payment) |
+| `writeOffCommission` | `canManageCommissions` | `componentId`, `reason`, `approvalId` |
+| `refundClientPayment` | `canIssueRefunds` | `paymentId`, `amountCents`, `reason`, optional `approvalId` |
+
+## Approval mutations
+
+| Mutation | Arguments | Purpose |
+| --- | --- | --- |
+| `requestManagerApproval` | `actionType`, `targetId`, `amountCents`, `reason` | Request an approval. Returns its id |
+| `decideManagerApproval` | `approvalId`, `decision` (`approved` or `rejected`) | Decide as a different user with `canManageSettings` |
+
+## Setup mutations
+
+`ensureTravelOnboardingPhase` (`phase`, `template`) and `setOnboardingStatus` (`status`) need `canManageOnboarding`.
+
+## Reads
+
+Use the generated list queries (`trips`, `tripComponents`, `clientInvoices`, and so on) with an explicit field selection. They return only what the caller's role allows. The dashboard uses them for every page.
+
+## Errors
+
+Operations throw a plain message for expected failures, such as "Client balance must be zero before this status". See [Troubleshooting](/docs/openfront/travel-agent/troubleshooting).

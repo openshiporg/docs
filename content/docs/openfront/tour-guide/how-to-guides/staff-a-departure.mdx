@@ -1,0 +1,39 @@
+---
+title: Staff a departure
+description: Offer guides, assign a vehicle or boat, and check the seat limit.
+icon: UserCheck
+---
+
+You need `canManageGuides` and `canManageResources`. These steps use GraphQL, since the dashboard has no screen for them.
+
+## Offer a guide
+
+```graphql
+mutation Offer($departureId: ID!, $guideId: ID!) {
+  assignGuide(input: { departureId: $departureId, guideId: $guideId, role: "lead" }, idempotencyKey: "offer-1")
+}
+```
+
+The offer starts as `offered`. It is refused if the guide is inactive, a certification the tour requires has expired (or expires before the departure ends), the guide has another accepted or worked assignment at the same time, or a time-off block covers the departure.
+
+The guide, or a manager, accepts it:
+
+```graphql
+mutation Respond($assignmentId: ID!) {
+  respondToAssignment(input: { assignmentId: $assignmentId, status: "accepted" }, idempotencyKey: "accept-1")
+}
+```
+
+## Assign a vehicle or boat
+
+```graphql
+mutation Assign($departureId: ID!, $resourceId: ID!) {
+  assignResource(input: { departureId: $departureId, resourceId: $resourceId, quantity: 1 }, idempotencyKey: "assign-1")
+}
+```
+
+The resource kind must match the tour. Its seats set the departure's capacity, never above the tour maximum. For a kayak pool the quantity is how many kayaks you take.
+
+## Check staffing
+
+The Today page shows accepted guides over guides needed. The ratio is advice, not a block. A departure with bookings and too few accepted guides shows "Not staffed".

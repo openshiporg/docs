@@ -1,0 +1,53 @@
+---
+title: External storefronts
+description: Give an LLM the Travel Agent storefront skill to adapt the built-in pages or create a separate client.
+icon: AppWindow
+---
+
+To create a custom Travel Agent storefront, copy the skill and give it to your LLM. The skill explains how `features/storefront` and the routes in `app/(storefront)` work today.
+
+After that source orientation, it asks what you dislike, what should stay, which journeys matter, and what the replacement should look like. It then traces the routes, GraphQL calls, access rules, and provider handoffs in your copy of the code before proposing work.
+
+## Status
+
+The storefront is a plain set of pages with the starter's default look. It exists so the whole loop works end to end: inquiry, proposal, invoice, payment, confirmation, lookup. It waits for a design. The copy is labels, states, and errors only. Do not treat the markup as a design.
+
+## Current routes
+
+Route files live in `app/(storefront)/**`. Screens are in `features/storefront/screens`.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `StorefrontHome` | Agency name, a Plan a trip link, and the destination list |
+| `/destinations` | `DestinationList` | All destinations |
+| `/destinations/[slug]` | `DestinationDetail` | One destination with a link into the inquiry form |
+| `/inquiry` | `InquiryPage` | Inquiry form. Takes `?destination=` |
+| `/proposal/[token]` | `ProposalPage` | Options with items and totals; accept one with a full name |
+| `/itinerary/[token]` | `ItineraryPage` | Days and items. Print from the browser |
+| `/invoice/[token]` | `InvoicePage` | Lines, balance, card payment, then a confirmation code |
+| `/lookup` | `LookupPage` | Find a booking by email and code |
+
+The proposal, itinerary, and invoice pages are not indexed. They are reached only by a private link that an advisor sends.
+
+## Operations
+
+Every page calls the custom operations through `features/storefront/lib/graphql.ts`. It sends no session and no cookie.
+
+| Page | Operations |
+| --- | --- |
+| Home, destinations | `publicDestinations`, `publicDestination` |
+| Inquiry | `submitInquiry` |
+| Proposal | `viewProposal`, `acceptProposal` |
+| Itinerary | `viewItinerary` |
+| Invoice | `viewInvoice`, `payInvoice`, `confirmInvoicePayment` |
+| Lookup | `lookupBooking` |
+
+Server actions for these are in `features/storefront/actions.ts`. The payment form loads Stripe.js from `js.stripe.com` in `PayInvoice.tsx`.
+
+## Rules to keep
+
+- Raw lists such as trips, invoices, and travelers return nothing to a signed-out caller. Public data comes only from the operations above.
+- A link token is long and random. Only its hash is stored. A short or unknown token returns "not found".
+- `lookupBooking` needs both the client's email and a code that starts `TR-` or `INV-`. It returns status data only.
+- Confirming a payment asks Stripe about the payment intent and checks amount and currency. Never trust the redirect alone.
+- The confirmation shows the invoice number and the trip code. These are the codes a client can look up.

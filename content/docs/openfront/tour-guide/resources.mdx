@@ -1,0 +1,27 @@
+---
+title: Resources
+description: Vans, boats, kayaks, and bikes with seats and quantity.
+icon: Truck
+---
+
+`/dashboard/platform/resources` is a generic Keystone list screen for `Resource`. It needs `canManageResources`.
+
+## Fields
+
+- `kind`: `van`, `kayak`, `bike`, or `boat`.
+- `seats`: seats per unit.
+- `quantity`: how many units the pool holds, such as 16 kayaks.
+- `status`: `active` or `maintenance`. Only an `active` resource can be assigned. Set it at creation. Update cannot change it, so a resource cannot be moved into or out of maintenance from the dashboard.
+
+## Assigning to a departure
+
+`assignResource` (needs `canManageResources`) takes a departure, a resource, and a quantity. It checks that:
+
+- the resource kind matches the tour's `requiresResourceKind`,
+- the quantity fits the pool,
+- the pool is not already used by an overlapping departure (half-open time intervals, summed by quantity),
+- the new seat limit still covers booked and held seats.
+
+A departure holds one resource assignment. A new one replaces the old. The departure's capacity becomes the smaller of the tour maximum and `seats × quantity`.
+
+`resizeDeparture` can lower capacity but not below booked and held seats. It cannot exceed the tour maximum or the assigned resource seats.

@@ -1,0 +1,28 @@
+---
+title: Turn an inquiry into a trip
+description: Take a lead from the website form to a trip in planning.
+icon: UserPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageTrips`.
+
+<Steps>
+<Step>
+### Find the inquiry
+Open `/dashboard/platform/inquiries`. Website inquiries arrive in the `new` tab.
+</Step>
+<Step>
+### Create the trip
+Click **Create trip** on the row. The app uses the existing client or creates one from the contact details, creates a trip in `planning`, and moves the inquiry to `proposal`.
+</Step>
+<Step>
+### Open the trip
+The row now shows **Open trip**. The trip workspace starts on the Overview tab.
+</Step>
+<Step>
+### Know what is not set
+A new trip has a zero planning fee and no travelers. This repository has no screen or mutation to set them: raw updates are closed on trips and travelers. The seed shows a finished trip.
+</Step>
+</Steps>

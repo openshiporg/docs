@@ -1,0 +1,39 @@
+---
+title: Contracts
+description: Playing contracts, contract years, incentives, and the payment schedule.
+icon: FilePen
+---
+
+Two screens: the list at `/dashboard/platform/contracts` and the record at `/dashboard/platform/contracts/[id]`.
+
+## List
+
+Filter by status: `negotiating`, `signed`, `active`, `completed`, `terminated`, or `released`. Each row shows athlete, team, seasons, type, and total value.
+
+## Record
+
+The record shows the terms (type, total value, guaranteed, signing bonus, commission rate, signed date), the contract years, and the incentives.
+
+| Action | Shown when | Command |
+| --- | --- | --- |
+| Record signed | Status is `negotiating` | `recordContractSigned` |
+| Generate payment schedule | Status is `signed` or `active` | `generatePaymentSchedule` |
+
+## Signing rules
+
+`recordContractSigned` needs a linked agreement that:
+
+- belongs to the same athlete;
+- has scope `playing` or `both`;
+- is `signed`, `filed_with_union`, or `active`, and in its effective dates;
+- has a playing rate at or below its cap.
+
+On success it snapshots the agreement's playing rate into `PlayingContract.commissionBps` and sets `signedAt`. Later changes to the agreement do not change a signed contract.
+
+## Contract years and incentives
+
+A `ContractYear` has a season, base salary, guaranteed amount, roster and workout bonuses, `payPeriods`, and a `paySchedule` (`game_checks`, `semi_monthly`, or `lump_sum`). An `Incentive` has a description, amount, `likelyToBeEarned`, and a status (`pending`, `earned`, `not_earned`). There is no screen or command that earns an incentive, and incentives do not generate payments.
+
+## Payment schedule
+
+`generatePaymentSchedule` splits each year's base, roster, and workout amounts across `payPeriods`, spreading any remainder across the first checks. It writes one `ScheduledPayment` per period with a unique `sourceKey`, so running it twice never duplicates a period. Due dates start on the first of November of the season and step weekly. The schedule is a plan. It does not read the team's real pay dates.

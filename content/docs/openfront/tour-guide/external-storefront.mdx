@@ -1,0 +1,49 @@
+---
+title: External storefronts
+description: Give an LLM the Tour Guide storefront skill to adapt the built-in placeholder or create a separate client.
+icon: AppWindow
+---
+
+To create a custom Tour Guide storefront, copy the skill and give it to your LLM. The skill explains how `features/storefront` and the customer routes implement the current booking loop.
+
+The built-in storefront is a plain placeholder. It uses the starter's default styling and makes the loop work end to end. A designed storefront is still to come, so treat the current screens as a behavior reference, not a design.
+
+## Current storefront routes
+
+Route files live in `app/(storefront)/**`. Screens are in `features/storefront/screens`. Pages are server-rendered on demand.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `HomeScreen` | Tours on sale with duration and the lowest price |
+| `/tours/[slug]` | `TourScreen` | Tour details, date picker, departure times with seats left, ticket and add-on quantities, promo code |
+| `/checkout/[holdId]` | `CheckoutScreen` | Hold timer, lead booker, one entry per guest, Stripe card form |
+| `/bookings/[ref]` | `ConfirmationScreen` | Booking code, meeting point, waiver links, cancel |
+| `/lookup` | `LookupScreen` | Find a booking by code and email |
+| `/waiver/[token]` | `WaiverScreen` | Read and sign a waiver |
+
+The header shows the operator name from settings, with "Openfront Tour Guide" as the fallback.
+
+## Named operations
+
+All calls are in `features/storefront/lib/data.ts` and go through the server, not the browser.
+
+| Step | Operation |
+| --- | --- |
+| Browse | `toursOnSale`, `tourAvailability`, `operatorName` |
+| Hold | `createDepartureHold` |
+| Checkout | `checkoutHold`, `startBookingCheckout`, `completeBookingCheckout` |
+| Booking page | `lookupBooking`, `cancelMyBooking` |
+| Waiver | `waiverForToken`, `signWaiver` |
+
+`rebookWithCredit` exists in the API but has no storefront page.
+
+## Proof, not accounts
+
+- There is no guest sign-in. A random token is kept in an http-only cookie. Only its SHA-256 hash is stored with the hold. Every later step must present the same token.
+- The booking page asks for the email used to book. The browser keeps it in session storage so a refresh works. Lookup needs the booking code and the email together.
+- A waiver link is derived from the participant on the server. Anyone with the link can sign for that participant only.
+- Money amounts, seat counts, and prices come from the server's quote. The page sends choices, never prices.
+
+## Payment
+
+The checkout page uses Stripe's Payment Element for cards. The server creates the payment intent with the card method only. After the card is confirmed, the page calls `completeBookingCheckout`. The server re-reads the payment from Stripe and checks the amount and currency before confirming seats. A webhook at `/api/webhooks/payment/pp_stripe` confirms the booking if the guest closes the tab after paying. See [Payment providers](/docs/openfront/tour-guide/payment-providers).

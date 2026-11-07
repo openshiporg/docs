@@ -1,0 +1,28 @@
+---
+title: Client funds
+description: The per-trip ledger of money held for the client.
+icon: Wallet
+---
+
+Client funds are money the agency holds for a client on `agency_collects` components. The ledger is `ClientFundsEntry`, one row per movement, on the trip's **Client funds** tab. The header shows the balance held.
+
+## Entry types
+
+| Type | Effect |
+| --- | --- |
+| `receipt` | Adds. Posted when a client payment is recorded |
+| `supplier_payment` | Subtracts. Posted by `recordSupplierPayment` |
+| `refund_to_client` | Subtracts. Posted when a refund succeeds |
+| `transfer_planning_fee` | Subtracts. Moves earned planning fee to the agency |
+| `reversal` | Undoes a `transfer_planning_fee` |
+
+## Rules
+
+- The balance for a trip never goes below zero. A movement that would do so is refused with "Insufficient trip client funds".
+- Money for one trip is never used for another trip.
+- A supplier payment cannot exceed that component's net cost less what was already paid.
+- A planning-fee transfer cannot exceed the planning fee on paid invoices, counting transfers already made.
+- Entries are not edited. A correction is a reversal. `reverseEntry` works only on `transfer_planning_fee` entries; receipts, supplier payments, and refunds represent real cash and are refused.
+- An entry can be reversed once, and the link is stored on the original entry.
+
+`postClientFundsEntry` accepts only `transfer_planning_fee`. Receipts, supplier payments, refunds, and reversals use their own mutations.

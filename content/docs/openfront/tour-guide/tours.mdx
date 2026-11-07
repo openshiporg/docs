@@ -1,0 +1,41 @@
+---
+title: Tours
+description: The generic tour list, and the fields a tour, ticket type, add-on, schedule, and policy hold.
+icon: Map
+---
+
+`/dashboard/platform/tours` is a generic Keystone list screen for `Tour`. It is not a purpose-built product editor. It needs `canManageTours`. Related lists open from the sidebar's Models group.
+
+## Tour fields
+
+| Field | Meaning |
+| --- | --- |
+| `kind` | `walking`, `food`, `water`, `bike`, `vehicle_day_trip`, `multi_day`, or `private_only` |
+| `status` | `draft`, `active`, or `archived`. Only `active` tours are sold. Set it when you create the tour. Generated update cannot change it afterward |
+| `durationMinutes`, `durationDays` | Length of a departure. A value in `durationDays` takes precedence |
+| `timezone` | Used to turn schedule times into real start times |
+| `minParticipants`, `maxParticipants` | Go/no-go threshold and the largest group |
+| `guideRatio` | Guests per guide |
+| `requiresResourceKind` | `none`, `van`, `kayak`, `bike`, or `boat` |
+| `requiredCertifications` | Certification names a guide must hold |
+| `minAge` | Shown on the tour page |
+| `meetingPoint`, `cancellationPolicy`, `requiresWaiver` | Related records |
+
+## Ticket types and add-ons
+
+- **Ticket type**: `priceCents`, `seatsUsed` (a tandem kayak uses 2), `countsTowardCapacity`, `minAge`, `maxAge`, and `active`. At checkout each participant's age is checked against the ticket's range.
+- **Add-on**: `priceCents`, `perPerson`, and an optional `inventory` per departure. When set, holds and bookings cannot exceed it.
+
+Prices are whole cents with a currency code.
+
+## Schedules
+
+A `Schedule` has an `rrule`, `startTimes` (a list like `["09:00","14:00"]`), `validFrom`, `validTo`, and `capacityOverride`. The code reads only a `BYDAY=` part of the rule (for example `FREQ=WEEKLY;BYDAY=TU,WE`). Without it, every day is used. See [Generate departures](/docs/openfront/tour-guide/how-to-guides/generate-departures).
+
+## Cancellation policy
+
+`rules` is a list like `[{"hoursBefore":24,"refundBps":10000},{"hoursBefore":0,"refundBps":0}]`. `weatherFullRefund` marks that weather cancellations refund in full. A booking copies the rules when it is created, so later edits do not change it.
+
+## Fields that exist but nothing uses
+
+`PricingRule` (seasonal pricing), `fitnessLevel`, `inclusions`, `exclusions`, and `images` are stored. No operation reads `PricingRule` or applies it to a price, so setting one changes no quote.

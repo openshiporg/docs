@@ -1,0 +1,38 @@
+---
+title: Brands, tasks, and settings
+description: Brands and contacts, reminders, certifications, payment providers, and agency settings.
+icon: ListChecks
+---
+
+These screens are mostly read-only lists. Edit records through the generic list screens at `/dashboard/[listKey]`.
+
+## Brands and contacts
+
+`/dashboard/platform/brands` lists brands (name, category, contacts) and contacts (name, role, organization, email, or "Do not contact"). A `Contact` has a `doNotContact` flag. The flag is shown. No command enforces it.
+
+## Tasks
+
+`/dashboard/platform/tasks` lists open and in-progress tasks by due date. A task has a title, athlete, deal, contract, assignee, due date, status, and priority (`normal`, `high`, `urgent`).
+
+**Generate reminders** runs `generateAutoTasks`. It creates a task, once per record, for:
+
+- active certifications expiring within 60 days;
+- signed, filed, or active agreements expiring within 90 days;
+- scheduled deliverables due within seven days;
+- scheduled or late payments past their due date.
+
+Each task has a unique `autoKey` such as `cert:<id>`, so running it again adds nothing new. Reminders are made on demand, not on a timer. Public inquiries also create a task.
+
+## Certifications
+
+`/dashboard/platform/certifications` lists `AgentCertification` rows by expiry: body (`NFLPA`, `NBPA`, `MLBPA`, `NHLPA`, `MLSPA`, `FIFA`, `NCAA_NIL_STATE`, or `other`), number, status (`active`, `expired`, `suspended`), and dates. Dates inside 60 days are marked in amber.
+
+## Payment providers
+
+`/dashboard/platform/payment-providers` lists providers. See [Payment providers](/docs/openfront/sports-agents/payment-providers).
+
+## Settings
+
+`/dashboard/platform/settings` shows the `Agency` record: name, default playing and endorsement commission rates, currency, fiscal year start month, and the refund approval threshold. The screen is read-only. Edit the record in the generic `Agency` list. That list needs `canManageOnboarding`.
+
+The defaults are stored but no command reads them. Contracts and deals use the rate on their own record. `refundApprovalThresholdCents` is stored for a refund flow that is not built.

@@ -1,0 +1,56 @@
+---
+title: Public site and invoice payment
+description: The plain public pages: published athletes, brand inquiries, invoice lookup, and card payment.
+icon: Globe
+---
+
+The public site is a plain placeholder. It uses the starter's default styles and waits for a design. It has no sign-in, no account area, and no shop.
+
+## Routes
+
+Route files live in `app/`. Screens live in `features/storefront/screens`. Data calls live in `features/storefront/lib/data.ts`.
+
+| Route | Screen | What it does |
+| --- | --- | --- |
+| `/` | `HomePage` | Published athletes: name, sport, league, position, team |
+| `/athletes/[id]` | `AthletePage` | One published athlete and a brand inquiry form |
+| `/invoice` | `LookupPage` | Find an invoice by email and invoice number |
+| `/invoice/[id]` | `InvoicePage` | Invoice lines, total, paid, balance, and the card form |
+| `/invoice/[id]/confirmation` | `ConfirmationPage` | Confirmation code and payment lines |
+
+The header shows the agency name from the `Agency` list, with "Pay an invoice" and "Athletes" links.
+
+## Who appears
+
+An athlete appears on the public site only when `isPublic` is on and `status` is `client`. The public queries return name, sport, league, position, image, and team. Nothing else.
+
+## Brand inquiry
+
+`submitInquiry` takes an athlete, a name, an email, an optional organization, a message, and an idempotency key. It creates or reuses a `Contact`, adds an `Interaction` (kind `email`), and opens a high-priority `Task` for the lead agent due in two days. The same key and email return success without a duplicate.
+
+## Invoice lookup and guest proof
+
+Raw lists are not public. The site reaches data only through custom operations.
+
+1. `lookupInvoice(email, number)` checks that the email matches the athlete's email or portal user email and that the invoice is `sent`, `partially_paid`, or `paid`. It returns the invoice id and a signed proof. A wrong email and number return the same error.
+2. The proof is an HMAC over the invoice id and an expiry, signed with `SESSION_SECRET`. It lasts two hours and works for that one invoice.
+3. `guestInvoice`, `payCommissionInvoice`, and `confirmCommissionPayment` need the proof. A signed-in client who owns the athlete record may skip it. A missing, forged, or expired proof returns "Invoice not found".
+
+The proof rides in the page URL as `?proof=`. Treat the link as a secret for two hours.
+
+## Card payment
+
+1. The invoice page calls `payCommissionInvoice`. It reserves a pending `Payment` for the full balance and creates a Stripe payment intent through the adapter. It returns the client secret and the publishable key.
+2. The browser loads Stripe.js and mounts the Payment Element. The payer enters a card. The Stripe test card is `4242 4242 4242 4242`.
+3. After Stripe confirms, the page calls `confirmCommissionPayment`. The server asks Stripe for the intent, checks that the amount and currency match the reserved payment, then posts the receipt and agent splits.
+4. The confirmation page shows the invoice number as the confirmation code.
+
+A repeat call returns the same pending payment and secret. Receipts are recorded once per payment. If the provider took the money but the invoice can no longer take it, the payment is marked `unknown` for review.
+
+## Status
+
+Payments use Stripe test mode in development. See [Payment providers](/docs/openfront/sports-agents/payment-providers).
+
+## Client portal
+
+`myAthleteSummary`, `myDeliverables`, and `myInvoices` exist for a signed-in athlete linked through `Athlete.portalUser`. No screen uses them yet.

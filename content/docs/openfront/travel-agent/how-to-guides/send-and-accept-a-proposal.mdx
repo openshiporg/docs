@@ -1,0 +1,32 @@
+---
+title: Send and accept a proposal
+description: Build options, send the private link, and see what the client's acceptance creates.
+icon: FilePlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageTrips`.
+
+<Steps>
+<Step>
+### Build the proposal
+Call `buildProposal` with the trip, an intro note, and two or three options. Each option has items with a kind, supplier, title, sell price in cents, and estimated commission rate in basis points. It creates the next version in `draft`.
+</Step>
+<Step>
+### Send it
+On the trip's **Proposals** tab, click **Send** on the draft. Copy the link the page shows. The token is shown once; only its hash is stored.
+</Step>
+<Step>
+### The client opens the link
+`/proposal/<token>` shows each option. The proposal becomes `viewed`.
+</Step>
+<Step>
+### The client accepts
+They choose an option, type their full name, and accept. The app saves a snapshot, creates one component per item in `quoted`, and moves the trip to `accepted`.
+</Step>
+<Step>
+### Send a revision if needed
+Build and send a new version. The older one becomes `superseded`.
+</Step>
+</Steps>

@@ -1,0 +1,13 @@
+---
+title: Calendar
+description: A week grid of departures with seats and status, linked to each manifest.
+icon: CalendarDays
+---
+
+`/dashboard/platform/calendar` shows seven days starting today. It needs `canCheckIn`.
+
+Each day lists its departures with the tour name, start time, booked seats over capacity, and a status label. Selecting a departure opens its manifest.
+
+Use **Previous**, **This week**, and **Next** to move by week. The `?week=` query value is the offset, limited to 8 weeks back and 12 weeks ahead.
+
+The calendar is read-only. It has no drawer and no resize or cancel buttons. To resize a departure or assign guides and vehicles, use the GraphQL operations `resizeDeparture`, `assignGuide`, and `assignResource`. See the [GraphQL API](/docs/openfront/tour-guide/api-reference).

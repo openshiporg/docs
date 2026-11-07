@@ -1,0 +1,18 @@
+---
+title: Settings
+description: Operator name, time zone, currency, tax rate, and the refund approval threshold.
+icon: Settings
+---
+
+`/dashboard/platform/settings` is a generic Keystone list screen for `StoreSettings`. The list is named `StoreSettings` in the schema and exposed in GraphQL as `StoreSettingsItems`. Its list access is tied to the `canManageOnboarding` flag, not to `canManageSettings`.
+
+## Fields
+
+- `name`: the operator name. It is the dashboard brand and the storefront header and page title. The fallback is "Openfront Tour Guide".
+- `timezone`, `address`, `currencyCode` (default `USD`).
+- `taxBps`: tax in basis points, applied to the amount after discount.
+- `refundApprovalThresholdCents`: a refund above this amount needs a manager approval. Default 10000.
+
+There is one settings row. Onboarding creates it.
+
+The dashboard pages Today, Calendar, and Check-in use the America/New_York time zone directly. They do not read the `timezone` setting. A tour's own `timezone` decides its start times.

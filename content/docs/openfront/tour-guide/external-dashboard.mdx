@@ -1,0 +1,53 @@
+---
+title: External dashboards
+description: Give an LLM the Tour Guide dashboard skill to adapt the built-in experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Tour Guide dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` holds the product-specific operator pages.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the routes, GraphQL calls, schema, access rules, and sessions before proposing code.
+
+## Current platform routes
+
+Route files live in `app/dashboard/(admin)/platform/**` and stay thin. Each imports one screen.
+
+| Route | Kind | What it does |
+| --- | --- | --- |
+| `/dashboard/platform/today` | Purpose-built | Today's departures, staffing and waiver alerts, cancel |
+| `/dashboard/platform/calendar` | Purpose-built, read-only | Week grid of departures |
+| `/dashboard/platform/bookings` | Purpose-built | Status tabs, refunds |
+| `/dashboard/platform/check-in` | Purpose-built | Mobile manifest, check-in, no-show |
+| `/dashboard/platform/guides` | Purpose-built, read-only | Roster, certifications, assignments |
+| `/dashboard/platform/tours` | Generic list | `Tour` |
+| `/dashboard/platform/waivers` | Generic list | `WaiverTemplate` |
+| `/dashboard/platform/promo-codes` | Generic list | `PromoCode` |
+| `/dashboard/platform/resources` | Generic list | `Resource` |
+| `/dashboard/platform/channels` | Generic list | `Channel` |
+| `/dashboard/platform/customers` | Generic list | `User` |
+| `/dashboard/platform/payment-providers` | Generic list | `PaymentProvider` |
+| `/dashboard/platform/settings` | Generic list | `StoreSettings` |
+
+Sidebar entries come from `features/platform/lib/navigation.ts`. Other routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only with `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic `/dashboard/[listKey]` screens.
+
+## Named operations
+
+Operator screens call GraphQL through server actions in each slice's `actions` folder.
+
+| Slice | Operations |
+| --- | --- |
+| today | `departuresInRange`, `cancelDeparture` |
+| calendar | `departuresInRange` |
+| bookings | `bookings` (generated list), `refundBooking` |
+| check-in | `departureManifest`, `departuresInRange`, `checkInParticipant`, `markNoShow` |
+| guides | `guides` (generated list) |
+| onboarding | `ensureTourOnboardingRecord`, `seedTourActivity`, `updateActiveUser` |
+
+The sidebar brand and setup card read `operatorName` and `tourTotal`.
+
+## Notes for a separate dashboard
+
+- Use the custom operations for departures, bookings, refunds, staffing, and check-in. Generated create, update, and delete on those lists are blocked.
+- Re-check permission on the server. The pages do not guard by role.
+- There is no tenant scope to pass. Every staff user with a flag sees the whole operator.
+- Several jobs have no screen yet: offering guides, assigning vehicles, phone booking, approving refunds, resizing a departure, and statements. A separate client can add them on top of the operations in the [GraphQL API](/docs/openfront/tour-guide/api-reference).

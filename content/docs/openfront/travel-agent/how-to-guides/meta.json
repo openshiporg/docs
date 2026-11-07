@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "set-up-the-agency",
+    "turn-an-inquiry-into-a-trip",
+    "send-and-accept-a-proposal",
+    "book-and-invoice",
+    "refund-a-client",
+    "record-commission"
+  ],
+  "icon": "BookOpen",
+  "title": "How-to Guides"
+}

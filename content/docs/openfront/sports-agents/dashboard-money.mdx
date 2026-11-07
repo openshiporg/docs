@@ -1,0 +1,30 @@
+---
+title: Money view
+description: The dashboard home: receivable, expected commission, overdue payments, deliverables, and expirations.
+icon: Activity
+---
+
+The dashboard home at `/dashboard` is the money view. It is a server screen in `features/platform/dashboard/screens/DashboardPage.tsx`.
+
+## What it shows
+
+| Block | Source |
+| --- | --- |
+| Commission receivable | Sum of `totalCents - paidCents` on invoices in `sent` or `partially_paid` |
+| Expected, next 90 days | Commission on `scheduled` payments due in the next 90 days, `floor(gross x bps / 10000)` each |
+| Overdue payments | Payments in `late`, or `scheduled` with a due date in the past |
+| Deliverables this week | `scheduled` deliverables due within seven days |
+| Open invoices | The first eight open invoices, each linking to Commissions |
+| Expiring | Active certifications expiring in 60 days and signed agreements expiring in 90 days |
+
+The page needs `canManageCommissions` to show money rows. Other roles see the lists they can read and empty blocks for the rest.
+
+## Sidebar
+
+The sidebar groups the slices as Agency, Deals, Finance, and Operations. It comes from `features/platform/lib/navigation.ts`. The sidebar header shows the agency name from the `Agency` list, or "Openfront Sports Agents" if none exists.
+
+Below the groups is the generic **Models** list. See [External dashboards](/docs/openfront/sports-agents/external-dashboard).
+
+## Setup card
+
+The sidebar footer shows the setup card until the agency has an athlete. See [Onboarding seed](/docs/openfront/sports-agents/onboarding).

@@ -1,0 +1,49 @@
+---
+title: Approvals
+description: Exclusivity overrides and commission write-offs that need a second person.
+icon: ShieldCheck
+---
+
+The page at `/dashboard/platform/approvals` lists approval requests. An approval is single use, tied to one action and one target, and must be decided by a different person than the requester.
+
+## Actions
+
+| Action type | Used for | Requester needs |
+| --- | --- | --- |
+| `exclusivity_override` | Activating a deal that clashes with another | `canManageEndorsements` |
+| `commission_writeoff` | Writing off an invoice balance | `canManageCommissions` |
+| `refund_payment` | Reserved. No command uses it | `canIssueRefunds` |
+
+Deciding an approval needs `canApproveActions`.
+
+## Flow
+
+1. The requester files a request with a reason: **Request override** on a blocked deal, or **Write off** on an invoice. The request is stored with a fingerprint of the action, target, amount, and reason.
+2. A different user with `canApproveActions` opens Approvals and chooses **Approve** or **Reject**. Requesters cannot decide their own request. Requests expire after one hour.
+3. The requester returns to Approvals and uses the approved request: **Activate deal** or **Write off**.
+4. The command consumes the approval inside its own transaction. The status becomes `consumed`.
+
+## Statuses
+
+`requested` (shown as pending), `approved`, `rejected`, and `consumed`. The screen groups them as Waiting, Approved not yet used, and Decided and used.
+
+## What consumption checks
+
+- The approval's action and target match the request.
+- The fingerprint matches. Changing the reason or amount after approval is refused.
+- The user running the command is the original requester.
+- The approver is a different user.
+- It is still `approved` and not expired.
+- It has not been used. A second use is refused.
+
+## Exclusivity override
+
+`activateEndorsementDeal(dealId, approvalId)` finds the clashing deals under the athlete lock. With a valid approval it consumes it, writes a `deal.exclusivity_overridden` audit event that lists the conflicting deal ids, and activates the deal. Without one it keeps the block.
+
+## Write-off
+
+`writeOffCommissionInvoice(invoiceId, reason, approvalId)` always needs an approval. The invoice must be `sent` or `partially_paid` with a balance. It posts a `write_off` ledger entry for minus the unpaid balance, moves the invoice to `written_off`, and writes an audit event. The approval fingerprint includes the balance, so the amount cannot change after approval.
+
+## Roles
+
+The Owner and Accountant seed roles have `canApproveActions`. The setup seed does not create an approver separate from the requester, so create a second user before you try an approval.

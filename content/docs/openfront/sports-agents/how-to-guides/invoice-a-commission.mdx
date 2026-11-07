@@ -1,0 +1,32 @@
+---
+title: Invoice a commission
+description: Mark a payment received, create the invoice, send it, and record the payment.
+icon: ReceiptText
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+You need `canManageCommissions`.
+
+<Steps>
+<Step>
+### Mark the athlete's payment received
+When the athlete is paid, open `/dashboard/platform/commissions` and choose **Mark received** on the payment. An accrual entry is posted for `floor(gross x rate / 10000)`.
+</Step>
+<Step>
+### Create the invoice
+A **Ready to invoice** block groups an athlete's received payments. Choose **Create invoice**. The invoice starts as a draft with one line per payment.
+</Step>
+<Step>
+### Send it
+Open the **Invoices** tab and choose **Send**. The invoice is now `sent` and can be looked up and paid on the public site.
+</Step>
+<Step>
+### Record the payment
+When money arrives, choose **Record payment**. A receipt and one split entry per agent are posted. The invoice becomes `paid`.
+</Step>
+</Steps>
+
+## Fix a mistake
+
+On the **Ledger** tab, **Reverse** a receipt or accrual. The reversal is exact and happens once. Reversing a receipt lowers the invoice's paid amount and reverses its agent splits.

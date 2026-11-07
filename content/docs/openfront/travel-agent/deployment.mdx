@@ -1,0 +1,37 @@
+---
+title: Deployment
+description: Build, migrate, and run Openfront Travel Agent on any Node host.
+icon: Rocket
+---
+
+The live site at [travel-agent.openship.org](https://travel-agent.openship.org) runs on Railway with PostgreSQL and a Railway bucket, deployed from the default branch with `railway.toml`. Card payments there use Stripe test keys. Moving to live payments is a separate decision that this page does not cover.
+
+## Build and start
+
+`npm run build` runs `keystone build --no-ui`, then `npm run migrate`, then `next build`. `npm start` runs `next start`.
+
+```bash
+npm run build
+npm start
+```
+
+Because the build step migrates, point `DATABASE_URL` at the database you mean to change before you build.
+
+## Checklist
+
+1. Provision PostgreSQL and back it up.
+2. Set `DATABASE_URL`, `SESSION_SECRET`, and `PUBLIC_SIGNUPS_ALLOWED=false`.
+3. Set the Stripe keys and `STRIPE_WEBHOOK_SECRET`. Use test keys until you have decided how to take live payments.
+4. Build, then start.
+5. Create the first user at `/dashboard/init`.
+6. Run onboarding, or enter your own data.
+
+All app processes must share the same database and `SESSION_SECRET`.
+
+## Railway file
+
+`railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`, so migrations run on each start. The live site uses this file.
+
+## Not in the repository
+
+There is no worker. The storefront is a placeholder pending a design. Point a Stripe webhook at `POST /api/integrations/payment/pp_stripe/webhook` and set `STRIPE_WEBHOOK_SECRET`.

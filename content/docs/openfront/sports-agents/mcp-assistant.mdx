@@ -1,0 +1,39 @@
+---
+title: MCP and assistant
+description: The MCP transport, OAuth for connected apps, and the dashboard assistant.
+icon: Sparkles
+---
+
+## MCP transport
+
+`/api/mcp-transport/[transport]` is a JSON-RPC server. It introspects `/api/graphql` with the caller's session.
+
+| Tool | What it does |
+| --- | --- |
+| `listModels`, `searchModels` | List or search GraphQL types |
+| `getFieldsForType`, `lookupInputType` | Show the fields of a type or input |
+| `queryData` | Run a list query with chosen fields |
+| `modelSpecificSearch` | Search a model by name-like fields |
+| `createData`, `updateData`, `deleteData` | Run the generated mutations |
+
+The tools are the starter's generic set. This product adds no agency-specific tools. The generated mutations still obey list access, so money lists, which have no generated create, update, or delete for staff, cannot be written this way. Call the custom commands through GraphQL for those.
+
+A request with no session sees no data. With a session, results follow the same list access and athlete scope as the dashboard.
+
+## OAuth for connected apps
+
+The repo includes MCP OAuth (`features/keystone/mcp-oauth`, routes under `app/oauth` and `app/.well-known`). A connected app gets the approving user's own access, narrowed by scope:
+
+- `mcp:read`: queries only.
+- `mcp:write`: queries and mutations.
+
+A connected app can never sign in or out, or change passwords, emails, tokens, or keys.
+
+## Dashboard assistant
+
+The right sidebar posts to `/api/completion`.
+
+- **Shared mode:** the server uses `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, and `OPENROUTER_MAX_TOKENS`. The caller must be signed in with `canAccessDashboard`. The key never reaches the browser.
+- **Local mode:** the user types their own OpenRouter key and model in chat settings. The browser stores them in `localStorage`.
+
+Tools come from `/api/mcp-transport/http` with the caller's cookie, so the assistant can do exactly what that user can. Write requests run without a confirmation step. Check the record afterwards.

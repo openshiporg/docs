@@ -9,7 +9,7 @@ const placeholders = new Set();
 // Owner-confirmed pending targets. Keep probing and printing each one; only
 // the documented failure is pending, not arbitrary errors on these origins.
 const privateRepositories = new Set([
-  'openfront-uikit', 'openfront-sports-agents',
+  'openfront-uikit',
 ].map((name) => `https://github.com/openshiporg/${name}`));
 const pendingDomain = 'https://uikit.openship.org';
 const pending = [];

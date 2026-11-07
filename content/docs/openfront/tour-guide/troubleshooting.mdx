@@ -1,0 +1,75 @@
+---
+title: Troubleshooting
+description: Error messages from holds, checkout, staffing, refunds, and setup, with causes and fixes.
+icon: LifeBuoy
+---
+
+## Holds and checkout
+
+| Message | Cause and fix |
+| --- | --- |
+| Departure is not on sale | The tour is not `active`, the departure status does not allow sales, or the cutoff has passed (60 minutes by default) |
+| Not enough seats | The request is above seats left, which count held seats and unsold channel allocation |
+| Ticket not offered on this tour | The ticket id is wrong or the ticket is inactive |
+| Add-on unavailable | The add-on's per-departure inventory is used up |
+| Promo code is not valid | Wrong code, paused, outside its dates, or not for this tour |
+| Promo code is fully used | `maxUses` reached, counting reserved and committed uses |
+| Guest proof must contain 32–256 characters | The hold `token` is too short or too long |
+| Hold expired; choose seats again | More than 10 minutes passed before checkout started |
+| Provide one participant per ticket | The participant count must equal the ticket count |
+| *name* does not meet the age range for *ticket* | A participant's age is outside the ticket's range |
+| Lead booker name and email required | Fill in both |
+| Payment provider is not configured | No installed provider with code `pp_stripe`. Run setup or create one |
+| Payment not completed | Stripe has not marked the payment `succeeded` |
+| Payment amount does not match the booking; operator reconciliation required | Stripe's amount or currency differs. Check the payment in Stripe |
+| Seats were no longer available; payment refunded | The hold had expired and the seats were sold. The payment was refunded |
+| Booking not found | Wrong code, wrong email, or a hold token that does not match |
+
+## Staffing and departures
+
+| Message | Cause and fix |
+| --- | --- |
+| Valid *name* certification required | The guide's certification is missing or expires before the departure ends |
+| Guide has an overlapping accepted assignment | The guide is already on another departure at that time |
+| Guide is unavailable | A time-off block in `GuideAvailability.unavailable` covers it |
+| Guide or departure unavailable | The guide is inactive or an id is wrong |
+| Resource does not satisfy this tour | The resource kind differs from the tour's `requiresResourceKind`, or it is in `maintenance` |
+| Resource pool overlaps another departure | The pool quantity is used by an overlapping departure |
+| Resource seats below active reservations | The new vehicle has fewer seats than booked and held |
+| Capacity must cover reservations and stay within tour maximum | A resize went below booked and held seats or above the tour maximum |
+| Capacity exceeds resource seats | A resize went above the assigned vehicle's seats |
+| Departure is closed | The departure is completed or cancelled |
+| Only an ended closed/in-progress departure can complete | `closeDeparture` needs a `closed` or `in_progress` departure that has ended |
+| Departure already ran | A completed or in-progress departure cannot be cancelled |
+| Reason must be weather, operator or min_not_met | Use one of the three reasons |
+
+## Refunds
+
+| Message | Cause and fix |
+| --- | --- |
+| Booking cannot be refunded | The booking is not in a refundable status |
+| Reason required | Enter a reason |
+| Refund exceeds captured amount | The amount is more than was paid and not yet refunded |
+| No captured payment to refund | The booking has no payment |
+| Independent manager approval is required | The amount is over the threshold and no approval id was given |
+| Correction requires approval by a different manager | The approver is the requester |
+| Manager approval does not match this correction request | Booking, amount, or reason differs from the request, or it is not the requester calling |
+| Manager approval is already consumed / has expired | Request a new approval |
+| Only confirmed bookings can be cancelled | A guest can cancel only a `confirmed` booking |
+| Departure has started | A guest cannot cancel after the start |
+
+If a refund stays `unknown`, the provider did not answer. Check Stripe, then call again with the same idempotency key.
+
+## Setup and access
+
+| Message | Cause and fix |
+| --- | --- |
+| Not authorized | The role lacks the flag for this operation |
+| Idempotency key required (maximum 200 characters) | Pass an `idempotencyKey` |
+| Idempotency key was already used with a different request | Use a new key for different input |
+| SESSION_SECRET of at least 32 characters is required | Set a longer secret |
+| Unsupported setup record | The setup helper accepts only its listed entities |
+| Unknown permission | A seed role names a flag that does not exist |
+| Waiver link not valid / Waiver unavailable | The token is wrong, or the template is not `published` |
+
+If the dashboard shows no lists, check that the admin meta query succeeds. If a page shows empty data for a signed-in user, the role probably lacks the flag the screen reads.

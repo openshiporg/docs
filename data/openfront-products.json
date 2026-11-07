@@ -253,11 +253,11 @@
     "id": "sports-agents",
     "repository": "openfront-sports-agents",
     "name": "Sports Agents",
-    "description": "Early repository on the Openfront dashboard, auth, roles, AI chat, and MCP foundation; the sports-agency domain is not built yet.",
-    "color": "#4f46e5",
+    "description": "Athlete rosters, recruiting, representation agreements, playing contracts, endorsement deals, commission invoices, and client trust.",
+    "color": "#1d4ed8",
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
-    "catalogUrl": null
+    "catalogUrl": "https://openship.org/products/openfront-sports-agents"
   },
   {
     "id": "comedy-club",
@@ -278,5 +278,25 @@
     "href": "/docs/openfront/concerts",
     "sourceUrl": "https://github.com/openshiporg/openfront-concerts",
     "catalogUrl": "https://openship.org/products/openfront-concerts"
+  },
+  {
+    "id": "travel-agent",
+    "repository": "openfront-travel-agent",
+    "name": "Travel Agent",
+    "description": "Inquiries, proposals, trips, supplier bookings, client payments, refunds, and commission tracking for a travel agency.",
+    "color": "#0369a1",
+    "href": "/docs/openfront/travel-agent",
+    "sourceUrl": "https://github.com/openshiporg/openfront-travel-agent",
+    "catalogUrl": "https://openship.org/products/openfront-travel-agent"
+  },
+  {
+    "id": "tour-guide",
+    "repository": "openfront-tour-guide",
+    "name": "Tour Guide",
+    "description": "Scheduled tours with capacity, guides and fleet, waivers, reseller channels, refunds, and guide payouts.",
+    "color": "#0f766e",
+    "href": "/docs/openfront/tour-guide",
+    "sourceUrl": "https://github.com/openshiporg/openfront-tour-guide",
+    "catalogUrl": "https://openship.org/products/openfront-tour-guide"
   }
 ]

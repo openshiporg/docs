@@ -1,14 +1,73 @@
 ---
 title: API reference
-description: GraphQL operations at /api/graphql.
+description: The custom GraphQL operations at /api/graphql, with access, effects, and errors.
 icon: Code
 ---
 
-## Custom
+GraphQL is served at `/api/graphql` by GraphQL Yoga with Keystone. Custom operations are in `features/keystone/mutations`. Most return a JSON scalar named `AgencyJSON`. See `schema.graphql` for the full schema.
 
-| Operation | Type | Purpose |
-|---|---|---|
-| `redirectToInit` | Query | `true` when there are no users |
+Errors from custom operations are masked. The API returns "Unexpected error." to the client and logs the real message on the server. The dashboard shows a short message for known cases.
+
+## Idempotency
+
+Every money or status command takes an `idempotencyKey`. Reuse the key to retry. Reusing a key with different arguments is refused. A completed key returns the stored result.
+
+## Staff commands
+
+All need a signed-in user with the permission shown, and access to the athlete.
+
+| Operation | Permission | Effect |
+| --- | --- | --- |
+| `signRepresentationAgreement(agreementId)` | `canManageContracts` | `draft` or `sent` to `signed`. Refuses a rate above the cap or a clash with another active agreement |
+| `recordContractSigned(contractId)` | `canManageContracts` | `negotiating` to `signed`. Needs an active playing agreement. Snapshots the rate |
+| `generatePaymentSchedule(contractId, dealId, idempotencyKey)` | `canManageCommissions` | Pass one of the two ids. Creates scheduled payments, skipping existing periods |
+| `markPaymentReceived(scheduledPaymentId)` | `canManageCommissions` | `scheduled` or `late` to `received`. Posts an `accrual` entry |
+| `draftCommissionInvoice(athleteId, scheduledPaymentIds)` | `canManageCommissions` | Creates a draft invoice and snapshot lines from received, uninvoiced payments in one currency |
+| `sendCommissionInvoice(invoiceId)` | `canManageCommissions` | `draft` to `sent` |
+| `voidCommissionInvoice(invoiceId, reason)` | `canManageCommissions` | `draft` or `sent` with no payments to `void`. Frees its payments |
+| `recordInvoicePayment(invoiceId, amountCents, reference)` | `canManageCommissions` | Posts a receipt and agent splits. Moves to `partially_paid` or `paid` |
+| `reverseLedgerEntry(entryId, reason)` | `canManageCommissions` | Posts an exact reversal, once |
+| `writeOffCommissionInvoice(invoiceId, reason, approvalId)` | `canManageCommissions` | Approval required. Posts a `write_off` entry and moves to `written_off` |
+| `postTrustEntry(accountId, entryType, amountCents, reference, invoiceId, reversesId)` | `canManageTrust` | Posts a trust entry. Balance never goes below zero |
+| `moveRecruitingStage(athleteId, stage)` | `canManageAthletes` | Changes the stage. Refuses before the contact window opens |
+| `completeDeliverable(deliverableId, proofLink)` | `canManageEndorsements` | `scheduled` or `missed` to `completed`. HTTPS proof link required |
+| `activateEndorsementDeal(dealId, approvalId)` | `canManageEndorsements` | Activates. Blocks on an exclusivity clash unless a valid approval is given |
+| `requestManagerApproval(actionType, targetId, amountCents, reason)` | By action type | Files a request. Expires in one hour |
+| `decideManagerApproval(approvalId, decision)` | `canApproveActions` | `approved` or `rejected`. Not the requester |
+| `generateAutoTasks` | `canManageAthletes` | Creates reminder tasks once per record |
+
+Query:
+
+| Operation | Effect |
+| --- | --- |
+| `checkEndorsementConflicts(athleteId, category, start, end)` | Returns clashing `signed` or `active` deals for the term |
+
+## Public operations
+
+No sign-in is needed for the roster, athlete, inquiry, and lookup operations. Invoice operations need the proof described in [Public site and invoice payment](/docs/openfront/sports-agents/public-site).
+
+| Operation | Type | Needs |
+| --- | --- | --- |
+| `agencyName` | Query | Nothing |
+| `agencyRoster` | Query | Nothing. Published clients only |
+| `agencyAthlete(athleteId)` | Query | Nothing. Published clients only |
+| `submitInquiry(...)` | Mutation | Nothing. Creates a contact, an interaction, and a task |
+| `lookupInvoice(email, number)` | Query | Matching email and number. Returns a proof |
+| `guestInvoice(invoiceId, proof)` | Query | The proof, or the owning signed-in client |
+| `payCommissionInvoice(invoiceId, proof, idempotencyKey)` | Mutation | The proof. Returns the Stripe client secret |
+| `confirmCommissionPayment(paymentId, proof)` | Mutation | The proof. Verifies with Stripe and posts the receipt |
+
+## Client portal queries
+
+`myAthleteSummary`, `myDeliverables`, and `myInvoices` need a signed-in user who is the `portalUser` of an athlete. They return that athlete's contracts, deals, deliverables, and sent or paid invoices.
+
+## Setup
+
+| Operation | Needs |
+| --- | --- |
+| `ensureOnboardingRecord(entity, data)` | `canManageOnboarding` |
+| `updateActiveUser(data)` | Signed in. Only `email`, `name`, `phone`, `password`, `onboardingStatus` |
+| `redirectToInit` | Query. `true` when there are no users |
 
 ## Auth
 
@@ -16,10 +75,26 @@ icon: Code
 
 ## Generated CRUD
 
-For each of `User`, `Role`, `Todo`, `TodoImage`: `users`, `user`, `usersCount`, `createUser`, `updateUser`, `deleteUser`, `deleteUsers`, and the same shape for the other lists.
+Generated queries exist for every list, filtered by list access and athlete scope. Money lists have no generated create or delete. Example:
 
 ```graphql
-query { todos(where: { status: { equals: "in_progress" } }, take: 20) { id label priority assignedTo { name } } }
+query {
+  commissionInvoices(where: { status: { in: [sent, partially_paid] } }, take: 20) {
+    number
+    status
+    totalCents
+    paidCents
+    athlete { fullName }
+  }
+}
 ```
 
-Dashboard queries: `KsFetchAdminMeta`, `KsFetchItem`, `GetListItems`. See `schema.graphql` for the full schema.
+A command example:
+
+```graphql
+mutation {
+  markPaymentReceived(scheduledPaymentId: "...", idempotencyKey: "payment-received-001")
+}
+```
+
+The dashboard uses `KsFetchAdminMeta`, `KsFetchItem`, and `GetListItems` for the generic screens.

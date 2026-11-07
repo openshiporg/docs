@@ -1,0 +1,28 @@
+---
+title: Channels
+description: Reseller channels with commission and seat allocation, and the statements built from their bookings.
+icon: Handshake
+---
+
+`/dashboard/platform/channels` is a generic Keystone list screen for `Channel`. It needs `canManageChannels`.
+
+A channel models a reseller. There is no live connection to a marketplace. You enter the terms.
+
+## Fields
+
+- `commissionBps`: the commission in basis points (100 equals 1%).
+- `paymentModel`: `channel_collects` (the channel takes the guest's money and you invoice the net) or `we_collect`.
+- `allocation`: seats per departure held back for this channel.
+- `active`, `contact`.
+
+## Allocation
+
+Unsold channel allocation counts as reserved for other buyers until 24 hours before departure. Within 24 hours it is released. A channel's own booking uses its own allocation.
+
+## Bookings
+
+`createChannelBooking` with source `reseller` and a `channelId` records the commission on the booking. For a `channel_collects` channel no payment is recorded, because the channel holds the money. For other sources a cash or card payment record is created.
+
+## Statements
+
+`generateChannelStatement` (needs `canManageChannels`) takes a channel and a date range. It collects the channel's bookings in that range that have no statement yet, and writes a `ChannelStatement` with gross, commission, and net due. For a `channel_collects` channel net due is gross minus commission. For `we_collect` it is the negative of the commission. The statement status starts as `open`. No operation moves it to `invoiced` or `paid`. There is no statement screen. Read it from the generic `channelStatements` list.
