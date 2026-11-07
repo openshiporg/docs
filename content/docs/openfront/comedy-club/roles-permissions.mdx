@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: Role flags and what each one allows.
+icon: KeyRound
+---
+
+Staff access comes from the signed-in user's `Role`. Every custom mutation checks the flag it needs on the server; hiding a page is not the control.
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Signing in to `/dashboard` |
+| `canManageShows` | Shows, templates, tiers, sales windows, cancelling |
+| `canManageTalent` | Comedians, lineups, offers, runs, open mic |
+| `canManageDoor` | Check-in, guest list, seating |
+| `canManageChecks` | Table checks and check payments |
+| `canManagePayouts` | Closing the night, payouts, pay statements |
+| `canManageOrders` | Orders, comps, the waitlist |
+| `canIssueRefunds` | Refunds |
+| `canManageSettings` | Venue settings, floor and menu, store |
+| `canManagePayments`, `canReadPayments` | Payment providers and payment records |
+| `canReadAudit` | Audit events |
+| `canManageOnboarding` | Running setup |
+| `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canReadPeople`, `canUpdatePeople` | Staff users |
+| `canManageRoles` | Roles |
+
+The first user created at `/dashboard/init` gets every flag. Refunds and comps above the thresholds also need approval from a different user, so one person cannot approve their own large refund.

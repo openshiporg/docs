@@ -1,0 +1,19 @@
+---
+title: Settlements
+description: The post-show worksheet, adjustments, sign-off and artist payments.
+icon: FileSpreadsheet
+---
+
+Route: `/dashboard/platform/settlements` and `/dashboard/platform/settlements/[id]`. Needs `canManageSettlements`.
+
+After the show, `computeSettlement` builds the worksheet from ticket sales, fees, expenses, merch and bar sales, and the offer's frozen terms. The math is in `features/keystone/lib/settlement.ts` and has unit tests. The computed snapshot is hashed, so later edits create a new version instead of changing the old one.
+
+| Step | Mutation |
+|---|---|
+| Record merch and bar | `recordMerchSales` |
+| Compute the worksheet | `computeSettlement` |
+| Adjust a line | `adjustSettlement` (needs `canApproveAdjustments`) |
+| Sign for promoter and artist | `signSettlement` |
+| Pay the artist | `recordArtistPayment` |
+
+Settlement statuses are `draft`, `reviewed`, `signed_promoter`, `signed_artist`, `final` and `void`. Artist payments are a deposit or a balance, and are `scheduled`, `paid` or `void`.

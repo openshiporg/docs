@@ -1,0 +1,13 @@
+---
+title: External storefronts
+description: Give an LLM the Concerts storefront skill to adapt the built-in public site or create a separate client.
+icon: AppWindow
+---
+
+To create a custom Concerts storefront, copy the skill and give it to your LLM. The skill explains how `features/storefront/screens` and the routes under `app/(storefront)` implement event discovery, holds, checkout, lookup and transfer.
+
+After that source orientation, it asks what you dislike, what should stay, which journeys matter, and what the replacement should look like. It then traces the exact routes, GraphQL operations, schema, access rules and payment handoff in your checkout before proposing work.
+
+Skill file: [`/skills/openfront-concerts-custom-storefront/SKILL.md`](/skills/openfront-concerts-custom-storefront/SKILL.md)
+
+A separate client must keep the server as the authority for price, capacity, seats, holds and payment state. Use the named operations in the [API reference](/docs/openfront/concerts/api-reference).

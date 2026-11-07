@@ -1,0 +1,38 @@
+---
+title: Refund an order
+description: Refund a whole order or chosen tickets, with approval when needed.
+icon: Undo2
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Find the order
+
+Open **Orders** and open the order.
+
+</Step>
+<Step>
+
+### Choose what to refund
+
+Refund the whole order, an amount, or chosen tickets, and enter a reason.
+
+</Step>
+<Step>
+
+### Get approval if asked
+
+If the amount is above the approval threshold, the request goes to **Approvals**. Another user with `canIssueRefunds` approves it.
+
+</Step>
+<Step>
+
+### Confirm
+
+The refund goes back to the card through Stripe. The order shows `refunded` or `partially_refunded` and the refunded tickets no longer scan.
+
+</Step>
+</Steps>

@@ -1,0 +1,33 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+`features/keystone/models/index.ts` registers the lists.
+
+| Area | Lists |
+|---|---|
+| Venues and seating | `Venue`, `SeatingChart`, `ChartSection`, `Seat` |
+| Talent and deals | `Agency`, `Artist`, `Tour`, `Event`, `EventArtist`, `DateHold`, `Offer`, `EventExpense` |
+| Pricing and inventory | `PriceLevel`, `PriceLevelPhase`, `SeatInventory`, `ProductionHold`, `InventoryHold`, `PromoCode`, `PromoRedemption` |
+| Orders and admission | `TicketOrder`, `TicketOrderLine`, `Ticket`, `ScanEvent`, `CashDrawer` |
+| Settlement | `MerchSales`, `BarSales`, `Settlement`, `SettlementLine`, `ArtistPayment` |
+| Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent` |
+| Platform | `User`, `Role`, `StoreSettings`, `ManagerApproval`, `AuditEvent`, `IdempotencyKey`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+|---|---|
+| `Event` | hold, announced, presale, on_sale, sold_out, doors, in_progress, completed, settling, settled, cancelled, postponed |
+| `DateHold` | held, challenged, confirmed, released |
+| `Offer` | draft, sent, accepted, declined, contracted, settled, superseded |
+| `SeatingChart` | draft, published, retired |
+| `InventoryHold` | active, converted, released, expired |
+| `TicketOrder` | pending_payment, paid, partially_refunded, refunded, cancelled, comp |
+| `Ticket` | valid, checked_in, void, refunded, transferred |
+| `Settlement` | draft, reviewed, signed_promoter, signed_artist, final, void |
+| `ArtistPayment` | scheduled, paid, void |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them.

@@ -1,0 +1,32 @@
+---
+title: Calendar and deals
+description: Ranked date holds and artist offers with the deal calculator.
+icon: Handshake
+---
+
+## Calendar and holds
+
+Route: `/dashboard/platform/calendar`. Needs `canManageDeals`.
+
+The calendar shows each venue's dates with ranked holds. `placeDateHold` adds a hold at the next rank. A lower-ranked hold can `challengeHold`; the first hold then confirms (`confirmHold`) or releases (`releaseDateHold`). Holds move between `held`, `challenged`, `confirmed` and `released`.
+
+## Deals
+
+Route: `/dashboard/platform/deals`. Needs `canManageDeals`.
+
+An offer is one of four deal types:
+
+| Deal | Artist is paid |
+|---|---|
+| `flat_guarantee` | A fixed amount |
+| `versus` | The guarantee or a percentage of net, whichever is higher |
+| `plus` | The guarantee plus a percentage above a break-even |
+| `door_deal` | A percentage of the door |
+
+The calculator previews the payout from expected sales before anything is sent. Offers move from `draft` to `sent`, then `accepted` or `declined`, then `contracted` and `settled`; a revision supersedes the earlier version. When an offer is accepted its terms are frozen by hash, and the settlement uses those frozen terms.
+
+| Action | Mutation |
+|---|---|
+| Draft and revise | `draftOffer`, `reviseOffer` |
+| Send, accept, decline, contract | `sendOffer`, `acceptOffer`, `declineOffer`, `contractOffer` |
+| Record a deposit | `recordArtistDeposit` |

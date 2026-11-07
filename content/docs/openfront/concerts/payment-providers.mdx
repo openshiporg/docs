@@ -1,0 +1,17 @@
+---
+title: Payment providers
+description: The Stripe adapter, the webhook, and test payments.
+icon: CreditCard
+---
+
+Route: `/dashboard/platform/payment-providers`. Needs `canManagePayments`.
+
+Setup creates the Stripe provider with code `pp_stripe_stripe`. The adapter lives in `features/integrations/payment`.
+
+1. Set `NEXT_PUBLIC_STRIPE_KEY` and `STRIPE_SECRET_KEY`.
+2. Create a webhook endpoint in Stripe at `https://your-host/api/integrations/payment/pp_stripe_stripe/webhook` with `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded` and `refund.updated`.
+3. Put the endpoint's signing secret in `STRIPE_WEBHOOK_SECRET`.
+
+The webhook route is `/api/integrations/payment/[providerCode]/webhook`. It verifies the signature, stores each event once in `PaymentWebhookEvent`, and completes or fails the matching checkout. Money that arrives after a hold has lapsed is refunded automatically with a stable provider key, so a replay cannot refund twice.
+
+Use test keys and the card `4242 4242 4242 4242` until a test purchase and refund both work.

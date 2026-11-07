@@ -1,0 +1,15 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `Can't reach database server` during build | Migrations ran at build time. Use `keystone build --no-ui && next build` to build and `npm run migrate && next start` to start. |
+| The storefront shows no shows | Setup has not been run, or no show is published. Run setup from the sidebar card or publish a draft show. |
+| Payment form never appears | `NEXT_PUBLIC_STRIPE_KEY` is missing or the Stripe provider is not active. |
+| Order stays `pending_payment` | The browser did not return and the webhook is not reaching the app. Check `STRIPE_WEBHOOK_SECRET` and the endpoint URL, then call the hold sweeper. |
+| Seats stay held after checkout is abandoned | The hold sweeper is not scheduled. Call `POST /api/cron/expire-holds` with `CRON_SECRET` every minute. |
+| Refund asks for approval | It is above `approvalThresholdCents`. A different user approves it in **Approvals**. |
+| Sign-up page is closed | `PUBLIC_SIGNUPS_ALLOWED` is not `true`. Staff are added by an admin. |

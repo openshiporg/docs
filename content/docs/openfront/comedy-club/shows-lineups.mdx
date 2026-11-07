@@ -1,0 +1,35 @@
+---
+title: Shows and lineups
+description: Show templates, the calendar, price tiers, headliner runs, lineups, talent and open mic.
+icon: CalendarDays
+---
+
+## Shows
+
+Route: `/dashboard/platform/shows` and `/dashboard/platform/shows/[id]`. Needs `canManageShows`.
+
+The calendar and list show every show with its status: `draft`, `on_sale`, `sold_out`, `doors_open`, `in_progress`, `completed`, `settled` or `cancelled`. The show page has tiers, lineup, orders and the sales window.
+
+| Action | Mutation |
+|---|---|
+| Generate eight weeks of shows from a weekly template | `generateShowsFromTemplate` |
+| Publish a draft | `publishShow` |
+| Pause and resume sales | `pauseSales`, `resumeSales` |
+| Set the on-sale and off-sale window | `setSalesWindow` |
+| Edit or cancel a whole series | `editShowSeries`, `cancelShowSeries` |
+| Cancel one show and refund its orders | `cancelShow` |
+| Export the show report | `exportShowReport` |
+
+Price tiers have a capacity counter. A tier moves between `on_sale`, `paused`, `sold_out` and `closed`.
+
+## Lineups and talent
+
+Route: `/dashboard/platform/talent`. Needs `canManageTalent`.
+
+Comedians have a default fee and a status. A lineup has host, opener, guest set, feature and headliner, with one host and one headliner per show. `offerSlot` sends an offer; the comedian answers through the link on `/lineup/respond` (`respondToSlot`) or staff confirm it (`confirmSlot`). The fee is copied onto the slot when it is booked, so a later change to a comedian's default fee never changes past pay.
+
+Headliner runs (`Run`) group several nights with a run fee.
+
+## Open mic
+
+Route: `/dashboard/platform/open-mic`. Comics sign up on the storefront's `/open-mic` page during the signup window. Staff run the lottery (`runOpenMicLottery`), add bringer signups, record arrivals and mark each signup called, performed, skipped or withdrawn.

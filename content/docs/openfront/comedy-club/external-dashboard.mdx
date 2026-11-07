@@ -1,0 +1,32 @@
+---
+title: External dashboards
+description: Give an LLM the Comedy Club dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Comedy Club dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the club's staff screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Comedy Club checkout before proposing work.
+
+Skill file: [`/skills/openfront-comedy-club-custom-dashboard/SKILL.md`](/skills/openfront-comedy-club-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+|---|---|---|
+| `/dashboard/platform/tonight` | (top) | Door check-in, seating, checks and running order |
+| `/dashboard/platform/shows`, `/[id]` | (top) | Calendar and list of shows with tiers and orders |
+| `/dashboard/platform/approvals` | (top) | Second-user approvals |
+| `/dashboard/platform/orders`, `/[id]` | (top) | Ticket orders, refunds and comps |
+| `/dashboard/platform/talent` | Booking | Comedians, booking grid and offers |
+| `/dashboard/platform/open-mic` | Booking | Signup list, lottery and call order |
+| `/dashboard/platform/floor-menu` | Venue | Rooms, sections, tables and menu items |
+| `/dashboard/platform/payouts`, `/statements` | Venue | Comedian payouts and settlements |
+| `/dashboard/platform/reports` | Venue | Attendance, revenue, talent cost and CSV export |
+| `/dashboard/platform/promo-codes`, `/[id]` | Venue | Discount and comp codes |
+| `/dashboard/platform/customers` | Venue | People who bought tickets |
+| `/dashboard/platform/payment-providers` | Setup | Payment gateways |
+| `/dashboard/platform/settings` | Setup | Refund window, holds, thresholds, currency |
+| `/dashboard/platform/store` | Setup | Name, logo and branding |

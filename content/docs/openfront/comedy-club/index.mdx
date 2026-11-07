@@ -1,0 +1,58 @@
+---
+title: Openfront Comedy Club
+description: Shows, lineups, ticketing, table seating, door check-in, table checks with item minimums, comedian payouts, and the nightly close.
+icon: Mic
+---
+
+[Source](https://github.com/openshiporg/openfront-comedy-club) · [Live site](https://comedy-club.openship.org) · [Catalog](https://openship.org/products/openfront-comedy-club)
+
+Openfront Comedy Club is an open-source app for running a comedy club. Guests browse upcoming shows, pick a ticket tier or a table, and pay online. Staff run the calendar and lineups, check guests in at the door, seat parties, keep table checks with a per-guest item minimum, pay comedians, and close each night with a settlement.
+
+The live site is The Laugh Track, a club seeded with the repository's own complete setup template.
+
+To install it, see [Getting started](/docs/openfront/comedy-club/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Venue | The club. One venue per installation, with `VenueSettings` for refund window, hold length, approval threshold and currency |
+| Room, section, table | Physical layout. A room sells either general admission or table seating |
+| Show template | A weekly pattern (RRULE text such as `FREQ=WEEKLY;BYDAY=TU`) that generates eight weeks of shows; running it twice creates no duplicates |
+| Run | A headliner's multi-night run (for example Thursday to Sunday) with a run fee |
+| Lineup slot | Host, opener, guest set, feature or headliner on one show, with set length and running order |
+| Price tier | A ticket type with a capacity counter owned by the server |
+| Hold | A 10-minute reservation of tickets or tables taken under a per-show database lock |
+| Check | A table's food and drink tab, with the two-item minimum per guest worked out at close |
+| Settlement | The night's close: tickets, fees, discounts, refunds, food and drink, minimum shortfall, tips, talent cost and net |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API, Prisma with PostgreSQL, Tailwind CSS 4, and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Card payments go through Stripe.
+
+## Source layout
+
+| Path | Contents |
+|---|---|
+| `features/keystone/models` | Keystone lists, registered in `models/index.ts` |
+| `features/keystone/mutations` | Custom queries and mutations: checkout, night, seating, payouts, open mic, waitlist, series, reports |
+| `features/keystone/lib` | Money, time and payment-state helpers with unit tests |
+| `features/platform` | Staff pages under `/dashboard/platform` |
+| `features/storefront` | Public show pages, checkout, order and ticket pages |
+| `features/integrations/payment` | Stripe and manual payment adapters |
+| `app/` | Thin route files |
+
+`schema.graphql` and `schema.prisma` are generated from the models.
+
+## Tenancy and ownership
+
+One installation is one club (single-venue). Staff access comes from the signed-in user's `Role`. Customers do not have accounts; they reach their order with the order number plus a secret in the confirmation link, or with the find-my-order lookup.
+
+## Rules the server enforces
+
+- Money is integer cents with a currency code. Percentages are basis points.
+- Capacity counters are owned by the server. Holds are placed under a per-show lock, so two buyers can never take the last seat or the same table.
+- Checkout freezes the quote, takes payment through the adapter, and only then turns the hold into tickets. A payment the provider cannot confirm stays pending for reconciliation and is never marked paid on a timeout.
+- Every state change is a custom mutation that checks the current state, writes an `AuditEvent`, and takes an idempotency key. Raw status fields cannot be updated directly.
+- Refunds and comps above the settings threshold need a second user's approval.
+- Customer-visible codes (order number, ticket code) are random. Scan tokens are stored only as hashes.

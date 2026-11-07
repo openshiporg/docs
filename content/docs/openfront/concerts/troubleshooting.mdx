@@ -1,0 +1,15 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `Can't reach database server` during build | Migrations ran at build time. Build with `keystone build --no-ui && next build` and start with `npm run migrate && next start`. |
+| `SESSION_SECRET required` | The secret is missing or shorter than 32 characters. Guest order proofs are signed with it. |
+| The storefront lists no events | Setup has not been run or no event is announced or on sale. |
+| A seat cannot be held | It is held by another buyer, sold, in a production hold, or killed on the chart. |
+| Order stays `pending_payment` | The webhook is not reaching the app. Check the endpoint URL and `STRIPE_WEBHOOK_SECRET`. |
+| Refund asks for approval | It is above `refundApprovalThresholdCents`. A different user with `canApproveAdjustments` decides it. |
+| Chart changes are rejected | The chart is published. Create a new draft and publish it. |

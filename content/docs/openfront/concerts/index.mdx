@@ -1,0 +1,58 @@
+---
+title: Openfront Concerts
+description: Ticketing, artist deals and post-show settlement for an independent promoter that runs its own venues and promotes at partner venues.
+icon: Music
+---
+
+[Source](https://github.com/openshiporg/openfront-concerts) · [Live site](https://concerts.openship.org) · [Catalog](https://openship.org/products/openfront-concerts)
+
+Openfront Concerts is an open-source app for an independent promoter. Fans browse upcoming events, hold general admission or reserved seats, and pay online. Staff hold dates on a venue calendar, make artist offers, price events, run the box office and the door, and settle each show with the artist.
+
+The live site is Lantern Live, a promoter seeded with the repository's own complete setup template: three venues in Portland and Salem, ten artists, two agencies, two tours and 17 events across their lifecycle.
+
+To install it, see [Getting started](/docs/openfront/concerts/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Venue and seating chart | A venue has versioned charts. A published chart is immutable; changes go into a new draft |
+| Chart section and seat | A section is general admission or reserved. Reserved seats are sellable or killed |
+| Date hold | A ranked hold on a venue date. A lower hold can challenge; the first hold confirms or releases |
+| Offer | An artist deal: flat guarantee, versus, plus, or door deal. Accepted terms are frozen by hash |
+| Price level and phase | Ticket prices per section, with phases for tiered pricing |
+| Production hold | Seats kept off sale for production, artist or house use |
+| Inventory hold | A 10-minute customer hold under a per-event lock |
+| Settlement | The post-show worksheet from tickets, expenses, merch and bar, with versions and sign-off |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API, Prisma with PostgreSQL, Tailwind CSS 4, and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Card payments go through Stripe.
+
+## Source layout
+
+| Path | Contents |
+|---|---|
+| `features/keystone/models` | Keystone lists, registered in `models/index.ts` |
+| `features/keystone/mutations` | Custom queries and mutations for holds, offers, pricing, checkout, door, settlement |
+| `features/keystone/lib/settlement.ts` | Settlement math as a pure function with unit tests |
+| `features/platform` | Staff pages under `/dashboard/platform` |
+| `features/storefront` | Public event pages, checkout, order lookup |
+| `features/integrations/payment` | Stripe adapter |
+| `app/` | Thin route files |
+
+## Tenancy and ownership
+
+One installation is one promoter (single-store). Staff access comes from the signed-in user's `Role`. Fans do not need an account; a guest reaches an order through a signed, expiring proof or the lookup by email and order number.
+
+## Rules the server enforces
+
+- Capacity and holds run under a per-event advisory lock inside one database transaction. Counters are recounted under the lock. One live hold or sale per seat is enforced by a unique occupancy key.
+- Money is integer cents with basis-point percentages.
+- Every status change is a custom mutation that compares the current state, writes an `AuditEvent`, and takes an idempotency key. Raw status fields are not updatable.
+- Refunds above `refundApprovalThresholdCents` need approval from a different user holding `canApproveAdjustments`.
+- A transfer voids the old ticket token and issues a new one in the same transaction.
+
+## Not included
+
+Dynamic pricing, resale, wallet passes, accounting export and multiple promoters in one installation.

@@ -1,0 +1,23 @@
+---
+title: Venues, artists and settings
+description: Venues and seating charts, artists, agencies and tours, promo codes and promoter settings.
+icon: Building2
+---
+
+## Venues and seating charts
+
+Route: `/dashboard/platform/venues`. Needs `canManageVenues`.
+
+A venue has a city, timezone, address and capacity, and one or more seating charts. A chart has sections that are general admission (with a capacity) or reserved (with seats). `publishSeatingChart` publishes a draft. A published chart is immutable; to change it, create a new draft and publish it. Charts move between `draft`, `published` and `retired`.
+
+## Artists and tours
+
+Route: `/dashboard/platform/artists`. Needs `canManageArtists`. Artists belong to an agency and can be on a tour.
+
+## Promo codes
+
+Route: `/dashboard/platform/promo-codes`. Promo and presale codes. A code is reserved with the hold and committed only when payment succeeds.
+
+## Settings and store
+
+`/dashboard/platform/settings` holds the promoter name, currency and `refundApprovalThresholdCents`. `/dashboard/platform/store` sets the logo and branding shown on the storefront.

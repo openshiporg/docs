@@ -1,0 +1,28 @@
+---
+title: Roles and permissions
+description: Role flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+Staff access comes from the signed-in user's `Role`. Every custom mutation checks the flag it needs on the server.
+
+| Flag | Allows |
+|---|---|
+| `canAccessDashboard` | Signing in to `/dashboard` |
+| `canManageEvents` | Events, pricing, publishing, postponing, cancelling |
+| `canManageDeals` | Date holds and offers |
+| `canManageVenues`, `canManageInventory` | Venues, charts and production holds |
+| `canManageArtists` | Artists, agencies and tours |
+| `canManageOrders` | Box office, orders and comps |
+| `canIssueRefunds` | Refunds |
+| `canApproveAdjustments` | Approving large refunds and settlement adjustments |
+| `canScanTickets` | Door scanning |
+| `canManageSettlements` | Settlements and artist payments |
+| `canManagePayments`, `canReadPayments` | Payment providers and records |
+| `canReadAudit` | Audit events |
+| `canManageOnboarding` | Running setup |
+| `canManagePeople`, `canSeeOtherPeople`, `canEditOtherPeople`, `canReadPeople`, `canUpdatePeople`, `canManageRoles` | Staff users and roles |
+
+## Seeded roles
+
+The complete setup creates Owner (every flag), Booker, Box Office, Door Staff, Settlement Manager and Customer. The first user created at `/dashboard/init` gets every flag.

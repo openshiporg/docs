@@ -1,0 +1,31 @@
+{
+  "title": "Comedy Club",
+  "description": "Shows, lineups, tickets, table seating, the door, table checks, comedian pay and the nightly close",
+  "icon": "Mic",
+  "root": true,
+  "pages": [
+    "---Overview---",
+    "index",
+    "getting-started",
+    "deployment",
+    "---Dashboard---",
+    "tonight",
+    "shows-lineups",
+    "orders-refunds",
+    "floor-menu",
+    "payouts-reports",
+    "roles-permissions",
+    "external-dashboard",
+    "---Storefront---",
+    "storefront",
+    "external-storefront",
+    "---Integrations---",
+    "payment-providers",
+    "---How-to Guides---",
+    "how-to-guides",
+    "---API Reference---",
+    "data-model",
+    "api-reference",
+    "troubleshooting"
+  ]
+}

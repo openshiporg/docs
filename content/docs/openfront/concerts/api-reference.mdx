@@ -1,0 +1,26 @@
+---
+title: GraphQL API
+description: The endpoint and the custom queries and mutations.
+icon: Code
+---
+
+`/api/graphql` serves the Keystone API. Staff calls use the session cookie. The MCP transport at `/api/mcp-transport/mcp` accepts OAuth bearer tokens; scopes only narrow what the signed-in user can already do.
+
+## Public operations
+
+`eventsOnSale`, `eventAvailability`, `lookupTicketOrder`, `createGaHold`, `createSeatHold`, `startTicketCheckout`, `completeTicketCheckout`, `transferTicket`.
+
+## Staff mutations
+
+| Area | Mutations |
+|---|---|
+| Calendar | `placeDateHold`, `challengeHold`, `confirmHold`, `releaseDateHold` |
+| Deals | `draftOffer`, `reviseOffer`, `sendOffer`, `acceptOffer`, `declineOffer`, `contractOffer`, `recordArtistDeposit` |
+| Events | `publishEvent`, `advanceEvent`, `postponeEvent`, `cancelEvent`, `savePriceLevel`, `setPriceLevelStatus`, `savePricePhase`, `saveExpense` |
+| Seating | `publishSeatingChart`, `setProductionHold`, `releaseProductionHold` |
+| Box office | `previewDoorSale`, `issueDoorSale`, `refundDoorSale`, `issueComp`, `openCashDrawer`, `closeCashDrawer`, `refundTicketOrder`, `requestRefundApproval`, `decideRefundApproval` |
+| Door | `scanTicket` |
+| Settlement | `recordMerchSales`, `computeSettlement`, `adjustSettlement`, `signSettlement`, `recordArtistPayment` |
+| Setup | `seedConcerts` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

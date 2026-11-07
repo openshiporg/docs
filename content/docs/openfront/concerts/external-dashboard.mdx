@@ -1,0 +1,32 @@
+---
+title: External dashboards
+description: Give an LLM the Concerts dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+To create a custom Concerts dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the promoter's staff screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Concerts checkout before proposing work.
+
+Skill file: [`/skills/openfront-concerts-custom-dashboard/SKILL.md`](/skills/openfront-concerts-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+|---|---|---|
+| `/dashboard/platform/events`, `/[id]` | (top) | Events by status with pricing, seating and settlement |
+| `/dashboard/platform/calendar` | (top) | Ranked date holds per venue |
+| `/dashboard/platform/deals` | (top) | Artist offers and the deal calculator |
+| `/dashboard/platform/box-office` | (top) | Find orders, refund and transfer |
+| `/dashboard/platform/door` | (top) | Gate scanning and live admitted count |
+| `/dashboard/platform/settlements`, `/[id]` | (top) | Settlement worksheets and sign-off |
+| `/dashboard/platform/venues` | Catalog | Venues, sections and seating charts |
+| `/dashboard/platform/artists` | Catalog | Talent, agencies and tours |
+| `/dashboard/platform/promo-codes` | Catalog | Promo and presale codes |
+| `/dashboard/platform/orders` | Sales | All ticket orders |
+| `/dashboard/platform/customers` | Sales | Customers, staff and roles |
+| `/dashboard/platform/payment-providers` | Setup | Payment gateways |
+| `/dashboard/platform/settings` | Setup | Promoter settings and refund threshold |
+| `/dashboard/platform/store` | Setup | Logo and branding |

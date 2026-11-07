@@ -1,0 +1,31 @@
+---
+title: Tonight
+description: The door, guest list, seating, open checks and running order for the current show.
+icon: Radio
+---
+
+Route: `/dashboard/platform/tonight`. It is the dashboard's default page.
+
+Pick the show from the selector at the top. The header shows the show status, room, door and show times, and the age rule. Counters show checked in against sold, remaining, held and open checks.
+
+## Door
+
+Type a ticket code or scan the QR code (**Scan with camera**) and press **Check in**. `checkInTicket` admits a valid ticket once. A second scan of the same ticket returns duplicate and never admits twice. A void or refunded ticket is refused.
+
+The guest list searches by name, email or order number, so staff can check in a guest without a code or undo a mistaken check-in (`undoCheckIn`).
+
+## Seating
+
+`seatParty` seats a party at one or more tables. A table has one live seating per show. `moveParty` and `unseatParty` change it.
+
+## Checks
+
+`openCheck` opens a table check and records the guest count and minimum at that moment. Staff add and void items (`addCheckItem`, `voidCheckItem`), take card payment through Stripe (`startCheckCardPayment`, `completeCheckCardPayment`) and close the check. The two-item minimum per guest is worked out at close from the numbers saved when the check was opened; waiving it needs approval.
+
+## Running order
+
+The lineup appears in running order with each comedian's role, set length and confirmation status.
+
+## Closing the night
+
+`closeShow` closes checks, creates comedian payouts from the fees saved on each lineup slot, and writes a `ShowSettlement`. Staff need `canManageDoor` for the door, `canManageChecks` for checks, and `canManagePayouts` to close.

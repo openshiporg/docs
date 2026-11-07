@@ -1,0 +1,109 @@
+---
+title: Getting started with Concerts
+description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first user, run setup, and take a test payment.
+icon: Terminal
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The hosted app is at [concerts.openship.org](https://concerts.openship.org) if you want to look before installing anything.
+
+## Requirements
+
+- Node.js 20 or later.
+- npm.
+- A PostgreSQL database you are allowed to migrate.
+- Stripe test keys if you want to take card payments.
+- An SMTP relay if you want password-reset email.
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-concerts.git
+cd openfront-concerts
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_concerts
+SESSION_SECRET=replace-with-48-or-more-random-characters
+PUBLIC_SIGNUPS_ALLOWED=false
+
+# Card payments (test keys for development)
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Optional
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_FROM=
+SMTP_STORE_LINK=http://localhost:3000
+OPENROUTER_API_KEY=
+```
+
+| Variable | Notes |
+|---|---|
+| `DATABASE_URL`, `SESSION_SECRET` | Required. The secret also signs guest order proofs and must be at least 32 characters. |
+| `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe card payments and the signed webhook. |
+| `PUBLIC_SIGNUPS_ALLOWED` | The dashboard sign-up page is open only when this is `true`. |
+| `SMTP_*`, `SMTP_STORE_LINK` | Password-reset email and links. |
+| `OPENROUTER_API_KEY` | Optional dashboard AI chat. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm run dev
+```
+
+`npm run dev` builds the Keystone schema, applies the migrations with `prisma migrate deploy`, and starts Next.js.
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first admin.
+
+</Step>
+<Step>
+
+### Run setup
+
+Open the setup card in the dashboard sidebar and choose **Get started**.
+
+- **Complete Setup** adds venues, seating charts, agencies, artists, tours, events across their lifecycle, date holds, promo codes, roles and the Stripe provider.
+- **Basic Setup** adds one venue, one artist and one event.
+
+Setup confirms that records were saved. It does not verify pricing, deal terms, payments or staff permissions; the setup screen lists those checks.
+
+</Step>
+<Step>
+
+### Take a test payment
+
+Open `/`, choose an event that is on sale, hold tickets, enter a name and email, and pay with Stripe's test card `4242 4242 4242 4242`. Refund the order from **Box office**.
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm test
+```
+
+The settlement math has its own tests: `node --import tsx --test features/keystone/lib/settlement.test.ts`.

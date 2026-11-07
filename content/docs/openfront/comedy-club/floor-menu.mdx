@@ -1,0 +1,34 @@
+---
+title: Floor, menu and settings
+description: Rooms, sections, tables, the menu, promo codes, venue settings and store branding.
+icon: UtensilsCrossed
+---
+
+## Floor and menu
+
+Route: `/dashboard/platform/floor-menu`.
+
+- **Rooms** sell either general admission or table seating.
+- **Sections** group tables inside a room (for example Front, Middle, Booth and Bar rail in the seeded Main Room).
+- **Tables** have a seat count and a position on the floor map. `editRoomLayout` saves layout changes, and `previewRoomLayout` shows the effect on upcoming shows first.
+- **Menu items** are what staff add to table checks.
+
+## Promo codes
+
+Route: `/dashboard/platform/promo-codes`. A code is a percent, a fixed amount, or a comp. It is reserved with the hold and committed only when payment succeeds.
+
+## Settings
+
+Route: `/dashboard/platform/settings`. Needs `canManageSettings`.
+
+| Setting | Default | Effect |
+|---|---|---|
+| `refundWindowHours` | 24 | How long guests can cancel their own order |
+| `holdMinutes` | 10 | How long a checkout hold lasts |
+| `approvalThresholdCents` | 10000 | Refunds above this need a second user |
+| `compApprovalQuantity` | 4 | Comps above this need a second user |
+| `currencyCode` | | Currency for every price |
+
+## Store
+
+Route: `/dashboard/platform/store`. The club name and logo shown on the storefront and dashboard.

@@ -1,0 +1,35 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+`features/keystone/models/index.ts` registers the lists.
+
+| Area | Lists |
+|---|---|
+| Venue | `Venue`, `VenueSettings`, `Room`, `Section`, `Table`, `MenuItem` |
+| Shows | `ShowTemplate`, `ShowGroup`, `Show`, `Run`, `PriceTier` |
+| Talent | `Comedian`, `LineupSlot`, `OpenMicSignup` |
+| Selling | `InventoryHold`, `InventoryHoldLine`, `TicketOrder`, `TicketOrderLine`, `Ticket`, `PromoCode`, `PromoRedemption`, `Comp`, `WaitlistEntry` |
+| The night | `CheckIn`, `SeatingAssignment`, `TableOccupancy`, `Check`, `CheckItem` |
+| Money | `ComedianPayout`, `ShowSettlement`, `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent` |
+| Platform | `User`, `Role`, `ManagerApproval`, `AuditEvent`, `IdempotencyKey`, `NotificationRecord`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+|---|---|
+| `Show` | draft, on_sale, sold_out, doors_open, in_progress, completed, settled, cancelled |
+| `PriceTier` | on_sale, paused, sold_out, closed |
+| `InventoryHold` | active, converted, released, expired |
+| `TicketOrder` | pending_payment, paid, partially_refunded, refunded, cancelled, comp |
+| `Ticket` | valid, checked_in, void, refunded |
+| `LineupSlot` | offered, confirmed, declined, cancelled, performed, no_show |
+| `Check` | open, presented, paid, voided |
+| `ComedianPayout` | draft, approved, paid, void |
+| `ShowSettlement` | open, closed |
+| `OpenMicSignup` | waiting, called, performed, skipped, withdrawn |
+| `WaitlistEntry` | waiting, offered, converted, expired, cancelled |
+
+Status fields are read-only through the generic API. Only the named mutations move them.

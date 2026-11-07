@@ -151,6 +151,18 @@
       "name": "Openfront Vape",
       "label": "Vape",
       "category": "openfront"
+    },
+    {
+      "id": "comedy-club",
+      "name": "Openfront Comedy Club",
+      "label": "Comedy Club",
+      "category": "openfront"
+    },
+    {
+      "id": "concerts",
+      "name": "Openfront Concerts",
+      "label": "Concerts",
+      "category": "openfront"
     }
   ]
 }

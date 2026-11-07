@@ -1,0 +1,31 @@
+{
+  "title": "Concerts",
+  "description": "Date holds, artist deals, GA and reserved ticketing, box office, door scanning and settlement",
+  "icon": "Music",
+  "root": true,
+  "pages": [
+    "---Overview---",
+    "index",
+    "getting-started",
+    "deployment",
+    "---Dashboard---",
+    "events",
+    "calendar-deals",
+    "box-office-door",
+    "settlements",
+    "venues-artists",
+    "roles-permissions",
+    "external-dashboard",
+    "---Storefront---",
+    "storefront",
+    "external-storefront",
+    "---Integrations---",
+    "payment-providers",
+    "---How-to Guides---",
+    "how-to-guides",
+    "---API Reference---",
+    "data-model",
+    "api-reference",
+    "troubleshooting"
+  ]
+}

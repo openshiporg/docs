@@ -1,0 +1,27 @@
+---
+title: GraphQL API
+description: The endpoint and the custom queries and mutations.
+icon: Code
+---
+
+`/api/graphql` serves the Keystone API. Staff calls use the session cookie; the MCP transport at `/api/mcp-transport/mcp` accepts OAuth bearer tokens and calls the same mutations as the signed-in user.
+
+## Public queries and mutations
+
+`showsOnSale`, `showAvailability`, `lookupTicketOrder`, `ticketOrderConfirmation`, `holderTicket`, `openMicShows`, `waitlistOffer`, `slotInvite`, `expireHolds`, `applyPromoToHold`, `startTicketCheckout`, `completeTicketCheckout`, `abandonTicketCheckout`, `cancelMyTicketOrder`, `transferTicket`, `joinWaitlist`, `openMicSignup`, `respondToSlot`.
+
+## Staff mutations
+
+| Area | Mutations |
+|---|---|
+| Shows | `generateShowsFromTemplate`, `publishShow`, `pauseSales`, `resumeSales`, `setSalesWindow`, `cancelShow`, `editShowSeries`, `cancelShowSeries` |
+| Talent | `setLineup`, `offerSlot`, `confirmSlot`, `issueSlotLink`, `setComedianStatus`, `runOpenMicLottery`, `addBringerSignup`, `recordBringerArrival`, `setSignupStatus` |
+| The night | `checkInTicket`, `undoCheckIn`, `seatParty`, `moveParty`, `unseatParty`, `openCheck`, `addCheckItem`, `voidCheckItem`, `startCheckCardPayment`, `completeCheckCardPayment`, `cancelCheckCardPayment`, `voidCheck`, `closeCheck`, `closeShow`, `closeRun` |
+| Orders | `refundTicketOrder`, `issueComp`, `offerWaitlist`, `removeWaitlistEntry`, `requestApproval`, `approveRequest` |
+| Money | `approvePayout`, `recordPayoutPaid`, `exportShowReport`, `exportPayStatement` |
+| Floor | `editRoomLayout` |
+| Setup | `ensureClubOnboardingRecord`, `seedClubOperations` |
+
+Staff queries include `showReport`, `payStatement`, `previewRoomLayout`, `previewShowSeries`, `seriesCancelProgress` and `matchingManagerApproval`.
+
+Every mutation that changes state takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

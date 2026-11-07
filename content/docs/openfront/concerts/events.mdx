@@ -1,0 +1,31 @@
+---
+title: Events
+description: Event status, pricing, seating, production holds, expenses and publishing.
+icon: Ticket
+---
+
+Route: `/dashboard/platform/events` and `/dashboard/platform/events/[id]`. Needs `canManageEvents`.
+
+The list has tabs by status, with tickets sold, open capacity and gross for each event. Statuses are `hold`, `announced`, `presale`, `on_sale`, `sold_out`, `doors`, `in_progress`, `completed`, `settling`, `settled`, `cancelled` and `postponed`.
+
+The event page has overview, billing (headliner and support), pricing, seating map, orders, expenses and settlement.
+
+## Pricing
+
+`savePriceLevel` and `setPriceLevelStatus` manage a price level per section. `savePricePhase` adds a phase, for example an early price that ends on a date. Fees and tax are copied onto each order line at purchase.
+
+## Seating and production holds
+
+The seating map shows each seat as open, held, sold or killed. `setProductionHold` keeps seats off sale for production, artist or house use; `releaseProductionHold` puts them back.
+
+## Expenses
+
+`saveExpense` records an event expense. Expenses feed the settlement and can be capped by the offer.
+
+## Publishing and changes
+
+| Action | Mutation |
+|---|---|
+| Announce or put on sale | `publishEvent`, `advanceEvent` |
+| Postpone to a new date | `postponeEvent` |
+| Cancel and refund | `cancelEvent` |

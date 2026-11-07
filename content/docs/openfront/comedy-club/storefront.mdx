@@ -1,0 +1,23 @@
+---
+title: Storefront
+description: The public show pages, checkout, order and ticket pages.
+icon: Store
+---
+
+The storefront is deliberately plain. It calls only the custom GraphQL operations; the raw lists are not public.
+
+| Route | What guests do |
+|---|---|
+| `/` | Upcoming shows (`showsOnSale`) |
+| `/shows/[id]` | Lineup, tier or table choice, quantity, mixed tiers for a group (`showAvailability`), then a hold |
+| `/checkout?hold=` | Name, email and phone, promo code, age confirmation, then Stripe payment with a hold timer |
+| `/orders/[orderNumber]` | Confirmation with ticket codes and QR codes, self-cancel inside the refund window, ticket transfer |
+| `/tickets/[code]` | One ticket for its holder (`holderTicket`) |
+| `/lookup` | Find an order by email and order number (`lookupTicketOrder`) |
+| `/open-mic` | Sign up for an open mic night |
+| `/waitlist/claim` | Claim a waitlist offer |
+| `/lineup/respond` | Comedians accept or decline a lineup offer |
+
+## Checkout
+
+`startTicketCheckout` freezes the quote and creates a Stripe payment. The browser confirms the card. `completeTicketCheckout` turns the hold into tickets only after the provider confirms the payment. If the browser never comes back, the signed webhook and the hold sweeper finish the order.

@@ -1,0 +1,25 @@
+---
+title: Box office and door
+description: Door sales, comps, refunds, cash drawers, transfers and ticket scanning.
+icon: ScanLine
+---
+
+## Box office
+
+Route: `/dashboard/platform/box-office`. Needs `canManageOrders`.
+
+Staff find an order by code or email, then refund, transfer or comp. At the window, `previewDoorSale` prices a sale and `issueDoorSale` completes it with a cash or card tender. Each shift opens and closes a cash drawer (`openCashDrawer`, `closeCashDrawer`).
+
+`refundTicketOrder` refunds an order through the provider that took the payment. It needs `canIssueRefunds`, a reason and an idempotency key. A refund above `refundApprovalThresholdCents` is sent for approval (`requestRefundApproval`), and a different user with `canApproveAdjustments` decides it (`decideRefundApproval`).
+
+`transferTicket` voids the old ticket token and issues a new one to the new holder in one transaction.
+
+## Door scan
+
+Route: `/dashboard/platform/door`. Needs `canScanTickets`.
+
+`scanTicket` admits a valid ticket once and records a `ScanEvent`. A second scan returns duplicate. Void, refunded and transferred tickets are refused. The page shows a live admitted count.
+
+## Orders and customers
+
+`/dashboard/platform/orders` lists every order with its source: `online`, `box_office`, `comp` or `presale`. `/dashboard/platform/customers` lists customers, staff and roles.

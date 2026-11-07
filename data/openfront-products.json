@@ -258,5 +258,25 @@
     "href": "/docs/openfront/sports-agents",
     "sourceUrl": "https://github.com/openshiporg/openfront-sports-agents",
     "catalogUrl": null
+  },
+  {
+    "id": "comedy-club",
+    "repository": "openfront-comedy-club",
+    "name": "Comedy Club",
+    "description": "Shows, lineups, ticketing, table seating, door check-in, table checks with item minimums, comedian payouts, and the nightly close.",
+    "color": "#db2777",
+    "href": "/docs/openfront/comedy-club",
+    "sourceUrl": "https://github.com/openshiporg/openfront-comedy-club",
+    "catalogUrl": "https://openship.org/products/openfront-comedy-club"
+  },
+  {
+    "id": "concerts",
+    "repository": "openfront-concerts",
+    "name": "Concerts",
+    "description": "Date holds, artist deals, GA and reserved ticketing, box office, door scanning, and post-show settlement for independent promoters.",
+    "color": "#ea580c",
+    "href": "/docs/openfront/concerts",
+    "sourceUrl": "https://github.com/openshiporg/openfront-concerts",
+    "catalogUrl": "https://openship.org/products/openfront-concerts"
   }
 ]

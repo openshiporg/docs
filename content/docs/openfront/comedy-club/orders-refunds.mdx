@@ -1,0 +1,33 @@
+---
+title: Orders, refunds and approvals
+description: Ticket orders, comps, refunds, the waitlist and second-user approvals.
+icon: Ticket
+---
+
+Route: `/dashboard/platform/orders` and `/dashboard/platform/orders/[id]`. Needs `canManageOrders`.
+
+## Orders
+
+Each order keeps a copy of the tier name, price, fees and tax at purchase. Statuses are `pending_payment`, `paid`, `partially_refunded`, `refunded`, `cancelled` and `comp`. Tickets are `valid`, `checked_in`, `void` or `refunded`.
+
+## Refunds
+
+`refundTicketOrder` refunds a whole order, an amount, or chosen tickets, through the same provider that took the payment. It needs `canIssueRefunds`, a reason and an idempotency key. The provider refund key is stable, so a retry never refunds twice.
+
+Inside the refund window (`VenueSettings.refundWindowHours`, 24 by default) a guest can cancel their own order from the order page. After that, staff refund it.
+
+## Comps
+
+`issueComp` issues tickets at zero cents. They still count against capacity. A comp above `compApprovalQuantity` needs approval.
+
+## Approvals
+
+Route: `/dashboard/platform/approvals`. A refund above `approvalThresholdCents`, a large comp, or a minimum waiver creates a `ManagerApproval`. A different user must approve it (`approveRequest`), and the original action then runs with that approval.
+
+## Waitlist
+
+When a show sells out, guests can join the waitlist. `offerWaitlist` sends an offer link; the guest claims it at `/waitlist/claim`.
+
+## Customers
+
+Route: `/dashboard/platform/customers`. People who bought tickets, with their orders.

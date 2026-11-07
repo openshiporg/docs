@@ -1,0 +1,21 @@
+---
+title: Payouts and reports
+description: Comedian payouts, pay statements, nightly settlements and reports.
+icon: Wallet
+---
+
+## Payouts
+
+Route: `/dashboard/platform/payouts`. Needs `canManagePayouts`.
+
+Closing a show creates a `ComedianPayout` for each performed slot from the fee saved on that slot. Payouts move from `draft` to `approved` (`approvePayout`) to `paid` (`recordPayoutPaid`), or `void`. A run's fee is paid when the run closes (`closeRun`).
+
+Pay statements (`/dashboard/platform/payouts/statements`) list a comedian's payouts for a period, and `exportPayStatement` exports them.
+
+## Settlement
+
+`closeShow` writes a `ShowSettlement` with tickets, fees, discounts, refunds, food and drink, minimum shortfall, tips, talent cost and net. It is `open` until the night is closed.
+
+## Reports
+
+Route: `/dashboard/platform/reports`. Attendance, revenue and talent cost by show and period, with CSV export.

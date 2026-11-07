@@ -1,0 +1,26 @@
+---
+title: Deployment
+description: Build and start commands, required services, secrets and the Stripe webhook.
+icon: Rocket
+---
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/openfront-concerts)
+
+The Railway template deploys the app from GitHub with PostgreSQL and a private bucket named `Storage`. It generates `SESSION_SECRET` and points the app URLs at the service's public domain. Stripe and SMTP variables are left blank.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Build | `keystone build --no-ui && next build` | Generates the schema and builds Next.js |
+| Web | `npm run migrate && next start` | Applies migrations, then serves the storefront, dashboard and GraphQL |
+
+`railway.toml` sets these commands. Migrations run at start because the database is usually reachable only from the running service.
+
+## Checklist
+
+1. Provision PostgreSQL. Set `DATABASE_URL` and a `SESSION_SECRET` of 48 or more characters.
+2. Set `NODE_ENV=production` and `PUBLIC_SIGNUPS_ALLOWED=false`.
+3. Add Stripe keys. Create a Stripe webhook endpoint at `https://your-host/api/integrations/payment/pp_stripe_stripe/webhook` for `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded` and `refund.updated`, and put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+4. Deploy, open `/dashboard/init`, create the first admin, and run setup.
+5. Buy a ticket with a test card and refund it before switching to live keys.

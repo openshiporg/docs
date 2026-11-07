@@ -1,0 +1,18 @@
+---
+title: Storefront
+description: The public event pages, holds, checkout, order lookup and ticket transfer.
+icon: Store
+---
+
+The storefront is deliberately plain. It uses only the custom GraphQL operations, with a signed, expiring proof for guests.
+
+| Route | What fans do |
+|---|---|
+| `/` | Upcoming events (`eventsOnSale`) |
+| `/events/[id]` | General admission quantity or a seat grid (`eventAvailability`), presale or promo code, then a hold (`createGaHold`, `createSeatHold`), name and email, and card payment |
+| `/orders/[id]` | Confirmation with the order code, ticket codes and transfer |
+| `/lookup` | Find an order by email and order number (`lookupTicketOrder`) |
+
+## Checkout
+
+A hold lasts 10 minutes. `startTicketCheckout` freezes the quote and creates a Stripe payment. The browser confirms the card, and `completeTicketCheckout` turns the hold into tickets only after the provider confirms payment. The signed webhook completes orders whose browser never returned.
