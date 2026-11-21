@@ -1,0 +1,27 @@
+---
+title: Labs and imaging
+description: Lab orders, specimens, results, reviews, imaging and the in-house lab catalog.
+icon: Microscope
+---
+
+Lab orders go to the in-house lab or a reference laboratory. Results are entered or imported from a file, reviewed by a veterinarian and communicated to the client. Imaging orders record the study and its report. **Lab set-up** holds laboratories, their tests and prices, and the codes that map results.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Results | `/dashboard/platform/results` | Lab orders, results and reviews. |
+| Lab set-up | `/dashboard/platform/laboratories` | Laboratories, their tests and prices, result codes. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `LabOrder` | `ordered`, `specimen_collected`, `sent`, `partial`, `final`, `corrected`, `reviewed`, `communicated`, `cancelled` |
+| `ImagingOrder` | `ordered`, `acquired`, `read`, `communicated`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`orderLab`, `collectSpecimen`, `sendLabOrder`, `cancelLabOrder`, `enterLabResult`, `importLabFile`, `reviewLabResult`, `communicateLabResult`, `notifyResultsReady`, `orderImaging`, `recordImagingStudy`, `addImagingReport`, `communicateImaging`, `loadInHouseLabCatalog`, `saveLaboratory`, `saveLabTest`, `mapLabCode`.

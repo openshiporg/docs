@@ -1,0 +1,21 @@
+---
+title: External storefronts
+description: Give an LLM the Dental storefront skill to adapt the built-in site or build a separate booking site.
+icon: AppWindow
+---
+
+To build a custom Dental storefront, copy the skill and give it to your LLM. The skill explains that `features/storefront` holds the built-in site, booking panel and portal sign-in, and that booking and the portal are public GraphQL operations a separate site can call.
+
+Skill file: [`/skills/openfront-dental-custom-storefront/SKILL.md`](/skills/openfront-dental-custom-storefront/SKILL.md)
+
+## Operations a separate site uses
+
+| Need | Operation |
+|---|---|
+| Practice, locations and bookable visit types | `publicSite` |
+| Open times | `publicAvailability` |
+| Hold and book | `publicHoldSlot`, `publicSubmitBooking` |
+| Portal sign-in | `portalRequestCode`, `portalSession` |
+| Portal reads and actions | `portalMe`, `portalAppointments`, `portalConfirm`, `portalCancel`, `portalReschedule`, `portalPreferences` |
+
+A separate site must not reveal whether a visitor is a patient, and must keep the portal token server-side or in a secure cookie.

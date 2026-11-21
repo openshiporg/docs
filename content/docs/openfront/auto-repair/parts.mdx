@@ -1,0 +1,34 @@
+---
+title: Parts and stock
+description: Supplier quotes and orders, stock, cycle counts, cores, returns, supplier invoices and tires.
+icon: Package
+---
+
+Parts are quoted from suppliers, ordered and received against jobs. With the manual supplier adapter, staff record a phone or website order. An order that may or may not have reached the supplier is marked unknown and resolved, never sent again. Stock is reserved, issued and returned per job, and counted in cycle counts.
+
+Core charges are tracked until the core is returned or written off. Supplier invoices are matched to receipts, and discrepancies are resolved before approval. Tires sold are registered with the manufacturer, and an overdue registration is computed on read.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Parts | `/dashboard/platform/parts` | Quotes, supplier orders, stock, cores, supplier invoices and tire registrations. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `PartQuote` | `requested`, `received`, `selected`, `rejected`, `expired` |
+| `SupplierOrder` | `draft`, `placing`, `unknown`, `placed`, `confirmed`, `partially_received`, `received`, `closed`, `cancel_requested`, `cancelled`, `failed` |
+| `SupplierReturn` | `requested`, `shipped`, `credited`, `rejected` |
+| `SupplierInvoice` | `received`, `matching`, `matched`, `discrepancy`, `approved`, `exported`, `reversed` |
+| `CycleCount` | `open`, `counted`, `posted` |
+| `CoreObligation` | `owed`, `returned`, `credited`, `customer_charged`, `written_off` |
+| `Discrepancy` | `open`, `disputed`, `resolved`, `accepted` |
+| `TireRegistrationObligation` | `open`, `handed_over`, `submitted`, `confirmed`, `overdue` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveShopPartItem`, `requestSupplierQuote`, `recordSupplierQuote`, `selectSupplierQuote`, `createShopSupplierOrder`, `placeSupplierOrder`, `recordPhoneOrder`, `resolveUnknownSupplierOrder`, `confirmShopSupplierOrder`, `cancelShopSupplierOrder`, `receiveShopSupplierOrder`, `reserveJobPart`, `issueJobPart`, `returnJobPart`, `adjustShopStock`, `startShopCycleCount`, `recordShopCounts`, `postShopCycleCount`, `markShopCoreReturned`, `writeOffShopCore`, `createShopSupplierReturn`, `advanceShopSupplierReturn`, `recordShopSupplierInvoice`, `matchShopSupplierInvoice`, `resolveSupplierDiscrepancy`, `approveShopSupplierInvoice`, `exportShopSupplierInvoice`, `reverseShopSupplierInvoice`, `recordShopJobTire`, `completeShopTireRegistration`, `confirmShopTireRegistration`, `releaseShopJobReservations`.

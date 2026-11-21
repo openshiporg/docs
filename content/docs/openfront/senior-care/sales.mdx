@@ -1,0 +1,33 @@
+---
+title: Sales, waitlist and storefront
+description: Leads, inquiries, tours, referrals, the waitlist and the public site's copy and prices.
+icon: Handshake
+---
+
+The pipeline runs from inquiry to lead, tour, waitlist, offer, reservation and admission, with response clocks. A lead moves to `moved_in`, a waitlist entry to `converted` and a referral to `admitted` only through admission. Hospital referrals go through clinical review and a payer check.
+
+The **Waitlist** groups entries by apartment type and setting, and an offer holds a place until it expires. **Storefront** sets the public copy, starting prices, availability and tour times. Publishing the site, moving a price and making a waitlist offer are human-only.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Pipeline | `/dashboard/platform/sales` | Leads, inquiries, tours and referrals with response clocks. |
+| Waitlist | `/dashboard/platform/sales/waitlist` | Waitlist by apartment type and setting; offers and holds. |
+| Storefront | `/dashboard/platform/sales/storefront` | Storefront copy, starting prices, availability and tour times. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Lead` | `new`, `contacted`, `tour_scheduled`, `toured`, `assessment_scheduled`, `assessed`, `deposit_received`, `move_in_scheduled`, `moved_in`, `waitlisted`, `nurture`, `lost` |
+| `Tour` | `requested`, `confirmed`, `completed`, `no_show`, `cancelled` |
+| `Referral` | `received`, `clinical_review`, `payer_check`, `accepted`, `declined`, `admitted`, `withdrawn` |
+| `WaitlistEntry` | `active`, `offered`, `accepted`, `declined`, `expired`, `converted`, `withdrawn` |
+| `PublishedPrice` | `draft`, `published`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`reservePlace`, `releaseReservation`, `recordReferral`, `openTourSlots`, `scheduleTour`, `setStorefrontPublished`, `movePublishedPrice`, `recordInquiry`, `moveLead`, `logSalesActivity`, `moveTour`, `moveReferral`, `addToWaitlist`, `offerWaitlistPlace`, `resolveWaitlistOffer`.

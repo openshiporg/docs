@@ -1,0 +1,14 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `SECRET_BOX_KEY is not set` | Set `SECRET_BOX_KEY` in production. Gate codes and credentials are sealed with it. |
+| `SCOPE_DENIED` | The agent has no grant for that tool. Add the grant under **Agents**. |
+| A window refuses a booking | The window is full. Pick another window or add capacity. |
+| A sale stops with a policy error | A policy pack, calendar or verified notice text is missing for the place and date. Check **Policies**. |
+| Work on a sold job cannot start | A cancellation notice is still open. Wait for the deadline or request an override. |
+| A card result is unknown | Run billing again or open the invoice. The app asks Stripe for the result. |

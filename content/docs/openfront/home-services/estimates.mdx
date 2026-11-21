@@ -1,0 +1,31 @@
+---
+title: Estimates, change orders and cancellations
+description: Good/better/best estimates, versions, change orders and cancellation notices.
+icon: ClipboardPen
+---
+
+An estimate offers good, better and best options priced from the published price book. It is presented and sold as a version, and an expired estimate is requoted. Change orders add work to a sold job.
+
+At every sale and approved change order, the bound home-solicitation policy is evaluated and stored. When a cancellation right arises, a notice is issued with the statutory statement and cancellation forms. While the notice is open, the covered work cannot start unless a second person approves an override with a reason. A buyer's cancellation received before the deadline cancels the covered lines and opens a refund. If there is no policy, the calendar is unknown or there is no verified notice text in the sale's language, the sale stops.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Estimates | `/dashboard/platform/estimates` | Good/better/best options, presentation and versions. |
+| Cancellations | `/dashboard/platform/cancellations` | Cancellation notices with cancel-by countdown. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Estimate` | `open`, `sold`, `declined`, `expired`, `cancelled`, `discarded` |
+| `EstimateVersion` | `draft`, `pending_approval`, `presented`, `sold`, `declined`, `expired`, `superseded`, `cancelled`, `discarded` |
+| `ChangeOrder` | `draft`, `presented`, `approved`, `declined` |
+| `CancellationNotice` | `issued`, `delivered`, `waived`, `cancelled_by_buyer`, `expired_uncancelled`, `refunded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openEstimate`, `draftEstimate`, `draftEstimateFromCapture`, `draftFollowupEstimate`, `saveEstimateOption`, `removeEstimateOption`, `repriceEstimateVersion`, `setEstimateDiscount`, `reopenEstimateVersion`, `presentEstimate`, `sellEstimate`, `declineEstimate`, `requoteEstimate`, `discardEstimateVersion`, `draftChangeOrder`, `presentChangeOrder`, `acceptChangeOrder`, `declineChangeOrder`, `deliverCancellationNotice`, `waiveCancellationNotice`, `recordBuyerCancellation`, `markCancellationRefunded`, `requestCancellationHoldOverride`.

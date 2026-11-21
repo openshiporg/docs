@@ -1,0 +1,90 @@
+---
+title: Getting started with Senior Care
+description: Install Openfront Senior Care, configure it, and load the sample community.
+icon: Terminal
+---
+
+
+## Requirements
+
+- Node.js 20 or later
+- PostgreSQL
+- A Stripe key if you want card payments (optional)
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-senior-care.git
+cd openfront-senior-care
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+cp .env.example .env   # set DATABASE_URL and SESSION_SECRET
+```
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SESSION_SECRET` | Signs staff sessions. The other secrets below are derived from it when they are not set. Required. |
+| `PHI_AUDIT_SECRET` | Keys the PHI read audit. |
+| `PORTAL_MFA_SECRET` | Seals family portal two-step sign-in secrets. |
+| `RATE_LIMIT_SECRET` | Hashes addresses for public rate limits. |
+| `TOUR_MANAGE_SECRET`, `WAITLIST_OFFER_SECRET`, `PORTAL_INVITE_SECRET`, `SHIFT_OFFER_SECRET` | Sign the expiring links in tour, waitlist, invitation and shift-offer messages. At least 32 bytes. |
+| `TRUSTED_PROXY_HOPS` | Set to `1` behind Railway so the requester address comes from the proxy. |
+| `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Card payments and cards on file. The mode follows the key. |
+| `SC_INFERENCE_SELF_HOSTED_KEY`, `SC_INFERENCE_AZURE_KEY` | Keys for the model providers used by the workflow builder and drafts. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | The model used by the dashboard assistant. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mail for password resets and invitations. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Allows staff self-signup when set. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm ci
+npm run dev   # builds Keystone, runs migrations and starts Next.js
+```
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first user. Its role, **Owner / Admin**, gets every permission except break-glass, which is never granted by default.
+
+</Step>
+<Step>
+
+### Load the sample community
+
+The setup cards in the dashboard load Maple Ridge Senior Living, Columbus, OH, in four sections. Every resident and figure is invented.
+
+| Section | What it loads |
+|---|---|
+| Operator, community, places and people | The community with its nursing units, licensed beds, residential wings and apartments, payers, roles with separated duties, staff, the US federal holiday calendar 2026-2028, the Ohio rule pack and the approval policies. |
+| Residents, census history, sales and family portal | About 200 residents, 60 days of census, representatives, family portal accounts, four weeks of signed-off midnight census, storefront copy and prices, referrals, a waitlist, tours and leads, and reviewed break-glass uses. |
+| MDS, PDPM and Medicare Part A | MDS 3.0 item sets V1.19.1 and V1.20.1, the FY2026 PDPM tables and rates, CY2026 coinsurance, and 12 Part A residents with completed 5-day assessments. |
+| Workforce: staff, credentials and staffing targets | Job codes, 11 staff with verified licences and checks, the Ohio 2.5 hours-per-resident-day minimum and the operator targets, and the 2024 federal staffing rule recorded as repealed history. |
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm run verify
+SC_TEST_DATABASE_URL='postgresql://…?schema=vitest' npm test   # adds the database tests
+```

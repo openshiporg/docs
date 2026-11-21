@@ -1,0 +1,28 @@
+---
+title: Customers and vehicles
+description: Customers, contacts, consent, VIN decoding, recalls and odometer history.
+icon: Car
+---
+
+A customer has contacts with per-channel texting consent, and STOP is honoured. Contact values are stored as keyed hashes for search. A vehicle has a VIN checked by its check digit, decoded through NHTSA, checked for open recalls, and an odometer history. Staff create a customer portal link from the customer record.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Customers | `/dashboard/platform/customers` | Customers, contacts and consent history. |
+| Vehicles | `/dashboard/platform/vehicles` | VIN decode, recalls, ownership and odometer history. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Customer` | `active`, `merged`, `archived` |
+| `CustomerContact` | `active`, `bounced`, `invalid` |
+| `Vehicle` | `active`, `sold`, `scrapped`, `merged` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveCustomer`, `addCustomerContact`, `recordContactConsent`, `saveVehicle`, `linkVehicleOwner`, `recordOdometerReading`, `decodeVehicleVin`, `checkVehicleRecalls`, `createCustomerPortalLink`.

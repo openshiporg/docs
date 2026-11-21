@@ -1,0 +1,9 @@
+{
+  "title": "How-to Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "run-a-visit",
+    "count-controlled-drugs",
+    "approve-a-refill"
+  ]
+}

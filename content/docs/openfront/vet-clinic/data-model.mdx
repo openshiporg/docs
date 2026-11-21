@@ -1,0 +1,52 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+
+Lists are defined in `features/keystone/models/` and registered in `models/index.ts`. Each row below is one model file.
+
+| Area | Lists |
+| --- | --- |
+| agents | `AgentToolGrant`, `AgentRun`, `Proposal`, `AgentAction` |
+| billing | `FeeSchedule`, `FeeScheduleVersion`, `FeeItem`, `PriceRule`, `Estimate`, `EstimateVersion`, `EstimateOption`, `EstimateLine`, `EstimateAcceptance`, `TreatmentPlan`, `TreatmentPlanItem`, `OverageApproval`, `Deposit`, `ArPeriod`, `Invoice`, `ChargeLine`, `CreditNote`, `Payment`, `PaymentAttempt`, `PaymentAllocation`, `Refund`, `PaymentWebhookEvent`, `ClientLedgerEntry`, `PayerAuthorization`, `InsuranceClaimPacket` |
+| boarding | `RunType`, `Run`, `NightlyRunInventory`, `BoardingReservation`, `BoardingStay`, `RunAssignment`, `RunCard`, `BelongingItem`, `DailyCareLog`, `GroomAppointment`, `GroomNote`, `ServiceItem` |
+| clients | `Client`, `ClientPerson`, `ContactPoint`, `ConsentRecord`, `Species`, `Breed`, `ColourMarking`, `Patient`, `PatientOwnership`, `WeightMeasurement`, `PatientAlert`, `AlertAcknowledgement`, `Microchip`, `VcprRecord`, `ThirdPartyPayer`, `PetInsurancePolicy`, `ReferralHospital`, `ReferringVet`, `RefillRequest`, `RecordsRequest`, `RecordsRelease` |
+| comms | `CommsThread`, `CommsMessage`, `MessageTemplate`, `CallRecord`, `Suppression`, `KnowledgeBaseEntry`, `PublicSiteProfile`, `PublicAppointmentType`, `PortalSession`, `RateLimitBucket` |
+| compliance | `PolicyPack`, `PolicyVersion`, `PolicyBinding`, `ComplianceTask`, `Task`, `Note`, `Tag`, `LegalHold`, `RetentionPolicy`, `Incident`, `MachineCredential` |
+| endOfLife | `EuthanasiaConsent`, `DeathRecord`, `AftercareOrder`, `CustodyEvent`, `MemorialItem` |
+| imports | `ImportBatch`, `ImportRow` |
+| inventory | `UnitOfMeasure`, `Item`, `ItemUomConversion`, `StockLocation`, `StockMovement`, `StockLevel`, `Supplier`, `SupplierItem`, `PurchaseOrder`, `PurchaseOrderLine`, `GoodsReceipt`, `GoodsReceiptLine`, `ReorderRule`, `StockCount`, `StockCountLine`, `RecallCase`, `RecallExposure`, `TemperatureLog`, `TemperatureExcursion` |
+| pharmacy | `DrugProduct`, `Prescription`, `PrescriptionLine`, `CsContainer`, `CsLogEntry`, `Dispense`, `CsCount`, `CsCountLine`, `CsDiscrepancyCase`, `CsDestructionRecord`, `PdmpReport`, `CsWitness`, `CsOrderForm`, `CsOrderFormLine`, `CsTransfer`, `PdmpSubmission`, `CabinetAccessEvent`, `DispenseLabel`, `ExternalDispense`, `WrittenRxExport` |
+| phase6 | `Laboratory`, `Analyte`, `LabTest`, `LabAnalyteMap`, `ReferenceRange`, `LabOrder`, `Specimen`, `LabResult`, `LabResultValue`, `ResultReview`, `ImagingOrder`, `ImagingStudy`, `ImagingReport`, `ProductionRuleVersion`, `ProductionCredit`, `Commission`, `PayPeriod`, `PayrollExportBatch`, `ExportJob`, `Campaign` |
+| platform | `AgentIdentity`, `AuditEvent`, `CommandReceipt`, `Sequence`, `Notification`, `BusinessCalendar`, `CalendarException`, `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `Document`, `SecretBox`, `ReadAudit`, `BreakGlassEvent`, `ProviderObservation`, `IntegrationConnection`, `ExternalId` |
+| practice | `PracticeSettings`, `Location`, `DeaRegistration`, `DeaPowerOfAttorney`, `StaffMember`, `ProfessionalLicense`, `LicenseEvaluation` |
+| preventive | `VaccineProduct`, `VaccineAdministration`, `RabiesCertificate`, `ReminderType`, `ReminderProtocol`, `ReminderProtocolVersion`, `ReminderRule`, `PatientReminder`, `ReminderSatisfaction`, `AdverseEventReport` |
+| record | `Encounter`, `SoapSection`, `SoapSectionRevision`, `Addendum`, `VitalsObservation`, `PhysicalExamFinding`, `DiagnosisCode`, `Problem`, `Diagnosis`, `ClinicalAttachment`, `ClinicalDocument`, `RecordTemplate`, `Glossary`, `ScribeSession`, `ScribeDraft`, `Referral` |
+| schedule | `StaffSchedule`, `AppointmentType`, `Resource`, `ResourceReservation`, `ProviderReservation`, `Appointment`, `AppointmentPatient`, `AppointmentSegment`, `SegmentTransition`, `WaitlistEntry`, `TriageProtocol`, `TriageProtocolVersion`, `TriageAssessment`, `WhiteboardEntry` |
+| treatment | `ClinicalOrder`, `DoseCalculation`, `InventoryLot`, `Administration`, `Ward`, `Cage`, `HospitalStay`, `CageAssignment`, `TreatmentSheetOrder`, `TreatmentTask`, `AnaesthesiaRecord`, `MonitoringReading`, `SurgeryReport`, `DentalChart`, `DischargeInstruction` |
+| wellness | `WellnessPlan`, `WellnessPlanVersion`, `Enrollment`, `EnrollmentConsent`, `EntitlementGrant`, `EntitlementEntry`, `PlanBillingRun`, `PlanBillingAttempt` |
+| auth | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `requested`, `booked`, `confirmed`, `checked_in`, `in_progress`, `ready_for_checkout`, `completed`, `cancelled`, `no_show`, `declined` |
+| `Client` | `prospect`, `active`, `inactive`, `merged`, `closed` |
+| `Patient` | `pending`, `active`, `inactive`, `deceased`, `merged` |
+| `Encounter` | `open`, `in_progress`, `pending_signature`, `signed`, `voided` |
+| `ClinicalOrder` | `ordered`, `in_progress`, `completed`, `cancelled`, `reversed` |
+| `Prescription` | `draft`, `active`, `exhausted`, `expired`, `cancelled` |
+| `CsContainer` | `sealed`, `open`, `emptied`, `quarantined`, `disposed`, `retired` |
+| `LabOrder` | `ordered`, `specimen_collected`, `sent`, `partial`, `final`, `corrected`, `reviewed`, `communicated`, `cancelled` |
+| `Estimate` | `open`, `accepted`, `closed` |
+| `Invoice` | `draft`, `posted`, `partially_paid`, `paid`, `written_off` |
+| `Payment` | `pending`, `succeeded`, `failed`, `unknown`, `voided` |
+| `Enrollment` | `pending_payment`, `active`, `cancelling`, `cancelled`, `suspended`, `completed`, `ended_by_death` |
+| `BoardingReservation` | `requested`, `confirmed`, `checked_in`, `checked_out`, `cancelled`, `no_show` |
+| `CallRecord` | `ringing`, `in_progress`, `completed`, `failed` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them, and each move writes an audit event.

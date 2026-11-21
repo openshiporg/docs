@@ -1,0 +1,26 @@
+---
+title: Vaccines and reminders
+description: Administered and outside vaccines, rabies certificates and reminders.
+icon: Syringe
+---
+
+Vaccines are recorded as administered in the clinic or entered from outside records. Reminder protocols set when each patient is next due. Staff can suppress a reminder or add one by hand. Because the app sends no texts or emails, reminders are lists staff work from.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Vaccines | `/dashboard/platform/vaccines` | Vaccines, rabies certificates and reminders. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `PatientReminder` | `scheduled`, `due`, `overdue`, `satisfied`, `suppressed`, `lapsed` |
+| `ReminderProtocolVersion` | `draft`, `published`, `superseded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`administerVaccine`, `reverseVaccineAdministration`, `recordOutsideVaccine`, `suppressReminder`, `addManualReminder`.

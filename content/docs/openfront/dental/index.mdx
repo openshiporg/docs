@@ -1,0 +1,58 @@
+---
+title: Openfront Dental
+description: Self-hosted dental practice application for scheduling by operatory, charting, treatment plans, insurance, claims, patient payments, memberships, recall, and online booking.
+icon: Smile
+---
+
+
+[Source](https://github.com/openshiporg/openfront-dental) · [Live site](https://dental.openship.org)
+
+Openfront Dental is an open-source alternative to Dentrix. It runs a dental practice on one system. That includes patients and families, scheduling by operatory and provider, tooth and perio charting, treatment plans, insurance eligibility, claims and remittance posting, patient balances, payment plans and memberships, recall and hygiene, lab cases and consent forms. Online booking and the patient portal are GraphQL operations, so a practice can put them on any website. Built-in AI agents work through MCP tools, and every agent action is a proposal until a person approves it or an autonomy policy the practice set allows it.
+
+The live site is [dental.openship.org](https://dental.openship.org). It runs the sample practice, Bayview Family Dental in Tampa, FL. The staff dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/dental/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Location and operatory | An office and its chairs. Appointments book a chair and a provider, and the database refuses a double-booked chair or patient. |
+| Patient, family and guarantor | A patient belongs to a family group. A guarantor account carries the ledger for one or more patients. |
+| Chart entry | A procedure or condition on a tooth or surface, from diagnosed or planned to completed and posted. |
+| Treatment plan | A versioned set of planned items that is presented, accepted in whole or part, and estimated against coverage. |
+| Coverage and verification | A patient's insurance plan and the benefit checks that confirm it. |
+| Claim | Built from posted procedures, scrubbed, released by a person, sent, then adjudicated and posted from the remittance. |
+| Ledger entry | An append-only line on a guarantor account. Corrections are reversals or approved adjustments. |
+| Proposal | Something an AI agent wants to do. It waits for a person unless an autonomy policy allows it. |
+| Approval request | A maker-checker request. The person who asked can never approve it. |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS 4 and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin Next.js routes for the dashboard, the storefront, pay pages and API routes. |
+| `features/keystone/` | Lists, access rules, custom mutations, the command and audit spine, and seeds. |
+| `features/platform/` | Staff screens mounted at `/dashboard/platform/*`. |
+| `features/storefront/` | The public site, booking panel and patient portal sign-in. |
+| `features/integrations/` | Clearinghouse (manual and Stedi), payments (Stripe and manual) and voice (Twilio) adapters. |
+| `docs/` | Notes on the platform, patients, scheduling, clinical, insurance and the public API. |
+
+## Tenancy and ownership
+
+One deployment serves one practice organization with one or more locations. Staff are scoped to locations through `StaffAssignment`, and `canAccessAllLocations` widens that scope. Patient records are read through a PHI read audit (`PhiReadAudit`), so every read of a patient record is logged with a purpose. Portal accounts are separate from staff users and never reach the dashboard.
+
+## Rules the server enforces
+
+- Money is integer minor units. Float arithmetic on money is blocked by lint.
+- Status fields are read-only in GraphQL. They change only through named mutations that check the expected state, take an idempotency key and write an audit event in the same transaction.
+- The audit log is a SHA-256 hash chain. **Audit log** recomputes it and shows where it breaks.
+- Approvals are maker-checker. The requester can never approve, and an agent can never be the approver.
+- The database refuses a double-booked operatory or patient.
+- A released claim freezes a `ClaimVersion`. A correction is a new version.
+- The public booking API never reveals whether someone is already a patient.
+- `canBreakGlass` and `canBreakGlassRecords` are never on a default role.

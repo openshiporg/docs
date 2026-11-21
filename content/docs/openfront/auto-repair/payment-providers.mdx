@@ -1,0 +1,27 @@
+---
+title: Payment providers
+description: Stripe card payments, manual tenders, and the labor guide, parts supplier and vehicle data adapters.
+icon: CreditCard
+---
+
+## Card payments (Stripe)
+
+`features/keystone/lib/stripeGateway.ts` takes card payments through Stripe. The key decides test or live, and it accepts `sk_` or `rk_` keys.
+
+There is no webhook endpoint. Every payment and refund is settled by asking Stripe, from the polling the pay page does or from **Resolve payments** (`resolveShopPayments`). A call that fails without a clear answer leaves the payment `unknown`, and it is retried with the same idempotency key, so Stripe answers with the original result.
+
+Customers pay at `/pay/[token]` from a link staff create with `createInvoicePayLink`, or from the invoice page.
+
+## Manual tenders
+
+Cash, check and other tenders are recorded with `takeShopPayment`. Day close counts the drawer and freezes the day.
+
+## Other adapters
+
+| Adapter | What it does |
+|---|---|
+| Labor guide | The shop's own library of labor times. Licensed guides (MOTOR, ALLDATA, Mitchell 1) plug in once licensed. |
+| Parts supplier | `manual` by default: staff phone, walk up or use the supplier's website and record what they were told. PartsTech and Nexpart plug in once licensed. |
+| Vehicle data | NHTSA vPIC for VIN decoding and the NHTSA recall lookup, called live. |
+
+**Integrations** lists each provider connection and what it reported (`saveIntegrationConnection`, `recordIntegrationHealth`, `recordProviderObservation`).

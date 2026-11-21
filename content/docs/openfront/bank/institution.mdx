@@ -1,0 +1,32 @@
+---
+title: Institution, approvals and audit
+description: The institution profile, calendars, rail windows, parameters, partners, roles, agents, approvals and the audit log.
+icon: Building
+---
+
+**Institution** holds the profile, routing numbers, branches, programs, the Federal Reserve calendar, rail windows, dated regulatory parameters, partner connections and lists, and controls. Roles, staff limits and agent grants are managed here, and an agent grant is requested and approved.
+
+**Approvals** lists maker-checker requests waiting for a second person. **Audit log** shows the hash-chained events and verifies the chain.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Approvals | `/dashboard/platform/approvals` | Maker-checker requests waiting for a second person. |
+| Audit log | `/dashboard/platform/audit` | Hash-chained audit events and chain verification. |
+| Institution | `/dashboard/platform/institution` | Institution profile, calendars, rail windows, regulatory parameters and controls. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Program` | `draft`, `onboarding`, `active`, `outflows_paused`, `wind_down`, `terminated` |
+| `PartnerConnection` | `configured`, `testing`, `live`, `disabled` |
+| `AgentGrant` | `requested`, `active`, `revoked` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled`, `superseded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`assignRole`, `updateStaffLimits`, `requestAgentGrant`, `revokeAgentGrant`, `setPartnerCredentials`.

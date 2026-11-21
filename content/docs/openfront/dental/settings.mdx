@@ -1,0 +1,31 @@
+---
+title: Practice settings and audit
+description: Practice profile, jurisdiction packs, approvals, sign-in security and the audit log.
+icon: Settings
+---
+
+**Practice settings** holds the practice profile, jurisdiction packs and approval policies. Practice controls change only through an approval request (`requestPracticeControls`). **Sign-in security** sets up two-step verification and recovery codes for staff. **Approvals** lists maker-checker requests waiting for a second person. **Audit log** recomputes the hash chain on every view.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Approvals | `/dashboard/platform/approvals` | Requests waiting for a second person. |
+| Audit log | `/dashboard/platform/audit` | Hash-chained audit events and chain verification. |
+| Sign-in security | `/dashboard/platform/settings/security` | Two-step verification and recovery codes. |
+| Practice settings | `/dashboard/platform/settings` | Practice profile, jurisdiction packs and approval policies. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+| `AdapterInstallation` | `configured`, `live`, `suspended` |
+| `JurisdictionPack` | `draft`, `active`, `superseded` |
+| `BreakGlassEvent` | `active`, `ended`, `reviewed_ok`, `reviewed_violation` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`verifyMfa`, `manageMfa`.

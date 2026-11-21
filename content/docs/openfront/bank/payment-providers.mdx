@@ -1,0 +1,23 @@
+---
+title: Integrations
+description: FedACH files, identity review, open banking, OFAC screening, FinCEN filing, webhooks and the live guard.
+icon: Plug
+---
+
+Business code never imports a provider. Each port has a registry, and each connection runs in house or on a partner's test or production keys, set by an administrator and sealed (`setPartnerCredentials`).
+
+| Port | Provider | What it does |
+|---|---|---|
+| ACH | `fedach-file` | The bank is its own ODFI and RDFI on FedACH. Every outbound NACHA file is built and validated here. A person downloads it from **ACH → Files**, sends it through FedLine and records FedACH's acknowledgement. Received files are uploaded on the same page. |
+| Identity | `documentary-cip` | Documentary verification under the bank's CIP. It runs the checks that need no vendor and otherwise hands the check to a reviewer. It never passes anyone by itself. |
+| Open banking | `plaid` | Account linking through Plaid's API, with MX, Finicity and Akoya behind the same port. Needs the bank's Plaid keys, entered by an administrator. |
+| Screening | `ofac-internal` | An in-house matcher against the published SDN and Consolidated lists, with names and aliases scored. Date of birth and country raise or lower a score but never create a hit. |
+| BSA filing | `fincen-file` | Builds the BSA E-Filing batch XML for CTRs and validates it against FinCEN's XSD. It never transmits. |
+
+## Webhooks
+
+`/api/webhooks/[provider]` reads the raw body, verifies it with the provider's method and records it once by provider and event id, then answers quickly. The `webhooks.process` job applies it. Raw bodies are sealed because they can carry PII.
+
+## The live guard
+
+A production adapter refuses to construct unless `BANK_ALLOW_LIVE_PARTNERS=true`, a second person approved the connection's go-live, and the credentials were stored for the same environment. In-house connections and test credentials never reach a partner's production host.

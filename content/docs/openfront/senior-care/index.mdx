@@ -1,0 +1,56 @@
+---
+title: Openfront Senior Care
+description: Self-hosted application for skilled nursing, assisted living and memory care with census, clinical charting, eMAR, incidents, MDS and PDPM, billing and claims, resident trust, staffing and PBJ, and a public site with a family portal.
+icon: HeartPulse
+---
+
+
+[Source](https://github.com/openshiporg/openfront-senior-care) · [Live site](https://openfront-senior-care-production.up.railway.app)
+
+Openfront Senior Care is an open-source alternative to PointClickCare. It runs a senior living operator on one system, across skilled nursing and long-term care, assisted living and memory care. That covers places and census, residents and representatives, sales from inquiry to admission, clinical charting, care plans and assessments, eMAR and controlled counts, incidents and infection control, MDS 3.0 and PDPM, Medicare Part A coverage and claims, private-pay billing and Medicaid liability, resident trust accounts, scheduling, credentials and PBJ, the community's public website with tours and a waitlist, and a family portal. Staff can describe a job in plain words and have it built into a workflow from tested steps.
+
+The live site is [openfront-senior-care-production.up.railway.app](https://openfront-senior-care-production.up.railway.app). It runs the sample community, Maple Ridge Senior Living in Columbus, OH. The staff dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/senior-care/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Operator and community | The operator runs one or more communities. Each community has a time zone, a state rule pack and its own staff access. |
+| Place | A bed on a nursing unit or an apartment in a residential wing. Its status is a projection of the census. |
+| Stay and census event | A stay is one admission. Every admission, room change, leave, return, discharge and death is an append-only, hash-chained census event. |
+| Midnight census | A resident counts for a day if present at 23:59 local time. A person signs off each day. |
+| Representative | A person with healthcare or financial authority for a resident, such as a POA or guardian, who may get family portal access. |
+| Compliance clock | A regulatory deadline (bed-hold notice, F609 report, baseline care plan, MDS window) with its rule and citation. |
+| Workflow and finding | A workflow is a graph of tested blocks, activated after two approvals. A finding is something it noticed, with the evidence. |
+| Approval request | A maker-checker request. The person who asked can never approve it. |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS 4 and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin Next.js routes for the dashboard, the community website and family portal, the shift-offer link and API routes for exports, statements and the payment webhook. |
+| `features/keystone/` | Lists, access rules, mutations, services, clinical, billing, MDS, PDPM, claims, PBJ and NHSN logic, MCP tools, seeds and rule packs. |
+| `features/platform/` | Staff screens mounted at `/dashboard/platform/*`. |
+| `features/storefront/` | The community website, tour booking, waitlist and the family portal. |
+| `features/integrations/payment/` | The payment adapters. |
+
+## Tenancy and ownership
+
+One deployment serves one operator with several communities. Staff access is scoped to communities, and every list read is filtered by it. Protected health information goes through gated fields, and each read of it writes a `PhiReadAudit` row with its purpose. Emergency access outside a person's scope is a break-glass grant that expires and is reviewed by the privacy officer.
+
+## Rules the server enforces
+
+- Money is integer minor units. Resident trust lines are double-entry and append-only.
+- State changes are named mutations with a version check, an idempotency key and a hash-chained audit event. A replay returns the first answer.
+- Census and money commands run at Serializable isolation with bounded retries, and places are locked with sorted advisory locks.
+- A closed census day, a posted statement and a signed note are never edited. Corrections are new records.
+- Deadlines and rules come from jurisdiction packs, each rule with its citation.
+- There is no timer, worker or cron. Overdue clocks, expired reservations, offers, tour holds and break-glass grants, and the midnight census advance on the requests that touch them, and with **Refresh**.
+- Nothing is transmitted to CMS or a payer. Claim, MDS, PBJ and NHSN files are downloaded for a person to upload, and responses are uploaded back.
+- An AI draft stays a proposal until a person accepts it.

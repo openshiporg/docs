@@ -1,0 +1,31 @@
+---
+title: Count controlled drugs
+description: Count a controlled-substance container and work a discrepancy.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Open the register
+
+Go to **Controlled substances**.
+
+</Step>
+<Step>
+
+### Count
+
+Count the container (`countControlled`). The count is compared with the running balance.
+
+</Step>
+<Step>
+
+### Work a discrepancy
+
+If they differ, a discrepancy case opens. Advance it (`advanceDiscrepancy`) and report a loss if needed (`reportCsLoss`).
+
+</Step>
+</Steps>

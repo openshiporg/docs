@@ -1,0 +1,40 @@
+---
+title: Incidents and infection control
+description: Incidents with F609 clocks, infection cases, outbreaks, immunisations and the NHSN weekly report.
+icon: Siren
+---
+
+An allegation opens the F609 2-hour, 24-hour and 5-day clocks. Incidents are investigated and reported, and submitting the report satisfies the clock. Changing a reportable incident to not reportable is a two-person approval.
+
+**Infection control** holds cases with a cluster check, precautions, the 72-hour antibiotic time-out, outbreaks and immunisations. The **NHSN weekly report** builds the respiratory vaccination and case CSV from immunisations and infection cases, with the layout's rules checked before the file exists.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Incidents | `/dashboard/platform/incidents` | Incidents with F609 clocks, investigations and reports. |
+| Infection control | `/dashboard/platform/ipac` | Cases, precautions, antibiotic time-outs and outbreaks. |
+| NHSN weekly report | `/dashboard/platform/nhsn` | Weekly respiratory vaccination and case CSV. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Incident` | `reported`, `under_investigation`, `closed`, `entered_in_error` |
+| `IncidentInvestigation` | `open`, `completed` |
+| `RegulatoryReport` | `draft`, `submitted` |
+| `InfectionCase` | `suspected`, `confirmed`, `ruled_out`, `resolved` |
+| `PrecautionOrder` | `active`, `ended` |
+| `AntibioticCourse` | `active`, `completed`, `stopped` |
+| `Outbreak` | `declared`, `contained`, `closed` |
+| `Immunisation` | `offered`, `accepted`, `declined`, `given`, `contraindicated` |
+| `NhsnExport` | `generated`, `uploaded`, `confirmed` |
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `clinicalCommand` | `incident.report`, `incident.investigate`, `incident.close`, `ipac.immunisation` |
+| `billingCommand` | `nhsn.generate`, `nhsn.record` |

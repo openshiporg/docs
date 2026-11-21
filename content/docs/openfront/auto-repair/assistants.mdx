@@ -1,0 +1,34 @@
+---
+title: Diagnosis and assistants
+description: Diagnosis sessions, assistant plans, assistants and voice tasks.
+icon: Bot
+---
+
+A diagnosis session lists likely causes with their sources and the tests that confirm or rule them out. It must reach the confidence bar before it is marked ready to quote.
+
+An assistant drafts a plan (an agent proposal). Each step is previewed, the records it read are checked again before the step runs, and nothing runs until a person confirms it. **Assistants** lists each assistant, what it may do, the AI provider, and a pause. Voice tasks queue calls an assistant should make, such as calling a supplier, and the result is logged with `logVoiceCall`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Diagnosis | `/dashboard/platform/diagnosis` | Likely causes with their sources, tests, and the confidence bar before a quote. |
+| Assistant plans | `/dashboard/platform/proposals` | Plans assistants made, previewed and waiting for a person to confirm each step. |
+| Assistants | `/dashboard/platform/agents` | Assistants, what each may do, the AI provider and pausing. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `DiagnosisSession` | `open`, `testing`, `quote_ready`, `inconclusive`, `closed` |
+| `DiagnosisHypothesis` | `active`, `confirmed`, `ruled_out` |
+| `AgentProposal` | `drafted`, `previewed`, `confirmed`, `executing`, `executed`, `rejected`, `stale`, `failed` |
+| `AgentIdentity` | `active`, `paused`, `retired` |
+| `AgentToolGrant` | `active`, `revoked` |
+| `VoiceTask` | `queued`, `calling`, `completed`, `failed`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`createAssistant`, `grantAssistantScope`, `revokeAssistantScope`, `pauseAssistant`, `retireAssistant`, `saveAiProvider`, `removeAiProvider`, `askAssistant`, `draftAgentProposal`, `suggestEstimate`, `confirmAgentProposal`, `rejectAgentProposal`, `startDiagnosisSession`, `addDiagnosisHypothesis`, `recordDiagnosisTest`, `markDiagnosisQuoteReady`, `markDiagnosisInconclusive`, `closeDiagnosisSession`, `queueVoiceTask`, `logVoiceCall`.

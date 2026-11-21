@@ -1,0 +1,45 @@
+---
+title: Book and check out a visit
+description: Book a chair, seat the patient, complete procedures and take payment.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Book
+
+In **Schedule**, pick an operatory, provider and time. Booking holds the slot, then `bookAppointment` confirms it.
+
+</Step>
+<Step>
+
+### Confirm and arrive
+
+Mark the visit confirmed, then arrived when the patient checks in (`confirmAppointment`, `markArrived`).
+
+</Step>
+<Step>
+
+### Seat and chart
+
+Seat the patient (`seatPatient`) and complete the planned procedures in the chart (`completeProcedure`). Each completed procedure posts its fee.
+
+</Step>
+<Step>
+
+### Check out
+
+Mark the visit ready for checkout, then complete it (`markReadyForCheckout`, `completeAppointment`).
+
+</Step>
+<Step>
+
+### Take payment
+
+Record the patient's payment in **Patient payments** (`takePayment`).
+
+</Step>
+</Steps>

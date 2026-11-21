@@ -1,0 +1,26 @@
+---
+title: Memberships
+description: In-house membership plans, enrolment, agreements and the state licence.
+icon: BadgeCheck
+---
+
+A practice can sell its own membership plans instead of insurance. Plans are defined and retired, and a patient membership starts once the agreement is signed. Where a state requires a licence for in-house plans, it is recorded with `recordLicence`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Memberships | `/dashboard/platform/memberships` | In-house plans, members and the licence the state asks for. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `MembershipPlan` | `draft`, `active`, `retired` |
+| `PatientMembership` | `pending_agreement`, `active`, `past_due`, `frozen`, `cancelled`, `expired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`recordLicence`, `defineMembershipPlan`, `retireMembershipPlan`, `enrolMembership`, `signMembershipAgreement`, `freezeMembership`, `cancelMembership`.

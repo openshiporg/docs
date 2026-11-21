@@ -1,0 +1,30 @@
+---
+title: Calls and the assistant
+description: The voice receptionist, the manual call log, signals and AI proposals.
+icon: Bot
+---
+
+Signal checks look for work (an unverified coverage, a claim waiting too long, an open chair) and the assistant turns them into proposals. A proposal waits for a person unless an autonomy policy the practice set allows that kind of action. Separate permissions decide claim, clinical and financial proposals.
+
+**Calls** connects a Twilio phone number for the voice receptionist and keeps a manual call log for calls handled by staff.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Assistant | `/dashboard/platform/assistant` | What the assistant noticed, what it suggests, and what came of it. |
+| Calls | `/dashboard/platform/calls` | Phone calls: the voice receptionist on a connected phone number, and a manual call log. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Proposal` | `proposed`, `validated`, `invalid`, `approved`, `rejected`, `expired`, `executing`, `executed`, `failed`, `unknown` |
+| `Signal` | `open`, `proposed`, `resolved_by_execution`, `resolved_by_change`, `dismissed`, `expired` |
+| `AgentToolGrant` | `requested`, `active`, `revoked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`runSignalChecks`, `setAutonomyPolicy`, `decideProposal`, `setVoicePolicy`, `logManualCall`, `markCallFollowedUp`, `connectPhoneNumber`, `disconnectPhoneNumber`.

@@ -1,0 +1,93 @@
+---
+title: Getting started with Home Services
+description: Install Openfront Home Services, configure it, and load the sample company.
+icon: Terminal
+---
+
+
+## Requirements
+
+- Node.js 20 or later
+- PostgreSQL
+- A Stripe key if you want card payments (optional)
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-home-services.git
+cd openfront-home-services
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+cp .env.example .env   # set DATABASE_URL and SESSION_SECRET
+```
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SHADOW_DATABASE_URL` | Shadow database used by `npm run migrate:gen`. |
+| `SESSION_SECRET` | Signs staff sessions and keys the audit hash chain. Required. |
+| `SECRET_BOX_KEY` | Seals gate codes and integration credentials. Falls back to `SESSION_SECRET` in development, and is required in production. |
+| `STRIPE_SECRET_KEY` | Card payments on Stripe Checkout. The mode follows the key. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` | The model used by the assistant. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mail for staff password resets. |
+| `HS_TX_MAX_WAIT_MS` | Transaction lock wait in milliseconds (15000 by default). |
+| `PUBLIC_SIGNUPS_ALLOWED` | Allows staff self-signup when set. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm ci
+npm run migrate
+npm run dev
+```
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first owner. Its role, **Owner**, gets every permission except break-glass.
+
+</Step>
+<Step>
+
+### Load the sample company
+
+The setup cards load Summit Plumbing & Air LLC, a Texas plumbing and HVAC company with an Austin branch, in three sections:
+
+| Section | What it loads |
+|---|---|
+| Company, people and controls | The company, branch and business units, roles, staff and approval policies. |
+| Technicians, job types and customers | Technicians with credentials and skills, a Comfort Advisor for sales visits, weekly shifts and four weeks of on-call, job types, the next 21 days of arrival windows, and customers. |
+| Price book | Good/better/best ladders, labour rates, a 1.5× after-hours multiplier and tiered markup, submitted for second-person approval. |
+
+Or, after creating the owner, run the seed. It loads the same company with a first working day: leads, office and AI-booked jobs, a recorded call, a hand-off to the office and the dispatcher's assignments. It is idempotent.
+
+```bash
+npm run seed
+```
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm run verify
+HS_TEST_DATABASE_URL='postgresql://…?schema=vitest' npm test   # adds the database tests
+```

@@ -1,0 +1,47 @@
+---
+title: GraphQL API
+description: The endpoint, MCP transport, and the custom queries and mutations.
+icon: Code
+---
+
+
+Openfront Vet Clinic serves Keystone GraphQL at `/api/graphql`. The MCP server for agents is at `/api/mcp-transport/mcp`. An agent acts only through its tool grants and never inherits the permissions of the person who connected it.
+
+## Limits
+
+- A top-level list returns at most 500 rows. Page with `take` and `skip`.
+- A nested list with no `take` returns at most 50 rows, and a few short ones return at most 10. Pass `take` (up to 500) for more.
+- One request may ask for about 5,000 rows and 2,000 nested lookups in total. A request over that is refused with `QUERY_TOO_BROAD` before it runs.
+- One request may sign in only once, and may check the audit chain at most twice.
+- One address gets 20 sign-in attempts in 15 minutes, and 5 failures per account.
+
+## Public operations
+
+The client site does not use public GraphQL operations. It uses the server actions in `features/storefront/actions.ts` (`signInAction`, `registerAction`, `openTimesAction`, `bookVisitAction`, `cancelVisitAction`, `requestRefillAction`). `payByLink` and `checkLinkPayment` take a signed pay-link token instead of a session.
+
+## Staff queries
+
+`practiceSettingsItems`, `clientPeople`, `speciesList`, `specimenList`, `addenda`, `diagnoses`, `redirectToInit`, `verifyAuditChain`, `policyInForce`, `policyMatrix`, `searchAvailability`, `triageQuestions`, `lookupKnowledge`, `receptionContext`, `previewDose`, `invoicePayLink`, `payLink`.
+
+## Mutations by area
+
+| Area | Mutations |
+| --- | --- |
+| Today, schedule and whiteboard | `bookAppointment`, `cancelAppointment`, `rescheduleAppointment`, `confirmAppointment`, `acceptAppointmentRequest`, `checkInAppointment`, `markNoShow`, `moveWhiteboardEntry`, `addToWaitlist`, `refreshClinicalClocks` |
+| Clients and patients | `registerClient`, `registerPendingClient`, `confirmRegistration`, `addPatient`, `recordWeight`, `addPatientAlert`, `recordConsent`, `recordPatientDeath` |
+| Medical records and scribe | `openEncounter`, `saveSoapSection`, `recordVitals`, `setExamFinding`, `addDiagnosis`, `resolveProblem`, `submitEncounter`, `returnEncounter`, `signEncounter`, `addAddendum`, `requestVoidEncounter`, `startScribeSession`, `draftScribeSession`, `acceptScribeDraft`, `rejectScribeDraft` |
+| Hospital and treatment sheet | `placeOrder`, `cancelOrder`, `reverseAdministration`, `completeOrder`, `recordAdministration`, `admitPatient`, `moveCage`, `dischargePatient`, `completeTreatmentTask`, `skipTreatmentTask`, `rescheduleTreatmentTask`, `openAnaesthesia`, `anaesthesiaEvent`, `recordMonitoring`, `closeAnaesthesia`, `saveSurgeryReport`, `saveDentalChart` |
+| Vaccines and reminders | `administerVaccine`, `reverseVaccineAdministration`, `recordOutsideVaccine`, `suppressReminder`, `addManualReminder` |
+| Prescriptions and controlled substances | `writePrescription`, `decideRefill`, `dispenseFill`, `receiveStockLot`, `setLotQuarantine`, `receiveControlled`, `openControlled`, `wasteControlled`, `countControlled`, `reportCsLoss`, `advanceDiscrepancy`, `destroyControlled`, `submitPdmp`, `issueOrderForm`, `receiveOnOrderForm`, `transferControlled`, `confirmTransfer`, `logCabinetAccess`, `generatePdmpFile`, `printDispenseLabel`, `requestExternalFill`, `decideExternalFill`, `exportWrittenRx` |
+| Labs and imaging | `orderLab`, `collectSpecimen`, `sendLabOrder`, `cancelLabOrder`, `enterLabResult`, `importLabFile`, `reviewLabResult`, `communicateLabResult`, `notifyResultsReady`, `orderImaging`, `recordImagingStudy`, `addImagingReport`, `communicateImaging`, `loadInHouseLabCatalog`, `saveLaboratory`, `saveLabTest`, `mapLabCode` |
+| Inventory | `addStockLocation`, `receiveStock`, `adjustStock`, `addSupplier`, `draftPurchaseOrder`, `submitPurchaseOrder`, `cancelPurchaseOrder`, `receivePurchaseOrder`, `setReorderRule`, `countStock`, `openRecall`, `markRecallExposure`, `closeRecall`, `logTemperature`, `resolveExcursion` |
+| Billing and insurance | `captureVisitCharges`, `addFeeCharge`, `addManualCharge`, `reverseCharge`, `draftInvoice`, `discountInvoice`, `postInvoice`, `recordPayment`, `takeCardPayment`, `checkPaymentStatus`, `applyDeposit`, `issueCreditNote`, `requestRefund`, `issueApprovedRefund`, `checkRefundStatus`, `requestWriteOff`, `closeArPeriod`, `reopenArPeriod`, `presentEstimate`, `reviseEstimate`, `declineEstimate`, `refreshEstimates`, `acceptEstimate`, `recordOverageApproval`, `closePlan`, `startFeeDraft`, `saveFeeItem`, `requestFeePublish`, `discardFeeDraft`, `addInsurancePolicy`, `requestAuthorization`, `recordAuthorizationDecision`, `buildClaimPacket`, `advanceClaim`, `payByLink`, `checkLinkPayment`, `startEstimate` |
+| Wellness plans | `savePlanVersion`, `enrolPatient`, `runPlanBilling`, `retryPlanCharge`, `checkPlanCharge`, `replacePlanCard`, `cancelEnrollment`, `useEntitlement`, `returnEntitlement` |
+| Boarding and grooming | `saveRunType`, `setRunStatus`, `reserveBoarding`, `confirmBoarding`, `cancelBoarding`, `checkInBoarding`, `moveBoardingRun`, `logBoardingCare`, `returnBelonging`, `checkOutBoarding`, `bookGroom`, `advanceGroom`, `saveGroomNote` |
+| End of life | `signEuthanasiaConsent`, `revokeEuthanasiaConsent`, `recordEuthanasia`, `advanceAftercare`, `addMemorialItem` |
+| Calls, messages and agents | `startCall`, `recordCallDisclosure`, `verifyCaller`, `appendCallTranscript`, `endCall`, `runTriage`, `referToEmergency`, `requestRefill`, `requestRecords`, `setAgentKillSwitch`, `bindAgentApp`, `unbindAgentApp`, `suggestCharges`, `clinicInsights` |
+| Records requests | `startRecordsVerification`, `attachRecordsProof`, `verifyRecordsRequest`, `decideRecordsRequest`, `withdrawRecordsRequest`, `releaseRecords`, `verifyReleasePacket` |
+| Practice, team and compliance | `draftRuleVersion`, `requestRulePublication`, `requestProductionAdjustment`, `openPayPeriod`, `calculatePayPeriod`, `reopenPayPeriod`, `requestPayPeriodApproval`, `exportPayPeriod`, `lockPayPeriod`, `previewImport`, `applyImport`, `exportData`, `planCampaign`, `cancelCampaign`, `approveCampaign`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestPracticeControls` |
+| Setup and approvals | `loadPracticeSetup`, `loadClinicSetup` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

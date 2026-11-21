@@ -1,0 +1,16 @@
+---
+title: External storefronts
+description: Give an LLM the Vet Clinic storefront skill to adapt the built-in client site.
+icon: AppWindow
+---
+
+To build a custom Vet Clinic client site, copy the skill and give it to your LLM. The skill explains that `features/storefront` holds the built-in site and its server actions, and that the client's identity always comes from the server-side session.
+
+Skill file: [`/skills/openfront-vet-clinic-custom-storefront/SKILL.md`](/skills/openfront-vet-clinic-custom-storefront/SKILL.md)
+
+## What a separate site must keep
+
+- The client signs in with a contact on file plus a pet's name and date of birth, and the session token stays in an http-only cookie.
+- Every read is scoped to the signed-in household.
+- An emergency is never booked online. The site should point to the practice phone and the emergency hospital.
+- Card numbers go to Stripe Elements, never to your server.

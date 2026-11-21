@@ -1,0 +1,46 @@
+---
+title: External dashboards
+description: Give an LLM the Hedge Fund dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Hedge Fund dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the firm screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Hedge Fund checkout before proposing work.
+
+Skill file: [`/skills/openfront-hedge-fund-custom-dashboard/SKILL.md`](/skills/openfront-hedge-fund-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/strategies` | Top level | Strategies, versions, backtests and promotion evidence. |
+| `/dashboard/platform/brokers` | Top level | Connect Alpaca with an API key and bind its account to a vehicle. |
+| `/dashboard/platform/orders` | Top level | Proposals, orders, broker orders and executions. |
+| `/dashboard/platform/positions` | Top level | Positions, tax lots and P&L by book. |
+| `/dashboard/platform/approvals` | Top level | Maker-checker requests waiting for a second person. |
+| `/dashboard/platform/blocks` | Trading | One order across several sleeves, allocation fixed before routing. |
+| `/dashboard/platform/locates` | Trading | Short-sale locates and trade errors. |
+| `/dashboard/platform/risk` | Risk | Risk policies, breaches and daily risk. |
+| `/dashboard/platform/capital` | Risk | Paper to live promotions and capital allocations. |
+| `/dashboard/platform/market-data` | Trading | Quote sources and recorded research history. |
+| `/dashboard/platform/controls` | Risk | Kill switches and arming. |
+| `/dashboard/platform/nav` | Fund | Shadow and official NAV runs by share class. |
+| `/dashboard/platform/close` | Fund | Official NAV, administrator tie, finalise, publish, fee crystallisation and restatements. |
+| `/dashboard/platform/reconciliation` | Fund | Prime-broker and administrator reconciliation, breaks and the files we send. |
+| `/dashboard/platform/ledger` | Fund | Trial balance, journals and accounting periods. |
+| `/dashboard/platform/investors` | Fund | Investor register, screening, holdings, liquidity terms and statements. |
+| `/dashboard/platform/dealing` | Fund | Subscriptions, redemptions, gate runs and payments. |
+| `/dashboard/platform/funds` | Fund | Share classes, fee terms, unit dealing and corporate actions. |
+| `/dashboard/platform/compliance` | Compliance | What is due: filings, attestations and personal reports, and the firm's policies. |
+| `/dashboard/platform/restricted` | Compliance | Restricted and watch lists; every order and personal trade is checked against them. |
+| `/dashboard/platform/personal-trading` | Compliance | Pre-clearance, brokerage accounts, holdings and transaction reports, gifts and political contributions. |
+| `/dashboard/platform/filings` | Compliance | Regulatory filings, the ownership monitor and the 13F information table. |
+| `/dashboard/platform/marketing` | Compliance | Tear sheets, letters and the fund page: nothing is published until compliance approves the exact text. |
+| `/dashboard/platform/incidents` | Compliance | Report and work incidents; the Reg S-P notice clock. |
+| `/dashboard/platform/audit` | Firm | Hash-chained audit events and chain verification. |
+| `/dashboard/platform/operations` | Firm | Background jobs and their last runs. |
+| `/dashboard/platform/settings` | Firm | Firm profile, calendars and approval policies. |

@@ -1,0 +1,57 @@
+---
+title: Openfront Home Services
+description: Self-hosted application for plumbing, HVAC and electrical companies with calls and leads, online booking, dispatch, price books, estimates, invoices, memberships, inventory, warranty, permits and payroll.
+icon: HousePlus
+---
+
+
+[Source](https://github.com/openshiporg/openfront-home-services) · [Live site](https://home-services.openship.org)
+
+Openfront Home Services is an open-source alternative to ServiceTitan. It runs a plumbing, HVAC or electrical business on one system. That covers calls, leads and online booking, arrival-window capacity, the dispatch board and a technician field view, flat-rate price books, good/better/best estimates, the home-solicitation cancellation flow, invoices, payments and financing, memberships and service agreements, installed equipment and manufacturer warranty, inventory and purchasing, permits, the refrigerant log and liens, and timesheets, pay plans and payroll export. An AI receptionist answers recorded calls and books windows through MCP tools with scoped grants.
+
+The live site is [home-services.openship.org](https://home-services.openship.org). It runs the sample company, Summit Plumbing & Air in Austin, TX. The staff dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/home-services/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Customer and service location | A customer with contacts and consent, and the addresses where work happens, with sealed gate codes. |
+| Lead | Demand from any channel, with a response timer, source and disposition. |
+| Arrival window | A bookable window with capacity in hours. A full window is refused, so it never overbooks. |
+| Job and visit | A job is the work for a customer. Each visit is one trip, with a technician, checklist, photos and status. |
+| Price book | Categories, items, labour rates and markup tables, edited as a draft version and published after approval. |
+| Estimate | Good/better/best options presented and sold as versions. A sale can raise a cancellation right. |
+| Membership | A plan the customer pays for, with included visits owed and billed in monthly runs. |
+| Policy pack | Federal and Texas rules (Cooling-Off, home solicitation, calling hours, recording, sales tax, licensing, liens, wage-hour) resolved by place and date. A missing rule fails closed. |
+| Approval request | A maker-checker request. The person who asked can never approve it. |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS 4 and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin Next.js routes for the dashboard, the field view, the storefront and API routes for exports and documents. |
+| `features/keystone/` | Lists, access rules, mutations, services, MCP tools, seeds and policy packs. |
+| `features/platform/` | Staff screens mounted at `/dashboard/platform/*`, and the field view at `/dashboard/field/*`. |
+| `features/storefront/` | The company website, online booking, membership and visit pages and invoice payment. |
+| `features/integrations/maps/` | The geocoding and drive-time adapter. |
+
+## Tenancy and ownership
+
+One deployment serves one company with branches and business units. Staff are scoped by role and branch. Gate codes and integration credentials are sealed with AES-256-GCM, and revealing one is a logged command (`revealAccessSecret`). Agent reads are masked, and agent writes need a grant for the exact tool.
+
+## Rules the server enforces
+
+- Money is integer minor units.
+- State changes are named mutations with a version check, an idempotency key and a hash-chained audit event.
+- Arrival-window capacity never overbooks. A full window is refused.
+- Dispatch assignment is a compare-and-set on the visit plus a lock on each technician's day, so two dispatchers cannot both win.
+- Policy packs resolve by place and date and fail closed. No policy, an unknown calendar or no verified notice text stops a sale.
+- While a cancellation notice is open, covered work cannot start without a second person's approved override.
+- There is no timer, worker or cron. Time-based states advance on the requests that touch them, and with **Refresh**.
+- An agent can never approve, and a tool it has no grant for is refused with `SCOPE_DENIED` and recorded.

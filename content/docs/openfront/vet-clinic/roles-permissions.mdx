@@ -1,0 +1,46 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every custom mutation checks the flag it needs on the server. Licensed acts also need an active licence. Flags are defined in `features/keystone/access.ts`.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| Starter and fleet-mandatory | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Practice | `canManagePractice`, `canManageIntegrations`, `canManagePolicies`, `canManageFees`, `canApprovePolicies`, `canApproveFees` |
+| Clients and patients | `canManageClients`, `canManagePatients`, `canMergeRecords`, `canApproveMerges`, `canReadClinical`, `canReadClientPII` |
+| Schedule | `canBook`, `canOverbook`, `canCheckIn`, `canManageSchedules` |
+| Clinical | `canWriteRecord`, `canSignRecord`, `canOrder`, `canAdminister`, `canPrescribe`, `canPerformSurgery`, `canAuthoriseEuthanasia` |
+| Pharmacy | `canDispense`, `canFulfilRefill`, `canManageRefills` |
+| Controlled substances | `canAdministerControlled`, `canWitnessControlled`, `canCountControlled`, `canReceiveControlled`, `canManageControlled`, `canViewControlled` |
+| Inventory | `canManageInventory`, `canReceiveStock`, `canOrderStock`, `canApprovePurchase`, `canReleaseQuarantine` |
+| Money | `canTakePayments`, `canPostInvoices`, `canAddManualCharge`, `canDiscount`, `canApproveDiscount`, `canApproveWriteOff`, `canViewFinance` |
+| Records | `canProcessRecordsRequests`, `canApproveRecordsRelease` |
+| Boarding and grooming | `canManageBoarding`, `canGroom` |
+| Communications | `canMessageClients`, `canManageTemplates` |
+| Agents | `canManageAgents`, `canApproveAgentScopes` |
+| Break-glass (never seeded) | `canBreakGlass` |
+
+## Seeded roles
+
+Loading the sample practice creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| Owner / Medical Director | Everything clinical and operational, incl. policies, fees, integrations, CS registrant duties and approvals. Break-glass is never seeded. |
+| Practice Manager | Schedules, staff, inventory, reports, approvals (discounts, refunds, write-offs) within thresholds; no clinical signing. |
+| Veterinarian (DVM) | Examine, sign records, order, prescribe, approve refills, authorise euthanasia; CS administration and witness. Licensed acts also need an active CA licence. |
+| Relief DVM | As DVM, time-boxed by the user access expiry and limited to assigned locations. |
+| Credentialed Technician (RVT) | History, vitals, treatments, anaesthesia records, supervised vaccines; CS administration under an order, witness and counts. |
+| Assistant / Kennel | Tasks, run cards, daily care logs and feeding; no controlled substances. |
+| Client Service Representative | Clients and patients, booking, check-in/out, payments, estimate presentation, records and refill intake. |
+| Groomer | Groom schedule and notes. |
+| Inventory Lead | Items, purchase orders, receiving (CII receipts need a registrant co-sign), counts, quarantine. |
+| Bookkeeper | Invoices, payments, statements, exports, period close. |
+| Agent Owner | Owns AI agent identities and requests their grants; a second person approves. |
+| AI Agent | Least privilege for AI agents. Holds no permission: an agent acts only through its tool grants and never inherits the person who connected it. |

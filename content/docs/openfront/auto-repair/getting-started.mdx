@@ -1,0 +1,94 @@
+---
+title: Getting started with Auto Repair
+description: Install Openfront Auto Repair, configure it, and load the sample shop group.
+icon: Terminal
+---
+
+
+## Requirements
+
+- Node.js 20 or later
+- PostgreSQL
+- S3-compatible storage for inspection photos
+- A Stripe key if you want card payments (optional)
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-auto-repair.git
+cd openfront-auto-repair
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+DATABASE_URL=postgres://user:password@localhost:5432/openfront_auto_repair
+SESSION_SECRET=
+AUTO_SECRET_KEY=   # 64 hex characters
+```
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SESSION_SECRET` | Signs staff sessions. Required. |
+| `AUTO_SECRET_KEY` | Keys the contact hashes and seals provider credentials in `SecretBox`. 64 hex characters. Required. |
+| `PUBLIC_TOKEN_SECRET` | Derives customer link tokens. Falls back to `SESSION_SECRET`. |
+| `PUBLIC_BASE_URL` | Base URL used in customer links. |
+| `STRIPE_SECRET_KEY` | Card payments. Accepts `sk_` or `rk_` keys, and the key decides test or live. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Storage for inspection photos and media. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Default model for assistants. A provider can also be saved under **Assistants**. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mail for staff password resets. |
+| `AR_TX_TIMEOUT_MS`, `DATABASE_CONNECTION_LIMIT` | Transaction timeout and connection pool size. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Allows staff self-signup when set. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm install
+npm run dev    # builds Keystone, applies migrations, starts Next.js
+```
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first owner. Its role, **Owner**, gets every permission except break-glass.
+
+</Step>
+<Step>
+
+### Load the sample shop group
+
+The onboarding card **Load Northgate Auto Group** runs **Organisation, shops and people** (`loadNorthgateSetup`). It loads Northgate Auto Group LLC with two California shops: Northgate Auto Care (NGA, Sacramento, 8 bays including a heavy lift and alignment) and Northgate Tire & Lube (NGT, Roseville, with tire, alignment and quick-lube bays). It also loads jurisdiction rules, shop policies, booking rules, the service catalog, customers, fleets, appointments, a complete repair order, parts and stock, technicians and communications.
+
+The same steps run from the command line, and running them again changes nothing:
+
+```bash
+DATABASE_URL=postgres://… npm run seed
+```
+
+Seeded staff (for example `priya.shah@northgateautocare.com`) cannot sign in until an owner sets their password.
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm run verify
+```
+
+Database tests run when `AR_TEST_DATABASE_URL` points at a disposable Postgres schema named `vitest`.

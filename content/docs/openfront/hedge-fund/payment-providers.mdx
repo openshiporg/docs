@@ -1,0 +1,31 @@
+---
+title: Brokers and integrations
+description: Alpaca trading, market data, administrator files and the strategy runtime.
+icon: Plug
+---
+
+## Brokers
+
+Alpaca is connected under **Brokers** with the firm's own API key. One adapter, one code path: the key decides whether the account is an Alpaca paper trading account or the live account. At connect time the key is checked against both trading hosts, and the connection records which one accepted it. Keys are sealed with `PII_ENCRYPTION_KEY` and never shown, logged or returned. A discovered account trades only after a second person approves binding it to a vehicle.
+
+Business code resolves an adapter from the venue registry and never imports a provider module itself. A send or cancel that loses its answer is `unknown`, and is looked up again before anything else is sent.
+
+## Market data
+
+| Source | What it does |
+|---|---|
+| Alpaca Market Data | Latest quotes and trades. Without keys it reports `MARKET_DATA_UNAVAILABLE` and never substitutes another price. |
+| Robinhood (read-only) | Quotes through a read-only MCP proxy. Only `get_equity_quotes` and `get_equity_tradability` pass; any other tool is refused before a request is made. |
+| Recorded history | Daily bars for backtests, marks and the VaR and ADV history of pre-trade checks. Never a quote for an order. |
+
+## Administrator and prime-broker files
+
+Files are parsed with a profile: the generic CSV, SS&C GlobeOp or Citco. Every numeric column has a declared scale, and a value that would lose precision is rejected, never rounded. The trade blotter and capital activity sent to the administrator are built from the books and kept as a record of exactly what was sent.
+
+## Strategy runtime
+
+`strategy-lab` is the built-in runtime, with three strategy kinds (`inverse_vol_momentum`, `trend_filtered_oversold`, `sector_rotation`) in exact decimals. Each decision uses a bar's close only. Other runtimes register with the same two calls: backtest a sealed version on a dataset, and turn closed bars into targets.
+
+## Sanctions screening
+
+Investors are screened against the Treasury's published SDN list and its alias file. If the list cannot be fetched and no copy is held, screening is refused. A near match is a potential match for a person to decide.

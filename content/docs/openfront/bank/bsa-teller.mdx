@@ -1,0 +1,33 @@
+---
+title: BSA/AML, teller and vault
+description: Teller drawers and the vault, cash activity, CTRs and sanctions screening.
+icon: Vault
+---
+
+Each teller drawer and vault is its own ledger account that cannot go below zero, so the drawer's balance is the expected count at every moment. A drawer is opened with a count and closed after a supervisor's balancing. Vault and Federal Reserve currency movements need dual control.
+
+Posting teller cash writes an immutable cash transaction and updates the party's daily total. The teller is warned before posting when the day's cash in or out would exceed $10,000, so identification is captured at the window. A CTR is then drafted, built as FinCEN XML and recorded when filed. Sanctions lists are loaded from the published files.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| BSA/AML | `/dashboard/platform/bsa` | Cash transactions, CTRs and screening. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `TellerDrawer` | `assigned`, `open`, `balancing`, `closed`, `closed_over_short` |
+| `TellerSession` | `open`, `balancing`, `closed` |
+| `VaultTransfer` | `requested`, `dual_controlled`, `completed`, `canceled` |
+| `CtrFiling` | `required`, `drafted`, `filed`, `acknowledged`, `rejected`, `amended` |
+| `CtrExemption` | `active`, `revoked` |
+| `ScreeningListVersion` | `loading`, `active`, `superseded` |
+| `OfacReport` | `draft`, `filed`, `acknowledged` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`loadSanctionsList`, `setupTellerDrawer`, `openTellerDrawer`, `closeTellerDrawer`, `requestVaultCash`, `requestFedCurrency`, `confirmVaultCash`, `previewCashTransaction`, `postTellerCash`, `draftCtrFiling`, `recordCtrFiling`, `ctrFilingXml`.

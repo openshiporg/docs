@@ -1,0 +1,29 @@
+---
+title: Day and month close
+description: Close the day, bank the deposit, close and reopen the month, and run pending work.
+icon: CalendarCheck
+---
+
+Closing a day freezes its takings by tender, and the cash and checks are banked as a deposit batch. Closing a month locks the period. Reopening it needs a second person, and changes after reopening are posted as a restatement before the period is closed again.
+
+**Run pending work** runs the scheduled steps (hold expiry, no-show sweep, stale eligibility checks and claims, remittance fetch and payment jobs) on request, each under a lease.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Day and month close | `/dashboard/platform/close` | Close the day, bank the cash, close and reopen the month. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `DayClose` | `open`, `closing`, `closed` |
+| `PeriodClose` | `open`, `closing`, `closed`, `reopen_requested`, `reopened` |
+| `DepositBatch` | `open`, `banked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`closeDay`, `bankDeposit`, `closePeriod`, `requestPeriodReopen`, `postRestatement`, `reclosePeriod`, `exportJournalCsv`, `runPendingWork`.

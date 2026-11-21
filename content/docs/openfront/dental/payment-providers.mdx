@@ -1,0 +1,42 @@
+---
+title: Payment providers
+description: Stripe card payments, manual tenders, and the clearinghouse, voice and model adapters.
+icon: CreditCard
+---
+
+Payment and provider adapters live in `features/integrations/`. Business code calls the adapter, never a provider SDK.
+
+## Card payments (Stripe)
+
+`features/integrations/payments/stripe.ts` calls the Stripe REST API with `fetch` and no SDK. Only the amount, currency, a reference and the payment kind are sent to Stripe, never clinical data. Every call carries an `Idempotency-Key`.
+
+| Setting | Use |
+|---|---|
+| `STRIPE_SECRET_KEY` | Server key. Test keys and live keys use the same code path. |
+| `NEXT_PUBLIC_STRIPE_KEY` | Publishable key for the pay page. |
+| `STRIPE_WEBHOOK_SECRET` | Verifies events at `/api/webhooks/stripe`. |
+
+The webhook handles `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded` and `charge.dispute.created`. Patients pay a statement at `/pay/[code]`, which uses `/api/pay/[code]/start`, `/api/pay/[code]/confirm` and `/api/pay/[code]/pdf`.
+
+## Manual tenders
+
+Cash, check and other tenders are recorded at the desk with `takePayment`. Day close groups them into a deposit batch (`bankDeposit`).
+
+## Clearinghouse
+
+`features/integrations/clearinghouse` has two adapters.
+
+| Adapter | What it does |
+|---|---|
+| `manual` | The default. Claims are printed or exported (`exportClaimCsv`) and sent through the payer portal, and explanations of benefits are entered by hand (`enterManualEob`). |
+| `stedi` | Eligibility checks, claim submission, claim status and remittance fetch against the Stedi API. The key comes from the installation secret, or `STEDI_API_KEY`. |
+
+A timeout is recorded as `unknown`, never as rejected. It is reconciled by a re-query with the same request hash, so a request is never duplicated.
+
+## Voice
+
+`features/integrations/voice/twilio.ts` connects a Twilio number (`connectPhoneNumber`). Twilio posts each turn of a call to `/api/voice/twilio`, signed with `X-Twilio-Signature`. Only the practice's own template words are spoken. Calls without a connected number are logged by hand (`logManualCall`).
+
+## Model
+
+The assistant uses OpenRouter (`OPENROUTER_API_KEY`). Without a key it reports "No model key is set up."

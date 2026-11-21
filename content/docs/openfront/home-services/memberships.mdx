@@ -1,0 +1,40 @@
+---
+title: Memberships and service agreements
+description: Plans, members, visits owed, renewals, billing runs and commercial agreements.
+icon: BadgeCheck
+---
+
+Membership plans are drafted and published as versions, with a price and what each includes. Selling a membership keeps a card on file through Stripe Checkout. **Due for service** is the call list of visits members and agreements are owed. **Renewals** lists memberships ending soon, with the message to send and a CSV.
+
+**Billing runs** charges the month's membership payments when staff press the button. There is no scheduler. Failed charges are retried from the run. **Service agreements** cover planned maintenance for commercial customers.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Memberships | `/dashboard/platform/memberships` | Members, what is left on each plan, and standing today. |
+| Membership plans | `/dashboard/platform/membership-plans` | Plans, prices, what each includes, and publishing. |
+| Due for service | `/dashboard/platform/due-for-service` | Call list of visits members and agreements are owed. |
+| Renewals | `/dashboard/platform/renewals` | Memberships ending soon, with the message to send and a CSV. |
+| Billing runs | `/dashboard/platform/billing-runs` | Charge the month's membership payments with one button. |
+| Service agreements | `/dashboard/platform/agreements` | Planned maintenance for commercial customers. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Membership` | `pending_payment`, `active`, `past_due`, `suspended`, `renewal_due`, `expired`, `cancelled`, `transferred` |
+| `MembershipPlan` | `active`, `retired` |
+| `MembershipPlanVersion` | `draft`, `active`, `retired` |
+| `MembershipTerm` | `active`, `cancelled` |
+| `MembershipBillingRun` | `running`, `completed`, `partial` |
+| `MembershipBillingAttempt` | `queued`, `charging`, `succeeded`, `failed`, `unknown` |
+| `RenewalNotice` | `drafted`, `contacted`, `dismissed` |
+| `RecurringServiceEvent` | `open`, `booked`, `skipped` |
+| `ServiceAgreement` | `draft`, `active`, `ended` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openMembershipPlan`, `saveMembershipPlanDraft`, `activateMembershipPlanVersion`, `retireMembershipPlan`, `sellMembership`, `updateMembershipPaymentMethod`, `renewMembership`, `cancelMembership`, `transferMembership`, `bookMembershipVisit`, `releaseMembershipVisit`, `runMembershipBilling`, `retryMembershipCharge`, `recordRenewalNotice`, `saveServiceAgreement`, `activateServiceAgreement`, `endServiceAgreement`, `setDocumentExpiry`.

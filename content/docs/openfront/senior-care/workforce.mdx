@@ -1,0 +1,48 @@
+---
+title: Scheduling, credentials and PBJ
+description: Shifts and open-shift offers, staffing against targets, credentials, timecards, PBJ and agency invoices.
+icon: CalendarClock
+---
+
+Shifts are assigned with a credential check, and open shifts are offered by a signed link the staff member answers at `/shift-offer/[token]`. Staffing days are measured in hours per resident day against the Ohio minimum and the operator targets.
+
+**Credentials** holds licences, the OIG exclusion file, Nursys and background results and training hours. Punches are imported, corrections are approved by someone other than the requester, and weekly timecards split overnight shifts at local midnight. The PBJ quarter is validated and exported. Agency invoices are matched to the shifts worked, and the payroll export is locked once it is made.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Staffing and PBJ | `/dashboard/platform/workforce` | Timecards, punch corrections and the PBJ quarter export. |
+| Schedule and staffing | `/dashboard/platform/schedule` | Shifts, open-shift offers, hours per resident day against target, and agency invoices. |
+| Credentials | `/dashboard/platform/credentials` | Licences, OIG exclusion file, Nursys and background results, training hours. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Shift` | `open`, `filled`, `in_progress`, `completed`, `cancelled` |
+| `ShiftAssignment` | `offered`, `accepted`, `assigned`, `started`, `completed`, `declined`, `called_off`, `no_show`, `needs_coverage` |
+| `StaffingTarget` | `active`, `repealed`, `retired` |
+| `StaffingDay` | `met`, `breached` |
+| `Credential` | `pending_verification`, `verified`, `expiring`, `expired`, `revoked`, `suspended` |
+| `TimeCorrection` | `requested`, `approved`, `rejected` |
+| `Timecard` | `open`, `submitted`, `approved`, `exported` |
+| `PbjQuarter` | `open`, `validating`, `ready`, `exported`, `submitted`, `accepted`, `rejected` |
+| `AgencyVendor` | `active`, `suspended`, `terminated` |
+| `AgencyInvoice` | `received`, `matched`, `disputed`, `approved` |
+| `PayrollExport` | `locked`, `delivered` |
+| `StaffMember` | `active`, `on_leave`, `terminated` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`answerShiftOffer`.
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `billingCommand` | `workforce.job_code`, `workforce.staff`, `workforce.import_punches`, `workforce.request_correction`, `workforce.decide_correction`, `timecard.build`, `timecard.submit`, `timecard.approve`, `timecard.reopen`, `pbj.open_quarter`, `pbj.validate`, `pbj.mark_exported`, `pbj.record_outcome`, `shift.create`, `shift.assign`, `shift.offer`, `shift.move`, `shift.cancel`, `credential.save`, `credential.verify`, `credential.training`, `leie.import`, `agency.vendor`, `agency.invoice`, `agency.approve`, `payroll.export`, `staffing.target`, `staffing.compute` |

@@ -1,0 +1,44 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every custom mutation checks the flag it needs on the server. Flags are defined in `features/keystone/access.ts`. An approver must hold the required permission, must not be the requester and must not be an agent.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| Starter and fleet-mandatory | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Firm and integrations | `canManageFirm`, `canManageVenues`, `canApproveVenueBindings` |
+| Structure | `canManageVehicles`, `canApproveStructureChanges`, `canReadVehicles` |
+| Investors and capital | `canManageInvestors`, `canProcessCapital`, `canApproveCapital`, `canReadInvestors`, `canReadInvestorPII` |
+| Strategies | `canManageStrategies`, `canRunBacktests`, `canApproveStrategies`, `canReadStrategies` |
+| Risk and controls | `canManageRiskPolicies`, `canHalt`, `canApproveRisk`, `canReadRisk` |
+| Trading | `canTrade`, `canApproveOrders`, `canApproveAllocationExceptions`, `canReadTrading` |
+| Operations | `canManageOperations`, `canApproveBreaks`, `canApproveFairValue` |
+| Accounting | `canManageAccounting`, `canApproveAccounting`, `canReadAccounting` |
+| Compliance | `canManageCompliance`, `canApproveCompliance`, `canReadCompliance` |
+| Agents | `canManageAgents`, `canApproveAgentGrants` |
+| Reporting | `canManageReporting` |
+| Break-glass (never seeded) | `canBreakGlass` |
+
+## Seeded roles
+
+Loading the sample firm creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| Portfolio Manager | Builds strategies, runs backtests and paper-account sleeves, proposes and places orders. |
+| Trader | Places and works orders within policy; can halt trading. |
+| Risk Manager | Owns risk policies, approves orders over limits, arms live trading, halts. |
+| Operations | Marks, corporate actions, reconciliation and allocations. |
+| Fund Accountant | Journals, accruals and NAV runs. |
+| CFO | Approves NAV, period locks, capital movements and break write-offs. |
+| CCO | Compliance program, restricted list, pre-clearance and marketing review. |
+| Investor Relations | Investor records, subscriptions and reporting. |
+| Auditor | Read-only, time-boxed by the user access expiry. |
+| Administrator | Fund administrator: imports files only. |
+| Investor | Investor portal only; no dashboard. |

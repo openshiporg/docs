@@ -1,0 +1,36 @@
+---
+title: Schedule
+description: Day and week by operatory and provider, holds, confirmations, the ASAP list and booking requests.
+icon: CalendarClock
+---
+
+The schedule books an operatory and a provider for each appointment and shows production against the day's goal. Schedule templates define the blocks each chair offers. A hold reserves a time while the front desk or a patient finishes booking. The database refuses a double-booked chair or patient, even under many bookings at once.
+
+Reminders check consent and quiet hours again at send time and honour C and STOP replies. The ASAP list tracks patients who want an earlier time.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Schedule | `/dashboard/platform/schedule` | Day and week by operatory and provider, production against goal. |
+| ASAP list | `/dashboard/platform/schedule/asap` | Patients who want an earlier appointment. |
+| Confirmations | `/dashboard/platform/schedule/confirmations` | Tomorrow and the next two days: who has confirmed. |
+| Booking requests | `/dashboard/platform/schedule/booking-requests` | Online booking requests waiting for review. |
+| Locations & operatories | `/dashboard/platform/settings/locations` | Offices, chairs, appointment types and schedule templates. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `planned`, `scheduled`, `confirmed`, `arrived`, `seated`, `ready_for_checkout`, `completed`, `cancelled`, `broken`, `rescheduled` |
+| `BookingHold` | `held`, `converted`, `expired`, `released` |
+| `AsapEntry` | `active`, `offered`, `booked`, `declined`, `expired` |
+| `ConfirmationAttempt` | `scheduled`, `sent`, `replied_confirm`, `replied_cancel`, `replied_other`, `no_reply`, `suppressed` |
+| `ScheduleTemplate` | `draft`, `active`, `retired` |
+| `PublicBookingRequest` | `started`, `submitted`, `booked`, `abandoned`, `rejected_spam` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`holdSlot`, `releaseHold`, `bookAppointment`, `confirmAppointment`, `markArrived`, `seatPatient`, `markReadyForCheckout`, `completeAppointment`, `cancelAppointment`, `markBroken`, `rescheduleAppointment`, `addAsapEntry`, `closeAsapEntry`, `publishScheduleTemplate`, `reviewBookingRequest`.

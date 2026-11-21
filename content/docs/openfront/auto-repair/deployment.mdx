@@ -1,0 +1,25 @@
+---
+title: Deployment
+description: Deploy Openfront Auto Repair on Railway or any Node host with PostgreSQL.
+icon: Rocket
+---
+
+
+The repository includes `railway.toml`. The build runs `keystone build --no-ui && next build`, and the start command runs `sh scripts/start.sh`.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `sh scripts/start.sh` | Runs `npm run migrate` (and stops if it fails), rewrites any unkeyed contact hashes, then runs `next start`. |
+
+## Checklist
+
+1. Provision PostgreSQL and set `DATABASE_URL`.
+2. Set `SESSION_SECRET` and `AUTO_SECRET_KEY`.
+3. Set `PUBLIC_BASE_URL` so customer links point at your domain.
+4. Configure S3 storage for inspection photos.
+5. Set `STRIPE_SECRET_KEY` if you take cards.
+6. Deploy, open `/dashboard/init` and create the first owner.
+
+There is no worker or cron. Card payments are settled by asking Stripe, either from the pay page or with **Resolve payments** (`resolveShopPayments`), so no Stripe webhook is configured.

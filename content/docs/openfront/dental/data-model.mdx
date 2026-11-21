@@ -1,0 +1,47 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+
+Lists are defined in `features/keystone/models/` and registered in `models/index.ts`. Each row below is one model file.
+
+| Area | Lists |
+| --- | --- |
+| agents | `AgentIdentity`, `AgentToolGrant`, `AgentRun`, `Proposal` |
+| catalogue | `CodeSystem`, `CodeImportBatch`, `ProcedureCode`, `ProcedureCodeCrosswalk`, `FeeSchedule`, `FeeScheduleVersion`, `Fee`, `ExplosionCode`, `GuarantorAccount`, `LedgerEntry` |
+| claims | `ScrubRule`, `Claim`, `ClaimVersion`, `ClaimLine`, `ClaimAttachment`, `ClaimScrubResult`, `ClaimAcknowledgement`, `ClaimStatusInquiry`, `Remittance`, `RemittanceClaim`, `RemittanceLine`, `PaymentPosting`, `DenialReasonMap`, `Denial`, `Appeal`, `PayerEnrollment` |
+| clinical | `ConditionType`, `ChartEntry`, `PerioExam`, `PerioSiteMeasurement`, `PerioToothFinding`, `PerioClassification`, `NoteTemplate`, `NoteTemplateVersion`, `ClinicalNote`, `AnestheticLog`, `VitalsReading`, `MedicalHistoryForm`, `MedicalHistoryResponse`, `MedicalHistoryReview`, `MedicationEntry`, `Prescription`, `ImagingStudy`, `ExternalFinding`, `InformedRefusal` |
+| insurance | `Payer`, `Employer`, `InsurancePlan`, `BenefitRule`, `Subscriber`, `Coverage`, `BenefitVerification`, `BenefitFact`, `EligibilityCheck`, `OutsideHistory`, `Estimate`, `BenefitUsage`, `WorkTask` |
+| ledger | `AdjustmentType`, `AdjustmentRequest`, `DayClose`, `PeriodClose`, `Restatement` |
+| memberships | `RegulatoryLicence`, `MembershipPlan`, `PatientMembership`, `MembershipAgreement`, `MembershipLedgerEntry`, `DepositBatch`, `DepositLine` |
+| messaging | `ConsentGrant`, `MessageTemplate`, `Conversation`, `Message` |
+| patients | `Patient`, `PatientIdentifier`, `FamilyGroup`, `Guarantor`, `GuarantorLink`, `ContactPoint`, `PatientAlert`, `ReferralSource`, `Referral`, `MergeCase`, `MergeMap` |
+| payments | `PaymentMethodToken`, `Statement`, `Payment`, `PaymentAllocation`, `Refund`, `CreditBalance`, `PaymentPlan`, `PaymentPlanInstallment`, `LedgerNote` |
+| phase6 | `RecallType`, `RecallRule`, `PatientRecall`, `Lab`, `LabCase`, `ReviewRequest`, `ReviewReply`, `PdmpCheck`, `ComplianceTask`, `IncidentReport`, `PatientRightsRequest`, `AccountingOfDisclosure`, `RetentionPolicy`, `RecordHold`, `RetentionDisposition`, `ImportBatch`, `ImportRecordMap`, `ExportJob`, `CallRecord`, `VoicePolicy` |
+| platform | `PracticeSettings`, `Location`, `BillingEntity`, `StaffAssignment`, `ProviderProfile`, `Credential`, `MachineCredential`, `BreakGlassEvent`, `AuditEvent`, `CommandReceipt`, `InboundObservation`, `Lease`, `RateLimitBucket`, `Job`, `Sequence`, `Notification`, `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `Document`, `SecretBox`, `AdapterInstallation`, `BusinessAssociate`, `JurisdictionPack`, `PhiReadAudit`, `InferenceProvider` |
+| portal | `StorefrontSite`, `OnlineBookingPolicy`, `PublicBookingRequest`, `PortalAccount`, `PortalScope`, `IntakeSession` |
+| scheduling | `Operatory`, `AppointmentType`, `ScheduleTemplate`, `TemplateBlock`, `ProductionGoal`, `ClosureDay`, `Appointment`, `AppointmentSegment`, `BookingHold`, `AsapEntry`, `ConfirmationAttempt`, `BrokenAppointmentEvent` |
+| signals | `SignalType`, `SignalRun`, `Signal`, `ProposalKind`, `AutonomyPolicy` |
+| treatment | `TreatmentPlan`, `TreatmentPlanVersion`, `TreatmentPlanItem`, `PlanPresentation`, `PlanAcceptance`, `GoodFaithEstimate`, `FormTemplate`, `FormTemplateVersion`, `FormRequest`, `FormSubmission`, `ConsentRecord`, `ConsentAction` |
+| auth | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `planned`, `scheduled`, `confirmed`, `arrived`, `seated`, `ready_for_checkout`, `completed`, `cancelled`, `broken`, `rescheduled` |
+| `Patient` | `prospect`, `active`, `inactive`, `archived`, `deceased`, `merged_into` |
+| `ChartEntry` | `diagnosed`, `planned`, `accepted`, `scheduled`, `completed`, `posted`, `existing_current`, `existing_other`, `referred_out`, `refused`, `deleted_in_error`, `corrected` |
+| `TreatmentPlan` | `draft`, `presented`, `partially_accepted`, `accepted`, `declined`, `in_progress`, `completed`, `superseded`, `archived` |
+| `Claim` | `draft`, `scrubbed`, `ready`, `released`, `submitted`, `submission_unknown`, `acknowledged`, `rejected`, `pending_payer`, `adjudicated`, `correction_required`, `void_requested`, `voided`, `appealed`, `appeal_decided`, `responded`, `closed` |
+| `Remittance` | `received`, `parsed`, `matched`, `posting`, `posted`, `reconciled`, `exception`, `duplicate` |
+| `Payment` | `initiated`, `requires_action`, `succeeded`, `failed`, `unknown`, `partially_refunded`, `refunded` |
+| `Statement` | `generated`, `sent`, `paid`, `partially_paid`, `overdue`, `payment_plan`, `collections_hold`, `suppressed` |
+| `PatientMembership` | `pending_agreement`, `active`, `past_due`, `frozen`, `cancelled`, `expired` |
+| `LabCase` | `draft`, `sent`, `in_production`, `shipped`, `received`, `qc_passed`, `seated`, `remake_requested`, `cancelled` |
+| `Proposal` | `proposed`, `validated`, `invalid`, `approved`, `rejected`, `expired`, `executing`, `executed`, `failed`, `unknown` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them, and each move writes an audit event.

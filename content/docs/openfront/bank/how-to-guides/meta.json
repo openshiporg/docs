@@ -1,0 +1,9 @@
+{
+  "title": "How-to Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "onboard-a-customer",
+    "send-an-ach-file",
+    "close-the-business-day"
+  ]
+}

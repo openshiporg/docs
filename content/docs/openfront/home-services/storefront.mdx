@@ -1,0 +1,30 @@
+---
+title: Storefront
+description: The company website, online booking, memberships, visit and membership pages, and invoice payment.
+icon: Store
+---
+
+The storefront lives in `features/storefront` and mounts at the site root.
+
+| Route | Page |
+|---|---|
+| `/` | Company home |
+| `/about`, `/services`, `/services/[trade]`, `/service-area` | Company, services and service area |
+| `/book` | Book a visit |
+| `/memberships` | Membership plans |
+| `/sign-in` | Find my visit, invoice or membership by its code |
+| `/visit/[code]` | One visit |
+| `/membership/[code]` | One membership |
+| `/pay/[code]` | Pay an invoice by card |
+
+## Online booking
+
+`checkZip` checks the service area for a ZIP, and `loadWindows` shows open arrival windows for the next seven days from live capacity. `confirmBooking` runs the office's booking command with source `online`. It takes the hours out of the window (a full window is refused) and creates the customer, address, job and first visit.
+
+## Codes
+
+There are no customer accounts. The code printed on the confirmation, the invoice or the membership letter opens that record (`openByCode`).
+
+## Paying an invoice
+
+`startInvoicePayment` opens Stripe Checkout for the invoice balance, and reuses an unfinished attempt. The result is read back from Stripe and recorded through the same payment command staff use, so the batch, allocation, receivable entry and audit trail match. If the customer closes Stripe's page before it sends them back, the app asks Stripe whether the open attempt was paid.

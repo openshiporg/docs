@@ -1,0 +1,28 @@
+---
+title: Follow-ups, messages and campaigns
+description: Put-off work and services coming due, the message log, and campaign lists.
+icon: MessageSquare
+---
+
+**Follow-ups** lists work customers put off and services coming due, with who to call. **Messages** is the record of calls, texts and emails with customers, a thread per repair order, and the wording staff copy. Nothing on that screen sends. **Campaigns** builds audience lists to export or copy from, and includes only customers who agreed to marketing in writing.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Follow-ups | `/dashboard/platform/follow-ups` | Work customers put off and services coming due, with who to call. |
+| Messages | `/dashboard/platform/messages` | The record of calls, texts and emails with customers, and the wording staff copy. |
+| Campaigns | `/dashboard/platform/campaigns` | Audience lists to export or copy from. Only customers who agreed to marketing in writing. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ServiceReminder` | `contacted` |
+| `Campaign` | `draft`, `active`, `ended` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`logCustomerMessage`, `logCustomerCall`, `readMessageThread`, `saveMessageTemplate`, `markFollowUpContacted`, `markServiceReminderContacted`, `saveMarketingCampaign`, `exportMarketingCampaign`, `copyMarketingMessage`, `recordReviewRequest`.

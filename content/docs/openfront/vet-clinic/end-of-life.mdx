@@ -1,0 +1,26 @@
+---
+title: End of life
+description: Euthanasia consent, the record, aftercare custody and memorial items.
+icon: Flower2
+---
+
+Euthanasia needs a signed consent, which can be revoked until the procedure. The procedure is recorded, aftercare custody is tracked from the clinic to the crematory and back, and memorial items are recorded for the family.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| End of life | `/dashboard/platform/end-of-life` | Consent, record and aftercare custody. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `EuthanasiaConsent` | `draft`, `signed`, `used`, `revoked` |
+| `AftercareOrder` | `ordered`, `body_tagged`, `stored`, `picked_up`, `returned`, `closed`, `released_to_owner`, `held_for_testing` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`signEuthanasiaConsent`, `revokeEuthanasiaConsent`, `recordEuthanasia`, `advanceAftercare`, `addMemorialItem`.

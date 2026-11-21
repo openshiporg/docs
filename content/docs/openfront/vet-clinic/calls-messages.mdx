@@ -1,0 +1,34 @@
+---
+title: Calls, messages and agents
+description: The AI receptionist, triage, client messages and agent controls.
+icon: Phone
+---
+
+The AI receptionist answers inbound calls only. It plays an AI and recording disclosure, screens for emergencies and verifies the caller before sharing anything. It books routine visits and takes refill and records requests for staff. An emergency is transferred or referred to the emergency hospital, never booked. The receptionist never prescribes, never touches controlled substances and never calls out.
+
+Messages are a log of client threads that staff write by hand. **Agents** lists AI agents and their tool grants, and has a kill switch that stops every agent at once. Voice is switched on only after a second person approves.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Calls | `/dashboard/platform/calls` | Inbound calls: AI receptionist and staff. |
+| Messages | `/dashboard/platform/messages` | Client threads, SMS and email. |
+| Agents | `/dashboard/platform/agents` | AI agents, grants, kill switch, actions. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `CallRecord` | `ringing`, `in_progress`, `completed`, `failed` |
+| `CommsThread` | `open`, `waiting_client`, `waiting_staff`, `closed` |
+| `CommsMessage` | `queued`, `sending`, `sent`, `delivered`, `failed`, `blocked`, `received` |
+| `AgentIdentity` | `active`, `paused`, `revoked` |
+| `AgentToolGrant` | `requested`, `active`, `revoked` |
+| `AgentRun` | `started`, `completed`, `failed`, `aborted` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`startCall`, `recordCallDisclosure`, `verifyCaller`, `appendCallTranscript`, `endCall`, `runTriage`, `referToEmergency`, `requestRefill`, `requestRecords`, `setAgentKillSwitch`, `bindAgentApp`, `unbindAgentApp`, `suggestCharges`, `clinicInsights`.

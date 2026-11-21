@@ -1,0 +1,31 @@
+---
+title: Close the business day
+description: Cut off the day and run end of day.
+icon: Timer
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Cut off
+
+On **Operations**, press **Cut off now** if the cutoff time has not passed (`cutoffBusinessDayNow`).
+
+</Step>
+<Step>
+
+### Run end of day
+
+Press **Run end of day** (`runEodNow`).
+
+</Step>
+<Step>
+
+### Resolve a failure
+
+If a step fails, fix the cause and resume (`resumeEod`), or request a waiver (`requestEodStepWaiver`).
+
+</Step>
+</Steps>

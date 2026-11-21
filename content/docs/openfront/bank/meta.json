@@ -1,0 +1,33 @@
+{
+  "title": "Bank",
+  "description": "Core banking ledger, deposits, ACH, teller cash, BSA/AML and online banking",
+  "icon": "Landmark",
+  "root": true,
+  "pages": [
+    "---Overview---",
+    "index",
+    "getting-started",
+    "deployment",
+    "---Dashboard---",
+    "customers",
+    "accounts",
+    "payments",
+    "ledger",
+    "bsa-teller",
+    "operations",
+    "institution",
+    "roles-permissions",
+    "external-dashboard",
+    "---Storefront---",
+    "storefront",
+    "external-storefront",
+    "---Integrations---",
+    "payment-providers",
+    "---How-to Guides---",
+    "how-to-guides",
+    "---API Reference---",
+    "data-model",
+    "api-reference",
+    "troubleshooting"
+  ]
+}

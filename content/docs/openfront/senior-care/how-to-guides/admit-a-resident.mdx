@@ -1,0 +1,38 @@
+---
+title: Admit a resident
+description: Take a lead through to admission and place the resident.
+icon: UserCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Record the inquiry
+
+On **Pipeline**, record the inquiry and schedule a tour (`recordInquiry`, `scheduleTour`).
+
+</Step>
+<Step>
+
+### Reserve a place
+
+Reserve the bed or apartment (`reservePlace`).
+
+</Step>
+<Step>
+
+### Admit
+
+Admit the resident to the place (`admitResident`). The lead moves to `moved_in`.
+
+</Step>
+<Step>
+
+### Record the agreement
+
+Record the admission agreement and notices (`recordAdmissionAgreement`, `recordNotice`).
+
+</Step>
+</Steps>

@@ -1,0 +1,39 @@
+---
+title: Workflows and findings
+description: Staff-described workflows built from tested blocks, findings with evidence and AI proposals.
+icon: Workflow
+---
+
+Staff describe a job in plain words. The builder makes one model call through the gateway, and the result is a graph drawn only from the block catalogue, such as low fluid intake, weight loss, an overdue wound assessment or missed doses. It is validated, dry-run over 30 days of history, reviewed by the proposer, and approved by the director of nursing and then the administrator before it is active.
+
+The engine runs only on request: when the findings page loads, with **Run now**, and after the commands that change its source data. A finding carries its evidence and can be dismissed or rechecked. An AI draft stays a proposal until a person accepts it.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Findings | `/dashboard/platform/findings` | Workflow findings with evidence; run on request. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `WorkflowVersion` | `draft`, `proposed`, `dry_run_reviewed`, `dry_run_ok`, `pending_activation`, `active`, `paused`, `retired` |
+| `WorkflowActivation` | `active`, `paused`, `ended` |
+| `Finding` | `open`, `resolved`, `resolved_by_evidence`, `dismissed` |
+| `Proposal` | `proposed`, `accepted`, `signed`, `rejected`, `expired` |
+| `InferenceProvider` | `draft`, `active`, `suspended` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`runWorkflowsOnLoad`.
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `clinicalCommand` | `workflow.pause`, `workflow.run`, `workflow.build`, `workflow.retire`, `finding.dismiss`, `finding.recheck`, `proposal.accept`, `proposal.reject` |

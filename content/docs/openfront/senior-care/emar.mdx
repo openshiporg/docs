@@ -1,0 +1,34 @@
+---
+title: eMAR and controlled counts
+description: The medication pass, PRN follow-up, the supply ledger and blind shift counts.
+icon: Pill
+---
+
+Opening the eMAR creates administration slots for a 72-hour horizon and settles missed doses. Each dose is given, held, refused or not given, with hold parameters, window timing, PRN intervals and PRN follow-up.
+
+The supply ledger is append-only with one balance writer. Supply is received, drawn from the emergency kit and destroyed. **Controlled counts** are blind shift counts, and a difference stays open until it is resolved.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| eMAR | `/dashboard/platform/emar` | Medication pass: give, hold, refuse and PRN follow-up. |
+| Controlled counts | `/dashboard/platform/counts` | Blind shift counts, differences and supply on hand. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `AdministrationSlot` | `scheduled`, `given`, `held`, `refused`, `missed`, `not_given` |
+| `PrnFollowUp` | `open`, `done`, `missed` |
+| `MedicationSupply` | `active`, `quarantined`, `destroyed`, `empty` |
+| `ShiftCount` | `open`, `matched`, `discrepancy`, `resolved` |
+| `CountDiscrepancy` | `open`, `resolved` |
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `clinicalCommand` | `emar.open`, `emar.administer`, `emar.prn`, `supply.receive`, `supply.destroy`, `ekit.draw`, `count.start`, `count.entry`, `count.complete`, `count.resolve` |

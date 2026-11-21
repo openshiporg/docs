@@ -1,0 +1,29 @@
+---
+title: Hospital and treatment sheet
+description: Admissions, wards and cages, orders, the treatment sheet, anaesthesia and surgery reports.
+icon: BedDouble
+---
+
+An admitted patient is placed in a cage on a ward. Orders become timed tasks on the treatment sheet, which staff complete, skip or reschedule. An administration can be reversed. Anaesthesia records capture events and monitoring, and surgery reports and dental charts are saved with the stay.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Hospital | `/dashboard/platform/hospital` | Wards, cages and the treatment sheet. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `HospitalStay` | `admitted`, `in_care`, `ready_for_discharge`, `discharged`, `transferred`, `deceased` |
+| `ClinicalOrder` | `ordered`, `in_progress`, `completed`, `cancelled`, `reversed` |
+| `TreatmentTask` | `scheduled`, `due`, `overdue`, `missed`, `done`, `skipped`, `rescheduled` |
+| `AnaesthesiaRecord` | `open`, `monitoring`, `recovery`, `closed` |
+| `SurgeryReport` | `draft`, `signed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`placeOrder`, `cancelOrder`, `reverseAdministration`, `completeOrder`, `recordAdministration`, `admitPatient`, `moveCage`, `dischargePatient`, `completeTreatmentTask`, `skipTreatmentTask`, `rescheduleTreatmentTask`, `openAnaesthesia`, `anaesthesiaEvent`, `recordMonitoring`, `closeAnaesthesia`, `saveSurgeryReport`, `saveDentalChart`.

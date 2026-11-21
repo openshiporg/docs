@@ -1,0 +1,33 @@
+---
+title: Compliance and privacy
+description: Compliance tasks, incidents, patient rights requests, retention, holds, imports and exports.
+icon: Scale
+---
+
+Compliance tracks deadlines, incidents and their notification decision, patient rights requests (access, amendment and accounting of disclosures), retention policies and legal holds. A record under hold is never disposed of.
+
+**Privacy** shows emergency access (break-glass) events and who read which patient record. **Import and export** previews a patient list import before a second person applies it, and exports records and the ledger.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Compliance | `/dashboard/platform/compliance` | Deadlines, incidents, patient requests, legal holds and retention. |
+| Import and export | `/dashboard/platform/data` | Bring in a patient list, or take records and the ledger out. |
+| Privacy | `/dashboard/platform/privacy` | Patient privacy requests, disclosures, records exports, emergency access and who read records. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ComplianceTask` | `open`, `done`, `dismissed` |
+| `IncidentReport` | `reported`, `assessing`, `notifiable`, `not_notifiable`, `notified`, `closed` |
+| `PatientRightsRequest` | `open`, `extended`, `fulfilled`, `denied` |
+| `RetentionDisposition` | `eligible`, `approval_requested`, `approved`, `executed`, `blocked` |
+| `ImportBatch` | `previewed`, `approval_requested`, `applying`, `applied`, `rejected` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`addComplianceTask`, `completeComplianceTask`, `reportIncident`, `advanceIncident`, `openRightsRequest`, `extendRightsRequest`, `resolveRightsRequest`, `recordDisclosure`, `saveRetentionPolicy`, `placeRecordHold`, `releaseRecordHold`, `scanRetention`, `requestDisposition`, `previewImport`, `requestImportApply`, `applyImportChunk`, `exportEhiBundle`.

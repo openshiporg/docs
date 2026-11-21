@@ -1,0 +1,23 @@
+---
+title: Deployment
+description: Deploy Openfront Home Services on Railway or any Node host with PostgreSQL.
+icon: Rocket
+---
+
+
+The repository includes `railway.toml`. The build runs `keystone build --no-ui && next build`, and the start command runs `npm run start:live`.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `npm run start:live` | Runs `npm run migrate`, re-chains the audit log under the keyed hash and verifies it (`audit:rechain`), loads and verifies the federal and Texas policy packs (`policies:ensure`), then runs `next start`. |
+
+## Checklist
+
+1. Provision PostgreSQL and set `DATABASE_URL`.
+2. Set `SESSION_SECRET` and `SECRET_BOX_KEY`.
+3. Set `STRIPE_SECRET_KEY` if you take cards.
+4. Deploy, open `/dashboard/init` and create the first owner.
+
+There is no worker, timer or cron. Lapsed holds, due price-book versions, expired estimates and cancellation notices advance on every dashboard read and on booking, price book, estimate and cancellation calls (`services/maintenance.ts`). Membership billing runs when staff press the button, and unknown card results are looked up again then.

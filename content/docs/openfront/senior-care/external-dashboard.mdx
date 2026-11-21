@@ -1,0 +1,51 @@
+---
+title: External dashboards
+description: Give an LLM the Senior Care dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Senior Care dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the community screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Senior Care checkout before proposing work.
+
+Skill file: [`/skills/openfront-senior-care-custom-dashboard/SKILL.md`](/skills/openfront-senior-care-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/census` | Census | Units, rooms, beds and apartments with live status. |
+| `/dashboard/platform/census/residents` | Census | Current and former residents with place, presence and payer. |
+| `/dashboard/platform/census/events` | Census | The append-only admission, transfer, leave and discharge log. |
+| `/dashboard/platform/census/midnight` | Census | Daily census review and sign-off per community. |
+| `/dashboard/platform/clinical` | Clinical | Notes, vitals, assessments, orders, care plans and wounds. |
+| `/dashboard/platform/emar` | Clinical | Medication pass: give, hold, refuse and PRN follow-up. |
+| `/dashboard/platform/counts` | Clinical | Blind shift counts, differences and supply on hand. |
+| `/dashboard/platform/incidents` | Clinical | Incidents with F609 clocks, investigations and reports. |
+| `/dashboard/platform/ipac` | Clinical | Cases, precautions, antibiotic time-outs and outbreaks. |
+| `/dashboard/platform/tasks` | Clinical | Staff inbox: escalations and follow-ups. |
+| `/dashboard/platform/mds` | Clinical | MDS windows, records, sign-off and the iQIES export. |
+| `/dashboard/platform/findings` | Clinical | Workflow findings with evidence; run on request. |
+| `/dashboard/platform/sales` | Sales | Leads, inquiries, tours and referrals with response clocks. |
+| `/dashboard/platform/sales/waitlist` | Sales | Waitlist by apartment type and setting; offers and holds. |
+| `/dashboard/platform/sales/storefront` | Sales | Storefront copy, starting prices, availability and tour times. |
+| `/dashboard/platform/billing` | Billing | Month-end close, statements and payments. |
+| `/dashboard/platform/billing/rates` | Billing | Rate schedules and rate-change notices. |
+| `/dashboard/platform/mds/pdpm` | Billing | Current HIPPS and per diem across the variable per diem. |
+| `/dashboard/platform/mds/coverage` | Billing | Part A days, NOMNC clock, MA authorisations and hospice. |
+| `/dashboard/platform/billing/medicaid` | Billing | Patient liability with reply and appeal deadlines. |
+| `/dashboard/platform/claims` | Billing | Part A claims, 837I files, 835 remittances and denials. |
+| `/dashboard/platform/workforce` | Billing | Timecards, punch corrections and the PBJ quarter export. |
+| `/dashboard/platform/schedule` | Billing | Shifts, open-shift offers, hours per resident day against target, and agency invoices. |
+| `/dashboard/platform/credentials` | Billing | Licences, OIG exclusion file, Nursys and background results, training hours. |
+| `/dashboard/platform/nhsn` | Clinical | Weekly respiratory vaccination and case CSV. |
+| `/dashboard/platform/trust` | Billing | Resident trust ledgers, withdrawals and reconciliation. |
+| `/dashboard/platform/approvals` | Top level | Maker-checker requests waiting for a second person. |
+| `/dashboard/platform/compliance` | Top level | Regulatory clocks: due, overdue and satisfied. |
+| `/dashboard/platform/privacy/break-glass` | Operator | Emergency access grants and the review queue. |
+| `/dashboard/platform/audit` | Operator | Hash-chained audit events and chain verification. |
+| `/dashboard/platform/operations` | Operator | Jobs and leases. |
+| `/dashboard/platform/settings` | Operator | Operator profile, communities, packs and approval policies. |

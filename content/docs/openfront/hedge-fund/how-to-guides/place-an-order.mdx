@@ -1,0 +1,38 @@
+---
+title: Place an order
+description: Connect a broker, arm the sleeve and propose an order.
+icon: Send
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Connect
+
+Under **Brokers**, connect Alpaca and bind the account to a vehicle (`connectAlpaca`, `bindVenueAccount`).
+
+</Step>
+<Step>
+
+### Arm
+
+Under **Controls**, arm the sleeve (`armControl`). A live scope needs a second person.
+
+</Step>
+<Step>
+
+### Propose
+
+Propose the order (`proposeOrder`). The pre-trade checks run and an approved order routes.
+
+</Step>
+<Step>
+
+### Watch fills
+
+Open **Orders** to send waiting orders and book fills.
+
+</Step>
+</Steps>

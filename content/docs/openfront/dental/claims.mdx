@@ -1,0 +1,32 @@
+---
+title: Claims and insurance payments
+description: Build, scrub and release claims, post remittances, and work denials and appeals.
+icon: FileCheck
+---
+
+Staff build a claim from posted procedures and scrub it against the scrub rules. A person releases it, never the system. Release freezes a `ClaimVersion`, and after that the lines do not change; a correction is a new version. Pending work then sends released claims through the connected clearinghouse. With the manual clearinghouse, the claim is exported or printed and sent through the payer portal.
+
+Remittances arrive from the clearinghouse or are entered by hand from the explanation of benefits (`enterManualEob`). Each line is matched to a claim line and posted once. Denied lines open denial work, which can end in a correction, an appeal, a write-off or a patient bill.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Claims | `/dashboard/platform/claims` | Build, check and send claims; follow them to payment. |
+| Insurance payments | `/dashboard/platform/remittances` | Payments received, lines to match, denied lines to work. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Claim` | `draft`, `scrubbed`, `ready`, `released`, `submitted`, `submission_unknown`, `acknowledged`, `rejected`, `pending_payer`, `adjudicated`, `correction_required`, `void_requested`, `voided`, `appealed`, `appeal_decided`, `responded`, `closed` |
+| `ClaimLine` | `pending`, `paid`, `partially_paid`, `denied`, `reversed` |
+| `ClaimAttachment` | `draft`, `uploaded`, `sent`, `acknowledged`, `rejected`, `manual_reference` |
+| `Remittance` | `received`, `parsed`, `matched`, `posting`, `posted`, `reconciled`, `exception`, `duplicate` |
+| `Denial` | `open`, `working`, `appealed`, `corrected`, `written_off`, `billed_to_patient`, `resolved` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`buildClaim`, `scrubClaim`, `overrideScrub`, `releaseClaim`, `exportClaimCsv`, `correctClaim`, `voidClaim`, `addClaimAttachment`, `saveClaimNarrative`, `requestClaimStatus`, `enterManualEob`, `matchRemittance`, `startDenialWork`, `resolveDenial`, `fileAppeal`, `recordAppealOutcome`.

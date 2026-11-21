@@ -1,0 +1,31 @@
+---
+title: Approve a refill
+description: Decide a refill request and dispense it.
+icon: ListChecks
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Open the queue
+
+In **Prescriptions**, open the refill queue. Requests arrive from the client site, the receptionist or the desk.
+
+</Step>
+<Step>
+
+### Decide
+
+A veterinarian approves or declines it (`decideRefill`).
+
+</Step>
+<Step>
+
+### Dispense
+
+Dispense the fill from a stock lot (`dispenseFill`) and print the label (`printDispenseLabel`).
+
+</Step>
+</Steps>

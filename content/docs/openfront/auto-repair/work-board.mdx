@@ -1,0 +1,28 @@
+---
+title: Work board and repair orders
+description: Open repair orders by stage, jobs and lines, holds and vehicle release.
+icon: ClipboardList
+---
+
+The work board shows every open repair order by stage, with promised-time risk. A repair order holds the jobs for one visit, and each job has labor, parts and fee lines priced by the shop's published policy. A job moves through its stages with `transitionRepairJob`, and work customers put off becomes a recommendation for follow-up.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Work board | `/dashboard/platform/board` | Every open repair order by stage, with promised-time risk. |
+| Repair orders | `/dashboard/platform/repair-orders` | Jobs, lines, estimates and authorizations. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `RepairOrder` | `draft`, `checked_in`, `in_service`, `on_hold`, `ready_to_invoice`, `invoiced`, `closed`, `void` |
+| `Job` | `draft`, `priced`, `offered`, `authorized`, `declined`, `deferred`, `in_progress`, `needs_reauthorization`, `completed`, `voided` |
+| `Recommendation` | `open`, `converted`, `dismissed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openShopRepairOrder`, `holdRepairOrder`, `addRepairJob`, `saveJobLines`, `editRepairJobLines`, `repriceRepairJob`, `transitionRepairJob`, `createCallbackTask`, `releaseShopVehicle`, `closeCallbackTask`, `closeRecommendation`.

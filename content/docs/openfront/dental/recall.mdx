@@ -1,0 +1,29 @@
+---
+title: Recall, labs and reviews
+description: Hygiene recall, lab cases, review requests and replies.
+icon: Repeat
+---
+
+Recall rules decide who is due for a cleaning or check-up. **Recall** lists patients by due status and prepares the message to send. Lab cases track crowns and other lab work from sent to seated, and an appointment can be gated on a case being back. Review requests are copied for the patient, and replies are drafted, checked against policy and approved before posting.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Recall | `/dashboard/platform/recall` | Who is due for a cleaning or check-up, and the message to send. |
+| Lab cases | `/dashboard/platform/labs` | Crowns and other work at the lab, and when it is due back. |
+| Reviews | `/dashboard/platform/reviews` | Review requests to copy and replies to approve. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `PatientRecall` | `scheduled_due`, `due`, `overdue`, `scheduled`, `disabled` |
+| `LabCase` | `draft`, `sent`, `in_production`, `shipped`, `received`, `qc_passed`, `seated`, `remake_requested`, `cancelled` |
+| `ReviewReply` | `draft`, `policy_failed`, `policy_passed`, `approved`, `posted`, `failed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`refreshRecall`, `setRecallDisabled`, `exportRecallCsv`, `prepareRecallMessage`, `saveLab`, `openLabCase`, `attachLabFile`, `advanceLabCase`, `chaseLabCase`, `copyReviewRequest`, `draftReviewReply`, `editReviewReply`, `approveReviewReply`, `markReviewReplyPosted`.

@@ -1,0 +1,39 @@
+---
+title: Census and residents
+description: The bed board, residents and representatives, census events and the midnight census.
+icon: Bed
+---
+
+The **Bed board** shows units, rooms, beds and apartments with live status. Every admission, room change, leave, return, discharge and death is a server command that records a hash-chained census event and updates the stay. A released bed goes to `cleaning` and an emptied apartment to `turnover` until a person marks it ready.
+
+**Midnight census** counts a resident for a day if present at 23:59 local time. Signing off a day closes it and every earlier day, and only a person can do it. A back-dated event is marked late, and events more than five minutes in the future are refused. Bed-hold, transfer and discharge notices open compliance clocks from the state pack.
+
+**Residents** lists current and former residents with representatives. Family portal access is invited here, and each scope beyond updates is proposed by one person and granted by a second.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Bed board | `/dashboard/platform/census` | Units, rooms, beds and apartments with live status. |
+| Residents | `/dashboard/platform/census/residents` | Current and former residents with place, presence and payer. |
+| Census events | `/dashboard/platform/census/events` | The append-only admission, transfer, leave and discharge log. |
+| Midnight census | `/dashboard/platform/census/midnight` | Daily census review and sign-off per community. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Bed` | `available`, `reserved`, `occupied`, `held`, `cleaning`, `out_of_service` |
+| `Apartment` | `available`, `reserved`, `occupied`, `turnover`, `out_of_service` |
+| `PlaceReservation` | `active`, `consumed`, `released`, `expired` |
+| `Stay` | `pre_admit`, `admitted`, `discharged`, `deceased` |
+| `Resident` | `prospective`, `current`, `former`, `deceased` |
+| `Representative` | `active`, `ended` |
+| `PortalAccount` | `invited`, `active`, `suspended`, `revoked` |
+| `PortalScopeGrant` | `proposed`, `granted`, `revoked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`admitResident`, `changeRoom`, `startLeave`, `releaseBedHold`, `endLeave`, `dischargeResident`, `recordDeath`, `recordNotice`, `recordAdmissionAgreement`, `correctCensus`, `snapshotCensusDay`, `signOffCensusDay`, `markPlaceReady`, `setPlaceService`, `recomputeAvailability`, `invitePortalRepresentative`, `proposePortalScope`, `grantPortalScope`, `revokePortalScope`, `setPortalAccountStatus`.

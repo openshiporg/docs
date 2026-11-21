@@ -1,0 +1,15 @@
+---
+title: External storefronts
+description: Give an LLM the Home Services storefront skill to adapt the company site.
+icon: AppWindow
+---
+
+To build a custom Home Services storefront, copy the skill and give it to your LLM. The skill explains that `features/storefront` holds the built-in site and server actions, and that booking always goes through the office's booking command.
+
+Skill file: [`/skills/openfront-home-services-custom-storefront/SKILL.md`](/skills/openfront-home-services-custom-storefront/SKILL.md)
+
+## What a separate site must keep
+
+- Booking goes through `confirmBooking`, so window capacity and policy checks apply.
+- A code opens only the record it was printed on.
+- Card results are read from Stripe on the server, never trusted from the return URL.

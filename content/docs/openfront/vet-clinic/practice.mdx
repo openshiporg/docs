@@ -1,0 +1,42 @@
+---
+title: Practice, team and compliance
+description: Team and licences, policy packs, compliance, the audit logs, production and pay, and imports.
+icon: Building2
+---
+
+**Team & licences** lists staff, licences and DEA registrations with expiry dates. **Policy packs** shows the federal and state rules in force with sources. **Compliance** tracks clocks, tasks and incidents. **Read audit** shows who read which client or patient record. **Audit log** shows the hash-chained events and checks the chain.
+
+**Production and pay** computes production and commission by rule version and runs pay periods to approval and export. **Import** brings records over from Avimark or ezyVet. **Practice settings** holds locations, calendars and practice controls, which change only through an approval request. **Approvals** lists requests waiting for a second person.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Approvals | `/dashboard/platform/approvals` | Maker-checker requests waiting for a second person. |
+| Team & licences | `/dashboard/platform/team` | Staff, licences and DEA registrations with expiry. |
+| Policy packs | `/dashboard/platform/policies` | Federal and state rules in force, with sources. |
+| Compliance | `/dashboard/platform/compliance` | Clocks, tasks and incidents. |
+| Read audit | `/dashboard/platform/read-audit` | Who read which client or patient record. |
+| Audit log | `/dashboard/platform/audit` | Hash-chained audit events and chain verification. |
+| Production and pay | `/dashboard/platform/pay` | Production, commission and pay periods. |
+| Import | `/dashboard/platform/imports` | Bring records over from Avimark or ezyVet. |
+| Practice settings | `/dashboard/platform/settings` | Practice, locations, calendars and controls. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ProfessionalLicense` | `active`, `expired`, `suspended`, `revoked` |
+| `PolicyVersion` | `draft`, `published`, `superseded` |
+| `ComplianceTask` | `open`, `done`, `overdue`, `waived` |
+| `Incident` | `open`, `investigating`, `reported`, `closed` |
+| `PayPeriod` | `open`, `calculated`, `approved`, `exported`, `locked` |
+| `ProductionRuleVersion` | `draft`, `published`, `retired` |
+| `ImportBatch` | `received`, `validated`, `applying`, `applied`, `failed` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`draftRuleVersion`, `requestRulePublication`, `requestProductionAdjustment`, `openPayPeriod`, `calculatePayPeriod`, `reopenPayPeriod`, `requestPayPeriodApproval`, `exportPayPeriod`, `lockPayPeriod`, `previewImport`, `applyImport`, `exportData`, `planCampaign`, `cancelCampaign`, `approveCampaign`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestPracticeControls`.

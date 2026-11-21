@@ -1,0 +1,28 @@
+---
+title: Wellness plans
+description: Monthly plans, enrolments, plan billing and entitlements.
+icon: HeartPulse
+---
+
+A wellness plan is a monthly bundle of services sold as versions. Enrolling a patient starts plan billing, which charges the saved card each period and retries failures. Entitlements are used at visits and returned if a charge is reversed.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Wellness plans | `/dashboard/platform/wellness` | Monthly plans, members and billing. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `WellnessPlan` | `active`, `retired` |
+| `WellnessPlanVersion` | `draft`, `published`, `retired` |
+| `Enrollment` | `pending_payment`, `active`, `cancelling`, `cancelled`, `suspended`, `completed`, `ended_by_death` |
+| `PlanBillingAttempt` | `processing`, `succeeded`, `failed`, `unknown` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`savePlanVersion`, `enrolPatient`, `runPlanBilling`, `retryPlanCharge`, `checkPlanCharge`, `replacePlanCard`, `cancelEnrollment`, `useEntitlement`, `returnEntitlement`.

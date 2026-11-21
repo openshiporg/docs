@@ -1,0 +1,48 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every custom mutation checks the flag it needs on the server. Flags are defined in `features/keystone/access.ts`.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| NKS and fleet-mandatory | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Organisation | `canManageOrganization`, `canManageShops`, `canManageIntegrations`, `canAccessAllShops` |
+| Policy | `canManagePolicies`, `canPublishPolicies` |
+| Customers | `canManageCustomers`, `canApproveMerge`, `canReadCustomerPII` |
+| Scheduling | `canManageSchedule` |
+| Repair orders | `canWriteRepairOrders`, `canSendEstimates`, `canRecordAuthorizations`, `canApproveReopen`, `canApproveRelease`, `canReadRepairOrders` |
+| Inspections and diagnosis | `canPerformInspections`, `canDiagnose`, `canOverrideTrustGate` |
+| Pricing | `canPriceJobs`, `canApprovePriceOverride`, `canApproveDiscount`, `canSeeCost` |
+| Parts | `canManageParts`, `canOrderParts`, `canReceiveParts`, `canApproveSupplierInvoice`, `canApproveStockAdjustment`, `canApproveCoreWriteOff` |
+| Labor | `canClockSelf`, `canManageTime`, `canApproveTime`, `canClosePayPeriod`, `canReadTechPay` |
+| Money | `canFinalizeInvoices`, `canTakePayments`, `canCloseDay`, `canApproveRefund`, `canApproveWriteOff`, `canApproveCredit`, `canApproveCreditMemo`, `canReadFinancials` |
+| Warranty | `canManageComebacks`, `canApproveGoodwill` |
+| Communications | `canMessageCustomers`, `canManageCampaigns` |
+| Tires | `canManageTireRegistrations` |
+| Agents | `canManageAgents`, `canConfirmProposals`, `canApproveAgentAutonomy` |
+| Reporting | `canReadReports` |
+| Break-glass (never seeded) | `canBreakGlass` |
+
+## Seeded roles
+
+Loading the sample shop group creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| Owner | Everything in the organisation, including approvals of last resort. |
+| Shop Manager | Runs a shop: drafts policy, approves discounts, overrides, write-offs and time. |
+| Service Advisor | Front counter: customers, appointments, ROs, estimates, authorizations, invoices and payments. No cost view. |
+| Lead Technician | Dispatch, quality checks and the team clocks. |
+| Technician | Assigned jobs, inspections, diagnosis and own clocks. No customer financials. |
+| Parts Manager | Suppliers, quotes, orders, receiving, stock, cores and supplier invoices. |
+| Bookkeeper | Payments, AR, statements, day close and accounting exports. |
+| Marketing | Templates, consent-gated campaigns and reviews. No RO edits. |
+| Auditor | Read-only and time-boxed by the user access expiry. |
+| Customer Portal | Storefront API session only; no dashboard. |
+| Fleet Approver | Fleet portal API session only; no dashboard. |

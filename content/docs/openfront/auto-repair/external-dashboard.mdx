@@ -1,0 +1,47 @@
+---
+title: External dashboards
+description: Give an LLM the Auto Repair dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Auto Repair dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the shop screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Auto Repair checkout before proposing work.
+
+Skill file: [`/skills/openfront-auto-repair-custom-dashboard/SKILL.md`](/skills/openfront-auto-repair-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/board` | Top level | Every open repair order by stage, with promised-time risk. |
+| `/dashboard/platform/repair-orders` | Top level | Jobs, lines, estimates and authorizations. |
+| `/dashboard/platform/inspections` | Top level | Digital vehicle inspections: measurements, photos and findings. |
+| `/dashboard/platform/check-in` | Top level | Customer, vehicle, odometer, concerns and work-order signature. |
+| `/dashboard/platform/schedule` | Top level | Appointments by day and bay, capacity and no-shows. |
+| `/dashboard/platform/customers` | Top level | Customers, contacts and consent history. |
+| `/dashboard/platform/vehicles` | Top level | VIN decode, recalls, ownership and odometer history. |
+| `/dashboard/platform/follow-ups` | Top level | Work customers put off and services coming due, with who to call. |
+| `/dashboard/platform/messages` | Top level | The record of calls, texts and emails with customers, and the wording staff copy. |
+| `/dashboard/platform/campaigns` | Top level | Audience lists to export or copy from. Only customers who agreed to marketing in writing. |
+| `/dashboard/platform/receivables` | Top level | Invoices still owing, with the overdue ones first. |
+| `/dashboard/platform/accounts` | Top level | Fleet and business accounts: terms, credit, approvers, tax certificates and units. |
+| `/dashboard/platform/statements` | Top level | Monthly account statements, exported as files. |
+| `/dashboard/platform/day-close` | Top level | Takings by tender, the drawer count and the frozen day. |
+| `/dashboard/platform/parts` | Top level | Quotes, supplier orders, stock, cores, supplier invoices and tire registrations. |
+| `/dashboard/platform/time` | Top level | Time clock, technicians and certificates, flagged hours, pay periods and comebacks. |
+| `/dashboard/platform/approvals` | Top level | Maker-checker requests waiting for a second person. |
+| `/dashboard/platform/diagnosis` | Top level | Likely causes with their sources, tests, and the confidence bar before a quote. |
+| `/dashboard/platform/proposals` | Top level | Plans assistants made, previewed and waiting for a person to confirm each step. |
+| `/dashboard/platform/reports` | Top level | Car count, ARO, ELR, gross profit, technician productivity, approval and comeback rates, with definitions and books tie-outs. |
+| `/dashboard/platform/accounting` | Top level | Daily journal files staged for the books. Nothing posts until a person records the books accepted it. |
+| `/dashboard/platform/imports` | Settings | Bring customers and vehicles in from Tekmetric, Shopmonkey or any CSV, with a preview first. |
+| `/dashboard/platform/integrations` | Settings | Provider connections and what they told us. |
+| `/dashboard/platform/shops` | Settings | Shops, bays, hours and staff memberships. |
+| `/dashboard/platform/canned-jobs` | Settings | Job templates: lines, labor-guide codes and wording, drafted then published. |
+| `/dashboard/platform/policies` | Settings | Jurisdiction rules, labor rates, matrices, fees, tax and warranty: draft and publish. |
+| `/dashboard/platform/agents` | Settings | Assistants, what each may do, the AI provider and pausing. |
+| `/dashboard/platform/audit` | Settings | Hash-chained audit events and chain verification. |

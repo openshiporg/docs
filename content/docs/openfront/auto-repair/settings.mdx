@@ -1,0 +1,36 @@
+---
+title: Shops, policies and settings
+description: Shops and bays, canned jobs, policies, imports, integrations and the audit log.
+icon: Settings
+---
+
+**Shops** holds shops, bays, hours and staff memberships. **Canned jobs** are job templates with lines, labor-guide codes and wording, drafted then published. **Policies** holds jurisdiction rules, labor rates, parts matrices, fees, sales tax and warranty, each drafted and published as a version. **Imports** brings customers and vehicles in from Tekmetric, Shopmonkey or any CSV, with a preview first. **Integrations** lists provider connections. **Audit log** shows the hash-chained events and checks the chain. **Approvals** lists requests waiting for a second person.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Approvals | `/dashboard/platform/approvals` | Maker-checker requests waiting for a second person. |
+| Imports | `/dashboard/platform/imports` | Bring customers and vehicles in from Tekmetric, Shopmonkey or any CSV, with a preview first. |
+| Integrations | `/dashboard/platform/integrations` | Provider connections and what they told us. |
+| Shops | `/dashboard/platform/shops` | Shops, bays, hours and staff memberships. |
+| Canned jobs | `/dashboard/platform/canned-jobs` | Job templates: lines, labor-guide codes and wording, drafted then published. |
+| Policies | `/dashboard/platform/policies` | Jurisdiction rules, labor rates, matrices, fees, tax and warranty: draft and publish. |
+| Audit log | `/dashboard/platform/audit` | Hash-chained audit events and chain verification. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Shop` | `active`, `suspended`, `closed` |
+| `ShopMembership` | `active`, `suspended`, `ended` |
+| `CannedJobVersion` | `draft`, `published`, `retired` |
+| `ImportJob` | `previewed`, `applied`, `failed`, `discarded` |
+| `IntegrationConnection` | `unconfigured`, `configured`, `pending_auth`, `active`, `degraded`, `needs_review`, `revoked` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`createPolicyDraft`, `publishPolicyVersion`, `saveCannedJob`, `publishCannedJobVersion`, `setCannedJobStatus`, `previewDataImport`, `applyDataImport`, `discardDataImport`, `saveIntegrationConnection`, `recordIntegrationHealth`, `revokeIntegrationConnection`, `recordProviderObservation`.

@@ -1,0 +1,45 @@
+---
+title: Send a claim
+description: Build, scrub and release a claim, then post the payer's payment.
+icon: Send
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Build
+
+In **Claims**, build a claim from the visit's posted procedures (`buildClaim`).
+
+</Step>
+<Step>
+
+### Scrub
+
+Run the scrub (`scrubClaim`). Fix what it flags. A user with `canOverrideScrub` can override a rule.
+
+</Step>
+<Step>
+
+### Release
+
+Release the claim (`releaseClaim`). This freezes a claim version.
+
+</Step>
+<Step>
+
+### Send
+
+With Stedi connected, **Run pending work** sends it. With the manual clearinghouse, export it (`exportClaimCsv`) and send it through the payer portal.
+
+</Step>
+<Step>
+
+### Post the payment
+
+In **Insurance payments**, match the remittance to the claim (`matchRemittance`) or enter the explanation of benefits by hand (`enterManualEob`).
+
+</Step>
+</Steps>

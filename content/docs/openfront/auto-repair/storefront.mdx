@@ -1,0 +1,34 @@
+---
+title: Storefront
+description: The shop website, online booking, "Check my repair", and the pages behind customer links.
+icon: Store
+---
+
+The storefront lives in `features/storefront` and mounts at the site root.
+
+| Route | Page |
+|---|---|
+| `/` | Shop home |
+| `/about`, `/services`, `/services/[slug]`, `/prices` | Shop information and services and prices |
+| `/book` | Book a repair |
+| `/check` | Check my repair |
+| `/fleet` | Fleet accounts |
+| `/authorizations/[token]` | Your estimate: approve or decline each job |
+| `/inspections/[token]` | The inspection with photos and findings |
+| `/invoices/[token]`, `/pay/[token]` | The invoice, and paying it by card |
+| `/portal/[token]` | My vehicles and repairs, with vehicle and repair order pages |
+| `/fleet/[token]` | A fleet contact's account, approvals and statements |
+
+## Online booking
+
+A booking is written by the same scheduling code the front counter uses, with source `storefront_api`. It arrives as a request with the caller's name, phone and vehicle, and the shop matches it to a customer and confirms it.
+
+## Check my repair
+
+The customer gives the repair order number from the work order plus a phone number on file. Both must match, and a wrong pair gets the same answer as an unknown number. It shows where the repair stands and the estimate, but it does not approve anything.
+
+## Customer links
+
+Staff create links for an estimate (`requestCustomerAuthorization`), an inspection (`sendShopInspection`), an invoice (`createInvoicePayLink`), the customer portal (`createCustomerPortalLink`) and a fleet contact (`createAccountLink`). The token is derived from a server secret, and only a keyed hash of it is stored, so nothing in the database can rebuild a working link. Each token carries its purpose, an expiry (up to 30 days) and a use limit. An expired link answers "This link has expired. Ask the shop to send a new one."
+
+The pages call the same token-scoped handlers as the public API at `/api/public/*` (`features/keystone/public/handlers.ts`), so the page and the API never disagree.

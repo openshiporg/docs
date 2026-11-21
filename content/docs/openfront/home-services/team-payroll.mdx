@@ -1,0 +1,34 @@
+---
+title: Team, timesheets and payroll
+description: Technicians and credentials, timesheets, pay plans, pay periods and personal pay.
+icon: Wallet
+---
+
+**Technicians** lists credentials, skills, shifts and on-call. A timesheet is proposed from the visit record, and the technician adds what is missing and sends it in. Pay plans hold hourly, overtime, commission and spiff terms as versions. A pay period is calculated, reviewed, approved and exported. **My pay** shows each person their hours, overtime, commission and anything taken back.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| My timesheet | `/dashboard/platform/my-timesheet` | Your day from the visit record: add what is missing, send it in. |
+| My pay | `/dashboard/platform/my-pay` | Your pay by period: hours, overtime, commission and anything taken back. |
+| Timesheets | `/dashboard/platform/timesheets` | Approve submitted days; add time that was missed. |
+| Pay plans | `/dashboard/platform/pay-plans` | Hourly, overtime, commission and spiff terms, versions and who is on which. |
+| Pay periods | `/dashboard/platform/pay-periods` | Calculate, review, approve and export a pay period. |
+| Technicians | `/dashboard/platform/team` | Technicians, credentials, skills, shifts and on-call. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Credential` | `pending_verification`, `verified`, `expired`, `revoked` |
+| `Timesheet` | `open`, `submitted`, `approved`, `locked` |
+| `PayPlanVersion` | `draft`, `pending_approval`, `active`, `retired` |
+| `PayPeriod` | `open`, `calculating`, `review`, `approved`, `exported`, `closed` |
+| `PayrollExportBatch` | `building`, `ready`, `sent`, `acknowledged`, `failed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`verifyCredential`, `revokeCredential`, `proposeTimesheet`, `addTimeSegment`, `removeTimeSegment`, `submitTimesheet`, `approveTimesheet`, `rejectTimesheet`, `adjustTimesheet`, `definePayPlan`, `savePayPlanDraft`, `requestPayPlanPublish`, `publishPayPlanVersion`, `assignPayPlan`, `setAttribution`, `openPayPeriod`, `calculatePayPeriod`, `addPayAdjustment`, `requestPayPeriodApproval`, `approvePayPeriod`, `reopenPayPeriod`, `exportPayPeriod`.

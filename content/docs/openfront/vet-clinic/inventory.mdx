@@ -1,0 +1,30 @@
+---
+title: Inventory
+description: Stock locations, lots, purchase orders, counts, recalls and temperature logs.
+icon: Package
+---
+
+Stock is held in lots at stock locations. Purchase orders are drafted, submitted and received, and reorder rules flag low stock. Counts reconcile what is on the shelf. A manufacturer recall finds exposed patients. A temperature excursion in a fridge is logged and resolved before the stock is used.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Inventory | `/dashboard/platform/inventory` | Items, lots, orders and counts. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `InventoryLot` | `available`, `quarantined`, `disposed` |
+| `PurchaseOrder` | `draft`, `submitted`, `partially_received`, `received`, `cancelled` |
+| `StockCount` | `closed` |
+| `RecallCase` | `open`, `closed` |
+| `RecallExposure` | `to_contact`, `contacted`, `resolved` |
+| `TemperatureExcursion` | `open`, `resolved` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`addStockLocation`, `receiveStock`, `adjustStock`, `addSupplier`, `draftPurchaseOrder`, `submitPurchaseOrder`, `cancelPurchaseOrder`, `receivePurchaseOrder`, `setReorderRule`, `countStock`, `openRecall`, `markRecallExposure`, `closeRecall`, `logTemperature`, `resolveExcursion`.

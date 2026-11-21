@@ -1,0 +1,38 @@
+---
+title: Backtest and promote a strategy
+description: Seal a strategy version, backtest it, validate it on paper and promote it.
+icon: TrendingUp
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Draft
+
+In **Strategy studio**, add the strategy and draft a version (`addStrategy`, `draftStrategyVersion`).
+
+</Step>
+<Step>
+
+### Seal and backtest
+
+Seal the version and run a backtest (`sealStrategyVersion`, `runBacktest`).
+
+</Step>
+<Step>
+
+### Paper
+
+Open a sleeve on the paper account and request paper validation (`openStrategySleeve`, `requestPaperValidation`).
+
+</Step>
+<Step>
+
+### Promote
+
+Request promotion (`requestPromotion`). A second person approves it under **Approvals**.
+
+</Step>
+</Steps>

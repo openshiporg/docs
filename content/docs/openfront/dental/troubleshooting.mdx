@@ -1,0 +1,16 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `DENTAL_SECRET_KEY is not set` | Set `DENTAL_SECRET_KEY` to 32 bytes as hex or base64. Adapter secrets and member-ID hashes need it. |
+| `SESSION_SECRET must contain at least 32 characters.` | Use a longer random value. |
+| The sample practice cannot be loaded into a production deployment | Expected on a real practice. Set `DENTAL_ALLOW_SAMPLE_PRACTICE=true` only on a QA deployment. |
+| `Card payments are not set up.` | Set `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_KEY` and `STRIPE_WEBHOOK_SECRET`. |
+| `No clearinghouse is connected.` | Connect Stedi under practice settings, or send the claim through the payer portal and enter the EOB by hand. |
+| `Scrub the claim first. Only a ready claim can be released.` | Run `scrubClaim` and fix what it flags before release. |
+| `No model key is set up.` | Set `OPENROUTER_API_KEY` for the assistant. |
+| A seeded staff member cannot sign in | Seeded staff have no password. An owner sets one from People, or sends a reset link. |

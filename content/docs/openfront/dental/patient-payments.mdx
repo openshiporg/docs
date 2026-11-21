@@ -1,0 +1,30 @@
+---
+title: Patient payments and ledger
+description: Ledger, payments, refunds, statements, payment plans and credits.
+icon: Wallet
+---
+
+Each guarantor account has an append-only ledger. Payments are allocated to charges, and a mistake is fixed with a reversal or an approved adjustment, never an edit. Refunds over the approval threshold need a second person. Statements are generated and hashed, then sent or held, and a patient can pay one online at `/pay/[code]`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Patient payments | `/dashboard/platform/payments` | Refunds, statements and credits on patient accounts. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Payment` | `initiated`, `requires_action`, `succeeded`, `failed`, `unknown`, `partially_refunded`, `refunded` |
+| `Refund` | `requested`, `approved`, `executing`, `completed`, `failed`, `unknown`, `rejected` |
+| `Statement` | `generated`, `sent`, `paid`, `partially_paid`, `overdue`, `payment_plan`, `collections_hold`, `suppressed` |
+| `PaymentPlan` | `proposed`, `active`, `delinquent`, `completed`, `cancelled` |
+| `CreditBalance` | `open`, `refund_requested`, `refunded`, `applied`, `transferred`, `escheat_pending`, `escheat_reported` |
+| `AdjustmentRequest` | `requested`, `approved`, `posted`, `rejected` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`requestAdjustment`, `reverseLedgerEntry`, `takePayment`, `requestRefund`, `recordRefundPaid`, `correctLedgerNote`, `generateStatements`, `sendStatement`, `holdStatements`, `proposePaymentPlan`, `activatePaymentPlan`, `cancelPaymentPlan`, `rebuildAccountBalance`.

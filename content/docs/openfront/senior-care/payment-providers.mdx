@@ -1,0 +1,39 @@
+---
+title: Payments and integrations
+description: Card payments, the processor webhook, model providers and the regulatory files.
+icon: CreditCard
+---
+
+## Payment adapters
+
+`features/integrations/payment` puts three providers behind one interface:
+
+| Provider | What it does |
+|---|---|
+| `manual` | Cash, check, ACH, insurer and financing payments recorded by hand. |
+| `stripe` | Card payments over the Stripe API. The mode follows the key: a test key charges Stripe's test network, a live key charges for real. |
+| `terminal` | A card reader. The interface exists and takes manual tender only until a reader is attached. |
+
+Every call that moves money carries an idempotency key, so asking again can never charge or refund twice. A network failure is `unknown`, never `failed`, and is resolved by asking the processor (`payment.check_status`).
+
+## Cards on file and autopay
+
+`card.setup` creates the Stripe customer and SetupIntent, the browser confirms it with Stripe Elements, and `card.save` reads it back from Stripe and stores the payment method id, never the number. Stored cards are charged with the **Charge stored cards** button after the month-end close, and are never retried automatically.
+
+## Webhook
+
+`/api/payments/webhook` receives `payment_intent.succeeded`, `payment_intent.payment_failed` and `charge.refunded`. The signature is checked first, and each event is recorded once by its id, so a replay changes nothing.
+
+## Model providers
+
+The workflow builder and AI drafts call models only through one gateway. It checks the operator's inference policy before any network call, validates the output against a schema, and records each call with digests and token counts, never prompt or response text. Adapters are `self_hosted_openai_compat`, `azure_openai`, `bedrock` (refuses until it is configured) and `builtin_rules`.
+
+## Regulatory files
+
+| File | How it moves |
+|---|---|
+| 837I claims | Exported as a file. A person marks it submitted after uploading the exact file they downloaded. |
+| 999, 277CA and 835 | Parsed from a staff upload. 835 posting is idempotent on payer and trace number. |
+| MDS submission | The iQIES ZIP from `/api/mds/submission`, for a staff upload. |
+| PBJ | The quarter export for a staff upload. |
+| NHSN | The weekly respiratory vaccination and case CSV. |

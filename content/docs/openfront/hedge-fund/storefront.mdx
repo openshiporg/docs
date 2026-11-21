@@ -1,0 +1,14 @@
+---
+title: Storefront
+description: The fund home page at the site root.
+icon: Store
+---
+
+The site root (`/`) is the fund home page, `features/storefront/FundHome.tsx`. There are no other public pages.
+
+| Visitor | What `/` shows |
+|---|---|
+| Signed out | The published `fund_page` piece for a vehicle offered under `public_506c`. Nothing appears until compliance approves the exact text under **Marketing review**. |
+| Signed in | The first non-paper vehicle's official NAV history, positions by sleeve, the latest research notes and the latest daily risk snapshot. |
+
+Investor statements are served as PDFs at `/api/hedge-fund/statements/[id]` to staff and to investor users who are live delegates of the statement's investor. The PDF is rendered from the stored figures and refused if they no longer match their hash.

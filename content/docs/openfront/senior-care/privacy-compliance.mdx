@@ -1,0 +1,35 @@
+---
+title: Compliance, privacy and operator settings
+description: Compliance clocks, approvals, break-glass, the audit log, jobs and operator settings.
+icon: ShieldCheck
+---
+
+**Compliance clocks** lists regulatory deadlines as due, overdue and satisfied. **Approvals** holds maker-checker requests waiting for a second person. **Break-glass** grants emergency access with a reason, which expires and goes to the privacy officer's review queue. **Audit log** shows the hash-chained events and verifies the chain. **Operations** lists jobs and their leases. **Operator settings** holds the operator profile, communities, rule packs and approval policies.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Approvals | `/dashboard/platform/approvals` | Maker-checker requests waiting for a second person. |
+| Compliance clocks | `/dashboard/platform/compliance` | Regulatory clocks: due, overdue and satisfied. |
+| Break-glass | `/dashboard/platform/privacy/break-glass` | Emergency access grants and the review queue. |
+| Audit log | `/dashboard/platform/audit` | Hash-chained audit events and chain verification. |
+| Operations | `/dashboard/platform/operations` | Jobs and leases. |
+| Operator settings | `/dashboard/platform/settings` | Operator profile, communities, packs and approval policies. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ComplianceClock` | `open`, `satisfied`, `overdue`, `satisfied_late`, `waived`, `cancelled` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+| `BreakGlassGrant` | `active`, `ended`, `reviewed_ok`, `reviewed_violation` |
+| `Job` | `idle`, `running`, `failed`, `disabled` |
+| `AgentIdentity` | `active`, `suspended`, `retired` |
+| `AgentToolGrant` | `requested`, `active`, `revoked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`refreshTimedStates`, `openBreakGlass`, `endBreakGlass`, `reviewBreakGlass`.

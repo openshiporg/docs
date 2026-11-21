@@ -1,0 +1,41 @@
+---
+title: GraphQL API
+description: The endpoint, MCP transport, and the custom queries and mutations.
+icon: Code
+---
+
+
+Openfront Dental serves Keystone GraphQL at `/api/graphql`. The MCP server for agents is at `/api/mcp-transport/mcp` and uses OAuth clients (`OAuthApp`, `OAuthToken`). Agents read through the same access rules as the user they act for, and every change they make is a named command, never generic create, update or delete.
+
+Generic list queries and mutations exist for every list. Status fields are read-only through them.
+
+## Public operations
+
+`publicSite`, `publicAvailability`, `publicChat`, `publicHoldSlot` and `publicSubmitBooking` need no session. Portal operations (`portalRequestCode`, `portalSession`, `portalMe`, `portalAppointments`, `portalConfirm`, `portalCancel`, `portalReschedule`, `portalPreferences`) use the `x-portal-token` header.
+
+## Staff queries
+
+`practiceSettingsItems`, `redirectToInit`, `verifyAuditChain`, `mfaStatus`, `findAvailability`, `publicSite`, `aiHome`, `voiceConnections`, `publicChat`, `publicAvailability`, `portalMe`, `portalAppointments`.
+
+## Mutations by area
+
+| Area | Mutations |
+| --- | --- |
+| Schedule | `holdSlot`, `releaseHold`, `bookAppointment`, `confirmAppointment`, `markArrived`, `seatPatient`, `markReadyForCheckout`, `completeAppointment`, `cancelAppointment`, `markBroken`, `rescheduleAppointment`, `addAsapEntry`, `closeAsapEntry`, `publishScheduleTemplate`, `reviewBookingRequest` |
+| Patients | `registerPatient`, `updatePatientDemographics`, `addContactPoint`, `deactivateContactPoint`, `recordConsent`, `addPatientAlert`, `endPatientAlert`, `linkGuarantor`, `setPatientStatus`, `proposeMerge`, `revertMerge`, `grantPortalAccess`, `revokePortalScope`, `suspendPortalAccount` |
+| Clinical chart | `addChartProcedure`, `addChartCondition`, `setConditionStatus`, `removePlannedEntry`, `acceptChartEntry`, `scheduleChartEntry`, `completeProcedure`, `correctProcedure`, `draftClinicalNote`, `updateNoteDraft`, `signClinicalNote`, `markNoteEnteredInError`, `startPerioExam`, `recordPerioMeasurements`, `completePerioExam`, `confirmPerioClassification`, `reviseSignedPerioExam`, `logAnesthetic`, `recordVitals`, `submitMedicalHistory`, `reviewMedicalHistory`, `addMedication`, `endMedication`, `recordImagingStudy`, `recordManualStudy`, `receiveExternalFinding`, `decideExternalFinding`, `writePrescription`, `recordPdmpCheck`, `signPrescription`, `markPrescriptionPrinted` |
+| Treatment plans and forms | `buildTreatmentPlan`, `updatePlanItem`, `presentTreatmentPlan`, `acceptTreatmentPlan`, `declineTreatmentPlan`, `reviseTreatmentPlan`, `requestForm`, `submitForm`, `withdrawConsent`, `publishFormVersion`, `estimateTreatmentPlan` |
+| Codes and fees | `uploadCodeImport`, `attestCodeLicence`, `requestCodeActivation`, `openFeeSchedule`, `createFeeVersion`, `setFee`, `requestFeePublish` |
+| Insurance and verification | `savePayer`, `saveInsurancePlan`, `addCoverage`, `setCoverageOrder`, `terminateCoverage`, `requestVerification`, `recheckEligibility`, `recordBenefitFact`, `completeVerification`, `failVerification`, `addOutsideHistory` |
+| Claims and insurance payments | `buildClaim`, `scrubClaim`, `overrideScrub`, `releaseClaim`, `exportClaimCsv`, `correctClaim`, `voidClaim`, `addClaimAttachment`, `saveClaimNarrative`, `requestClaimStatus`, `enterManualEob`, `matchRemittance`, `startDenialWork`, `resolveDenial`, `fileAppeal`, `recordAppealOutcome` |
+| Patient payments and ledger | `requestAdjustment`, `reverseLedgerEntry`, `takePayment`, `requestRefund`, `recordRefundPaid`, `correctLedgerNote`, `generateStatements`, `sendStatement`, `holdStatements`, `proposePaymentPlan`, `activatePaymentPlan`, `cancelPaymentPlan`, `rebuildAccountBalance` |
+| Memberships | `recordLicence`, `defineMembershipPlan`, `retireMembershipPlan`, `enrolMembership`, `signMembershipAgreement`, `freezeMembership`, `cancelMembership` |
+| Day and month close | `closeDay`, `bankDeposit`, `closePeriod`, `requestPeriodReopen`, `postRestatement`, `reclosePeriod`, `exportJournalCsv`, `runPendingWork` |
+| Recall, labs and reviews | `refreshRecall`, `setRecallDisabled`, `exportRecallCsv`, `prepareRecallMessage`, `saveLab`, `openLabCase`, `attachLabFile`, `advanceLabCase`, `chaseLabCase`, `copyReviewRequest`, `draftReviewReply`, `editReviewReply`, `approveReviewReply`, `markReviewReplyPosted` |
+| Calls and the assistant | `runSignalChecks`, `setAutonomyPolicy`, `decideProposal`, `setVoicePolicy`, `logManualCall`, `markCallFollowedUp`, `connectPhoneNumber`, `disconnectPhoneNumber` |
+| Compliance and privacy | `addComplianceTask`, `completeComplianceTask`, `reportIncident`, `advanceIncident`, `openRightsRequest`, `extendRightsRequest`, `resolveRightsRequest`, `recordDisclosure`, `saveRetentionPolicy`, `placeRecordHold`, `releaseRecordHold`, `scanRetention`, `requestDisposition`, `previewImport`, `requestImportApply`, `applyImportChunk`, `exportEhiBundle` |
+| Practice settings and audit | `verifyMfa`, `manageMfa` |
+| Public and portal | `publicHoldSlot`, `publicSubmitBooking`, `portalRequestCode`, `portalSession`, `portalConfirm`, `portalCancel`, `portalReschedule`, `portalPreferences` |
+| Setup and approvals | `loadPracticeSetup`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestPracticeControls` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

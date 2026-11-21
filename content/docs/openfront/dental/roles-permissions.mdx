@@ -1,0 +1,50 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every custom mutation checks the flag it needs on the server. Flags are defined in `features/keystone/access.ts`.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| Starter and fleet-standard | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Practice, locations and adapters | `canManagePractice`, `canManageAdapters`, `canApproveAdapters`, `canAccessAllLocations` |
+| Patients | `canManagePatients`, `canApprovePatientMerge`, `canReadDemographics` |
+| Scheduling | `canManageSchedule`, `canOverrideSchedule`, `canOverrideTemplate`, `canOverrideLabGate`, `canReadSchedule` |
+| Clinical | `canChart`, `canCompleteProcedures`, `canSignClinicalNotes`, `canPrescribe`, `canManagePerio`, `canManageLabCases`, `canApproveClinicalCorrections`, `canReadClinical`, `canReadSensitive` |
+| Treatment | `canManageTreatmentPlans`, `canPresentPlans` |
+| Codes and fees | `canManageFees`, `canImportCodes`, `canApproveCodeImport`, `canApproveFeePublish` |
+| Insurance | `canManageInsurance`, `canVerifyBenefits`, `canReadInsurance` |
+| Claims | `canManageClaims`, `canSubmitClaims`, `canOverrideScrub`, `canPostRemittances` |
+| Ledger | `canTakePayments`, `canAdjust`, `canCloseDay`, `canClosePeriod`, `canApproveAdjustments`, `canApproveRefunds`, `canApprovePeriodReopen`, `canReadLedger` |
+| Memberships | `canManageMemberships` |
+| Communications | `canMessagePatients`, `canManageTemplates`, `canReplyReviews` |
+| AI action layer | `canManageAgents`, `canDecideProposals`, `canDecideClaimProposals`, `canDecideClinicalProposals`, `canDecideFinancialProposals`, `canApproveAgentGrants`, `canApproveAutonomy`, `canReadSignals` |
+| Privacy and compliance | `canManageCompliance`, `canBreakGlass`, `canBreakGlassRecords`, `canReviewPrivacy`, `canApproveRetention`, `canReadPhiAudit` |
+| Data | `canImportData`, `canExportData`, `canApproveImports` |
+
+## Seeded roles
+
+Loading the sample practice creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| Organisation Admin | Setup, users, locations, adapters and the BAA register. Activating a live adapter needs a second person. |
+| Practice Owner | Runs the practice. Approver for write-offs, refunds, period reopen and autonomy policies. |
+| Office Manager | Templates, draft fee schedules, day close, statements and staff. |
+| Dentist | Charts, signs notes, plans treatment, prescribes and supervises hygiene. |
+| Associate Dentist | As Dentist, scoped to assigned locations; production credited to the rendering provider. |
+| Hygienist | Perio, hygiene notes within scope, recall and radiographs. |
+| Dental Assistant | Chart entry drafts, vitals, images and lab case handling. Does not sign provider notes. |
+| Front Office | Patients, families, scheduling, confirmations, forms, verification tasks and payments. |
+| Treatment Coordinator | Presents plans, financing and good faith estimates; follows up. |
+| Insurance Coordinator | Coverage, verifications, claims, attachments, ERA posting, denials and appeals. |
+| Central Billing (DSO) | Payment-scoped access across locations; no clinical notes beyond what a claim needs. |
+| Privacy Officer | PHI read audit, break-glass review, rights requests, retention and holds. |
+| Bookkeeper | Reports, close exports and the read-only ledger. Time-boxed by the access expiry. |
+| Auditor | Read-only, time-boxed by the user access expiry. |
+| Patient | Portal only (through the portal API); no dashboard. |

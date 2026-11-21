@@ -1,0 +1,38 @@
+---
+title: Run a medication pass
+description: Give, hold or refuse doses on the eMAR and follow up PRNs.
+icon: Syringe
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Open the eMAR
+
+Open **eMAR** for the unit (`clinicalCommand` op `emar.open`).
+
+</Step>
+<Step>
+
+### Record each dose
+
+Record each dose as given, held or refused (`emar.administer`).
+
+</Step>
+<Step>
+
+### PRN follow-up
+
+Give a PRN dose and record its follow-up (`emar.prn`).
+
+</Step>
+<Step>
+
+### Count
+
+At shift change, run the blind count (`count.start`, `count.entry`, `count.complete`).
+
+</Step>
+</Steps>

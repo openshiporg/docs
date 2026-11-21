@@ -1,0 +1,34 @@
+---
+title: Accounts, products and statements
+description: Deposit accounts, balances and holds, product versions, interest and statements.
+icon: Wallet
+---
+
+An account is opened on a published product version, with a random account number with a check digit, never sequential. It starts in `pending_funding` and moves through active, dormant, escheat and closing. Accounts close only at zero.
+
+**Products** publishes a new version of a deposit product (rates, minimum to open, monthly fee) through a maker-checker approval. Accounts already open keep their version, and the public rates and new applications use the new one. **Statements** are rendered at cycle close, and a statement's PDF is served after its hash is checked.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Accounts | `/dashboard/platform/accounts` | Deposit accounts, balances, statements, interest and products. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `DepositAccount` | `pending_funding`, `active`, `dormant`, `escheat_pending`, `escheated`, `closing`, `closed` |
+| `AccountRestriction` | `active`, `lifted` |
+| `OverdraftEvent` | `open`, `cured`, `charged_off` |
+| `Hold` | `active`, `partially_captured`, `captured`, `released`, `expired` |
+| `DepositProductVersion` | `draft`, `in_review`, `published`, `retired` |
+| `RateSchedule` | `draft`, `published`, `superseded` |
+| `StatementCycle` | `open`, `closed`, `rendering`, `complete` |
+| `Statement` | `pending`, `rendering`, `rendered`, `delivered`, `delivery_failed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`publishProductVersion`, `openAccount`, `statementDocument`.

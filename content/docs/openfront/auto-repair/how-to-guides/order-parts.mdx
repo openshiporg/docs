@@ -1,0 +1,38 @@
+---
+title: Order parts
+description: Quote, order and receive parts for a job.
+icon: ShoppingCart
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Quote
+
+On **Parts**, request and record supplier quotes, then select one (`requestSupplierQuote`, `recordSupplierQuote`, `selectSupplierQuote`).
+
+</Step>
+<Step>
+
+### Order
+
+Place the order (`placeSupplierOrder`), or record a phone order (`recordPhoneOrder`).
+
+</Step>
+<Step>
+
+### Receive
+
+Receive it against the job (`receiveShopSupplierOrder`) and issue the parts (`issueJobPart`).
+
+</Step>
+<Step>
+
+### Match the invoice
+
+Record and match the supplier invoice (`recordShopSupplierInvoice`, `matchShopSupplierInvoice`).
+
+</Step>
+</Steps>

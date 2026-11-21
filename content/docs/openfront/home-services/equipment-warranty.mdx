@@ -1,0 +1,31 @@
+---
+title: Equipment and warranty
+description: Installed equipment, warranty registrations and claims, and home-warranty dispatches.
+icon: ShieldCheck
+---
+
+Installed equipment is recorded by location with its warranty cover and readings. Registrations due and overdue are listed with the packet for the manufacturer's portal. Warranty claims are drafted, submitted, decided, settled, appealed or written off. Dispatches from home-warranty companies are received and worked to completion.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Equipment | `/dashboard/platform/equipment` | Installed equipment by location, with warranty cover. |
+| Warranty registrations | `/dashboard/platform/warranty/registrations` | Registrations due and overdue, with the portal packet. |
+| Warranty claims | `/dashboard/platform/warranty/claims` | Claims to the manufacturer, appeals and write-offs. |
+| Home warranty | `/dashboard/platform/home-warranty` | Dispatches from home-warranty companies. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `InstalledEquipment` | `active`, `replaced`, `removed`, `decommissioned` |
+| `WarrantyRegistration` | `due`, `submitted`, `confirmed`, `overdue` |
+| `WarrantyClaim` | `draft`, `ready`, `submitted`, `info_requested`, `approved`, `partially_approved`, `denied`, `settled`, `closed` |
+| `HomeWarrantyDispatch` | `dispatch_received`, `accepted`, `declined`, `auth_requested`, `authorized`, `cash_out_offered`, `denied`, `invoiced`, `paid` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`recordEquipment`, `recordEquipmentReading`, `retireEquipment`, `ensureWarrantyRegistration`, `markWarrantyRegistrationSubmitted`, `confirmWarrantyRegistration`, `openWarrantyClaim`, `saveWarrantyClaimDraft`, `markWarrantyClaimReady`, `submitWarrantyClaim`, `recordWarrantyClaimNumber`, `recordWarrantyClaimDecision`, `settleWarrantyClaim`, `closeWarrantyClaim`, `appealWarrantyClaim`, `requestWarrantyWriteOff`, `writeOffWarrantyClaim`, `receiveHomeWarrantyDispatch`, `advanceHomeWarrantyDispatch`.

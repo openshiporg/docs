@@ -1,0 +1,25 @@
+---
+title: Price book
+description: Categories, items, labour rates, markup tables and publishing.
+icon: Tag
+---
+
+The price book holds categories and items, labour rates, after-hours multipliers and tiered markup tables. It is edited as a draft version, submitted for second-person approval, and published on its effective date. Supplier costs can be imported into a draft.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Price book | `/dashboard/platform/pricebook` | Categories, items, markup tables and publishing. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `PriceBookVersion` | `draft`, `pending_approval`, `published`, `active`, `retired`, `discarded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openPriceBook`, `startPriceBookDraft`, `saveDraftItems`, `removeDraftItems`, `saveDraftSettings`, `submitPriceBookVersion`, `reopenPriceBookDraft`, `discardPriceBookVersion`, `importSupplierCosts`.

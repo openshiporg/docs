@@ -298,5 +298,75 @@
     "href": "/docs/openfront/tour-guide",
     "sourceUrl": "https://github.com/openshiporg/openfront-tour-guide",
     "catalogUrl": "https://openship.org/products/openfront-tour-guide"
+  },
+  {
+    "id": "dental",
+    "repository": "openfront-dental",
+    "name": "Dental",
+    "description": "Dental practice operations with scheduling by operatory, charting, treatment plans, insurance, claims, patient payments, memberships, recall, and online booking.",
+    "color": "#0891b2",
+    "href": "/docs/openfront/dental",
+    "sourceUrl": "https://github.com/openshiporg/openfront-dental",
+    "catalogUrl": null
+  },
+  {
+    "id": "vet-clinic",
+    "repository": "openfront-vet-clinic",
+    "name": "Vet Clinic",
+    "description": "Veterinary practice operations with clients and patients, scheduling, SOAP records, vaccines, pharmacy, controlled substances, billing, wellness plans, boarding and an AI receptionist.",
+    "color": "#16a34a",
+    "href": "/docs/openfront/vet-clinic",
+    "sourceUrl": "https://github.com/openshiporg/openfront-vet-clinic",
+    "catalogUrl": null
+  },
+  {
+    "id": "auto-repair",
+    "repository": "openfront-auto-repair",
+    "name": "Auto Repair",
+    "description": "Independent repair shop operations with appointments, check-in, repair orders, digital inspections, estimates and authorizations, parts, technician time, fleet accounts, payments and the customer portal.",
+    "color": "#ea580c",
+    "href": "/docs/openfront/auto-repair",
+    "sourceUrl": "https://github.com/openshiporg/openfront-auto-repair",
+    "catalogUrl": null
+  },
+  {
+    "id": "home-services",
+    "repository": "openfront-home-services",
+    "name": "Home Services",
+    "description": "Plumbing, HVAC and electrical company operations with calls and leads, online booking, dispatch, price books, estimates, invoices, memberships, inventory, warranty, permits and payroll.",
+    "color": "#2563eb",
+    "href": "/docs/openfront/home-services",
+    "sourceUrl": "https://github.com/openshiporg/openfront-home-services",
+    "catalogUrl": null
+  },
+  {
+    "id": "senior-care",
+    "repository": "openfront-senior-care",
+    "name": "Senior Care",
+    "description": "Skilled nursing, assisted living and memory care with census, charting, eMAR, MDS and PDPM, billing and claims, resident trust, staffing and a family portal.",
+    "color": "#0f766e",
+    "href": "/docs/openfront/senior-care",
+    "sourceUrl": "https://github.com/openshiporg/openfront-senior-care",
+    "catalogUrl": null
+  },
+  {
+    "id": "hedge-fund",
+    "repository": "openfront-hedge-fund",
+    "name": "Hedge Fund",
+    "description": "Hedge fund operations with strategy research, paper and live trading through connected brokers, risk, NAV and the ledger, investors and dealing, and compliance.",
+    "color": "#334155",
+    "href": "/docs/openfront/hedge-fund",
+    "sourceUrl": "https://github.com/openshiporg/openfront-hedge-fund",
+    "catalogUrl": null
+  },
+  {
+    "id": "bank",
+    "repository": "openfront-bank",
+    "name": "Bank",
+    "description": "Core and digital banking for community banks, credit unions and program banks with the ledger, deposit accounts, ACH, teller cash, BSA/AML and online banking.",
+    "color": "#1e3a8a",
+    "href": "/docs/openfront/bank",
+    "sourceUrl": "https://github.com/openshiporg/openfront-bank",
+    "catalogUrl": null
   }
 ]

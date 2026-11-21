@@ -1,0 +1,57 @@
+---
+title: Openfront Vet Clinic
+description: Self-hosted veterinary practice application for clients and patients, scheduling, SOAP records, vaccines, pharmacy and controlled substances, billing, wellness plans, boarding and an AI receptionist.
+icon: PawPrint
+---
+
+
+[Source](https://github.com/openshiporg/openfront-vet-clinic) · [Live site](https://vet-clinic.openship.org)
+
+Openfront Vet Clinic is an open-source alternative to Avimark. It runs a veterinary practice on one system. That covers clients (households) and patients with species, breed and weight history, the day sheet and whiteboard, SOAP medical records, the hospital treatment sheet, vaccines and reminders, estimates and treatment plans, in-house and reference lab results, inventory, prescriptions and the controlled-substance register, invoices, payments, deposits and wellness plans, boarding and grooming, and end-of-life care. A client website handles booking, refills and paying bills. An AI receptionist answers inbound calls through the same records over MCP.
+
+The live site is [vet-clinic.openship.org](https://vet-clinic.openship.org). It runs the sample practice, Cedar Creek Animal Hospital in Sacramento, CA. The staff dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/vet-clinic/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Client and household | A household of people who own one or more patients, with contact points, consents and a balance. |
+| Patient | An animal, with species, breed, weight history, alerts, microchips and VCPR status. |
+| Appointment | A booking for one or more patients with a provider, room and appointment type. Surgery and dental types are requests that staff accept. |
+| Encounter | The SOAP medical record for a visit. Only a veterinarian signs it; after that it changes only by addendum. |
+| Order and treatment task | Orders placed in the hospital become timed tasks on the treatment sheet. |
+| Prescription and controlled-substance register | Prescriptions, refills and dispensing; controlled drugs are tracked per container with counts, transfers and waste. |
+| Estimate and invoice | A versioned estimate the client accepts, charges captured from the visit, and an invoice that is posted and paid. |
+| Policy pack | Federal and state rules in force, with sources. A missing rule fails closed. |
+| Approval request | A maker-checker request. The person who asked can never approve it. |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS 4 and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin Next.js routes for the dashboard, the client site and API routes. |
+| `features/keystone/` | Lists, access rules, custom mutations, the audit and read-audit spine, and seeds. |
+| `features/platform/` | Staff screens mounted at `/dashboard/platform/*`. |
+| `features/storefront/` | The client site: home, booking, new client, refills, account and bill payment. |
+| `features/integrations/` | Payment (manual, Stripe, terminal), voice, scribe and PIMS import adapters. |
+
+## Tenancy and ownership
+
+One deployment serves one practice with one or more locations (the sample has Cedar Creek and the Elk Grove Wellness Clinic). Every read of a client or clinical record is written to the read audit. Clients sign in to the client site separately from staff, and their reads are scoped to their own household.
+
+## Rules the server enforces
+
+- Money is integer minor units.
+- Status changes go through named mutations that check the expected version, take an idempotency key and write a hash-chained audit event.
+- Policy packs fail closed. If a federal or state rule the app needs is missing, the action is refused.
+- The database refuses a negative controlled-substance balance and refills of Schedule II drugs.
+- Controlled-substance permissions are never reachable by an AI agent.
+- Only a veterinarian signs a medical record. A signed record changes only by addendum.
+- An emergency call is transferred or referred to an emergency hospital, never booked.
+- There is no scheduler, cron or worker, and the app sends no texts or emails. Due and overdue states refresh when staff press **Refresh due and overdue**.

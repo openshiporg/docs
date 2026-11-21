@@ -1,0 +1,26 @@
+---
+title: Deployment
+description: Deploy Openfront Dental on Railway or any Node host with PostgreSQL.
+icon: Rocket
+---
+
+
+The repository includes `railway.toml`. The build runs `keystone build --no-ui && next build`, and the start command runs `sh scripts/start.sh`.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `sh scripts/start.sh` | Resolves two rolled-back migrations, runs `npm run migrate`, runs idempotent data scripts (member-ID rehash, balance rebuild, claim reference seed, statement hashes, duplicate remittance report), then `next start`. |
+| Pending work | **Run pending work** on Day and month close (`runPendingWork`) | Expires holds, sweeps no-shows, settles stale eligibility checks and claims, fetches remittances and runs payment jobs, each under a lease. |
+
+## Checklist
+
+1. Provision PostgreSQL and set `DATABASE_URL`.
+2. Set `SESSION_SECRET` (32+ characters) and `DENTAL_SECRET_KEY` (32 bytes).
+3. Set the Stripe keys and point a Stripe webhook at `/api/webhooks/stripe` if you take cards.
+4. Set SMTP so password resets and portal codes are delivered.
+5. Deploy, open `/dashboard/init` and create the first user.
+6. Leave `DENTAL_ALLOW_SAMPLE_PRACTICE` unset on a practice's real deployment.
+
+There is no worker service and no cron. Scheduled steps run when a person presses **Run pending work**, and two copies never run the same step because each holds a lease.

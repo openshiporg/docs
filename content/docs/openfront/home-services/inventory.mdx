@@ -1,0 +1,34 @@
+---
+title: Inventory and purchasing
+description: Warehouse and truck stock, replenishment, purchase orders, receiving and cycle counts.
+icon: Warehouse
+---
+
+Stock is held in the warehouse and on each truck. Min/max rules propose replenishment, which is decided and filled. Purchase orders are approved, sent and received, and vendor bills are three-way matched, with variances accepted by a second person. Cycle counts post the difference after approval. Serialized units are tracked to the installed equipment.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Inventory | `/dashboard/platform/inventory` | Warehouse and truck stock. |
+| Replenishment | `/dashboard/platform/replenishment` | Min/max proposals for trucks and the warehouse. |
+| Purchase orders | `/dashboard/platform/purchase-orders` | Orders to suppliers, approval and three-way match. |
+| Receiving | `/dashboard/platform/receiving` | Orders on their way, received into stock. |
+| Cycle counts | `/dashboard/platform/counts` | Count a location and post the difference. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `PurchaseOrder` | `draft`, `pending_approval`, `approved`, `sent`, `acknowledged`, `partially_received`, `received`, `billed`, `closed`, `cancelled` |
+| `ReplenishmentRequest` | `proposed`, `approved`, `picking`, `transferred`, `ordered`, `closed`, `rejected` |
+| `CycleCount` | `planned`, `counting`, `submitted`, `approved`, `posted` |
+| `StockReservation` | `reserved`, `fulfilled`, `released`, `expired` |
+| `SerializedUnit` | `in_stock`, `reserved`, `installed`, `rma`, `scrapped` |
+| `Rma` | `requested`, `shipped`, `credited`, `rejected` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveStockItem`, `saveStockLocation`, `consumeStock`, `installSerializedUnit`, `transferStock`, `adjustStock`, `saveMinMaxRule`, `proposeReplenishment`, `decideReplenishment`, `fillReplenishment`, `startCycleCount`, `submitCycleCount`, `requestCycleCountApproval`, `postCycleCount`, `openPurchaseOrder`, `submitPurchaseOrder`, `approvePurchaseOrder`, `markPurchaseOrderSent`, `cancelPurchaseOrder`, `receivePurchaseOrder`, `requestOverReceipt`, `recordVendorBill`, `requestBillVariance`, `acceptBillVariance`.

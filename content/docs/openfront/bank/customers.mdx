@@ -1,0 +1,31 @@
+---
+title: Customers and onboarding
+description: Parties, applications, identity verification, screening and account opening.
+icon: UserCheck
+---
+
+**Customers** lists parties and their applications. An application runs identity checks and sanctions screening. Auto-approval needs every check passed, every screen clear and a low or moderate risk rating. A failed identity check is never auto-declined: a person looks at it in **Needs a person**.
+
+Approval rates the customer, sets their KYC status and next due-diligence review, and opens the accounts. A banker enrols a verified customer for online banking. Revealing a full SSN needs `canReadPII` and is logged.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Customers | `/dashboard/platform/customers` | Parties, applications and verification. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Application` | `draft`, `submitted`, `verifying`, `review`, `approved`, `declined`, `withdrawn`, `expired`, `fulfilled` |
+| `VerificationCheck` | `pending`, `submitted_to_vendor`, `passed`, `failed`, `needs_review`, `passed_manual`, `failed_manual`, `error` |
+| `ScreeningResult` | `pending`, `no_match`, `potential_match`, `false_positive`, `confirmed_match` |
+| `BeneficialOwnershipSnapshot` | `draft`, `certified`, `superseded` |
+| `DueDiligenceReview` | `scheduled`, `in_progress`, `completed`, `escalated`, `exit_recommended` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`startApplication`, `submitApplication`, `runVerification`, `enrolCustomerLogin`, `resolveVerificationCheck`, `decideApplication`, `withdrawApplication`, `proposeScreeningDisposition`, `revealPartyPii`.

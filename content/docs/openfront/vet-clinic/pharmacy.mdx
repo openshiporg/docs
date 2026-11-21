@@ -1,0 +1,37 @@
+---
+title: Prescriptions and controlled substances
+description: Prescriptions, refills, dispensing, the controlled-substance register, counts and PDMP.
+icon: Pill
+---
+
+Prescriptions are written by a veterinarian, and refills arrive from the client site, the receptionist or the desk for a veterinarian to decide. Dispensing draws from stock lots. A prescription can also be sent to an outside pharmacy.
+
+The controlled-substance register tracks each container from receipt to destruction: opening, administration, waste with a witness, counts, transfers between locations and DEA order forms. The database refuses a negative balance and a Schedule II refill. Discrepancies open a case, and losses are reported. PDMP files are generated for the state. None of these actions is reachable by an AI agent.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Prescriptions | `/dashboard/platform/prescriptions` | Prescriptions and the refill queue. |
+| Controlled substances | `/dashboard/platform/controlled` | Register, counts, discrepancies, PDMP. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Prescription` | `draft`, `active`, `exhausted`, `expired`, `cancelled` |
+| `RefillRequest` | `received`, `in_review`, `fulfilled_under_existing_rx`, `approved_new_rx`, `denied`, `needs_exam`, `merged` |
+| `ExternalDispense` | `requested`, `approved`, `declined`, `filled` |
+| `CsContainer` | `sealed`, `open`, `emptied`, `quarantined`, `disposed`, `retired` |
+| `CsCount` | `closed` |
+| `CsDiscrepancyCase` | `open`, `notified`, `form_filed`, `closed` |
+| `CsTransfer` | `sent`, `received` |
+| `CsOrderForm` | `open`, `partially_filled`, `filled`, `expired`, `cancelled` |
+| `PdmpReport` | `pending`, `submitted` |
+| `DeaRegistration` | `active`, `expired`, `surrendered`, `revoked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`writePrescription`, `decideRefill`, `dispenseFill`, `receiveStockLot`, `setLotQuarantine`, `receiveControlled`, `openControlled`, `wasteControlled`, `countControlled`, `reportCsLoss`, `advanceDiscrepancy`, `destroyControlled`, `submitPdmp`, `issueOrderForm`, `receiveOnOrderForm`, `transferControlled`, `confirmTransfer`, `logCabinetAccess`, `generatePdmpFile`, `printDispenseLabel`, `requestExternalFill`, `decideExternalFill`, `exportWrittenRx`.

@@ -1,0 +1,91 @@
+---
+title: Getting started with Vet Clinic
+description: Install Openfront Vet Clinic, configure it, and load the sample practice.
+icon: Terminal
+---
+
+
+## Requirements
+
+- Node.js 20 or later
+- PostgreSQL
+- A Stripe account if you want card payments (optional)
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-vet-clinic.git
+cd openfront-vet-clinic
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+cp .env.example .env
+# set DATABASE_URL and SESSION_SECRET
+```
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SHADOW_DATABASE_URL` | Shadow database used by `npm run migrate:gen`. |
+| `SESSION_SECRET` | Signs staff sessions, pay links and client sessions. Required. |
+| `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Card payments. The mode follows the key. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The model used by the assistant. |
+| `SCRIBE_STT_URL`, `SCRIBE_STT_API_KEY`, `SCRIBE_STT_MODEL` | Speech-to-text for the scribe. |
+| `SCRIBE_LLM_URL`, `SCRIBE_LLM_API_KEY`, `SCRIBE_LLM_MODEL` | Any OpenAI-compatible chat endpoint that drafts the scribe's record blocks. |
+| `EZYVET_API_URL`, `EZYVET_PARTNER_ID`, `EZYVET_CLIENT_ID`, `EZYVET_CLIENT_SECRET`, `EZYVET_SITE_UID` | ezyVet API import. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mail for staff password resets. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Allows staff self-signup when set. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm install
+npm run dev    # builds Keystone, applies migrations, starts Next.js
+```
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first owner. Its role, **Owner / Medical Director**, gets every permission except break-glass.
+
+</Step>
+<Step>
+
+### Load the sample practice
+
+The onboarding card loads Cedar Creek Animal Hospital (Sacramento, CA) and its Elk Grove satellite in three sections:
+
+| Section | What it loads |
+|---|---|
+| Practice, people and policy packs | Locations, staff with licences and DEA registrations, roles, the federal and California policy packs and the federal calendar for 2026 to 2028. |
+| Clients, patients, schedule and the AI receptionist | Species, rooms, appointment types (surgery and dental are requests), households and patients, a triage protocol, the knowledge base, referral hospitals and the receptionist, with voice off until a second person approves. |
+| In-house lab catalog | In-house analytes and reference ranges. |
+
+The sample has 20+ staff, about 400 households and 640 patients. Every name, phone number and address is fictional, and phones use the 916-555-01xx range. Seeded staff cannot sign in until an owner sets their password from **Team & licences**.
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm run verify
+```
+
+Database tests need `VC_TEST_DATABASE_URL`.

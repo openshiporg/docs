@@ -1,0 +1,25 @@
+---
+title: Customers
+description: Customers, contacts, service locations, consent and sealed gate codes.
+icon: Users
+---
+
+A customer has contacts with consent by channel and one or more service locations. Gate codes and lockbox codes are sealed with AES-256-GCM, and revealing one is a logged command.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Customers | `/dashboard/platform/customers` | Customers, contacts, service locations and consent. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `AccessSecret` | `active`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`addCustomer`, `addServiceLocation`, `addContactPoint`, `storeAccessSecret`, `revealAccessSecret`.

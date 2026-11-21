@@ -1,0 +1,33 @@
+---
+title: Ledger and fund structure
+description: The trial balance, journals, accounting periods, share classes, fee terms and corporate actions.
+icon: BookOpenCheck
+---
+
+The general ledger holds journals posted from trading, accruals and dealing. A posted journal is reversed, never edited. A manual journal needs approval, and an accounting period is soft-closed and then locked.
+
+**Fund structure** holds vehicles, share classes, fee terms and unit dealing. Corporate actions are announced, verified and applied.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Ledger | `/dashboard/platform/ledger` | Trial balance, journals and accounting periods. |
+| Fund structure | `/dashboard/platform/funds` | Share classes, fee terms, unit dealing and corporate actions. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Journal` | `draft`, `posted`, `reversed` |
+| `AccountingPeriod` | `open`, `soft_closed`, `locked` |
+| `GlAccount` | `active`, `inactive` |
+| `Vehicle` | `forming`, `active`, `winding_down`, `liquidated` |
+| `ShareClass` | `open`, `closed` |
+| `CorporateAction` | `announced`, `verified`, `applied` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`lockAccountingPeriod`, `openShareClass`, `addFeeTerms`, `dealUnits`, `recordCorporateAction`, `verifyCorporateAction`, `applyCorporateAction`, `requestManualJournal`, `reverseJournal`.

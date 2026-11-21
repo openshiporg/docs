@@ -1,0 +1,41 @@
+---
+title: Payment providers
+description: Manual, Stripe and card-reader payments, and the voice, scribe and import adapters.
+icon: CreditCard
+---
+
+Adapters live in `features/integrations/`.
+
+## Payments
+
+`features/integrations/payment` has one interface and three providers.
+
+| Provider | What it does |
+|---|---|
+| `manual` | Cash, check, ACH, insurer and financing payments someone records by hand. |
+| `stripe` | Stripe card payments over the REST API. The card is typed into Stripe Elements in the browser, so the app only sees the payment method ID. The mode follows the key. |
+| `terminal` | A card reader. The interface exists and takes manual tender until a reader is attached. |
+
+Every call that moves money carries an idempotency key, so asking again can never charge or refund twice. That is how an `unknown` result is resolved.
+
+Stripe events arrive at `/api/integrations/payment/[providerCode]/webhook`. It handles `payment_intent.succeeded`, `payment_intent.payment_failed` and `charge.refunded`. Without keys, card payment answers "Card payments are not set up on this server yet."
+
+## Voice
+
+The AI receptionist answers inbound calls only. Its runtime is an adapter, and its decisions are the MCP reception tools.
+
+| Adapter | What it does |
+|---|---|
+| `manual` | The default. Calls ring the front desk and nothing is answered by the AI. |
+| `hosted-voice-agent` | A hosted voice-agent platform that calls MCP tools with an OAuth client bound to the receptionist agent identity. |
+| `twilio-media-streams` | A self-hosted bridge with Twilio Media Streams and your own speech and model services. |
+
+Every AI-answered call opens with an AI and recording disclosure. Outbound AI calls are refused, and the database refuses them too.
+
+## Scribe
+
+The scribe turns a recorded visit into draft record blocks. With `manual` (the default) the transcript becomes one history draft. With `llm`, any OpenAI-compatible endpoint at `SCRIBE_LLM_URL` drafts the blocks. Drafts are accepted block by block by a person, and the encounter still needs a veterinarian's signature.
+
+## Import
+
+Practice-management imports move records over without retyping. `manual` takes a CSV export from Avimark or ezyVet, and `ezyvet-api` pages the same entities from ezyVet's API. Rows are previewed (`previewImport`) before they are applied (`applyImport`).

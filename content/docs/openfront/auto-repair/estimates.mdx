@@ -1,0 +1,23 @@
+---
+title: Estimates and authorizations
+description: Frozen estimate versions, approval links, and recording what the customer said.
+icon: FileCheck
+---
+
+Sending an estimate freezes a version of the selected jobs. Staff then text or email an approval link (`requestCustomerAuthorization`), and the customer approves or declines each job on `/authorizations/[token]` with a signature. Staff can also record what the customer said in person, on the phone or on a written form. An assistant can never record an authorization.
+
+The charge for an authorized job may never pass the authorized amount plus the state's tolerance. California allows nothing over, so more work needs a new authorization. Estimates are opened from the repair order.
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `EstimateVersion` | `draft`, `sent`, `superseded` |
+| `Authorization` | `recorded`, `superseded`, `revoked` |
+| `AuthorizationRequest` | `created`, `delivered`, `viewed`, `answered`, `expired`, `withdrawn` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`sendRepairEstimate`, `requestCustomerAuthorization`, `recordCustomerAuthorization`.

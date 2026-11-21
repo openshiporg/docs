@@ -1,0 +1,36 @@
+---
+title: Transfers, ACH and external accounts
+description: Transfers and payees, ACH entries and files, returns and NOCs, and linked external accounts.
+icon: ArrowLeftRight
+---
+
+A transfer is the one command a customer, or a banker for them, uses to move money. Between two accounts here it is a book transfer. To a saved payee it is an ACH push, and from a linked external account it is an ACH pull. Every applicable limit is checked, so two concurrent payments can never both fit under a limit with room for one.
+
+**ACH** holds entries for review, builds files, and records what FedACH acknowledged. Inbound files are uploaded and posted, and received entries can be held or returned. Returns are matched by trace number and reverse the entry's effect, and a NOC corrects the stored details. **External links** connects accounts at other banks through the aggregator, and ownership match decides whether the link can be pulled from.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Payments | `/dashboard/platform/payments` | Transfers, ACH entries and files, returns and external links. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `TransferRequest` | `draft`, `submitted`, `pending_approval`, `scheduled`, `executing`, `completed`, `failed`, `canceled` |
+| `BookTransfer` | `pending`, `posted`, `rejected` |
+| `Payee` | `active`, `removed` |
+| `AchEntry` | `scheduled`, `pending_review`, `pending_risk`, `approved`, `queued`, `batched`, `submitted`, `unknown`, `acknowledged`, `settled`, `completed`, `returned`, `return_dishonored`, `return_contested`, `rejected`, `canceled`, `reversal_requested` |
+| `AchFile` | `building`, `built`, `transmitting`, `ready_to_send`, `transmitted`, `unknown`, `acknowledged`, `rejected`, `received`, `parsed`, `posting`, `posted`, `partially_posted` |
+| `AchReceivedEntry` | `received`, `screening`, `held`, `posted`, `completed`, `return_pending`, `returned` |
+| `AchReturn` | `received`, `matched`, `applied`, `dishonor_pending`, `queued`, `sent`, `settled` |
+| `AchNoc` | `received`, `applied`, `refused` |
+| `AchUnauthorizedClaim` | `open`, `wsud_signed`, `return_sent`, `closed`, `denied` |
+| `ExternalAccountLink` | `initiated`, `pending_verification`, `verified_low_confidence`, `verified`, `needs_reauth`, `consent_revoked`, `invalid`, `failed`, `removed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`addPayee`, `submitTransfer`, `cancelTransfer`, `decideAchReview`, `acceptAchReturn`, `decideReceivedAch`, `createExternalLinkSession`, `linkExternalAccount`, `confirmExternalLinkOwnership`, `removeExternalAccount`, `runAchCycleNow`, `downloadAchFile`, `recordAchFileTransmission`, `recordAchReturnsTransmission`, `uploadAchInboundFile`, `runDueJobsNow`, `runDueWork`.

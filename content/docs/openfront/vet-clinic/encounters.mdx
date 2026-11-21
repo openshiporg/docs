@@ -1,0 +1,30 @@
+---
+title: Medical records and scribe
+description: SOAP encounters, vitals, exam findings, problems, signing, addenda and the scribe.
+icon: Stethoscope
+---
+
+An encounter is the SOAP record for a visit. Sections, vitals, exam findings and diagnoses are saved as the visit goes, then the record is submitted and signed. Only a veterinarian signs, and a signed record changes only by addendum. A void needs approval.
+
+The scribe records the visit and drafts record blocks. A person accepts or rejects each block, and the encounter still needs a veterinarian's signature.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Encounters | `/dashboard/platform/encounters` | SOAP records and signing. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Encounter` | `open`, `in_progress`, `pending_signature`, `signed`, `voided` |
+| `Problem` | `active`, `resolved`, `inactive` |
+| `ScribeSession` | `recording`, `transcribing`, `drafted`, `accepted`, `discarded` |
+| `ScribeDraft` | `proposed`, `partly_accepted`, `accepted`, `rejected` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openEncounter`, `saveSoapSection`, `recordVitals`, `setExamFinding`, `addDiagnosis`, `resolveProblem`, `submitEncounter`, `returnEncounter`, `signEncounter`, `addAddendum`, `requestVoidEncounter`, `startScribeSession`, `draftScribeSession`, `acceptScribeDraft`, `rejectScribeDraft`.

@@ -1,0 +1,50 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+
+Lists are defined in `features/keystone/models/` and registered in `models/index.ts`. Each row below is one model file.
+
+| Area | Lists |
+| --- | --- |
+| agents | `AgentIdentity`, `AgentScopeGrant`, `AgentRun`, `AgentAction` |
+| billing | `PayerProfile`, `ThirdPartyAuthorization`, `ArPeriod`, `Invoice`, `InvoiceLine`, `CreditMemo`, `PaymentBatch`, `PaymentAttempt`, `PaymentAllocation`, `Dispute`, `ArEntry`, `CustomerCreditEntry`, `FinancingProgram`, `FinancingApplication`, `FinancingFunding`, `AccountingExportBatch`, `AccountingExportLine` |
+| booking | `JobType`, `ArrivalWindowTemplate`, `ArrivalWindow`, `CapacityPlan`, `CapacityUsage`, `CapacityOverride`, `BookingHold` |
+| company | `CompanySettings`, `ContractorLicense`, `Brand`, `Branch`, `BusinessUnit`, `ServiceArea`, `RoleLimit`, `IntegrationConnection` |
+| compliance | `Permit`, `Inspection`, `RefrigerantCylinder`, `RefrigerantLogEntry`, `LeakRateEvaluation`, `RefrigerantInstallCheck`, `LienTrack` |
+| crm | `Customer`, `Contact`, `ContactPoint`, `ConsentRecord`, `DncEntry`, `ServiceLocation`, `LocationOwnership`, `LocationContact`, `AccessSecret`, `AccessSecretReveal` |
+| demand | `Campaign`, `TrackingNumber`, `Lead`, `Conversation`, `Call`, `Message`, `Opportunity` |
+| equipment | `InstalledEquipment`, `EquipmentReading`, `WarrantyRule`, `WarrantyCoverage`, `WarrantyRegistration`, `WarrantyClaim`, `HomeWarrantyDispatch` |
+| inventory | `Item`, `ItemUomConversion`, `StockLocation`, `StockLevel`, `StockMovement`, `StockReservation`, `MinMaxRule`, `ReplenishmentRequest`, `CycleCount`, `SerializedUnit`, `Supplier`, `SupplierItem`, `PurchaseOrder`, `PurchaseOrderLine`, `Receipt`, `VendorBill`, `Rma` |
+| jobs | `Job`, `JobPayer`, `Visit`, `VisitAssignment`, `VisitStatusEvent`, `DispatchRecommendation`, `ChecklistTemplate`, `ChecklistResponse`, `WorkLine` |
+| labour | `Timesheet`, `TimeSegment`, `PayPlan`, `PayPlanVersion`, `PayPlanAssignment`, `CommissionAttribution`, `PayPeriod`, `EarningLine`, `PayrollExportBatch` |
+| memberships | `MembershipPlan`, `MembershipPlanVersion`, `Membership`, `MembershipTerm`, `EntitlementGrant`, `EntitlementEntry`, `RecurringServiceEvent`, `MembershipBillingRun`, `MembershipBillingAttempt`, `RenewalNotice`, `ServiceAgreement` |
+| people | `Employee`, `Credential`, `Skill`, `JobTypeRequirement`, `EligibilityEvaluation`, `Crew`, `ShiftTemplate`, `Shift`, `OnCallRotation` |
+| platform | `AuditEvent`, `CommandReceipt`, `ProviderObservation`, `Lease`, `Sequence`, `ScheduledJob`, `Notification`, `BusinessCalendar`, `CalendarException`, `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `Task`, `Document`, `DocumentVersion`, `Media`, `Note`, `Tag`, `ExternalId`, `SecretBox` |
+| policy | `PolicyPack`, `PolicyVersion`, `PolicyBinding` |
+| sales | `UnitOfMeasure`, `EquipmentModel`, `PriceBook`, `PriceBookVersion`, `PriceBookCategory`, `PriceBookItem`, `MarkupTable`, `LaborRate`, `MemberPricingRule`, `Estimate`, `EstimateVersion`, `EstimateOption`, `EstimateLine`, `Authorization`, `Payment`, `Refund`, `CancellationEvaluation`, `CancellationNotice`, `ChangeOrder` |
+| auth | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Lead` | `new`, `contacted`, `qualified`, `booked`, `converted`, `lost`, `spam`, `merged` |
+| `Call` | `ringing`, `ai_answering`, `human_answering`, `handoff_requested`, `completed` |
+| `Job` | `draft`, `booked`, `scheduled`, `in_progress`, `on_hold`, `work_complete`, `awaiting_inspection`, `completed`, `closed`, `cancelled` |
+| `Visit` | `unassigned`, `scheduled`, `dispatched`, `en_route`, `on_site`, `working`, `paused`, `done`, `cancelled`, `no_access` |
+| `Estimate` | `open`, `sold`, `declined`, `expired`, `cancelled`, `discarded` |
+| `CancellationNotice` | `issued`, `delivered`, `waived`, `cancelled_by_buyer`, `expired_uncancelled`, `refunded` |
+| `Invoice` | `draft`, `posted`, `partially_paid`, `paid`, `written_off`, `voided`, `discarded` |
+| `PaymentAttempt` | `pending`, `succeeded`, `failed`, `unknown` |
+| `Membership` | `pending_payment`, `active`, `past_due`, `suspended`, `renewal_due`, `expired`, `cancelled`, `transferred` |
+| `WarrantyClaim` | `draft`, `ready`, `submitted`, `info_requested`, `approved`, `partially_approved`, `denied`, `settled`, `closed` |
+| `PurchaseOrder` | `draft`, `pending_approval`, `approved`, `sent`, `acknowledged`, `partially_received`, `received`, `billed`, `closed`, `cancelled` |
+| `Permit` | `needed`, `applied`, `issued`, `closed`, `not_required`, `rejected` |
+| `Timesheet` | `open`, `submitted`, `approved`, `locked` |
+| `PayPeriod` | `open`, `calculating`, `review`, `approved`, `exported`, `closed` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them, and each move writes an audit event.

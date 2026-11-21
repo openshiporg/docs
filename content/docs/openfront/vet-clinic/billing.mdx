@@ -1,0 +1,37 @@
+---
+title: Billing and insurance
+description: Estimates and treatment plans, charges, invoices, payments, deposits, refunds and insurance.
+icon: Receipt
+---
+
+An estimate is presented to the client, revised as versions and accepted, with overage approvals when the work goes past it. Visit charges are captured from the record and orders onto a draft invoice, which is posted, then paid by any provider. Deposits are applied to invoices. Refunds and write-offs over policy need a second person. A month's receivables close as an AR period.
+
+Fee schedules are edited as a draft and published after a second person approves. Pet insurance is a claim packet the client sends to their insurer, with authorizations recorded when needed.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Billing | `/dashboard/platform/billing` | Estimates, invoices, payments, insurance. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Estimate` | `open`, `accepted`, `closed` |
+| `EstimateVersion` | `draft`, `presented`, `accepted`, `declined`, `expired`, `superseded` |
+| `TreatmentPlan` | `active`, `completed`, `cancelled` |
+| `Invoice` | `draft`, `posted`, `partially_paid`, `paid`, `written_off` |
+| `Payment` | `pending`, `succeeded`, `failed`, `unknown`, `voided` |
+| `Deposit` | `requested`, `paid`, `applied`, `refunded`, `forfeited` |
+| `Refund` | `requested`, `approved`, `processing`, `succeeded`, `failed`, `unknown`, `rejected` |
+| `ArPeriod` | `open`, `closing`, `closed` |
+| `InsuranceClaimPacket` | `draft`, `ready`, `submitted`, `under_review`, `more_info_requested`, `approved`, `denied` |
+| `PayerAuthorization` | `requested`, `authorised`, `paid`, `expired`, `denied` |
+| `FeeScheduleVersion` | `draft`, `pending_approval`, `published`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`captureVisitCharges`, `addFeeCharge`, `addManualCharge`, `reverseCharge`, `draftInvoice`, `discountInvoice`, `postInvoice`, `recordPayment`, `takeCardPayment`, `checkPaymentStatus`, `applyDeposit`, `issueCreditNote`, `requestRefund`, `issueApprovedRefund`, `checkRefundStatus`, `requestWriteOff`, `closeArPeriod`, `reopenArPeriod`, `presentEstimate`, `reviseEstimate`, `declineEstimate`, `refreshEstimates`, `acceptEstimate`, `recordOverageApproval`, `closePlan`, `startFeeDraft`, `saveFeeItem`, `requestFeePublish`, `discardFeeDraft`, `addInsurancePolicy`, `requestAuthorization`, `recordAuthorizationDecision`, `buildClaimPacket`, `advanceClaim`, `payByLink`, `checkLinkPayment`, `startEstimate`.

@@ -1,0 +1,31 @@
+---
+title: Claims and remittances
+description: Part A claims, 837I files, 835 remittances, denials and ancillary invoices.
+icon: FileCheck
+---
+
+A Part A claim is derived from the month's per diem and coinsurance charges, with one line per HIPPS run. It is validated, released and exported as a 5010 837I file. Marking it submitted is a person's statement that they uploaded the exact file they downloaded. Nothing becomes accepted or paid without a 277CA or an 835.
+
+835 posting splits contractual, patient responsibility and other adjustments. A denied or zero-paid claim enters a work queue. Ancillary invoices are received, matched to the Part A claim when consolidated billing applies, approved by someone other than the receiver, and paid.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Claims | `/dashboard/platform/claims` | Part A claims, 837I files, 835 remittances and denials. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Claim` | `draft`, `validated`, `released`, `submitted`, `accepted`, `rejected`, `paid`, `partially_paid`, `denied`, `appealed`, `finalised`, `cancelled` |
+| `Remittance` | `imported`, `matched`, `posted` |
+| `AncillaryInvoice` | `received`, `matched`, `approved`, `paid` |
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `billingCommand` | `claim.billing_profile`, `claim.create_month`, `claim.set_clinical`, `claim.validate`, `claim.release`, `claim.export`, `claim.mark_submitted`, `claim.cancel`, `claim.upload_ack`, `claim.work_denial`, `remittance.import`, `remittance.post`, `ancillary.receive`, `ancillary.match`, `ancillary.approve`, `ancillary.pay` |

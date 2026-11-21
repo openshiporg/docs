@@ -1,0 +1,48 @@
+---
+title: External dashboards
+description: Give an LLM the Dental dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Dental dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the practice screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Dental checkout before proposing work.
+
+Skill file: [`/skills/openfront-dental-custom-dashboard/SKILL.md`](/skills/openfront-dental-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/schedule` | Top level | Day and week by operatory and provider, production against goal. |
+| `/dashboard/platform/patients` | Top level | Patients, families, guarantors and alerts. |
+| `/dashboard/platform/assistant` | Top level | What the assistant noticed, what it suggests, and what came of it. |
+| `/dashboard/platform/approvals` | Top level | Requests waiting for a second person. |
+| `/dashboard/platform/forms` | Clinical | Send forms, record signatures, withdraw consents. |
+| `/dashboard/platform/codes` | Clinical | Practice codes, licensed code imports and approvals. |
+| `/dashboard/platform/fees` | Clinical | Fee versions: draft, second-person publish. |
+| `/dashboard/platform/claims` | Billing | Build, check and send claims; follow them to payment. |
+| `/dashboard/platform/payments` | Billing | Refunds, statements and credits on patient accounts. |
+| `/dashboard/platform/memberships` | Billing | In-house plans, members and the licence the state asks for. |
+| `/dashboard/platform/close` | Billing | Close the day, bank the cash, close and reopen the month. |
+| `/dashboard/platform/remittances` | Billing | Payments received, lines to match, denied lines to work. |
+| `/dashboard/platform/insurance` | Front desk | Payers, plans, fee schedules and coordination rules. |
+| `/dashboard/platform/verifications` | Front desk | Benefit checks, failed checks and questions still to ask. |
+| `/dashboard/platform/schedule/asap` | Front desk | Patients who want an earlier appointment. |
+| `/dashboard/platform/schedule/confirmations` | Front desk | Tomorrow and the next two days: who has confirmed. |
+| `/dashboard/platform/schedule/booking-requests` | Front desk | Online booking requests waiting for review. |
+| `/dashboard/platform/recall` | Front desk | Who is due for a cleaning or check-up, and the message to send. |
+| `/dashboard/platform/labs` | Clinical | Crowns and other work at the lab, and when it is due back. |
+| `/dashboard/platform/prescriptions` | Clinical | Write, sign and print prescriptions, with the state check for controlled drugs. |
+| `/dashboard/platform/calls` | Front desk | Phone calls: the voice receptionist on a connected phone number, and a manual call log. |
+| `/dashboard/platform/reviews` | Front desk | Review requests to copy and replies to approve. |
+| `/dashboard/platform/compliance` | Practice | Deadlines, incidents, patient requests, legal holds and retention. |
+| `/dashboard/platform/data` | Practice | Bring in a patient list, or take records and the ledger out. |
+| `/dashboard/platform/settings/locations` | Practice | Offices, chairs, appointment types and schedule templates. |
+| `/dashboard/platform/audit` | Practice | Hash-chained audit events and chain verification. |
+| `/dashboard/platform/privacy` | Practice | Patient privacy requests, disclosures, records exports, emergency access and who read records. |
+| `/dashboard/platform/settings/security` | Practice | Two-step verification and recovery codes. |
+| `/dashboard/platform/settings` | Practice | Practice profile, jurisdiction packs and approval policies. |

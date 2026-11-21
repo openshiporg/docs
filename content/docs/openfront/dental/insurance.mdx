@@ -1,0 +1,29 @@
+---
+title: Insurance and verification
+description: Payers, plans, coverage, benefit verification and eligibility checks.
+icon: ShieldCheck
+---
+
+A coverage links a patient to an insurance plan, ordered as primary, secondary and so on. A benefit verification collects benefit facts, either from an electronic eligibility check through the clearinghouse or by hand from a phone call. Failed checks and open questions become work tasks for the front desk.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Insurance plans | `/dashboard/platform/insurance` | Payers, plans, fee schedules and coordination rules. |
+| Verification | `/dashboard/platform/verifications` | Benefit checks, failed checks and questions still to ask. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Coverage` | `pending_verification`, `active`, `terminated`, `invalid` |
+| `BenefitVerification` | `requested`, `in_progress`, `completed`, `failed` |
+| `EligibilityCheck` | `queued`, `sent`, `responded`, `rejected`, `error_retryable`, `unknown` |
+| `WorkTask` | `open`, `in_progress`, `done`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`savePayer`, `saveInsurancePlan`, `addCoverage`, `setCoverageOrder`, `terminateCoverage`, `requestVerification`, `recheckEligibility`, `recordBenefitFact`, `completeVerification`, `failVerification`, `addOutsideHistory`.

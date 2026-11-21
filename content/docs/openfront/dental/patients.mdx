@@ -1,0 +1,28 @@
+---
+title: Patients
+description: Patients, families, guarantors, contacts, alerts and two-person merges.
+icon: Users
+---
+
+A patient belongs to a family group and has one or more guarantor links. Duplicate detection flags likely matches. A merge is proposed by one person and approved by a second, and it can be undone for 30 days (`revertMerge`). Staff grant and revoke portal access from the patient overview.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Patients | `/dashboard/platform/patients` | Patients, families, guarantors and alerts. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Patient` | `prospect`, `active`, `inactive`, `archived`, `deceased`, `merged_into` |
+| `GuarantorLink` | `active`, `ended` |
+| `MergeCase` | `proposed`, `approved`, `applied`, `reverted`, `rejected` |
+| `ConsentGrant` | `granted`, `revoked`, `expired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`registerPatient`, `updatePatientDemographics`, `addContactPoint`, `deactivateContactPoint`, `recordConsent`, `addPatientAlert`, `endPatientAlert`, `linkGuarantor`, `setPatientStatus`, `proposeMerge`, `revertMerge`, `grantPortalAccess`, `revokePortalScope`, `suspendPortalAccount`.

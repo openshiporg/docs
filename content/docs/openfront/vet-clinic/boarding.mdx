@@ -1,0 +1,28 @@
+---
+title: Boarding and grooming
+description: Runs, reservations, stays, daily care, belongings and grooming.
+icon: Dog
+---
+
+Boarding reservations are confirmed, checked in to a run and checked out. Daily care is logged during the stay, and belongings are returned at checkout. Grooming bookings move through their steps with style notes kept for next time.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Boarding | `/dashboard/platform/boarding` | Reservations, runs and daily care. |
+| Grooming | `/dashboard/platform/grooming` | Grooming bookings and style notes. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `BoardingReservation` | `requested`, `confirmed`, `checked_in`, `checked_out`, `cancelled`, `no_show` |
+| `BoardingStay` | `in_house`, `checked_out` |
+| `GroomAppointment` | `booked`, `checked_in`, `in_progress`, `ready`, `completed`, `cancelled`, `no_show` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveRunType`, `setRunStatus`, `reserveBoarding`, `confirmBoarding`, `cancelBoarding`, `checkInBoarding`, `moveBoardingRun`, `logBoardingCare`, `returnBelonging`, `checkOutBoarding`, `bookGroom`, `advanceGroom`, `saveGroomNote`.

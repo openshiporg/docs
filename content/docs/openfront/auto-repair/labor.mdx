@@ -1,0 +1,33 @@
+---
+title: Labor, time and comebacks
+description: Time clock, technicians and certificates, flagged hours, pay periods and comebacks.
+icon: Timer
+---
+
+Technicians clock in for the shift and start and stop a clock on each job. Time corrections go through approval. Flagged hours come from the labor time on each job and can be adjusted. Pay periods are closed and exported. Technician certificates are kept with their expiry.
+
+A comeback is a vehicle that returns for the same problem. It is diagnosed, resolved with or without goodwill, and can open a parts warranty claim against the supplier.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Labor | `/dashboard/platform/time` | Time clock, technicians and certificates, flagged hours, pay periods and comebacks. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ShiftClock` | `clocked_in`, `on_break`, `clocked_out` |
+| `JobClock` | `running`, `stopped` |
+| `ClockCorrection` | `pending`, `applied`, `rejected` |
+| `PayPeriod` | `open`, `closed`, `exported` |
+| `TechnicianCredential` | `active`, `expired`, `revoked` |
+| `ComebackCase` | `open`, `diagnosed`, `resolved`, `cancelled` |
+| `PartWarrantyClaim` | `draft`, `submitted`, `credited`, `denied`, `withdrawn` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`clockInShift`, `clockOutShift`, `startShiftBreak`, `endShiftBreak`, `startTechJobClock`, `stopTechJobClock`, `logJobWaiting`, `requestTimeCorrection`, `saveTechCredential`, `assignShopJobTechnicians`, `adjustTechFlaggedHours`, `closeShopPayPeriod`, `exportShopPayPeriod`, `openShopComeback`, `diagnoseShopComeback`, `requestComebackGoodwill`, `resolveShopComeback`, `createShopPartWarrantyClaim`, `attachShopComebackJob`, `cancelShopComeback`, `withdrawShopPartWarrantyClaim`.

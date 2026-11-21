@@ -1,0 +1,34 @@
+---
+title: Permits, refrigerant, liens and policies
+description: Permits and inspections, the EPA 608 refrigerant log, Texas lien dates and policy packs.
+icon: Scale
+---
+
+Permits and inspections gate job completion. The refrigerant log records cylinders, charges and recoveries for EPA 608, and leak rates are evaluated against the threshold. **Liens** lists Texas lien dates by month for completed jobs. **Policies** shows each jurisdiction policy pack with its versions and sources.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Permits | `/dashboard/platform/permits` | Permits and inspections that gate job completion. |
+| Refrigerant log | `/dashboard/platform/refrigerant` | EPA 608 log, cylinders and leak rates. |
+| Liens | `/dashboard/platform/liens` | Texas lien dates by month for completed jobs. |
+| Policies | `/dashboard/platform/policies` | Jurisdiction policy packs, versions and sources. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Permit` | `needed`, `applied`, `issued`, `closed`, `not_required`, `rejected` |
+| `Inspection` | `requested`, `scheduled`, `passed`, `failed`, `cancelled` |
+| `RefrigerantCylinder` | `in_service`, `full_recovery`, `sent_reclaim`, `empty`, `retired` |
+| `LeakRateEvaluation` | `open`, `repair_due`, `repaired_verified`, `retrofit_plan`, `retired`, `not_applicable` |
+| `LienTrack` | `monitoring`, `notice_sent`, `affidavit_filed`, `released`, `abandoned` |
+| `PolicyVersion` | `draft`, `pending_approval`, `active`, `retired` |
+| `PolicyBinding` | `active`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`openPermit`, `advancePermit`, `requestInspection`, `recordInspectionResult`, `reinspect`, `saveRefrigerantCylinder`, `logRefrigerant`, `resolveLeakRate`, `checkRefrigerantInstall`, `trackLien`, `advanceLien`.

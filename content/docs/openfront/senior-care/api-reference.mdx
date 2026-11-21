@@ -1,0 +1,32 @@
+---
+title: GraphQL API
+description: The endpoint, MCP transport, and the custom queries and mutations.
+icon: Code
+---
+
+
+Openfront Senior Care serves Keystone GraphQL at `/api/graphql`. The MCP server for agents is at `/api/mcp-transport/mcp`; only commands with an agent grant are reachable through it. API routes serve the payment webhook, statement and trust statement PDFs, the GL export, the MDS submission file and exports.
+
+## Public operations
+
+`storefrontCommunity`, `submitInquiry`, `requestTour`, `cancelTourByToken` and `joinWaitlist` are public and rate-limited. The family portal uses `acceptPortalInvitation`, `portalMfaStart`, `portalMfaConfirm` and `portalPay`, with the `portalMe`, `portalUpdates`, `portalCalendar`, `portalDocuments`, `portalStatements`, `portalTrustBalance` and `portalPayments` queries.
+
+## Staff queries
+
+`operatorSettingsItems`, `diagnoses`, `redirectToInit`, `verifyAuditChain`, `verifyStay`, `censusSummary`, `bedBoard`, `residentRoster`, `storefrontCommunity`, `portalMe`, `tourByToken`, `shiftOffer`, `portalUpdates`, `portalCalendar`, `portalDocuments`, `portalStatements`, `portalTrustBalance`, `portalPayments`, `listBlockTypes`, `getBlockType`, `listWorkflows`, `getWorkflowVersion`, `getWorkflowRun`, `listFindings`, `getFinding`.
+
+## Mutations by area
+
+| Area | Mutations |
+| --- | --- |
+| Census and residents | `admitResident`, `changeRoom`, `startLeave`, `releaseBedHold`, `endLeave`, `dischargeResident`, `recordDeath`, `recordNotice`, `recordAdmissionAgreement`, `correctCensus`, `snapshotCensusDay`, `signOffCensusDay`, `markPlaceReady`, `setPlaceService`, `recomputeAvailability`, `invitePortalRepresentative`, `proposePortalScope`, `grantPortalScope`, `revokePortalScope`, `setPortalAccountStatus` |
+| Clinical chart | `clinicalCommand` |
+| Workflows and findings | `runWorkflowsOnLoad` |
+| Billing and Medicaid liability | `billingCommand` |
+| Scheduling, credentials and PBJ | `answerShiftOffer` |
+| Sales, waitlist and storefront | `reservePlace`, `releaseReservation`, `recordReferral`, `openTourSlots`, `scheduleTour`, `setStorefrontPublished`, `movePublishedPrice`, `recordInquiry`, `moveLead`, `logSalesActivity`, `moveTour`, `moveReferral`, `addToWaitlist`, `offerWaitlistPlace`, `resolveWaitlistOffer` |
+| Compliance, privacy and operator settings | `refreshTimedStates`, `openBreakGlass`, `endBreakGlass`, `reviewBreakGlass` |
+| Public and portal | `submitInquiry`, `requestTour`, `joinWaitlist`, `cancelTourByToken`, `acceptPortalInvitation`, `portalMfaStart`, `portalMfaConfirm`, `portalPay` |
+| Setup and approvals | `loadOperatorSetup`, `loadCensusSetup`, `loadClinicalSetup`, `loadBillingSetup`, `loadWorkforceSetup`, `loadMdsSetup`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestOperatorControls` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

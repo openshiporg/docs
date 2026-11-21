@@ -1,0 +1,32 @@
+---
+title: Storefront
+description: The built-in client website for booking, new clients, refills, the account and paying bills.
+icon: Store
+---
+
+The client site lives in `features/storefront` and mounts at the site root.
+
+| Route | Page |
+|---|---|
+| `/` | Practice home |
+| `/services`, `/team`, `/wellness-plans`, `/boarding` | Practice information |
+| `/book` | Book a visit for one or more pets |
+| `/new-client` | Register a new household and pet |
+| `/refill` | Request a refill |
+| `/sign-in` | Client sign-in |
+| `/account` | Pets, medications, visits, refills and bills |
+| `/account/invoices/[id]` | One bill |
+| `/pay/[token]` | Pay a bill from a signed link |
+
+## Sign-in
+
+The practice sends no texts or emails, so a client proves who they are the same way the front desk checks a caller. They give a phone number or email on file plus a pet's name and date of birth. A sign-in is a `PortalSession`. The browser holds a random token in an http-only cookie for 14 days, and the database holds only its hash. Guessing is limited per address, and per contact and address, counted in `RateLimitBucket`.
+
+## What a client can do
+
+The site uses server actions in `features/storefront/actions.ts`. Each checks the signed-in client on the server and never trusts an ID sent by the browser. Reads are scoped to the client's household.
+
+- Book or cancel a visit. Surgery and dental types are sent as requests.
+- Request a refill, which goes to the refill queue for a veterinarian.
+- Register a new household. It is created as a prospect with a pending pet, and staff confirm it (`confirmRegistration`). Contact details already on file are flagged for staff, not refused.
+- See bills and pay one by card (`payByLink`).

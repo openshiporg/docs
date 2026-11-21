@@ -1,0 +1,34 @@
+---
+title: Clinical chart
+description: Tooth and perio charting, clinical notes, medical history, vitals, imaging and prescriptions.
+icon: Stethoscope
+---
+
+The chart records procedures and conditions by tooth and surface. A chart entry moves from diagnosed or planned to completed and posted, and a completed procedure posts its fee to the ledger. Clinical notes are drafted, then signed; a signed note can only be marked entered in error. Perio exams record site measurements and a suggested classification that the clinician confirms or overrides.
+
+Prescriptions are written, checked against the state PDMP for controlled drugs (`recordPdmpCheck`), signed and printed. The chart is opened from the patient record; prescriptions have their own page.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Prescriptions | `/dashboard/platform/prescriptions` | Write, sign and print prescriptions, with the state check for controlled drugs. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ChartEntry` | `diagnosed`, `planned`, `accepted`, `scheduled`, `completed`, `posted`, `existing_current`, `existing_other`, `referred_out`, `refused`, `deleted_in_error`, `corrected` |
+| `ClinicalNote` | `draft`, `signed`, `entered_in_error` |
+| `PerioExam` | `in_progress`, `completed`, `revised` |
+| `PerioClassification` | `suggested`, `confirmed`, `overridden` |
+| `MedicalHistoryResponse` | `submitted`, `reviewed`, `superseded` |
+| `Prescription` | `draft`, `signed`, `printed`, `transmitted_pending`, `transmitted`, `transmit_failed`, `transmit_unknown`, `cancelled` |
+| `ImagingStudy` | `requested`, `acquired`, `entered_in_error` |
+| `ExternalFinding` | `received`, `shown`, `accepted`, `dismissed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`addChartProcedure`, `addChartCondition`, `setConditionStatus`, `removePlannedEntry`, `acceptChartEntry`, `scheduleChartEntry`, `completeProcedure`, `correctProcedure`, `draftClinicalNote`, `updateNoteDraft`, `signClinicalNote`, `markNoteEnteredInError`, `startPerioExam`, `recordPerioMeasurements`, `completePerioExam`, `confirmPerioClassification`, `reviseSignedPerioExam`, `logAnesthetic`, `recordVitals`, `submitMedicalHistory`, `reviewMedicalHistory`, `addMedication`, `endMedication`, `recordImagingStudy`, `recordManualStudy`, `receiveExternalFinding`, `decideExternalFinding`, `writePrescription`, `recordPdmpCheck`, `signPrescription`, `markPrescriptionPrinted`.

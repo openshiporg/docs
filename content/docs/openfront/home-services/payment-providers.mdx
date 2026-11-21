@@ -1,0 +1,23 @@
+---
+title: Payment providers
+description: Stripe Checkout card payments, manual tenders, financing records and the maps adapter.
+icon: CreditCard
+---
+
+## Card payments (Stripe)
+
+`features/keystone/lib/paymentAdapter.ts` is the one place a card is charged from code. Cards are entered on Stripe Checkout, in setup mode to keep a card on file for a membership or in payment mode to pay an invoice. The mode follows the key (`sk_test_` or `sk_live_`).
+
+Every charge carries a processor key fixed for the attempt, so asking twice charges once. A lost result (a timeout or a dropped connection) comes back as `unknown`, never as a guess. There are no webhooks and no background polling. A customer returning from Stripe lands on `/api/storefront/pay-return`, and the result is read back from Stripe, never from the URL. An unknown result is looked up again when staff run billing.
+
+## Manual tenders and batches
+
+Cash, check and other tenders are recorded with `recordInvoicePayment`. Payments group into daily batches by tender, which are closed and reconciled with the deposit (`closePaymentBatch`, `reconcilePaymentBatch`).
+
+## Financing
+
+**Financing** keeps records of lender programs, offers, application status and payouts (`saveFinancingProgram`, `startFinancing`, `recordFinancingStatus`, `recordFinancingFunding`).
+
+## Maps
+
+`features/integrations/maps` places addresses and ranks drive time. The default `manual` adapter places an address at its ZIP centroid, which is enough for service-area checks and rough drive-time ranking. A Mapbox or Google adapter returns rooftop points and a real drive matrix behind the same interface.

@@ -1,0 +1,33 @@
+---
+title: Today, schedule and whiteboard
+description: The day sheet by provider and room, patient flow, the waitlist and check-in.
+icon: CalendarClock
+---
+
+**Today** shows appointments by status, the whiteboard, calls and the due-and-overdue clocks. The schedule books one or more patients with a provider and room. Surgery and dental appointment types arrive as requests that staff accept (`acceptAppointmentRequest`). Check-in requires acknowledging the patient's alerts first. The whiteboard tracks patient flow through the visit, and the waitlist holds clients who want an earlier time.
+
+**Refresh due and overdue** recomputes treatment tasks due or overdue, unsigned-record tasks and vaccine reminder status.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Today | `/dashboard/platform/today` | Appointments by status, whiteboard, calls and clocks. |
+| Schedule | `/dashboard/platform/schedule` | Day sheet by provider and room. |
+| Whiteboard | `/dashboard/platform/whiteboard` | Live patient flow. |
+| Waitlist | `/dashboard/platform/waitlist` | Waitlist entries and offers. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `requested`, `booked`, `confirmed`, `checked_in`, `in_progress`, `ready_for_checkout`, `completed`, `cancelled`, `no_show`, `declined` |
+| `AppointmentPatient` | `scheduled`, `checked_in`, `in_progress`, `done`, `cancelled`, `no_show` |
+| `WhiteboardEntry` | `waiting`, `in_exam`, `treatment`, `diagnostics`, `hospitalised`, `surgery`, `recovery`, `boarding`, `ready_for_discharge`, `discharged` |
+| `WaitlistEntry` | `waiting`, `offered`, `accepted`, `expired`, `declined`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`bookAppointment`, `cancelAppointment`, `rescheduleAppointment`, `confirmAppointment`, `acceptAppointmentRequest`, `checkInAppointment`, `markNoShow`, `moveWhiteboardEntry`, `addToWaitlist`, `refreshClinicalClocks`.

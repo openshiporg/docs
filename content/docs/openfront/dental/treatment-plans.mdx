@@ -1,0 +1,31 @@
+---
+title: Treatment plans and forms
+description: Versioned treatment plans, presentation and acceptance, good faith estimates, forms and consents.
+icon: ClipboardList
+---
+
+A treatment plan is built from planned chart entries and saved as versions. It is presented to the patient, who accepts it in whole or in part or declines it. `estimateTreatmentPlan` estimates the patient's share against coverage and benefits used. A good faith estimate is generated when required.
+
+Forms are published as versions. Staff send a form request, the patient submits it, and consents can be withdrawn.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Forms & consents | `/dashboard/platform/forms` | Send forms, record signatures, withdraw consents. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `TreatmentPlan` | `draft`, `presented`, `partially_accepted`, `accepted`, `declined`, `in_progress`, `completed`, `superseded`, `archived` |
+| `GoodFaithEstimate` | `required`, `generated`, `delivered`, `superseded`, `not_required` |
+| `FormRequest` | `requested`, `opened`, `submitted`, `expired` |
+| `FormTemplateVersion` | `draft`, `published`, `retired` |
+| `InformedRefusal` | `draft`, `signed`, `withdrawn` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`buildTreatmentPlan`, `updatePlanItem`, `presentTreatmentPlan`, `acceptTreatmentPlan`, `declineTreatmentPlan`, `reviseTreatmentPlan`, `requestForm`, `submitForm`, `withdrawConsent`, `publishFormVersion`, `estimateTreatmentPlan`.

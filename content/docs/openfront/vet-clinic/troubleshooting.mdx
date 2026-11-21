@@ -1,0 +1,16 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `Too many sign-in attempts. Try again later.` | The address passed 20 attempts, or 5 failures for one account, in 15 minutes. Wait for the window to pass. |
+| `QUERY_TOO_BROAD` | The request asked for more than about 5,000 rows or 2,000 nested lookups. Page with `take` and `skip`. |
+| `Card payments are not set up on this server yet.` | Set `STRIPE_SECRET_KEY` and `STRIPE_PUBLISHABLE_KEY`. |
+| `Card events are not set up on this server.` | Set `STRIPE_WEBHOOK_SECRET` and point the Stripe webhook at `/api/integrations/payment/stripe/webhook`. |
+| `Only a veterinarian signs the medical record.` | Sign in as a veterinarian with an active licence. |
+| `An emergency is transferred or referred to the ER. It is never booked.` | Expected. Transfer the call or record the emergency referral. |
+| Due and overdue items look stale | Press **Refresh due and overdue** on Encounters or Hospital. There is no background scheduler. |
+| A seeded staff member cannot sign in | Set their password from **Team & licences**. |

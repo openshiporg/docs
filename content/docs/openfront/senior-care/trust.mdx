@@ -1,0 +1,32 @@
+---
+title: Resident funds
+description: Resident trust ledgers, deposits and withdrawals, reconciliation and quarterly statements.
+icon: PiggyBank
+---
+
+Resident trust money is kept in double-entry ledgers that are append-only. A withdrawal over the threshold waits for a second signer, never the preparer, and a reversal is a new transaction. Interest is allocated across ledgers, the account is reconciled and signed, and quarterly statements are issued. Authorisations, the surety bond and conveyance at discharge or death are recorded.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Resident funds | `/dashboard/platform/trust` | Resident trust ledgers, withdrawals and reconciliation. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `TrustAccount` | `active`, `closed` |
+| `ResidentTrustLedger` | `open`, `closed`, `conveyed` |
+| `TrustTransaction` | `pending_signature`, `posted`, `rejected` |
+| `TrustReconciliation` | `tied`, `untied`, `signed` |
+| `TrustAuthorisation` | `pending_approval`, `active`, `rejected`, `revoked` |
+| `SuretyBond` | `active`, `replaced` |
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `billingCommand` | `trust.authorisation_record`, `trust.authorisation_revoke`, `trust.allocate_interest`, `trust.quarterly_statements`, `trust.record_bond`, `trust.open_ledger`, `trust.deposit`, `trust.withdraw`, `trust.sign`, `trust.reject`, `trust.reverse`, `trust.close_ledger`, `trust.convey`, `trust.reconcile`, `trust.sign_reconciliation` |

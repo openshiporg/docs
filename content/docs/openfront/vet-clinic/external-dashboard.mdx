@@ -1,0 +1,51 @@
+---
+title: External dashboards
+description: Give an LLM the Vet Clinic dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Vet Clinic dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the practice screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Vet Clinic checkout before proposing work.
+
+Skill file: [`/skills/openfront-vet-clinic-custom-dashboard/SKILL.md`](/skills/openfront-vet-clinic-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/today` | Top level | Appointments by status, whiteboard, calls and clocks. |
+| `/dashboard/platform/approvals` | Top level | Maker-checker requests waiting for a second person. |
+| `/dashboard/platform/schedule` | Front desk | Day sheet by provider and room. |
+| `/dashboard/platform/whiteboard` | Front desk | Live patient flow. |
+| `/dashboard/platform/waitlist` | Front desk | Waitlist entries and offers. |
+| `/dashboard/platform/clients` | Clients & patients | Households, people, consents, pets. |
+| `/dashboard/platform/patients` | Clients & patients | Patients with alerts, weights and VCPR. |
+| `/dashboard/platform/encounters` | Medical | SOAP records and signing. |
+| `/dashboard/platform/hospital` | Medical | Wards, cages and the treatment sheet. |
+| `/dashboard/platform/vaccines` | Medical | Vaccines, rabies certificates and reminders. |
+| `/dashboard/platform/prescriptions` | Medical | Prescriptions and the refill queue. |
+| `/dashboard/platform/controlled` | Medical | Register, counts, discrepancies, PDMP. |
+| `/dashboard/platform/results` | Medical | Lab orders, results and reviews. |
+| `/dashboard/platform/laboratories` | Practice | Laboratories, their tests and prices, result codes. |
+| `/dashboard/platform/inventory` | Medical | Items, lots, orders and counts. |
+| `/dashboard/platform/billing` | Clients & patients | Estimates, invoices, payments, insurance. |
+| `/dashboard/platform/wellness` | Clients & patients | Monthly plans, members and billing. |
+| `/dashboard/platform/boarding` | Clients & patients | Reservations, runs and daily care. |
+| `/dashboard/platform/grooming` | Clients & patients | Grooming bookings and style notes. |
+| `/dashboard/platform/end-of-life` | Clients & patients | Consent, record and aftercare custody. |
+| `/dashboard/platform/calls` | Communications | Inbound calls: AI receptionist and staff. |
+| `/dashboard/platform/messages` | Communications | Client threads, SMS and email. |
+| `/dashboard/platform/records-requests` | Communications | Requests and releases. |
+| `/dashboard/platform/agents` | Communications | AI agents, grants, kill switch, actions. |
+| `/dashboard/platform/team` | Practice | Staff, licences and DEA registrations with expiry. |
+| `/dashboard/platform/policies` | Practice | Federal and state rules in force, with sources. |
+| `/dashboard/platform/compliance` | Practice | Clocks, tasks and incidents. |
+| `/dashboard/platform/read-audit` | Practice | Who read which client or patient record. |
+| `/dashboard/platform/audit` | Practice | Hash-chained audit events and chain verification. |
+| `/dashboard/platform/pay` | Practice | Production, commission and pay periods. |
+| `/dashboard/platform/imports` | Practice | Bring records over from Avimark or ezyVet. |
+| `/dashboard/platform/settings` | Practice | Practice, locations, calendars and controls. |

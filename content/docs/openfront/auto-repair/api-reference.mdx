@@ -1,0 +1,37 @@
+---
+title: GraphQL API
+description: The endpoint, MCP transport, and the custom queries and mutations.
+icon: Code
+---
+
+
+Openfront Auto Repair serves Keystone GraphQL at `/api/graphql`. The MCP server for assistants is at `/api/mcp-transport/mcp`. Customer link APIs are plain HTTP routes under `/api/public/*` that take a token, never a session. PDFs are served at `/api/estimates/[id]/pdf` and `/api/invoices/[id]/pdf`.
+
+## Public operations
+
+No GraphQL operation is public. Online booking and "Check my repair" are server actions in `features/storefront/actions`. Customer links use the `/api/public/*` routes described on the external storefront page.
+
+## Staff queries
+
+`organizationSettingsItems`, `diagnosisHypotheses`, `redirectToInit`, `verifyAuditChain`, `checkAuthorizedCeiling`, `previewShopInvoice`, `shopDaySummary`, `followUpBoard`, `aiProviderStatus`, `diagnosisGate`, `supplierDisputeEmail`, `campaignPreview`, `shopReports`, `shopTieOuts`, `accountingJournalPreview`, `exportFile`.
+
+## Mutations by area
+
+| Area | Mutations |
+| --- | --- |
+| Work board and repair orders | `openShopRepairOrder`, `holdRepairOrder`, `addRepairJob`, `saveJobLines`, `editRepairJobLines`, `repriceRepairJob`, `transitionRepairJob`, `createCallbackTask`, `releaseShopVehicle`, `closeCallbackTask`, `closeRecommendation` |
+| Inspections | `startShopInspection`, `recordInspectionItem`, `attachInspectionMedia`, `completeShopInspection`, `sendShopInspection` |
+| Estimates and authorizations | `sendRepairEstimate`, `requestCustomerAuthorization`, `recordCustomerAuthorization` |
+| Check-in and schedule | `holdAppointmentSlot`, `bookShopAppointment`, `transitionAppointment`, `attachAppointmentLead`, `checkInShopVehicle` |
+| Customers and vehicles | `saveCustomer`, `addCustomerContact`, `recordContactConsent`, `saveVehicle`, `linkVehicleOwner`, `recordOdometerReading`, `decodeVehicleVin`, `checkVehicleRecalls`, `createCustomerPortalLink` |
+| Follow-ups, messages and campaigns | `logCustomerMessage`, `logCustomerCall`, `readMessageThread`, `saveMessageTemplate`, `markFollowUpContacted`, `markServiceReminderContacted`, `saveMarketingCampaign`, `exportMarketingCampaign`, `copyMarketingMessage`, `recordReviewRequest` |
+| Billing, receivables and day close | `finalizeShopInvoice`, `createInvoicePayLink`, `takeShopPayment`, `checkShopPayment`, `resolveShopPayments`, `refundShopPayment`, `issueShopCreditMemo`, `closeShopDay`, `reopenShopDay` |
+| Fleet and business accounts | `saveBusinessAccount`, `saveAccountTerms`, `refreshAccountStanding`, `holdAccountCredit`, `releaseAccountHold`, `addAccountContact`, `addAccountApprover`, `removeAccountApprover`, `addAccountCertificate`, `revokeAccountCertificate`, `saveAccountUnit`, `createAccountLink`, `makeAccountStatement`, `exportAccountStatement`, `exportAllAccountStatements` |
+| Parts and stock | `saveShopPartItem`, `requestSupplierQuote`, `recordSupplierQuote`, `selectSupplierQuote`, `createShopSupplierOrder`, `placeSupplierOrder`, `recordPhoneOrder`, `resolveUnknownSupplierOrder`, `confirmShopSupplierOrder`, `cancelShopSupplierOrder`, `receiveShopSupplierOrder`, `reserveJobPart`, `issueJobPart`, `returnJobPart`, `adjustShopStock`, `startShopCycleCount`, `recordShopCounts`, `postShopCycleCount`, `markShopCoreReturned`, `writeOffShopCore`, `createShopSupplierReturn`, `advanceShopSupplierReturn`, `recordShopSupplierInvoice`, `matchShopSupplierInvoice`, `resolveSupplierDiscrepancy`, `approveShopSupplierInvoice`, `exportShopSupplierInvoice`, `reverseShopSupplierInvoice`, `recordShopJobTire`, `completeShopTireRegistration`, `confirmShopTireRegistration`, `releaseShopJobReservations` |
+| Labor, time and comebacks | `clockInShift`, `clockOutShift`, `startShiftBreak`, `endShiftBreak`, `startTechJobClock`, `stopTechJobClock`, `logJobWaiting`, `requestTimeCorrection`, `saveTechCredential`, `assignShopJobTechnicians`, `adjustTechFlaggedHours`, `closeShopPayPeriod`, `exportShopPayPeriod`, `openShopComeback`, `diagnoseShopComeback`, `requestComebackGoodwill`, `resolveShopComeback`, `createShopPartWarrantyClaim`, `attachShopComebackJob`, `cancelShopComeback`, `withdrawShopPartWarrantyClaim` |
+| Diagnosis and assistants | `createAssistant`, `grantAssistantScope`, `revokeAssistantScope`, `pauseAssistant`, `retireAssistant`, `saveAiProvider`, `removeAiProvider`, `askAssistant`, `draftAgentProposal`, `suggestEstimate`, `confirmAgentProposal`, `rejectAgentProposal`, `startDiagnosisSession`, `addDiagnosisHypothesis`, `recordDiagnosisTest`, `markDiagnosisQuoteReady`, `markDiagnosisInconclusive`, `closeDiagnosisSession`, `queueVoiceTask`, `logVoiceCall` |
+| Reports and accounting export | `saveAccountingMappings`, `stageAccountingBatch`, `exportAccountingBatch`, `recordAccountingResponse`, `saveReportSnapshot` |
+| Shops, policies and settings | `createPolicyDraft`, `publishPolicyVersion`, `saveCannedJob`, `publishCannedJobVersion`, `setCannedJobStatus`, `previewDataImport`, `applyDataImport`, `discardDataImport`, `saveIntegrationConnection`, `recordIntegrationHealth`, `revokeIntegrationConnection`, `recordProviderObservation` |
+| Setup and approvals | `loadNorthgateSetup`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestOrgControls` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

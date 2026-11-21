@@ -1,0 +1,27 @@
+---
+title: Check-in and schedule
+description: Appointments by day and bay, capacity, no-shows and tablet check-in.
+icon: CalendarClock
+---
+
+Appointments book against each shop's capacity: drop-offs, waiters per hour and bay hours. Online bookings arrive as requests. Check-in on a tablet records the customer, vehicle, odometer and concerns, and the customer signs the work order with the state's wording.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Check-in | `/dashboard/platform/check-in` | Customer, vehicle, odometer, concerns and work-order signature. |
+| Schedule | `/dashboard/platform/schedule` | Appointments by day and bay, capacity and no-shows. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `requested`, `confirmed`, `arrived`, `no_show`, `cancelled` |
+| `BookingHold` | `held`, `consumed`, `expired`, `released` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`holdAppointmentSlot`, `bookShopAppointment`, `transitionAppointment`, `attachAppointmentLead`, `checkInShopVehicle`.

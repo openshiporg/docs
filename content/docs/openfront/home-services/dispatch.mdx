@@ -1,0 +1,32 @@
+---
+title: Dispatch and the field view
+description: The dispatch board, recommendations, jobs and visits, and the technician field view.
+icon: Route
+---
+
+The dispatch board shows arrival windows by technician. `recommendDispatch` ranks eligible technicians by licence, skill, shift and drive time. Assignment is a compare-and-set on the visit plus a lock on each technician's day, so two dispatchers, or a dispatcher and an agent, cannot both win.
+
+**Jobs** shows jobs, visits, the timeline and work lines. The field view at `/dashboard/field/today` is a technician's day on a phone: visits, status, the checklist and photos, with each visit at `/dashboard/field/visits/[id]`. Completing a job checks open permits and cancellation notices first.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Dispatch board | `/dashboard/platform/dispatch` | Arrival windows by technician; assign, reassign, recommendations. |
+| Jobs | `/dashboard/platform/jobs` | Jobs, visits, timeline and work lines. |
+| Field app | `/dashboard/field/today` | A technician's day on a phone: visits, status, checklist, photos. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Job` | `draft`, `booked`, `scheduled`, `in_progress`, `on_hold`, `work_complete`, `awaiting_inspection`, `completed`, `closed`, `cancelled` |
+| `Visit` | `unassigned`, `scheduled`, `dispatched`, `en_route`, `on_site`, `working`, `paused`, `done`, `cancelled`, `no_access` |
+| `ScheduledJob` | `pending`, `running`, `done`, `failed`, `cancelled` |
+| `WorkLine` | `planned`, `completed`, `removed`, `cancelled_by_buyer` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`recommendDispatch`, `assignVisit`, `unassignVisit`, `submitChecklist`, `setVisitStatus`, `holdJob`, `releaseJobHold`, `cancelJob`, `completeJob`.

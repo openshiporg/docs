@@ -1,0 +1,38 @@
+---
+title: Run a visit
+description: Check in, record, sign and bill a visit.
+icon: ClipboardCheck
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Check in
+
+On **Schedule** or **Today**, check the appointment in (`checkInAppointment`). Acknowledge any patient alerts first.
+
+</Step>
+<Step>
+
+### Record
+
+Open the encounter (`openEncounter`), save the SOAP sections and vitals, and add diagnoses.
+
+</Step>
+<Step>
+
+### Sign
+
+Submit the encounter, and a veterinarian signs it (`signEncounter`).
+
+</Step>
+<Step>
+
+### Bill
+
+Capture the visit charges onto the invoice (`captureVisitCharges`), post it (`postInvoice`) and record the payment (`recordPayment`).
+
+</Step>
+</Steps>

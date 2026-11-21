@@ -1,0 +1,47 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+
+Lists are defined in `features/keystone/models/` and registered in `models/index.ts`. Each row below is one model file.
+
+| Area | Lists |
+| --- | --- |
+| agents | `AgentToolGrant`, `AgentRun`, `AgentProposal`, `VoiceTask` |
+| billing | `Invoice`, `InvoiceLine`, `CreditMemo`, `CreditMemoLine`, `Payment`, `PaymentAllocation`, `Refund`, `FinancingApplication`, `Statement`, `BusinessDayClose`, `WarrantyCoverage` |
+| communications | `MessageThread`, `Message`, `CallRecord`, `MessageTemplate`, `Recommendation`, `ServiceReminder`, `Campaign`, `CampaignExport`, `CampaignRecipient`, `ReviewRequest` |
+| customers | `Customer`, `CustomerContact`, `ContactConsent`, `CustomerMergeEvent`, `BusinessAccount`, `Vehicle`, `VehicleDecode`, `VehicleOwnership`, `PlateRegistration`, `OdometerReading`, `RecallCheck`, `ExternalReference` |
+| diagnosis | `DiagnosisSession`, `DiagnosisHypothesis`, `DiagnosisTest` |
+| estimates | `EstimateVersion`, `AuthorizationRequest`, `Authorization`, `JobDecision`, `PublicAccessToken` |
+| fleet | `BusinessAccountContact`, `FleetApprover`, `ExemptionCertificate`, `FleetUnit` |
+| inspections | `InspectionTemplate`, `InspectionTemplateVersion`, `InspectionTemplateItem`, `Inspection`, `InspectionItemResult`, `LaborOperation`, `CannedJob`, `CannedJobVersion`, `ServiceMenuItem`, `PublishedService` |
+| integrations | `KpiSnapshot`, `AccountingMapping`, `AccountingBatch`, `AccountingProviderResponse`, `ImportJob`, `ExportJob`, `IntegrationConnection`, `ProviderObservation` |
+| labor | `TechnicianProfile`, `TechnicianCredential`, `ShiftClock`, `JobClock`, `WaitingInterval`, `ClockCorrection`, `PayPeriod`, `FlaggedHoursEntry`, `ComebackCase`, `PartWarrantyClaim` |
+| parts | `Supplier`, `ShopItem`, `StockLevel`, `StockMovement`, `CycleCount`, `PartQuote`, `SupplierOrder`, `SupplierOrderLine`, `Receipt`, `ReceiptLine`, `CoreObligation`, `SupplierReturn`, `SupplierInvoice`, `SupplierInvoiceLine`, `Discrepancy`, `TireRegistrationObligation`, `JobTire` |
+| platform | `OrganizationSettings`, `Shop`, `ShopMembership`, `ShopCalendar`, `ShopCalendarException`, `Bay`, `MachineCredential`, `AgentIdentity`, `AuditEvent`, `CommandReceipt`, `Lease`, `WorkerSchedule`, `Sequence`, `Notification`, `Document`, `Obligation`, `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `SecretBox` |
+| policy | `JurisdictionPack`, `JurisdictionPolicyVersion`, `TaxCategory`, `LaborRateClassSetVersion`, `LaborRateClass`, `LaborMatrixVersion`, `PartsMatrixVersion`, `FeePolicyVersion`, `FeeRule`, `TaxRuleSetVersion`, `TaxRule`, `WarrantyTermSetVersion`, `WarrantyTerm`, `ShopPolicyVersion` |
+| repairOrders | `RepairOrder`, `Concern`, `Job`, `JobLine`, `JobTechShare`, `PayerSplit`, `TeardownDisclosure`, `QualityCheck`, `CollisionClaimRef`, `StaffTask` |
+| scheduling | `BookingRule`, `BookingHold`, `Appointment`, `CheckIn` |
+| auth | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Appointment` | `requested`, `confirmed`, `arrived`, `no_show`, `cancelled` |
+| `RepairOrder` | `draft`, `checked_in`, `in_service`, `on_hold`, `ready_to_invoice`, `invoiced`, `closed`, `void` |
+| `Job` | `draft`, `priced`, `offered`, `authorized`, `declined`, `deferred`, `in_progress`, `needs_reauthorization`, `completed`, `voided` |
+| `Inspection` | `assigned`, `in_progress`, `completed`, `sent`, `reviewed` |
+| `EstimateVersion` | `draft`, `sent`, `superseded` |
+| `Authorization` | `recorded`, `superseded`, `revoked` |
+| `Invoice` | `finalized`, `sent`, `partially_paid`, `paid`, `credited` |
+| `Payment` | `initiated`, `pending`, `succeeded`, `failed`, `unknown`, `partially_refunded`, `refunded` |
+| `SupplierOrder` | `draft`, `placing`, `unknown`, `placed`, `confirmed`, `partially_received`, `received`, `closed`, `cancel_requested`, `cancelled`, `failed` |
+| `BusinessAccount` | `active`, `prospect`, `credit_hold`, `closed` |
+| `ComebackCase` | `open`, `diagnosed`, `resolved`, `cancelled` |
+| `AgentProposal` | `drafted`, `previewed`, `confirmed`, `executing`, `executed`, `rejected`, `stale`, `failed` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them, and each move writes an audit event.

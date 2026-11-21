@@ -1,0 +1,29 @@
+---
+title: Clients and patients
+description: Households, people, contact points, consents, patients, weights, alerts and VCPR.
+icon: Users
+---
+
+A client is a household with one or more people and contact points. A patient has species, breed, weight history, alerts, microchips and its veterinarian-client-patient relationship (VCPR) status. A new caller or a client who registers online becomes a pending household with pending pets; staff confirm it, and duplicates are flagged. Recording a patient's death ends reminders and wellness billing.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Clients | `/dashboard/platform/clients` | Households, people, consents, pets. |
+| Patients | `/dashboard/platform/patients` | Patients with alerts, weights and VCPR. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Client` | `prospect`, `active`, `inactive`, `merged`, `closed` |
+| `Patient` | `pending`, `active`, `inactive`, `deceased`, `merged` |
+| `ContactPoint` | `active`, `invalid`, `ported` |
+| `VcprRecord` | `active`, `expired`, `terminated` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`registerClient`, `registerPendingClient`, `confirmRegistration`, `addPatient`, `recordWeight`, `addPatientAlert`, `recordConsent`, `recordPatientDeath`.

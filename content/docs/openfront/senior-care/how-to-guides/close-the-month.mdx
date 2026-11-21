@@ -1,0 +1,38 @@
+---
+title: Close the billing month
+description: Derive charges, close the month and charge stored cards.
+icon: Calculator
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Sign off the census
+
+On **Midnight census**, sign off the last day of the month (`signOffCensusDay`).
+
+</Step>
+<Step>
+
+### Derive
+
+On **Billing**, bring the month in line with the census (`billingCommand` op `billing.derive`).
+
+</Step>
+<Step>
+
+### Close
+
+Close the month to freeze charges and issue statements (`billing.close`).
+
+</Step>
+<Step>
+
+### Charge stored cards
+
+Press **Charge stored cards** for residents on autopay (`billing.autopay`).
+
+</Step>
+</Steps>

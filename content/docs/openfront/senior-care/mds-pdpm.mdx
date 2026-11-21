@@ -1,0 +1,35 @@
+---
+title: MDS, PDPM and Medicare coverage
+description: The MDS calendar and records, PDPM classification, Part A coverage and authorisations.
+icon: ClipboardCheck
+---
+
+MDS 3.0 item sets V1.19.1 and V1.20.1 are chosen by the assessment reference date. OBRA, PPS, IPA, entry, discharge and death windows are computed on read. Sections are signed, the assessment completed, and the iQIES submission file exported for a staff upload. A back-dated correction creates a new record that supersedes the old one.
+
+PDPM computes the PT, OT, SLP, nursing and NTA groups, the HIPPS code, the variable per diem and the interrupted-stay rule. **Coverage** tracks the qualifying stay, skilled certification, prior days, benefit days 1-20 and 21-100, the NOMNC clock, Medicare Advantage authorisations and hospice.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| MDS calendar | `/dashboard/platform/mds` | MDS windows, records, sign-off and the iQIES export. |
+| PDPM | `/dashboard/platform/mds/pdpm` | Current HIPPS and per diem across the variable per diem. |
+| Coverage | `/dashboard/platform/mds/coverage` | Part A days, NOMNC clock, MA authorisations and hospice. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `MdsAssessment` | `in_progress`, `completed`, `exported`, `accepted`, `rejected`, `superseded`, `entered_in_error` |
+| `MdsSubmission` | `generated`, `uploaded`, `accepted`, `partially_accepted`, `rejected` |
+| `PdpmClassification` | `current`, `superseded` |
+| `CoveragePeriod` | `pending`, `active`, `ending`, `ended`, `denied`, `retro_approved` |
+| `Authorisation` | `requested`, `approved`, `denied`, `ended` |
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `billingCommand` | `mds.load_reference`, `mds.open`, `mds.save_items`, `mds.sign_sections`, `mds.complete`, `mds.correct`, `mds.entered_in_error`, `mds.export`, `mds.mark_uploaded`, `mds.record_fvr`, `coverage.change_payer`, `coverage.qualifying_stay`, `coverage.skilled_cert`, `coverage.prior_days`, `coverage.last_covered_day`, `coverage.notice`, `coverage.hospice_revoke`, `coverage.benefit_recount`, `authorisation.request`, `authorisation.decide`, `authorisation.review` |

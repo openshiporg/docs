@@ -1,0 +1,38 @@
+---
+title: Book and dispatch a job
+description: Book a job into a window and assign a technician.
+icon: CalendarPlus
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Book
+
+On **Book a job**, pick the customer and location, the job type and a window (`holdWindow`, `bookJob`).
+
+</Step>
+<Step>
+
+### Recommend
+
+On the **Dispatch board**, ask for a recommendation (`recommendDispatch`).
+
+</Step>
+<Step>
+
+### Assign
+
+Assign the visit to a technician (`assignVisit`).
+
+</Step>
+<Step>
+
+### Work the visit
+
+The technician sets the status and submits the checklist from the field view (`setVisitStatus`, `submitChecklist`).
+
+</Step>
+</Steps>

@@ -1,0 +1,38 @@
+---
+title: Invoices, payments and accounting
+description: Invoices, payments, batches, refunds, financing, receivables and the accounting export.
+icon: Receipt
+---
+
+An invoice is drafted from the job, posted, and paid by card, cash or check. A void, credit memo, write-off or refund over policy needs a second person. Payments group into daily batches by tender, and unknown card results are listed until they are resolved. Third-party payers such as home-warranty companies and property managers have payer profiles and authorizations.
+
+**Accounting** closes receivables by period and stages the accounting export.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Invoices | `/dashboard/platform/invoices` | Invoices, payments, batches and AR. |
+| Payments | `/dashboard/platform/payments` | Daily batches by tender, deposits and unknown results. |
+| Financing | `/dashboard/platform/financing` | Records of lender offers, status and payouts. |
+| Accounting | `/dashboard/platform/accounting` | AR periods and the accounting export. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Invoice` | `draft`, `posted`, `partially_paid`, `paid`, `written_off`, `voided`, `discarded` |
+| `PaymentAttempt` | `pending`, `succeeded`, `failed`, `unknown` |
+| `PaymentBatch` | `open`, `closed`, `reconciled`, `exported` |
+| `CreditMemo` | `draft`, `pending_approval`, `posted`, `applied`, `rejected` |
+| `Dispute` | `opened`, `evidence_due`, `evidence_submitted`, `won`, `lost` |
+| `FinancingApplication` | `started`, `submitted`, `approved`, `declined`, `needs_info`, `docs_signed`, `awaiting_funding`, `funded`, `cancelled`, `expired` |
+| `ThirdPartyAuthorization` | `requested`, `authorized`, `cash_out_offered`, `denied`, `consumed`, `expired`, `revised` |
+| `ArPeriod` | `open`, `closing`, `closed` |
+| `AccountingExportBatch` | `created`, `downloaded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`createInvoiceDraft`, `discardInvoiceDraft`, `postInvoice`, `voidInvoice`, `issueCreditMemo`, `requestWriteOff`, `setCollectionsStatus`, `recordInvoicePayment`, `applyCustomerCredit`, `startPaymentAttempt`, `markAttemptUnknown`, `resolveAttemptFailed`, `requestRefund`, `recordApprovedRefund`, `settleRefundedMembershipInvoice`, `closePaymentBatch`, `reconcilePaymentBatch`, `saveFinancingProgram`, `startFinancing`, `recordFinancingStatus`, `recordFinancingFunding`, `savePayerProfile`, `recordThirdPartyAuthorization`, `requestArPeriodClose`, `reopenArPeriod`, `createExportBatch`.

@@ -1,0 +1,64 @@
+---
+title: External dashboards
+description: Give an LLM the Home Services dashboard skill to adapt the built-in staff experience or create a separate client.
+icon: PanelsTopLeft
+---
+
+
+To create a custom Home Services dashboard, copy the skill and give it to your LLM. The skill explains how `features/dashboard` supplies the Keystone administration shell while `features/platform` contains the company screens.
+
+After that source orientation, it asks what you dislike, what should stay, which workflows and users matter, and what the replacement should look like. It then traces the exact routes, GraphQL calls, schema, access rules and provider boundaries in your Home Services checkout before proposing work.
+
+Skill file: [`/skills/openfront-home-services-custom-dashboard/SKILL.md`](/skills/openfront-home-services-custom-dashboard/SKILL.md)
+
+## Current platform pages
+
+Route files are `app/dashboard/(admin)/platform/<route>/page.tsx`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+| Page | Group | What staff do there |
+| --- | --- | --- |
+| `/dashboard/platform/today` | Top level | Booked vs capacity, calls, unassigned visits, techs, revenue and open approvals. |
+| `/dashboard/platform/leads` | Calls & Leads | Inbox with response timers, source and disposition. |
+| `/dashboard/platform/calls` | Calls & Leads | Call log with recordings and transcripts, AI and human. |
+| `/dashboard/platform/book` | Calls & Leads | Customer and location, job type, arrival window, confirm. |
+| `/dashboard/platform/dispatch` | Dispatch | Arrival windows by technician; assign, reassign, recommendations. |
+| `/dashboard/platform/jobs` | Dispatch | Jobs, visits, timeline and work lines. |
+| `/dashboard/platform/customers` | Customers | Customers, contacts, service locations and consent. |
+| `/dashboard/platform/estimates` | Sales | Good/better/best options, presentation and versions. |
+| `/dashboard/platform/cancellations` | Sales | Cancellation notices with cancel-by countdown. |
+| `/dashboard/platform/pricebook` | Sales | Categories, items, markup tables and publishing. |
+| `/dashboard/platform/invoices` | Billing | Invoices, payments, batches and AR. |
+| `/dashboard/platform/payments` | Billing | Daily batches by tender, deposits and unknown results. |
+| `/dashboard/platform/financing` | Billing | Records of lender offers, status and payouts. |
+| `/dashboard/platform/accounting` | Billing | AR periods and the accounting export. |
+| `/dashboard/platform/memberships` | Memberships | Members, what is left on each plan, and standing today. |
+| `/dashboard/platform/membership-plans` | Memberships | Plans, prices, what each includes, and publishing. |
+| `/dashboard/platform/due-for-service` | Memberships | Call list of visits members and agreements are owed. |
+| `/dashboard/platform/renewals` | Memberships | Memberships ending soon, with the message to send and a CSV. |
+| `/dashboard/platform/billing-runs` | Memberships | Charge the month's membership payments with one button. |
+| `/dashboard/platform/agreements` | Memberships | Planned maintenance for commercial customers. |
+| `/dashboard/platform/equipment` | Operations | Installed equipment by location, with warranty cover. |
+| `/dashboard/platform/inventory` | Operations | Warehouse and truck stock. |
+| `/dashboard/platform/warranty/registrations` | Operations | Registrations due and overdue, with the portal packet. |
+| `/dashboard/platform/warranty/claims` | Operations | Claims to the manufacturer, appeals and write-offs. |
+| `/dashboard/platform/home-warranty` | Operations | Dispatches from home-warranty companies. |
+| `/dashboard/platform/replenishment` | Operations | Min/max proposals for trucks and the warehouse. |
+| `/dashboard/platform/purchase-orders` | Operations | Orders to suppliers, approval and three-way match. |
+| `/dashboard/platform/receiving` | Operations | Orders on their way, received into stock. |
+| `/dashboard/platform/counts` | Operations | Count a location and post the difference. |
+| `/dashboard/platform/my-timesheet` | Team | Your day from the visit record: add what is missing, send it in. |
+| `/dashboard/platform/my-pay` | Team | Your pay by period: hours, overtime, commission and anything taken back. |
+| `/dashboard/platform/timesheets` | Team | Approve submitted days; add time that was missed. |
+| `/dashboard/platform/pay-plans` | Team | Hourly, overtime, commission and spiff terms, versions and who is on which. |
+| `/dashboard/platform/pay-periods` | Team | Calculate, review, approve and export a pay period. |
+| `/dashboard/platform/permits` | Operations | Permits and inspections that gate job completion. |
+| `/dashboard/platform/refrigerant` | Operations | EPA 608 log, cylinders and leak rates. |
+| `/dashboard/platform/liens` | Operations | Texas lien dates by month for completed jobs. |
+| `/dashboard/platform/policies` | Operations | Jurisdiction policy packs, versions and sources. |
+| `/dashboard/platform/team` | Team | Technicians, credentials, skills, shifts and on-call. |
+| `/dashboard/field/today` | Team | A technician's day on a phone: visits, status, checklist, photos. |
+| `/dashboard/platform/agents` | Admin | Agent grants, autonomy, kill switch and action review. |
+| `/dashboard/platform/approvals` | Admin | Maker-checker requests waiting for a second person. |
+| `/dashboard/platform/tasks` | Admin | Work queues: follow-ups, overdue registrations, exceptions. |
+| `/dashboard/platform/audit` | Admin | Hash-chained audit events and chain verification. |
+| `/dashboard/platform/settings` | Admin | Company, licences, branches, business units, calendars and approval policies. |

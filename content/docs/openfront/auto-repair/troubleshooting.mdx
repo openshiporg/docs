@@ -1,0 +1,14 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `AUTO_SECRET_KEY is not set: contact values cannot be hashed.` | Set `AUTO_SECRET_KEY` to 64 hex characters. |
+| `REAUTHORIZATION_REQUIRED` | The charge would pass the authorized amount plus the state's tolerance. Send a new estimate and get a new authorization. |
+| `This link has expired. Ask the shop to send a new one.` | Create a new link from the repair order, invoice or customer. |
+| A card payment stays unknown | Press **Resolve payments**. There is no Stripe webhook, so the app asks Stripe. |
+| Inspection photos fail to upload | Check the `S3_*` settings. |
+| A seeded staff member cannot sign in | An owner sets their password, or create the first owner at `/dashboard/init` first. |

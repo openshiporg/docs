@@ -1,0 +1,9 @@
+{
+  "title": "How-to Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "repair-a-vehicle",
+    "order-parts",
+    "close-the-day"
+  ]
+}

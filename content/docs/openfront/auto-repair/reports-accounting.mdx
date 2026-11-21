@@ -1,0 +1,26 @@
+---
+title: Reports and accounting export
+description: Shop metrics with definitions, and daily journal files for the books.
+icon: ChartLine
+---
+
+**Reports** shows car count, average repair order, effective labor rate, gross profit, technician productivity, and approval and comeback rates, each with its definition and a tie-out to the books. **Accounting export** stages daily journal files for the books. Nothing counts as posted until a person records that the books accepted it.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Reports | `/dashboard/platform/reports` | Car count, ARO, ELR, gross profit, technician productivity, approval and comeback rates, with definitions and books tie-outs. |
+| Accounting export | `/dashboard/platform/accounting` | Daily journal files staged for the books. Nothing posts until a person records the books accepted it. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `AccountingBatch` | `staged`, `exported`, `confirmed`, `rejected`, `voided` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveAccountingMappings`, `stageAccountingBatch`, `exportAccountingBatch`, `recordAccountingResponse`, `saveReportSnapshot`.

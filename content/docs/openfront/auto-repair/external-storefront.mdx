@@ -1,0 +1,23 @@
+---
+title: External storefronts
+description: Give an LLM the Auto Repair storefront skill to adapt the shop site or build one on the public link APIs.
+icon: AppWindow
+---
+
+To build a custom Auto Repair storefront, copy the skill and give it to your LLM. The skill explains that `features/storefront` holds the built-in site and that every customer link page calls a token-scoped handler you can also reach over HTTP.
+
+Skill file: [`/skills/openfront-auto-repair-custom-storefront/SKILL.md`](/skills/openfront-auto-repair-custom-storefront/SKILL.md)
+
+## Public link APIs
+
+| Route | Methods | Use |
+|---|---|---|
+| `/api/public/authorizations/[token]` | GET, POST | Read the estimate, then approve or decline jobs with a signature |
+| `/api/public/inspections/[token]` | GET | Read the inspection |
+| `/api/public/invoices/[token]` | GET, POST | Read the invoice and pay it |
+| `/api/public/portal/[token]` | GET | The customer's vehicles and repairs |
+| `/api/public/portal/[token]/vehicles/[id]`, `/repair-orders/[id]` | GET | One vehicle or repair order |
+| `/api/public/fleet/[token]` | GET, POST | A fleet contact's account; approve or pay |
+| `/api/public/fleet/[token]/statements/[id]` | GET | A fleet statement |
+
+Nothing here reads a session. A separate site must keep the token in the URL it was given and never store it.

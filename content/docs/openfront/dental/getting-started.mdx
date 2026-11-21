@@ -1,0 +1,89 @@
+---
+title: Getting started with Dental
+description: Install Openfront Dental, configure it, and load the sample practice.
+icon: Terminal
+---
+
+
+## Requirements
+
+- Node.js 20 or later
+- PostgreSQL
+- A Stripe account if you want card payments (optional)
+- A Stedi API key if you want electronic eligibility and claims (optional)
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-dental.git
+cd openfront-dental
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure `.env`
+
+```bash
+DATABASE_URL=postgres://user:password@localhost:5432/openfront_dental
+SESSION_SECRET=   # 32+ characters
+DENTAL_SECRET_KEY=   # 32 bytes, hex or base64
+```
+
+| Variable | Notes |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SESSION_SECRET` | Signs staff sessions. At least 32 characters. Required. |
+| `DENTAL_SECRET_KEY` | Encrypts adapter secrets in `SecretBox` and keys the member-ID hash. 32 bytes as hex or base64. Required. |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_KEY` | Card payments. Without them card payment reports "Card payments are not set up." |
+| `STEDI_API_KEY` | Clearinghouse key used when no Stedi installation has its own key. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The model used by the assistant. |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile check on public booking. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Mail for password resets and portal codes. |
+| `DENTAL_ALLOW_SAMPLE_PRACTICE` | Set to `true` to allow the sample practice on a production deployment. |
+| `PUBLIC_SIGNUPS_ALLOWED` | Allows staff self-signup when set. |
+| `NEXT_PUBLIC_APP_URL` | Public base URL used in links. |
+
+</Step>
+<Step>
+
+### Apply migrations and start
+
+```bash
+npm run dev    # builds Keystone, applies migrations, starts Next.js
+```
+
+`npm run dev` runs `keystone build --no-ui`, then `prisma migrate deploy`, then `next dev`.
+
+</Step>
+<Step>
+
+### Create the first user
+
+Open `/dashboard/init` and create the first user. Its role, **Practice Owner**, gets every permission except break-glass.
+
+</Step>
+<Step>
+
+### Load the sample practice
+
+Open the onboarding card and run **Practice, locations, people and controls** (`loadPracticeSetup`). It loads Bayview Family Dental (Tampa and Brandon, FL), the jurisdiction packs with every rule flagged for verification, the roles with separated duties and the maker-checker approval policies, plus families, patients and appointments. Every sample name, birth date, phone and address is invented, and every seeded record is marked synthetic.
+
+Seeded staff cannot sign in until an owner sets their password. A production deployment refuses the sample practice unless `DENTAL_ALLOW_SAMPLE_PRACTICE=true` is set.
+
+</Step>
+</Steps>
+
+## Tests
+
+```bash
+npm run verify   # typecheck, lint, vitest and node tests
+```
+
+Database tests run only when `DENTAL_TEST_DATABASE_URL` is set.

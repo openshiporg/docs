@@ -1,0 +1,60 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every command checks the flags it needs on the server, together with the person's community access. Flags are defined in `features/keystone/access.ts`. Approvals always need a different person from the one who asked.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| Starter and fleet-mandatory | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Operator and communities | `canManageOperator`, `canManageCommunities`, `canManagePlaces`, `canManageIntegrations`, `canApproveIntegrations` |
+| Sales and storefront | `canManageSales`, `canManageStorefront`, `canReadSales` |
+| Residents and census | `canAdmitDischarge`, `canRecordCensus`, `canManageRepresentatives`, `canApproveCensusCorrections`, `canReadResidentDemographics` |
+| Clinical | `canChartPointOfCare`, `canChartNursing`, `canManageAssessments`, `canManageCarePlans`, `canEnterOrders`, `canSignOrders`, `canApproveClinicalCorrections`, `canReadClinical`, `canReadSensitiveClinical` |
+| Medications | `canAdministerMeds`, `canWitnessControlled`, `canManagePharmacy`, `canResolveCountDiscrepancy`, `canApproveControlledAdjustments` |
+| Incidents and infection prevention | `canReportIncident`, `canInvestigateIncidents`, `canManageInfectionControl`, `canApproveIncidentDowngrade`, `canDeclareOutbreak`, `canReadIncidents` |
+| Workforce | `canManageSchedule`, `canManageTimecards`, `canManageCredentials`, `canApproveTimecards`, `canReadWorkforce` |
+| Billing | `canManageRates`, `canManageBilling`, `canManageClaims`, `canPostPayments`, `canApproveRates`, `canApproveWriteOffs`, `canReleaseClaims`, `canReadBilling`, `canReadIdentifiers` |
+| Resident trust | `canOperateTrust`, `canApproveTrust`, `canReadTrust` |
+| Compliance and quality | `canManageCompliance`, `canManageSurveys`, `canManageQapi`, `canSubmitRegulatory`, `canApproveCompliance`, `canReadCompliance` |
+| Portal and engagement | `canManageFamilyUpdates`, `canManageActivities`, `canManageDietary`, `canMessageFamilies`, `canApprovePortalScopes` |
+| AI workflows and agents | `canManageWorkflows`, `canManageAgents`, `canApproveWorkflows`, `canApproveAgentGrants`, `canReadFindings` |
+| Privacy | `canBreakGlass`, `canReviewBreakGlass`, `canReadPhiAudit` |
+| Break-glass (never seeded) | `canBreakGlassRecords` |
+
+## Seeded roles
+
+Loading the sample community creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| Operator Admin | Runs the platform for the operator: communities, people, roles and integrations. |
+| Executive Director | Licensed administrator: census, sales, compliance and approvals for the community. |
+| Director of Nursing | Clinical lead: corrections, count discrepancies, care plans and clinical approvals. |
+| Assistant Director of Nursing | Supports the DON; charts, plans care and investigates incidents. |
+| Charge Nurse (RN/LPN) | Unit nurse: charting, medication pass, census moves on the unit. |
+| Certified Nursing Assistant | Point-of-care charting (ADLs, intake, vitals) on assigned units. |
+| Med Tech (AL) | Assisted-living medication administration where the state pack allows it. |
+| MDS Coordinator | Assessments, MDS schedule and PDPM. |
+| Infection Preventionist | Infection surveillance, precautions, outbreaks and immunisations. |
+| Prescriber | Physician or NP: orders and signatures. |
+| Consultant Pharmacist | Monthly drug regimen review. |
+| Therapist | PT/OT/SLP documentation and minutes. |
+| Dietary | Diets, textures and meal service. |
+| Activities | Activity calendar and participation. |
+| Social Services | Representatives, portal scopes, notices and family communication. |
+| Admissions | Inquiries, tours, referrals, waitlist, admissions and discharges. |
+| Business Office | Payers, coverage, billing and payments. |
+| Trust Officer | Records resident trust deposits and withdrawals. |
+| Trust Approver | Second person for trust withdrawals over threshold and reconciliations. |
+| Scheduler | Shifts and open-shift offers. |
+| Human Resources | People, credentials and timecards. |
+| Privacy Officer | Reviews break-glass and PHI read audit; owns the BAA register. |
+| QAPI / Compliance Lead | Compliance clocks, surveys, QAPI and packs. |
+| Surveyor | Read-only, time-boxed by the user access expiry. |
+| Portal | Family portal only; no dashboard. |

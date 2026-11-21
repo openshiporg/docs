@@ -1,0 +1,26 @@
+---
+title: Inspections
+description: Digital vehicle inspections with measurements, photos and findings.
+icon: Gauge
+---
+
+An inspection follows a published template. Technicians record each item as red, yellow or green, with measurements, photos and notes. Photos are stored in S3. Sending the inspection creates a customer link to `/inspections/[token]`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Inspections | `/dashboard/platform/inspections` | Digital vehicle inspections: measurements, photos and findings. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Inspection` | `assigned`, `in_progress`, `completed`, `sent`, `reviewed` |
+| `InspectionTemplateVersion` | `draft`, `published`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`startShopInspection`, `recordInspectionItem`, `attachInspectionMedia`, `completeShopInspection`, `sendShopInspection`.

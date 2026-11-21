@@ -1,0 +1,9 @@
+{
+  "title": "How-to Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "book-and-dispatch",
+    "sell-an-estimate",
+    "run-membership-billing"
+  ]
+}

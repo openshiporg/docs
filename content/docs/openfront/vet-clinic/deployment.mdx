@@ -1,0 +1,24 @@
+---
+title: Deployment
+description: Deploy Openfront Vet Clinic on Railway or any Node host with PostgreSQL.
+icon: Rocket
+---
+
+
+The repository includes `railway.toml`. The build runs `keystone build --no-ui && next build`, and the start command runs `npm run migrate && next start`.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `npm run migrate && next start` | Applies migrations, then serves the dashboard, the client site, GraphQL and MCP. |
+
+## Checklist
+
+1. Provision PostgreSQL and set `DATABASE_URL`.
+2. Set `SESSION_SECRET`.
+3. Set the Stripe keys and point a Stripe webhook at `/api/integrations/payment/stripe/webhook` if you take cards.
+4. Deploy, open `/dashboard/init` and create the first owner.
+5. Set staff passwords from **Team & licences**.
+
+There is no worker, cron or scheduler. Treatment tasks due or overdue, unsigned-record tasks and vaccine reminder status are refreshed when staff press **Refresh due and overdue** (`refreshClinicalClocks`).

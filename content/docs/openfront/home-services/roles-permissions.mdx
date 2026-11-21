@@ -1,0 +1,52 @@
+---
+title: Roles and permissions
+description: Permission flags, the seeded roles, and what each one allows.
+icon: KeyRound
+---
+
+
+Access is permission-based. A role is a set of boolean permission flags on `Role`, and every custom mutation checks the flag it needs on the server. Flags are defined in `features/keystone/access.ts`. The AI Agent role holds no permissions: an agent acts only through its tool grants.
+
+## Permission flags
+
+| Area | Flags |
+| --- | --- |
+| Starter and fleet-mandatory | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles`, `canAccessDashboard`, `canManageOnboarding`, `canManagePayments`, `canIssueRefunds`, `canReadAudit` |
+| Company, integrations, policies and operations | `canManageCompany`, `canManageIntegrations`, `canManagePolicies`, `canApprovePolicies` |
+| CRM | `canManageCustomers`, `canMergeCustomers`, `canApproveMerges`, `canRevealAccessSecret`, `canReadCustomerPII` |
+| Demand | `canManageLeads`, `canManageCampaigns` |
+| Booking and dispatch | `canBook`, `canOverbook`, `canApproveOverbook`, `canDispatch`, `canViewBoard` |
+| Field | `canWorkVisits`, `canPresentEstimates`, `canSellEstimates` |
+| Price book and discounts | `canManagePriceBook`, `canApprovePriceBook`, `canApproveDiscounts` |
+| Billing | `canManageInvoices`, `canTakePayments`, `canPostInvoices`, `canApproveWriteOff`, `canApproveCredits`, `canApproveRefunds` |
+| Financing and memberships | `canOfferFinancing`, `canManageMemberships`, `canSellMemberships` |
+| Equipment and warranty | `canManageEquipment`, `canSubmitWarrantyClaims`, `canApproveWarrantyWriteOff` |
+| Inventory and purchasing | `canManageInventory`, `canPurchase`, `canReceive`, `canApprovePurchases`, `canApproveStockVariance` |
+| Compliance | `canManagePermits`, `canManageRefrigerant` |
+| Labour and pay | `canApproveTimesheets`, `canManagePayPlans`, `canRunPayroll`, `canApprovePayPlans`, `canApprovePayPeriods`, `canReadPay` |
+| Accounting | `canManageAccounting`, `canCloseAr`, `canApproveArClose` |
+| Communications | `canSendMessages`, `canManageTemplates`, `canRunCampaigns`, `canApproveCampaigns` |
+| Agents | `canManageAgents`, `canApproveAgentGrants` |
+| Break-glass (never seeded) | `canBreakGlass` |
+
+## Seeded roles
+
+Loading the sample company creates these roles.
+
+| Role | What it does |
+| --- | --- |
+| AI Agent | Least privilege for AI agents. Holds no permission: an agent acts only through its tool grants, and never sees cost or margin. |
+| Owner | Everything except break-glass. Break-glass is never on a default role. |
+| General Manager | Runs the shop day to day and approves money and policy changes. |
+| CSR | Answers calls, books jobs, takes payments and sells memberships. |
+| Dispatcher | Owns the board: assigns, reassigns and overbooks within limits. |
+| Technician | Works assigned visits in the field app: estimates, payments, equipment and refrigerant entries. |
+| Comfort Advisor | Replacement sales: presents good/better/best options and financing. |
+| Service Manager | Runs the service department: discounts, overbooks, timesheets, warranty and the price book draft. |
+| Install Manager | Runs installs: permits, purchasing and install crews. |
+| Warehouse | Receives, counts and replenishes trucks. |
+| Accounting | Invoices, payments, AR, refunds and the accounting export. |
+| Payroll Admin | Timesheets, pay plans and pay periods. |
+| Marketing | Campaigns, tracking numbers and message templates. |
+| Customer | Customer portal API only; no dashboard. |
+| Payer Contact | Third-party payer portal API only (home warranty, property managers); no dashboard. |

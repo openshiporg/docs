@@ -1,0 +1,45 @@
+---
+title: Clinical chart
+description: Progress notes, vitals, assessments, orders, care plans, wounds and the staff task inbox.
+icon: Stethoscope
+---
+
+The chart holds progress notes (signed, amended or entered in error), vitals, intake, ADLs, wounds, behaviour and physician visits. Assessments are templates with scorers, including Braden, Morse, BIMS, PHQ-9, PAINAD and elopement. A PHQ-9 item 9 answer opens a same-day task.
+
+A verbal order needs read-back and a different person's countersignature. An allergy match needs a stated override. Signing a baseline care plan satisfies its 48-hour clock. **Tasks** is the staff inbox for escalations and follow-ups.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Clinical chart | `/dashboard/platform/clinical` | Notes, vitals, assessments, orders, care plans and wounds. |
+| Tasks | `/dashboard/platform/tasks` | Staff inbox: escalations and follow-ups. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `ProgressNote` | `draft`, `signed`, `amended`, `entered_in_error` |
+| `Wound` | `open`, `healing`, `healed`, `entered_in_error` |
+| `Assessment` | `in_progress`, `completed`, `entered_in_error` |
+| `CarePlan` | `draft`, `active`, `superseded`, `entered_in_error` |
+| `CarePlanItem` | `active`, `met`, `discontinued` |
+| `PocTaskSlot` | `pending`, `done`, `not_done` |
+| `Order` | `active`, `discontinued`, `completed`, `entered_in_error` |
+| `Allergy` | `active`, `inactive`, `entered_in_error` |
+| `Diagnosis` | `active`, `resolved`, `entered_in_error` |
+| `Task` | `open`, `in_progress`, `done`, `cancelled` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`clinicalCommand`.
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `clinicalCommand` | `note.create`, `note.sign`, `note.amend`, `note.error`, `vitals.record`, `intake.record`, `adl.record`, `wound.open`, `wound.assess`, `behaviour.record`, `visit.record`, `assessment.complete`, `order.enter`, `order.countersign`, `order.discontinue`, `task.complete`, `task.create` |

@@ -1,0 +1,53 @@
+---
+title: Data model
+description: The Keystone lists grouped by area, with their lifecycles.
+icon: Database
+---
+
+
+Lists are defined in `features/keystone/models/` and registered in `models/index.ts`. Each row below is one model file.
+
+| Area | Lists |
+| --- | --- |
+| agents | `AgentToolGrant`, `AgentRun`, `Proposal` |
+| billing | `CareLevel`, `RateSchedule`, `RateLine`, `ChargeItem`, `CareLevelAssignment`, `BillingPeriod`, `Charge`, `Statement`, `PaymentMethodToken`, `Payment`, `PaymentAllocation`, `PaymentEvent`, `Refund`, `Deposit`, `MedicaidLiability`, `ResidentCredit`, `BalanceAdjustment`, `PaymentPlan`, `PaymentPlanInstalment`, `MedicaidApplication`, `PatientLiabilitySchedule` |
+| claims | `Claim`, `ClaimLine`, `Remittance`, `RemittancePosting`, `AncillaryInvoice` |
+| clinical | `ProgressNote`, `VitalSign`, `IntakeRecord`, `AdlRecord`, `Wound`, `WoundAssessment`, `BehaviourEpisode`, `PhysicianVisit`, `AssessmentTemplate`, `Assessment`, `CarePlan`, `CarePlanItem`, `PocTaskSlot`, `Order`, `MedicationOrderDetail`, `Task` |
+| mds | `MdsAssessment`, `PdpmClassification`, `MdsSubmission`, `PdpmMappingVersion`, `ReferenceRate`, `PriorSnfDaysObservation`, `BenefitPeriodCounter`, `Authorisation`, `ConcurrentReview` |
+| medications | `MedicationReference`, `PharmacyRelationship`, `MedicationSupply`, `MedicationSupplyMovement`, `MedicationDestruction`, `AdministrationSlot`, `MedicationAdministration`, `PrnFollowUp`, `ShiftCount`, `ShiftCountEntry`, `CountDiscrepancy` |
+| places | `Building`, `Unit`, `Room`, `Bed`, `ApartmentType`, `Apartment`, `PlaceReservation`, `BedOccupancy`, `BedHoldPolicy` |
+| platform | `OperatorSettings`, `Community`, `StaffAssignment`, `DeviceRegistration`, `BreakGlassGrant`, `AgentIdentity`, `AuditEvent`, `PhiReadAudit`, `CommandReceipt`, `Lease`, `Job`, `JobRun`, `Sequence`, `RequestRateLimitBucket`, `Notification`, `NotificationDelivery`, `HolidayCalendar`, `HolidayDate`, `ApprovalPolicy`, `ApprovalRequest`, `ApprovalDecision`, `Document`, `DocumentTemplate`, `SecretBox`, `ProcessorRegistration`, `JurisdictionPack`, `RegulatoryObligation`, `ComplianceClock` |
+| residents | `Resident`, `ResidentIdentifier`, `Contact`, `Representative`, `AdvanceDirective`, `Allergy`, `Diagnosis`, `PreAdmissionScreen`, `Stay`, `CensusEvent`, `CensusDay`, `CensusSignoff`, `NoticeDelivery`, `Payer`, `CoveragePeriod` |
+| safety | `Incident`, `IncidentParty`, `IncidentInvestigation`, `RegulatoryReport`, `InfectionCase`, `PrecautionOrder`, `AntibioticCourse`, `Outbreak`, `Immunisation` |
+| sales | `Inquiry`, `ReferralSource`, `Lead`, `Prospect`, `Referral`, `TourSlot`, `Tour`, `WaitlistEntry`, `SalesActivity`, `StorefrontSite`, `StaffBio`, `PublishedPrice`, `AvailabilitySnapshot`, `JobPosting`, `PortalAccount`, `PortalScopeGrant` |
+| scheduling | `AgencyVendor`, `AgencyInvoice`, `Credential`, `CredentialVerification`, `LeieImport`, `Shift`, `ShiftAssignment`, `StaffingTarget`, `StaffingDay`, `PayrollExport` |
+| trust | `TrustAccount`, `ResidentTrustLedger`, `TrustTransaction`, `TrustLedgerLine`, `TrustReconciliation`, `TrustAuthorisation`, `TrustStatement`, `SuretyBond`, `InterestAllocationRun` |
+| workflows | `WorkflowDefinition`, `WorkflowVersion`, `WorkflowActivation`, `WorkflowRun`, `Finding`, `EvidenceRef`, `ExtractedFact`, `InferenceProvider`, `InferenceCall` |
+| workforce | `JobCode`, `StaffMember`, `TimePunch`, `TimeCorrection`, `Timecard`, `PbjQuarter`, `NhsnExport` |
+| auth | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Stay` | `pre_admit`, `admitted`, `discharged`, `deceased` |
+| `Bed` | `available`, `reserved`, `occupied`, `held`, `cleaning`, `out_of_service` |
+| `Apartment` | `available`, `reserved`, `occupied`, `turnover`, `out_of_service` |
+| `Lead` | `new`, `contacted`, `tour_scheduled`, `toured`, `assessment_scheduled`, `assessed`, `deposit_received`, `move_in_scheduled`, `moved_in`, `waitlisted`, `nurture`, `lost` |
+| `WaitlistEntry` | `active`, `offered`, `accepted`, `declined`, `expired`, `converted`, `withdrawn` |
+| `ProgressNote` | `draft`, `signed`, `amended`, `entered_in_error` |
+| `Order` | `active`, `discontinued`, `completed`, `entered_in_error` |
+| `AdministrationSlot` | `scheduled`, `given`, `held`, `refused`, `missed`, `not_given` |
+| `Incident` | `reported`, `under_investigation`, `closed`, `entered_in_error` |
+| `MdsAssessment` | `in_progress`, `completed`, `exported`, `accepted`, `rejected`, `superseded`, `entered_in_error` |
+| `Claim` | `draft`, `validated`, `released`, `submitted`, `accepted`, `rejected`, `paid`, `partially_paid`, `denied`, `appealed`, `finalised`, `cancelled` |
+| `Statement` | `issued`, `paid`, `void` |
+| `Payment` | `pending`, `unknown`, `succeeded`, `failed` |
+| `TrustTransaction` | `pending_signature`, `posted`, `rejected` |
+| `Shift` | `open`, `filled`, `in_progress`, `completed`, `cancelled` |
+| `Credential` | `pending_verification`, `verified`, `expiring`, `expired`, `revoked`, `suspended` |
+| `Timecard` | `open`, `submitted`, `approved`, `exported` |
+| `ComplianceClock` | `open`, `satisfied`, `overdue`, `satisfied_late`, `waived`, `cancelled` |
+| `ApprovalRequest` | `pending`, `approved`, `rejected`, `expired`, `cancelled` |
+
+Status fields cannot be updated through the generic API. Only the named mutations move them, and each move writes an audit event.

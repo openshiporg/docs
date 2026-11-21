@@ -1,0 +1,35 @@
+---
+title: Calls, leads and booking
+description: The lead inbox, the call log and the AI receptionist, and booking a job into a window.
+icon: Phone
+---
+
+**Today** shows booked hours against capacity, calls, unassigned visits, technicians, revenue and open approvals. **Leads** is the inbox for demand from every channel, with response timers, source and disposition. **Calls** is the call log with recordings and transcripts, from the AI receptionist and from people.
+
+**Book a job** picks the customer and location, the job type and an arrival window. A hold reserves hours in the window, and a full window is refused.
+
+The AI receptionist answers recorded calls through MCP tools: customer and location lookup, job-type match, open windows, hold, release and confirm, consent, hand-off to a person, and paging on-call. Each write needs a grant for that exact tool. Access codes, merges and cancellations are not available to it.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Today | `/dashboard/platform/today` | Booked vs capacity, calls, unassigned visits, techs, revenue and open approvals. |
+| Leads | `/dashboard/platform/leads` | Inbox with response timers, source and disposition. |
+| Calls | `/dashboard/platform/calls` | Call log with recordings and transcripts, AI and human. |
+| Book a job | `/dashboard/platform/book` | Customer and location, job type, arrival window, confirm. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Lead` | `new`, `contacted`, `qualified`, `booked`, `converted`, `lost`, `spam`, `merged` |
+| `Call` | `ringing`, `ai_answering`, `human_answering`, `handoff_requested`, `completed` |
+| `BookingHold` | `held`, `converted`, `released`, `expired` |
+| `Conversation` | `open`, `waiting_customer`, `waiting_staff`, `closed` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`materializeWindows`, `holdWindow`, `releaseHold`, `bookJob`, `ingestLead`, `markLeadContacted`, `qualifyLead`, `loseLead`, `markLeadSpam`, `mergeLead`, `recordConsent`, `handoffToHuman`, `pageOnCall`.

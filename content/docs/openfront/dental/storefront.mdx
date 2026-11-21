@@ -1,0 +1,26 @@
+---
+title: Storefront
+description: The built-in practice website, online booking, patient portal sign-in, and statement pay page.
+icon: Store
+---
+
+The storefront lives in `features/storefront` and mounts at the site root.
+
+| Route | Page |
+|---|---|
+| `/` | Practice home ("Cleanings, without the wait.") |
+| `/book` | Book a visit: pick a visit type, see open times, hold one and submit |
+| `/account/sign-in` | Patient portal sign-in with a one-time code |
+| `/pay/[code]` | Pay a statement by card, and download it as a PDF |
+
+## Online booking
+
+Booking uses four public operations: `publicSite`, `publicAvailability`, `publicHoldSlot` and `publicSubmitBooking`. A hold lasts `holdMinutes` (10 by default) and returns a hold token. Only the token's hash is stored.
+
+On submit, the contact is matched against existing patients. It may match an existing record, create a new prospect, or create a prospect flagged as a possible duplicate. The answer is the same in every case: a booking reference, the time and the location name. It never says whether someone is already a patient and never returns a name. Staff review online bookings under **Booking requests** (`reviewBookingRequest`).
+
+Rate limits are counted in Postgres and keyed by hashes. With `TURNSTILE_SECRET_KEY` set, a Turnstile token is required.
+
+## Patient portal
+
+`portalRequestCode` emails a six-digit code (10 minutes, 5 tries). `portalSession` exchanges it for a portal token sent back as the `x-portal-token` header. `portalMe`, `portalAppointments`, `portalConfirm`, `portalCancel`, `portalReschedule` and `portalPreferences` all name a patient and pass the `PortalScope` check. A guardian scope ends when the patient reaches the age of majority under the location's jurisdiction pack. Every portal read is written to `PhiReadAudit`.

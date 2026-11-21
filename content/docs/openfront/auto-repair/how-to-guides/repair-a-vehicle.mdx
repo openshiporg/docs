@@ -1,0 +1,52 @@
+---
+title: Repair a vehicle
+description: Check in, inspect, estimate, get approval, repair and invoice.
+icon: Hammer
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Check in
+
+On **Check-in**, record the customer, vehicle, odometer and concerns, and take the customer's signature (`checkInShopVehicle`).
+
+</Step>
+<Step>
+
+### Open the repair order
+
+Open it and add jobs and lines (`openShopRepairOrder`, `addRepairJob`, `saveJobLines`).
+
+</Step>
+<Step>
+
+### Inspect
+
+Run the inspection and send it to the customer (`startShopInspection`, `completeShopInspection`, `sendShopInspection`).
+
+</Step>
+<Step>
+
+### Get approval
+
+Send the estimate and an approval link (`sendRepairEstimate`, `requestCustomerAuthorization`), or record the customer's answer (`recordCustomerAuthorization`).
+
+</Step>
+<Step>
+
+### Repair
+
+Technicians clock onto the job and move it through its stages (`startTechJobClock`, `transitionRepairJob`).
+
+</Step>
+<Step>
+
+### Invoice and release
+
+Finalize the invoice, take payment and release the vehicle (`finalizeShopInvoice`, `takeShopPayment`, `releaseShopVehicle`).
+
+</Step>
+</Steps>

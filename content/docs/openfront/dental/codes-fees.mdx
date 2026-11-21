@@ -1,0 +1,27 @@
+---
+title: Codes and fees
+description: Procedure code imports with licence attestation, and fee schedules published by a second person.
+icon: Tag
+---
+
+Licensed procedure codes are imported as a batch. Someone attests the practice holds the licence (`attestCodeLicence`), and activation needs a second person. Fee schedules are edited as a draft version and published only after a second person approves `requestFeePublish`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Procedure codes | `/dashboard/platform/codes` | Practice codes, licensed code imports and approvals. |
+| Fee schedules | `/dashboard/platform/fees` | Fee versions: draft, second-person publish. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `CodeImportBatch` | `uploaded`, `validated`, `attested`, `active`, `superseded`, `rejected` |
+| `FeeScheduleVersion` | `draft`, `published`, `retired` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`uploadCodeImport`, `attestCodeLicence`, `requestCodeActivation`, `openFeeSchedule`, `createFeeVersion`, `setFee`, `requestFeePublish`.

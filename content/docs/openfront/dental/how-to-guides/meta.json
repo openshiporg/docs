@@ -1,0 +1,9 @@
+{
+  "title": "How-to Guides",
+  "icon": "BookOpen",
+  "pages": [
+    "book-and-check-out",
+    "send-a-claim",
+    "close-the-day"
+  ]
+}

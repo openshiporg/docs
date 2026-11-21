@@ -1,0 +1,28 @@
+---
+title: Storefront
+description: The community website with tours and a waitlist, and the family portal.
+icon: Store
+---
+
+The storefront lives in `features/storefront` and mounts at the site root. With one published community, `/` is its home page. With several, `/` lists them.
+
+| Route | Page |
+|---|---|
+| `/[community]` | Community home |
+| `/[community]/care`, `/pricing`, `/floor-plans`, `/life` | Care, starting prices, floor plans and life at the community |
+| `/[community]/tour` | Book a tour from open tour times |
+| `/[community]/tour/manage` | Manage or cancel a tour from the emailed link |
+| `/[community]/waitlist` | Join the waitlist by apartment type and setting |
+| `/[community]/contact` | Send an inquiry |
+| `/[community]/careers` | Open roles |
+| `/[community]/family/sign-in`, `/family/invite` | Family sign-in and accepting an invitation |
+| `/[community]/family`, `/family/[residentId]` | The family portal |
+| `/shift-offer/[token]` | A staff member answers an open-shift offer from a signed link |
+
+## Public calls
+
+`submitInquiry`, `requestTour`, `joinWaitlist`, `storefrontCommunity` and `cancelTourByToken` are rate-limited per hashed address and carry a honeypot field. Links in messages are HMAC-signed and expiring, and only their SHA-256 is stored. Publishing the site, moving a price and making a waitlist offer are human-only commands.
+
+## Family portal
+
+A representative is invited by email and sets a password with the link. `updates` is granted at once. Other scopes (calendar, statements, payments, resident funds, documents) are proposed by one staff member and granted by a second, within the representative's authority. Clinical and financial scopes need two-step sign-in. Portal reads return only granted data, never room numbers or other residents, and each read is audited. A representative with the payments scope can pay a statement by card (`portalPay`).

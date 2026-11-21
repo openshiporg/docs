@@ -1,0 +1,36 @@
+---
+title: GraphQL API
+description: The endpoint, MCP transport, and the custom queries and mutations.
+icon: Code
+---
+
+
+Openfront Home Services serves Keystone GraphQL at `/api/graphql`. The MCP server for agents is at `/api/mcp-transport/mcp`. Agent reads are masked, and each write needs a grant for that exact tool. Document and export routes live under `app/api`, including accounting exports, cancellation notices, estimates, membership renewals, pay periods, purchase orders, the refrigerant log, reports, stock and warranty.
+
+## Public operations
+
+No GraphQL operation is public. The storefront uses the server actions in `features/storefront/actions.ts` (`checkZip`, `loadWindows`, `confirmBooking`, `startInvoicePayment`, `openByCode`).
+
+## Staff queries
+
+`companySettingsItems`, `mediaItems`, `redirectToInit`, `verifyAuditChain`, `resolvePolicy`, `availableWindows`, `lookupCustomer`, `customerHistory`, `lookupLocations`, `matchJobType`, `checkEligibility`, `searchPriceBook`, `quotePriceBook`, `priceBookVersionReview`, `estimateSummary`, `agentBindings`.
+
+## Mutations by area
+
+| Area | Mutations |
+| --- | --- |
+| Calls, leads and booking | `materializeWindows`, `holdWindow`, `releaseHold`, `bookJob`, `ingestLead`, `markLeadContacted`, `qualifyLead`, `loseLead`, `markLeadSpam`, `mergeLead`, `recordConsent`, `handoffToHuman`, `pageOnCall` |
+| Dispatch and the field view | `recommendDispatch`, `assignVisit`, `unassignVisit`, `submitChecklist`, `setVisitStatus`, `holdJob`, `releaseJobHold`, `cancelJob`, `completeJob` |
+| Customers | `addCustomer`, `addServiceLocation`, `addContactPoint`, `storeAccessSecret`, `revealAccessSecret` |
+| Estimates, change orders and cancellations | `openEstimate`, `draftEstimate`, `draftEstimateFromCapture`, `draftFollowupEstimate`, `saveEstimateOption`, `removeEstimateOption`, `repriceEstimateVersion`, `setEstimateDiscount`, `reopenEstimateVersion`, `presentEstimate`, `sellEstimate`, `declineEstimate`, `requoteEstimate`, `discardEstimateVersion`, `draftChangeOrder`, `presentChangeOrder`, `acceptChangeOrder`, `declineChangeOrder`, `deliverCancellationNotice`, `waiveCancellationNotice`, `recordBuyerCancellation`, `markCancellationRefunded`, `requestCancellationHoldOverride` |
+| Price book | `openPriceBook`, `startPriceBookDraft`, `saveDraftItems`, `removeDraftItems`, `saveDraftSettings`, `submitPriceBookVersion`, `reopenPriceBookDraft`, `discardPriceBookVersion`, `importSupplierCosts` |
+| Invoices, payments and accounting | `createInvoiceDraft`, `discardInvoiceDraft`, `postInvoice`, `voidInvoice`, `issueCreditMemo`, `requestWriteOff`, `setCollectionsStatus`, `recordInvoicePayment`, `applyCustomerCredit`, `startPaymentAttempt`, `markAttemptUnknown`, `resolveAttemptFailed`, `requestRefund`, `recordApprovedRefund`, `settleRefundedMembershipInvoice`, `closePaymentBatch`, `reconcilePaymentBatch`, `saveFinancingProgram`, `startFinancing`, `recordFinancingStatus`, `recordFinancingFunding`, `savePayerProfile`, `recordThirdPartyAuthorization`, `requestArPeriodClose`, `reopenArPeriod`, `createExportBatch` |
+| Memberships and service agreements | `openMembershipPlan`, `saveMembershipPlanDraft`, `activateMembershipPlanVersion`, `retireMembershipPlan`, `sellMembership`, `updateMembershipPaymentMethod`, `renewMembership`, `cancelMembership`, `transferMembership`, `bookMembershipVisit`, `releaseMembershipVisit`, `runMembershipBilling`, `retryMembershipCharge`, `recordRenewalNotice`, `saveServiceAgreement`, `activateServiceAgreement`, `endServiceAgreement`, `setDocumentExpiry` |
+| Equipment and warranty | `recordEquipment`, `recordEquipmentReading`, `retireEquipment`, `ensureWarrantyRegistration`, `markWarrantyRegistrationSubmitted`, `confirmWarrantyRegistration`, `openWarrantyClaim`, `saveWarrantyClaimDraft`, `markWarrantyClaimReady`, `submitWarrantyClaim`, `recordWarrantyClaimNumber`, `recordWarrantyClaimDecision`, `settleWarrantyClaim`, `closeWarrantyClaim`, `appealWarrantyClaim`, `requestWarrantyWriteOff`, `writeOffWarrantyClaim`, `receiveHomeWarrantyDispatch`, `advanceHomeWarrantyDispatch` |
+| Inventory and purchasing | `saveStockItem`, `saveStockLocation`, `consumeStock`, `installSerializedUnit`, `transferStock`, `adjustStock`, `saveMinMaxRule`, `proposeReplenishment`, `decideReplenishment`, `fillReplenishment`, `startCycleCount`, `submitCycleCount`, `requestCycleCountApproval`, `postCycleCount`, `openPurchaseOrder`, `submitPurchaseOrder`, `approvePurchaseOrder`, `markPurchaseOrderSent`, `cancelPurchaseOrder`, `receivePurchaseOrder`, `requestOverReceipt`, `recordVendorBill`, `requestBillVariance`, `acceptBillVariance` |
+| Permits, refrigerant, liens and policies | `openPermit`, `advancePermit`, `requestInspection`, `recordInspectionResult`, `reinspect`, `saveRefrigerantCylinder`, `logRefrigerant`, `resolveLeakRate`, `checkRefrigerantInstall`, `trackLien`, `advanceLien` |
+| Team, timesheets and payroll | `verifyCredential`, `revokeCredential`, `proposeTimesheet`, `addTimeSegment`, `removeTimeSegment`, `submitTimesheet`, `approveTimesheet`, `rejectTimesheet`, `adjustTimesheet`, `definePayPlan`, `savePayPlanDraft`, `requestPayPlanPublish`, `publishPayPlanVersion`, `assignPayPlan`, `setAttribution`, `openPayPeriod`, `calculatePayPeriod`, `addPayAdjustment`, `requestPayPeriodApproval`, `approvePayPeriod`, `reopenPayPeriod`, `exportPayPeriod` |
+| Agents, tasks and settings | `refreshTimedStates`, `bindAgentApp`, `unbindAgentApp` |
+| Setup and approvals | `loadCompanySetup`, `loadOperationsSetup`, `loadPriceBookSetup`, `decideApprovalRequest`, `cancelApprovalRequest`, `requestCompanyControls`, `setCompanyOnboardingStatus` |
+
+Every state change takes an `idempotencyKey`. Repeating a call with the same key returns the first result.

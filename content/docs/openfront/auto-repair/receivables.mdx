@@ -1,0 +1,30 @@
+---
+title: Billing, receivables and day close
+description: Invoices, payments, refunds, credit memos, receivables and the frozen day.
+icon: Receipt
+---
+
+Finalizing an invoice fixes its lines and taxes. Payments are recorded by tender or taken by card, and a refund over policy needs a second person. **Receivables** lists invoices still owing, with the overdue ones first. **Day close** shows takings by tender, takes the drawer count and freezes the day. Reopening a closed day goes through approval.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Receivables | `/dashboard/platform/receivables` | Invoices still owing, with the overdue ones first. |
+| Day close | `/dashboard/platform/day-close` | Takings by tender, the drawer count and the frozen day. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `Invoice` | `finalized`, `sent`, `partially_paid`, `paid`, `credited` |
+| `Payment` | `initiated`, `pending`, `succeeded`, `failed`, `unknown`, `partially_refunded`, `refunded` |
+| `Refund` | `requested`, `pending`, `succeeded`, `failed`, `unknown` |
+| `CreditMemo` | `draft`, `issued` |
+| `BusinessDayClose` | `open`, `counting`, `closed`, `reopened` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`finalizeShopInvoice`, `createInvoicePayLink`, `takeShopPayment`, `checkShopPayment`, `resolveShopPayments`, `refundShopPayment`, `issueShopCreditMemo`, `closeShopDay`, `reopenShopDay`.

@@ -1,0 +1,24 @@
+---
+title: Deployment
+description: Deploy Openfront Senior Care on Railway or any Node host with PostgreSQL.
+icon: Rocket
+---
+
+
+The repository includes `railway.toml`. The build runs `keystone build --no-ui && next build`, and the start command runs migrations first.
+
+## Processes
+
+| Process | Command | Purpose |
+| --- | --- | --- |
+| Web | `npm run migrate && next start` | Applies migrations, then serves the dashboard, the community website, the family portal and the API. |
+
+## Checklist
+
+1. Provision PostgreSQL and set `DATABASE_URL`.
+2. Set `SESSION_SECRET`, and set the derived secrets explicitly in production.
+3. Set `TRUSTED_PROXY_HOPS=1` behind Railway.
+4. Set the Stripe keys if you take cards, and point a Stripe webhook at `/api/payments/webhook`.
+5. Deploy, open `/dashboard/init` and create the first user.
+
+There is no worker, timer or cron. Scheduled work runs under named leases on the request that touches it (every dashboard read, every domain command and the public storefront read) and with the staff **Refresh** button (`features/keystone/lib/maintenance.ts`). Running it twice, or on several replicas at once, is safe.

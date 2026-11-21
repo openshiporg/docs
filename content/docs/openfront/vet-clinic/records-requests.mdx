@@ -1,0 +1,25 @@
+---
+title: Records requests
+description: Requests for records, verification, release and release packets.
+icon: FileText
+---
+
+A records request is verified with proof of who is asking, decided, then released as a packet whose contents can be verified later. A request can be withdrawn before release.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Records requests | `/dashboard/platform/records-requests` | Requests and releases. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `RecordsRequest` | `received`, `verifying_authority`, `approved`, `released`, `denied`, `withdrawn` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`startRecordsVerification`, `attachRecordsProof`, `verifyRecordsRequest`, `decideRecordsRequest`, `withdrawRecordsRequest`, `releaseRecords`, `verifyReleasePacket`.

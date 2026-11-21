@@ -1,0 +1,27 @@
+---
+title: Fleet and business accounts
+description: Terms, credit, approvers, tax certificates, units and monthly statements.
+icon: Truck
+---
+
+A business account has payment terms, a credit limit and standing, approvers who can authorize work, tax exemption certificates and its units (vehicles). A credit hold stops new charges until it is released. Statements are made monthly and exported as files. Fleet contacts get a link to approve work and pay invoices at `/fleet/[token]`.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Accounts | `/dashboard/platform/accounts` | Fleet and business accounts: terms, credit, approvers, tax certificates and units. |
+| Statements | `/dashboard/platform/statements` | Monthly account statements, exported as files. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `BusinessAccount` | `active`, `prospect`, `credit_hold`, `closed` |
+| `ExemptionCertificate` | `active`, `expired`, `revoked` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`saveBusinessAccount`, `saveAccountTerms`, `refreshAccountStanding`, `holdAccountCredit`, `releaseAccountHold`, `addAccountContact`, `addAccountApprover`, `removeAccountApprover`, `addAccountCertificate`, `revokeAccountCertificate`, `saveAccountUnit`, `createAccountLink`, `makeAccountStatement`, `exportAccountStatement`, `exportAllAccountStatements`.

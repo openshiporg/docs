@@ -1,0 +1,57 @@
+---
+title: Openfront Auto Repair
+description: Self-hosted auto repair shop application for appointments, check-in, repair orders, digital inspections, estimates and authorizations, parts, technician time, fleet accounts, payments and the customer portal.
+icon: Wrench
+---
+
+
+[Source](https://github.com/openshiporg/openfront-auto-repair) · [Live site](https://auto-repair.openship.org)
+
+Openfront Auto Repair is an open-source alternative to Tekmetric. It runs an independent repair shop on one system. That covers appointments and the shop's online booking, customers and vehicles with VIN decoding and recall checks, tablet check-in with the customer's signature, repair orders, digital vehicle inspections with photos and red, yellow and green findings, estimates the customer approves from a link, labor times, parts quotes and orders, tires and core charges, warranties and comebacks, technician time clocks, fleet accounts and receivables, payments and the customer portal. AI assistants draft plans that a person confirms step by step.
+
+The live site is [auto-repair.openship.org](https://auto-repair.openship.org). It runs the sample group, Northgate Auto Group in Sacramento and Roseville, CA. The staff dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/auto-repair/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Shop | One location of the organisation, with bays, weekly hours, holiday closures and staff memberships. Money is never merged across shops. |
+| Customer and vehicle | A customer with contacts and per-channel consent, and vehicles with VIN, ownership and odometer history. |
+| Appointment | A booking against the shop's capacity (drop-offs, waiters per hour and bay hours). |
+| Repair order | The work for one visit. It holds jobs, each with labor, parts and fee lines. |
+| Inspection | A digital vehicle inspection with measurements, photos and red, yellow and green findings. |
+| Estimate and authorization | A frozen estimate version the customer approves job by job. The charge may never pass the authorized amount plus the state's tolerance. |
+| Business account | A fleet or business customer with terms, credit, approvers, tax certificates and units. |
+| Agent proposal | A plan an assistant made. Each step is previewed and runs only when a person confirms it. |
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with a GraphQL API at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS 4 and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin Next.js routes for the dashboard, the storefront, public link APIs and PDFs. |
+| `features/keystone/` | Lists, access rules, custom mutations, public link handlers, seeds and the MCP server. |
+| `features/platform/` | Staff screens mounted at `/dashboard/platform/*`. |
+| `features/storefront/` | The shop website, online booking, "Check my repair" and the customer link pages. |
+| `features/integrations/` | Labor guide, parts supplier and vehicle data adapters. |
+| `docs/` | Notes on the foundation and on customers and scheduling. |
+
+## Tenancy and ownership
+
+One deployment serves one organisation (`OrganizationSettings`) with several shops. A user sees and changes only the shops they belong to, unless their role has `canAccessAllShops`. Every write checks the shop of the record it touches inside the transaction, and a missing shop fails closed. Customer links are token-scoped and never read a staff session.
+
+## Rules the server enforces
+
+- Money is integer cents. Labor time is in centi-hours and quantities in milli-units. Rates are exact decimals.
+- Every state change is one mutation with a version check, a row lock, an audit event in the same transaction and an idempotency key. No network call runs inside a transaction.
+- The audit log is hash-chained and append-only. The database refuses updates and deletes.
+- Maker-checker approvals bind to the exact payload and can be used once. An agent can never approve, and a database trigger enforces it.
+- A charge may never pass the authorized amount plus the state's tolerance. California allows nothing over. A breach raises `REAUTHORIZATION_REQUIRED`.
+- Only staff record a customer's authorization. An assistant is refused by the command, its agent flag and a database trigger.
+- There is no outbox, cron or worker. Time-based states are computed on read.
+- `canBreakGlass` is never seeded.

@@ -1,0 +1,50 @@
+---
+title: Billing and Medicaid liability
+description: Month-end close, statements, payments, deposits, rates and notices, and Medicaid patient liability.
+icon: Receipt
+---
+
+Charges are derived from census days, coverage, care levels, published rates and Medicaid liabilities. The same input always gives the same lines. Month-end close freezes the charges and issues one statement per resident, and a later census correction posts the difference as an adjustment. Statement PDFs are made on request.
+
+Publishing a rate schedule is a maker-checker approval, and **Rates and notices** lists the residents who need a rate-change notice. A care-level increase bills only after its notice period. Refunds, adjustments and write-offs over the threshold wait for a different person. **Medicaid liability** records monthly patient liability with reply and appeal deadlines.
+
+## Pages
+
+| Page | Route | What it shows |
+| --- | --- | --- |
+| Billing | `/dashboard/platform/billing` | Month-end close, statements and payments. |
+| Rates and notices | `/dashboard/platform/billing/rates` | Rate schedules and rate-change notices. |
+| Medicaid liability | `/dashboard/platform/billing/medicaid` | Patient liability with reply and appeal deadlines. |
+
+## Lifecycles
+
+| List | Statuses |
+| --- | --- |
+| `BillingPeriod` | `open`, `closed` |
+| `Charge` | `open`, `posted`, `superseded`, `voided` |
+| `Statement` | `issued`, `paid`, `void` |
+| `Payment` | `pending`, `unknown`, `succeeded`, `failed` |
+| `Refund` | `requested`, `pending_approval`, `issued`, `rejected` |
+| `Deposit` | `held`, `applied`, `refunded`, `forfeited` |
+| `ResidentCredit` | `open`, `closed` |
+| `BalanceAdjustment` | `pending_approval`, `posted`, `rejected`, `superseded` |
+| `PaymentPlan` | `active`, `cancelled` |
+| `RateSchedule` | `draft`, `published`, `retired` |
+| `CareLevelAssignment` | `active`, `superseded` |
+| `MedicaidLiability` | `expected`, `determined`, `appealed`, `superseded` |
+| `MedicaidApplication` | `preparing`, `submitted`, `info_requested`, `approved`, `denied`, `appealed` |
+| `PatientLiabilitySchedule` | `draft`, `effective`, `superseded` |
+
+## Commands
+
+Named mutations for this area. Each checks permissions on the server, takes an idempotency key and writes an audit event.
+
+`billingCommand`.
+
+## Command operations
+
+Most clinical and billing actions run through two dispatching mutations, `clinicalCommand(op, input, idempotencyKey)` and `billingCommand(op, input, idempotencyKey)`. Each operation checks its own permissions and community. These are the operations for this area.
+
+| Mutation | Operations |
+| --- | --- |
+| `billingCommand` | `billing.derive`, `billing.close`, `billing.adjust_closed`, `rate.create`, `rate.add_line`, `rate.request_publish`, `rate.notice_delivered`, `payment.record`, `deposit.receive`, `deposit.apply`, `deposit.forfeit`, `credit.apply`, `adjustment.create`, `writeoff.create`, `care_level.assign`, `refund.request`, `payment.charge`, `card.setup`, `card.save`, `payment.check_status`, `refund.issue`, `plan.create`, `plan.cancel`, `plan.charge_instalment`, `plan.retry_instalment`, `billing.autopay`, `medicaid.record`, `medicaid.info_request`, `medicaid.appeal`, `medicaid_app.start`, `medicaid_app.advance`, `liability_schedule.record` |

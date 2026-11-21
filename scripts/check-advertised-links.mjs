@@ -10,6 +10,8 @@ const placeholders = new Set();
 // the documented failure is pending, not arbitrary errors on these origins.
 const privateRepositories = new Set([
   'openfront-uikit',
+  'openfront-bank',
+  'openfront-hedge-fund',
 ].map((name) => `https://github.com/openshiporg/${name}`));
 const pendingDomain = 'https://uikit.openship.org';
 const pending = [];

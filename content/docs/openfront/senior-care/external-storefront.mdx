@@ -1,0 +1,15 @@
+---
+title: External storefronts
+description: Give an LLM the Senior Care storefront skill to adapt the community website and family portal.
+icon: AppWindow
+---
+
+To build a custom Senior Care storefront, copy the skill and give it to your LLM. The skill explains that `features/storefront` holds the built-in site, the family portal and the server actions that call the public and portal operations.
+
+Skill file: [`/skills/openfront-senior-care-custom-storefront/SKILL.md`](/skills/openfront-senior-care-custom-storefront/SKILL.md)
+
+## What a separate site must keep
+
+- Public calls keep the rate limit and honeypot field.
+- Portal reads go through the `portal*` queries, which return only granted data.
+- Financial and clinical views need two-step sign-in.
