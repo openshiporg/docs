@@ -8,7 +8,9 @@ icon: ScanLine
 
 Route: `/dashboard/platform/box-office`. Needs `canManageOrders`.
 
-Staff find an order by code or email, then refund, transfer or comp. At the window, `previewDoorSale` prices a sale and `issueDoorSale` completes it with a cash or card tender. Each shift opens and closes a cash drawer (`openCashDrawer`, `closeCashDrawer`).
+Staff find an order by code or email, then refund, transfer or comp. At the window, `previewDoorSale` prices a sale and `issueDoorSale` completes it with a cash or card tender. Each shift opens and closes a cash drawer (`openCashDrawer`, `closeCashDrawer`). Door cash sales and cash refunds need your open drawer. **Count and close** records the counted cash and a variance reason.
+
+`/dashboard/platform/box-office/drawers` is the cash drawer report for a date range in the store's clock: totals, then every shift with expected cash, counted cash, and variance (up to 200 most recent). It needs `canManageOrders` or `canReadPayments`. A user with `canApproveAdjustments` can close someone else's open drawer with a reason (`forceCloseCashDrawer`).
 
 `refundTicketOrder` refunds an order through the provider that took the payment. It needs `canIssueRefunds`, a reason and an idempotency key. A refund above `refundApprovalThresholdCents` is sent for approval (`requestRefundApproval`), and a different user with `canApproveAdjustments` decides it (`decideRefundApproval`).
 
