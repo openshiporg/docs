@@ -348,25 +348,5 @@
     "href": "/docs/openfront/senior-care",
     "sourceUrl": "https://github.com/openshiporg/openfront-senior-care",
     "catalogUrl": null
-  },
-  {
-    "id": "hedge-fund",
-    "repository": "openfront-hedge-fund",
-    "name": "Hedge Fund",
-    "description": "Hedge fund operations with strategy research, paper and live trading through connected brokers, risk, NAV and the ledger, investors and dealing, and compliance.",
-    "color": "#334155",
-    "href": "/docs/openfront/hedge-fund",
-    "sourceUrl": "https://github.com/openshiporg/openfront-hedge-fund",
-    "catalogUrl": null
-  },
-  {
-    "id": "bank",
-    "repository": "openfront-bank",
-    "name": "Bank",
-    "description": "Core and digital banking for community banks, credit unions and program banks with the ledger, deposit accounts, ACH, teller cash, BSA/AML and online banking.",
-    "color": "#1e3a8a",
-    "href": "/docs/openfront/bank",
-    "sourceUrl": "https://github.com/openshiporg/openfront-bank",
-    "catalogUrl": null
   }
 ]

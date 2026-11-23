@@ -1,9 +1,0 @@
-{
-  "title": "How-to Guides",
-  "icon": "BookOpen",
-  "pages": [
-    "backtest-a-strategy",
-    "place-an-order",
-    "close-the-month"
-  ]
-}
