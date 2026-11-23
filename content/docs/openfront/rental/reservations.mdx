@@ -25,7 +25,7 @@ Routes: `/dashboard/platform/reservations`, `/[id]`, `/new`, and `/today`. Need 
 
 **New reservation** (`/dashboard/platform/reservations/new`, needs `canManageReservations`) books a phone, email or walk-in stay. Pick a published home, check-in and checkout, adults, children, infants and pets, and the guest's name, email, phone and arrival notes. **Create reservation** runs `hostStayCommand` with `stay_create`. It is the storefront's own booking: the same quote and price, the same availability check, guest record, calendar block, agreement and tasks. The stay is confirmed because the host made it.
 
-The guest is emailed their trip link to pay and sign. If the email does not go out, the guest can open the trip with Find my trip using the confirmation code. Money already received can be recorded on the stay page.
+The guest is emailed their trip link to pay and sign. If the email does not go out, the guest can open the trip with Find my trip using the confirmation code and their email. Money already received can be recorded on the stay page.
 
 ## Commands
 
