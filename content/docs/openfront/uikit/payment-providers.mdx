@@ -13,7 +13,7 @@ A provider record alone does not enable checkout. Checkout offers a provider onl
 | Provider | Code | Requires | Flow |
 |---|---|---|---|
 | Stripe | `pp_stripe_stripe` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Hosted Checkout Session |
-| PayPal | `pp_paypal_paypal` | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | Orders v2 redirect; `NEXT_PUBLIC_PAYPAL_SANDBOX` selects the test or live endpoint |
+| PayPal | `pp_paypal_paypal` | `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | Orders v2 redirect to the live PayPal API; the credentials decide the account |
 | Manual | manual | none | Operator records payment; never offered to customers |
 
 If a provider is missing configuration, checkout fails with `Stripe is not available for checkout.` or `PayPal is not available for checkout.`

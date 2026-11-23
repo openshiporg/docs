@@ -8,7 +8,7 @@ icon: KeyRound
 
 `/dashboard/platform/access` lists `KitAccess` entitlements with status tabs (`active`, `revoked`). Each row links a user to a product through an order and payment, with source `free`, `purchase`, or `admin`. There is one row per user and product.
 
-To revoke, open the row and enter a reason of 3 to 500 characters. This calls `revokeKitAccess(accessId, reason, idempotencyKey)`. It needs `canManageOrders`, is idempotent by key, and writes audit and outbox events. A revoked customer cannot start a new payment for the product: `This account has revoked access for this product. Contact the studio before starting another payment.` Revocation cannot be undone by settlement.
+To revoke, open the row and enter a reason of 3 to 500 characters. This calls `revokeKitAccess(accessId, reason, idempotencyKey)`. It needs `canManageOrders`, is idempotent by key, and writes an audit event. A revoked customer cannot start a new payment for the product: `This account has revoked access for this product. Contact the studio before starting another payment.` Revocation cannot be undone by settlement.
 
 ## API keys
 
