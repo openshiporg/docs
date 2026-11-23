@@ -1,6 +1,6 @@
 ---
 title: Payment providers
-description: Stripe configuration, webhooks, and test mode.
+description: Stripe configuration, webhooks, and event replay.
 icon: CreditCard
 ---
 
@@ -23,4 +23,4 @@ Onboarding creates the `PaymentProvider` record. Online checkout needs exactly o
 </Step>
 </Steps>
 
-`PAYMENT_TEST_MODE` swaps in a test adapter for isolated tests; strict mode refuses to start with it on. If a webhook arrives out of order, "Invoice membership prerequisite missing; retry reconciliation" clears after replaying it with `replayPaymentEvent`.
+Card payments always use the Stripe adapter. If a webhook arrives out of order, "Invoice membership prerequisite missing; retry reconciliation" clears after replaying it with `replayPaymentEvent`.

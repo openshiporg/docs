@@ -54,7 +54,6 @@ Optional settings read by the code. Each optional capability stays off when its 
 | `MAIL_ENABLED`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `CONTACT_FORM_TO` | Password reset and email-change mail, staff copies of contact messages. Mail also needs `SMTP_HOST` and `SMTP_FROM`. In production nothing is sent unless `MAIL_ENABLED=true`; outside production mail is on unless `MAIL_ENABLED=false`. Links in email use `NEXTAUTH_URL`. |
 | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Membership checkout and counter card payments. `STRIPE_ENABLED=true` allows new charges. Checkout is hosted by Stripe, so no publishable key is read by the current code. |
 | `STRIPE_USE_ENVIRONMENT_PROVIDER`, `STRIPE_ACCOUNT_ID` | Take the Stripe provider for `STOREFRONT_ORGANIZATION_ID` from the environment. Onboarding copies `STRIPE_ACCOUNT_ID` onto the provider record it creates. |
-| `PAYMENT_TEST_MODE`, `PAYMENT_TEST_WEBHOOK_SECRET` | Isolated payment tests only. Strict mode refuses to start with `PAYMENT_TEST_MODE=true`. |
 | `QR_CODE_SECRET` | Rotating member check-in QR codes (32+ characters). Without it, codes are unavailable. |
 | `KIOSK_API_TOKEN`, `KIOSK_ORGANIZATION_ID` | Staff-unlocked kiosk at `/kiosk/check-in`. Both are required. |
 | `DISCOVERY_API_KEY`, `DISCOVERY_ORGANIZATION_ID`, `DISCOVERY_API_SCOPES`, `DISCOVERY_PARTNER_ALLOWLIST` | Environment-configured partner discovery API. Credentials can also be issued from the Operations page. |

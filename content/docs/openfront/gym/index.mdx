@@ -115,7 +115,7 @@ The result includes a readiness checklist. Required steps are store settings, an
 
 ## Integrations
 
-**Stripe** is the only registered payment adapter (`features/integrations/payment`). It covers hosted subscription checkout, setup intents, the billing portal, cancel, freeze, resume, tier changes, refunds, and counter card checkouts for retail and training packages. Signed webhooks arrive at `/api/stripe/webhook`. Handled events include checkout session, subscription, invoice, charge refund and dispute, refund, and payout events. Online checkout requires exactly one installed Stripe merchant organization. Per-tenant connected accounts are not supported. `PAYMENT_TEST_MODE` swaps in a test adapter for isolated tests and is refused in production.
+**Stripe** is the only registered payment adapter (`features/integrations/payment`). It covers hosted subscription checkout, setup intents, the billing portal, cancel, freeze, resume, tier changes, refunds, and counter card checkouts for retail and training packages. Signed webhooks arrive at `/api/stripe/webhook`. Handled events include checkout session, subscription, invoice, charge refund and dispute, refund, and payout events. Online checkout requires exactly one installed Stripe merchant organization. Per-tenant connected accounts are not supported. Card payments always use the Stripe adapter.
 
 **Mail** is SMTP through `MAIL_ENABLED` and `SMTP_*`. It sends password reset links, email-change confirmations, email-changed notices, and staff copies of contact messages.
 
