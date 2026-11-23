@@ -38,6 +38,6 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Slices are `featur
 | `/dashboard/platform/locations`, `/[id]` | Locations: create, contact and address, status, online ordering, pickup, and delivery switches |
 | `/dashboard/platform/store-settings` | Store name, tagline, logo, support contact, privacy notice, and location hours |
 | `/dashboard/platform/integrations` | eRx, wholesaler, insurance, and tax provider status; configure eRx and insurance providers |
-| `/dashboard/platform/audit` | Audit timeline, outbox timeline, and replay of failed outbox events |
+| `/dashboard/platform/audit` | Audit timeline |
 
-`User` and `Role` use the generic `/dashboard/users` and `/dashboard/roles` screens, which the sidebar links to. The other lists appear on a parent page. For example, `DispensingLabel` and `PrescriptionFill` appear on the prescription task, `InventoryMovement` on the lot task, and `HumanApproval` and `OutboxEvent` on the audit log.
+`User` and `Role` use the generic `/dashboard/users` and `/dashboard/roles` screens, which the sidebar links to. The other lists appear on a parent page. For example, `DispensingLabel` and `PrescriptionFill` appear on the prescription task, `InventoryMovement` on the lot task, and `HumanApproval` on the audit log.

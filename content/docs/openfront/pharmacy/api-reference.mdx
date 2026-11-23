@@ -31,7 +31,7 @@ mutation Dispense($prescriptionId: ID!, $prescriptionItemId: ID!, $lotId: ID!) {
 
 ## Operator queries
 
-`pharmacyOperationalSummary`, `pharmacyOnboardingState`, `pharmacyOperatorLocations`, `pharmacyCatalogQueue`, `pharmacyPosCatalog`, `pharmacyPosCustomers`, `pharmacyPosCashReceipt`, `pharmacyPrescriberDirectory`, `pharmacyPrescriptionIntakeOptions`, `pharmacyPrescriptionQueue`, `pharmacyPrescriptionWorklist`, `pharmacyPrescriptionTask`, `pharmacyPrescriptionRequestQueue`, `pharmacyFillPolicy`, `pharmacyFillWorkbench`, `pharmacyFillHistory`, `pharmacyInventoryReceiptOptions`, `pharmacyInventoryReceiptProductWorklist`, `pharmacyInventoryQueue`, `pharmacyInventoryLotTask`, `pharmacyRecallOpenOptions`, `pharmacyRecallQueue`, `pharmacyRecallWorklist`, `pharmacyRecallTask`, `pharmacyOrderQueue`, `pharmacyOrderTask`, `pharmacyPatientRecordOptions`, `pharmacyPatientAccountCandidates`, `pharmacyPatientDirectory`, `pharmacyPatientSafeView`, `pharmacyCredentialReviewOptions`, `pharmacyIntegrationStatus`, `pharmacyAuditTimeline`, `pharmacyOutboxTimeline`, `pharmacyOutboxQueue`.
+`pharmacyOperationalSummary`, `pharmacyOnboardingState`, `pharmacyOperatorLocations`, `pharmacyCatalogQueue`, `pharmacyPosCatalog`, `pharmacyPosCustomers`, `pharmacyPosCashReceipt`, `pharmacyPrescriberDirectory`, `pharmacyPrescriptionIntakeOptions`, `pharmacyPrescriptionQueue`, `pharmacyPrescriptionWorklist`, `pharmacyPrescriptionTask`, `pharmacyPrescriptionRequestQueue`, `pharmacyFillPolicy`, `pharmacyFillWorkbench`, `pharmacyFillHistory`, `pharmacyInventoryReceiptOptions`, `pharmacyInventoryReceiptProductWorklist`, `pharmacyInventoryQueue`, `pharmacyInventoryLotTask`, `pharmacyRecallOpenOptions`, `pharmacyRecallQueue`, `pharmacyRecallWorklist`, `pharmacyRecallTask`, `pharmacyOrderQueue`, `pharmacyOrderTask`, `pharmacyPatientRecordOptions`, `pharmacyPatientAccountCandidates`, `pharmacyPatientDirectory`, `pharmacyPatientSafeView`, `pharmacyCredentialReviewOptions`, `pharmacyIntegrationStatus`, `pharmacyAuditTimeline`.
 
 ## Mutations by area
 
@@ -44,9 +44,9 @@ mutation Dispense($prescriptionId: ID!, $prescriptionItemId: ID!, $lotId: ID!) {
 | Credentials | `recordPharmacyStaffCredentialReview`, `recordPharmacyPrescriberCredentialReview`, `recordPharmacyDrugReferenceReview` |
 | Inventory and recalls | `receivePharmacyInventoryLot`, `adjustPharmacyInventoryLot`, `openPharmacyRecall`, `quarantineRecallLots`, `recordRecallExposureAction`, `disposeRecallLot`, `closePharmacyRecall` |
 | Orders and payments | `transitionOrderFulfillment`, `submitPharmacyPosCashOrder`, `recordPharmacyCashPolicy`, `refundPharmacyPayment`, `refundPharmacyCashPayment`, `reconcilePharmacyPaymentSession`, `handlePaymentProviderWebhook` |
-| Integrations and setup | `configurePharmacyIntegrationProvider`, `validatePharmacyPrescriber`, `submitPharmacyExternalWorkflow`, `refreshPharmacyExternalWorkflow`, `ingestPharmacyIntegrationWebhook`, `replayPharmacyOutboxEvent`, `runPharmacyOnboarding`, `setPharmacyOnboardingStatus` |
+| Integrations and setup | `configurePharmacyIntegrationProvider`, `validatePharmacyPrescriber`, `submitPharmacyExternalWorkflow`, `refreshPharmacyExternalWorkflow`, `ingestPharmacyIntegrationWebhook`, `runPharmacyOnboarding`, `setPharmacyOnboardingStatus` |
 
-Patient-safe and guest projections leave out guest-token hashes, provider credentials, audit metadata, and outbox payloads. Requesting an omitted field fails at the schema.
+Patient-safe and guest projections leave out guest-token hashes, provider credentials, and audit metadata. Requesting an omitted field fails at the schema.
 
 ## HTTP routes
 

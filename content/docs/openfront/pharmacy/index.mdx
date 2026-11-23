@@ -15,7 +15,7 @@ Live site: [pharmacy.openship.org](https://pharmacy.openship.org). Source: [gith
 
 ## Human authority
 
-Clinical, inventory, and money records cannot be created or edited through the generic GraphQL API. They change only through named commands. Most of those commands need a signed-in user with the right permission and location scope, a written reason, and an explicit attestation. Each one writes a `HumanApproval`, an `AuditEvent`, and an `OutboxEvent` in the same transaction.
+Clinical, inventory, and money records cannot be created or edited through the generic GraphQL API. They change only through named commands. Most of those commands need a signed-in user with the right permission and location scope, a written reason, and an explicit attestation. Each one writes a `HumanApproval` and an `AuditEvent` in the same transaction.
 
 The pharmacist decides whether a prescription is valid, whether it is safe for the patient, and whether to dispense it. Openfront Pharmacy records that decision with the person who made it, their reason, and the evidence behind it.
 

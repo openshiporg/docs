@@ -50,4 +50,4 @@ SMTP settings send password-reset email. S3 storage holds Keystone image fields.
 - `/api/mcp-transport/[transport]` is an MCP server for callers whose session has `canAccessDashboard`. Tools: `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, and `modelSpecificSearch`. They run with the caller's session, so list access rules apply.
 - `/api/completion` is the dashboard AI chat. It needs `canAccessDashboard` and uses `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`, or a key the user enters in the browser.
 
-See also [Audit and outbox](/docs/openfront/pharmacy/audit) for event delivery.
+See also [Audit](/docs/openfront/pharmacy/audit) for the audit timeline.

@@ -47,7 +47,7 @@ Pick an eligible lot, enter the quantity, auxiliary warnings, counseling outcome
 
 ## Human attestation
 
-Each command asks for a reason (at least 8 characters) and an attestation checkbox: "I am the authorized pharmacist performing this action and reviewed the required source evidence." The server stores a `HumanApproval`, an `AuditEvent`, and an `OutboxEvent` in the same transaction. Replaying a command with the same idempotency key returns the original result.
+Each command asks for a reason (at least 8 characters) and an attestation checkbox: "I am the authorized pharmacist performing this action and reviewed the required source evidence." The server stores a `HumanApproval`, and an `AuditEvent` in the same transaction. Replaying a command with the same idempotency key returns the original result.
 
 ## Fill policy
 
