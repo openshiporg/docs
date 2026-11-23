@@ -32,7 +32,7 @@ Rules to preserve:
 - `acceptProposal` stores an immutable snapshot with a hash, creates one component per item, and is safe to repeat.
 - `lookupBooking` needs the client's email and a code beginning `TR-` or `INV-`. It returns status data only.
 - `payInvoice` creates a Stripe payment intent and a keyed payment session. `confirmInvoicePayment` asks Stripe for the intent, checks status, amount, and currency, then records the payment once. Do not trust the redirect alone. There is no webhook route.
-- The card form starts only when the publishable key begins `pk_test_`.
+- The card form starts only when the publishable key begins `pk_test_` or `pk_live_`.
 - Copy is labels, states, and errors only.
 
 This list is orientation, not proof that every flow is safe or complete.

@@ -4,7 +4,7 @@ description: The plain public pages for published athletes, brand inquiries, inv
 icon: Globe
 ---
 
-The public site is a plain placeholder. It uses the starter's default styles and waits for a design. It has no sign-in, no account area, and no shop.
+The public site has a home page with an arena photo and a button to the athletes, and athlete pages with the photos staff upload. It has no sign-in, no account area, and no shop.
 
 ## Routes
 
@@ -41,15 +41,15 @@ The proof rides in the page URL as `?proof=`. Treat the link as a secret for two
 ## Card payment
 
 1. The invoice page calls `payCommissionInvoice`. It reserves a pending `Payment` for the full balance and creates a Stripe payment intent through the adapter. It returns the client secret and the publishable key.
-2. The browser loads Stripe.js and mounts the Payment Element. The payer enters a card. The Stripe test card is `4242 4242 4242 4242`.
+2. The browser loads Stripe.js and mounts the Payment Element. The payer enters a card.
 3. After Stripe confirms, the page calls `confirmCommissionPayment`. The server asks Stripe for the intent, checks that the amount and currency match the reserved payment, then posts the receipt and agent splits.
 4. The confirmation page shows the invoice number as the confirmation code.
 
 A repeat call returns the same pending payment and secret. Receipts are recorded once per payment. If the provider took the money but the invoice can no longer take it, the payment is marked `unknown` for review.
 
-## Status
+## Payment setup
 
-Payments use Stripe test mode in development. See [Payment providers](/docs/openfront/sports-agents/payment-providers).
+See [Payment providers](/docs/openfront/sports-agents/payment-providers).
 
 ## Client portal
 

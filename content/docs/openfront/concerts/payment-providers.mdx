@@ -1,6 +1,6 @@
 ---
 title: Payment providers
-description: The Stripe adapter, the webhook, and test payments.
+description: The Stripe adapter, the webhook, and refunds.
 icon: CreditCard
 ---
 
@@ -13,5 +13,3 @@ Setup creates the Stripe provider with code `pp_stripe_stripe`. The adapter live
 3. Put the endpoint's signing secret in `STRIPE_WEBHOOK_SECRET`.
 
 The webhook route is `/api/integrations/payment/[providerCode]/webhook`. It verifies the signature, stores each event once in `PaymentWebhookEvent`, and completes or fails the matching checkout. Money that arrives after a hold has lapsed is refunded automatically with a stable provider key, so a replay cannot refund twice.
-
-Use test keys and the card `4242 4242 4242 4242` until a test purchase and refund both work.

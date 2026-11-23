@@ -12,7 +12,7 @@ Use this skill to adapt the built-in Sports Agents public site or create a separ
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Repository: <https://github.com/openshiporg/openfront-sports-agents>. Live site: <https://sports-agents.openship.org>.
-- The built-in public site is a plain placeholder with no design. Screens and composition: `features/storefront/screens`. Every data call: `features/storefront/lib/data.ts`.
+- The built-in public site has a photo home page and athlete pages with uploaded photos. Screens and composition: `features/storefront/screens`. Every data call: `features/storefront/lib/data.ts`.
 - Thin route entry points: `app/page.tsx`, `app/athletes/[id]`, `app/invoice`, `app/invoice/[id]`, `app/invoice/[id]/confirmation`.
 - Server contract: `features/keystone/mutations/portal.ts` (all public and portal operations), `features/keystone/lib/invoiceProof.ts` (signed guest proof), `features/keystone/lib/invoiceReceipt.ts` (the one receipt path), `features/keystone/mutations/handlePaymentProviderWebhook.ts`, `features/keystone/models/**`, `features/keystone/access.ts`, and `schema.graphql`.
 - Provider boundary: `features/integrations/payment/stripe.ts` behind `features/keystone/utils/paymentProviderAdapter.ts`. The browser uses Stripe.js with `NEXT_PUBLIC_STRIPE_KEY`; the server holds `STRIPE_SECRET_KEY`. Webhook route: `app/api/integrations/payment/[providerCode]/webhook`.
@@ -27,7 +27,7 @@ Key models: `Athlete` (public only when `isPublic` and status `client`), `Contac
 
 Rules to preserve: raw lists are not public, so the site uses only the custom operations. Public athlete data is limited to name, sport, league, position, image, and team. `lookupInvoice` returns the same error for a wrong email and a wrong number, and returns a proof signed with `SESSION_SECRET` for one invoice and two hours. Invoice operations accept the proof or the signed-in owner only. Payment is reserved on the server, confirmed with Stripe, and checked for amount and currency before the receipt posts. The payment status is `unknown` when money was taken but the invoice could not take it. Development uses Stripe test keys only.
 
-Known gaps to say out loud: no design, no sign-in or account area on the site, no portal screens, no refund flow, and the webhook has not been run against a live signing secret.
+Known gaps to say out loud: no sign-in or account area on the site, no portal screens, and no refund flow on the site.
 
 This list is orientation, not proof that every flow is safe or complete.
 

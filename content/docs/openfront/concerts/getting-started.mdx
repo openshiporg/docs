@@ -1,6 +1,6 @@
 ---
 title: Getting started with Concerts
-description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first user, run setup, and take a test payment.
+description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first user, run setup, and buy a ticket.
 icon: Terminal
 ---
 
@@ -38,8 +38,8 @@ SESSION_SECRET=replace-with-48-or-more-random-characters
 PUBLIC_SIGNUPS_ALLOWED=false
 
 # Card payments (test keys for development)
-NEXT_PUBLIC_STRIPE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Optional
@@ -93,9 +93,9 @@ Setup confirms that records were saved. It does not verify pricing, deal terms, 
 </Step>
 <Step>
 
-### Take a test payment
+### Buy a ticket
 
-Open `/`, choose an event that is on sale, hold tickets, enter a name and email, and pay with Stripe's test card `4242 4242 4242 4242`. Refund the order from **Box office**.
+Open `/`, choose an event that is on sale, hold tickets, enter a name and email, and pay by card. Refund the order from **Box office**.
 
 </Step>
 </Steps>

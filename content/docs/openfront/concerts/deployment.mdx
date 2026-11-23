@@ -23,4 +23,4 @@ The Railway template deploys the app from GitHub with PostgreSQL and a private b
 2. Set `NODE_ENV=production` and `PUBLIC_SIGNUPS_ALLOWED=false`.
 3. Add Stripe keys. Create a Stripe webhook endpoint at `https://your-host/api/integrations/payment/pp_stripe_stripe/webhook` for `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded` and `refund.updated`, and put its signing secret in `STRIPE_WEBHOOK_SECRET`.
 4. Deploy, open `/dashboard/init`, create the first admin, and run setup.
-5. Buy a ticket with a test card and refund it before switching to live keys.
+5. Buy a ticket and refund it from **Box office** to confirm the webhook works.
