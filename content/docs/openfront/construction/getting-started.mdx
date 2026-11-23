@@ -52,8 +52,6 @@ Other settings the code reads:
 | `PUBLIC_SITE_KEY` | Which `PublicSiteProfile` the public website shows. Defaults to `default`. Must be a lowercase slug |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email. Without `SMTP_HOST` and `SMTP_FROM`, reset email is unavailable |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Shared dashboard AI chat (`/api/completion`) |
-| `OUTBOX_WEBHOOK_URL`, `OUTBOX_WEBHOOK_SECRET` | Required by the outbox worker (`npm run outbox:work`). The secret must be at least 32 characters |
-| `OUTBOX_BATCH_SIZE`, `OUTBOX_MAX_ATTEMPTS`, `OUTBOX_MAX_MESSAGES_PER_RUN` | Optional outbox worker limits (defaults 25, 8, 100; maximum 100) |
 
 Create the first administrator at `/dashboard/init`. Keep `.env` out of source control.
 

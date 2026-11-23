@@ -1,6 +1,6 @@
 ---
 title: Audit, API keys and agents
-description: Agent actions, outbox messages, idempotency keys, and API credentials.
+description: Agent actions, idempotency keys, and API credentials.
 icon: History
 ---
 
@@ -29,6 +29,6 @@ Through the normal transition; the grant is rechecked. `recordAgentActionObserva
 </Step>
 </Steps>
 
-## Events
+## Command records
 
-Commands write `AgentAction`, `IdempotencyKey`, and `OutboxMessage` records. `npm run outbox:work` delivers outbox messages to `OUTBOX_WEBHOOK_URL`.
+Commands write `AgentAction` and `IdempotencyKey` records. Nothing is sent to an outside webhook.

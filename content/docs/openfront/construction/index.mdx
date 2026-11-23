@@ -29,7 +29,6 @@ Code layout:
 | `features/storefront` | Public website and customer account |
 | `features/portal` | Client and trade partner portal, invitation acceptance |
 | `features/integrations/storage` | S3-compatible signed upload and download |
-| `features/keystone/outbox` | Outbox webhook drain |
 | `features/keystone/mcp` | MCP tools used by the dashboard AI chat |
 
 `docs/schema-map.md` in the repository lists every model with its purpose, creator, and states.
@@ -47,7 +46,7 @@ Code layout:
 
 All 87 lists, by area:
 
-- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey, OutboxMessage.
+- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey.
 - **Company master data:** Project, TradePartner, ProjectLocation, CostCode, BudgetCode, Equipment, Material.
 - **Pursuits and website:** ConstructionLead, ConstructionOpportunity, PublicSiteProfile, PublicService, PublicProject, IntakeSubmission, ServiceRequest, ServiceRequestEvent.
 - **Preconstruction:** BidPackage, BidInvitation, BidSubmission, BidLineItem, Estimate, EstimateVersion, EstimateLineItem.
@@ -64,7 +63,7 @@ Rules that apply across the model:
 - Money is a BigInt in minor units with a currency code. Budget, contract, claim, and payment totals are recalculated by hooks and workflows, not typed in.
 - Estimate versions, drawing revisions, and document versions are kept as separate records, so issued revisions are not overwritten.
 - Lifecycle `status` fields are read-only on generic update. Status changes go through named transition mutations that follow `lifecyclePolicies` in `features/keystone/domain/lifecycle.ts`.
-- Commands are idempotent (`IdempotencyKey`), recorded as `AgentAction` audit rows, and emit `OutboxMessage` events.
+- Commands are idempotent (`IdempotencyKey`), and recorded as `AgentAction` audit rows.
 
 ## Workflows
 
@@ -78,7 +77,7 @@ Rules that apply across the model:
 8. **Buy materials.** Procurement request with lines, order, material receipt, resource log.
 9. **Quality and safety.** Observation to corrective action. Incident (with restricted private details) to investigation to corrective action. Inspection template to inspection to items to punch item or corrective action.
 10. **Get paid and pay out.** Progress claim (owner claims from the prime contract; subcontractor claims from a commitment, also via the portal), approval, payment, allocation, retainage release, lien waiver. Reverse a settled payment when needed.
-11. **Close and audit.** CSV report export. Audit trail of actions, outbox messages, and idempotency keys. API key issue and revoke.
+11. **Close and audit.** CSV report export. Audit trail of actions and idempotency keys. API key issue and revoke.
 
 Approvals: budget changes, prime contracts, change orders, progress claims, and retainage releases can require an `ApprovalRequest` under the project's `ApprovalPolicy`. The requester must assign a different eligible person; self-approval is rejected.
 
@@ -125,7 +124,6 @@ Each command checks the session or API key, permission, company and project, exp
 |---|---|
 | S3-compatible storage | `features/integrations/storage/s3.ts` signs SigV4 `PUT`, `GET`, and `HEAD` URLs (60 to 900 seconds) for document versions and drawing revisions. Completion verifies the SHA-256 checksum and object metadata. Fails closed when `S3_*` values are missing |
 | SMTP | Password reset email only. Dashboard users get a `/dashboard/reset` link; customers and portal users get `/account/reset` |
-| Outbox webhook | `npm run outbox:work` drains `OutboxMessage` rows to `OUTBOX_WEBHOOK_URL` with an HMAC-SHA256 signature in `x-openfront-signature-sha256` and the event type in `x-openfront-event`. Failed messages retry up to `OUTBOX_MAX_ATTEMPTS`, then move to `dead_letter` |
 | Stripe Checkout | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_KEY`, `NEXT_PUBLIC_SITE_URL`. Installed per company at `/dashboard/platform/payment-providers`. Pays customer quote deposits and owner progress claims by card or US bank account. Webhook: `/api/payment-webhooks/[providerId]` |
 | OpenRouter AI chat | `/api/completion` uses the signed-in user's session cookie and the MCP tools at `/api/mcp-transport/[transport]` |
 | MCP tools | `listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `modelSpecificSearch`. Reads are bounded to 100 rows per page and 500 rows total fanout |

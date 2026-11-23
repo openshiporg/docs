@@ -17,7 +17,7 @@ icon: Database
 
 All 87 lists, by area:
 
-- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey, OutboxMessage.
+- **Identity and access:** User, AuthSession, Role, Company, CompanyMembership, ProjectMembership, AccountInvitation, ApiCredential, AgentIdentity, ScopeGrant, AgentAction, IdempotencyKey.
 - **Company master data:** Project, TradePartner, ProjectLocation, CostCode, BudgetCode, Equipment, Material.
 - **Pursuits and website:** ConstructionLead, ConstructionOpportunity, PublicSiteProfile, PublicService, PublicProject, IntakeSubmission, ServiceRequest, ServiceRequestEvent.
 - **Preconstruction:** BidPackage, BidInvitation, BidSubmission, BidLineItem, Estimate, EstimateVersion, EstimateLineItem.
@@ -34,4 +34,4 @@ Rules that apply across the model:
 - Money is a BigInt in minor units with a currency code. Budget, contract, claim, and payment totals are recalculated by hooks and workflows, not typed in.
 - Estimate versions, drawing revisions, and document versions are kept as separate records, so issued revisions are not overwritten.
 - Lifecycle `status` fields are read-only on generic update. Status changes go through named transition mutations that follow `lifecyclePolicies` in `features/keystone/domain/lifecycle.ts`.
-- Commands are idempotent (`IdempotencyKey`), recorded as `AgentAction` audit rows, and emit `OutboxMessage` events.
+- Commands are idempotent (`IdempotencyKey`), and recorded as `AgentAction` audit rows.
