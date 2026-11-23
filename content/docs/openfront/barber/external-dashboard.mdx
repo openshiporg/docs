@@ -1,0 +1,22 @@
+---
+title: External dashboards
+description: Give an LLM the Barber dashboard skill to adapt the built-in dashboard or create a separate client.
+icon: LayoutDashboard
+---
+
+To create a custom Barber dashboard, copy the skill and give it to your LLM. The skill explains how `features/platform` implements Today, Earnings and Settings, and which named operations they call.
+
+Skill file: [`/skills/openfront-barber-custom-dashboard/SKILL.md`](/skills/openfront-barber-custom-dashboard/SKILL.md)
+
+## Built-in routes
+
+| Route | Page | Operations |
+| --- | --- | --- |
+| `/dashboard/platform/today` | Open appointments, checkout, no-show, cancel | `checkOutAppointment`, `markAppointmentNoShow`, `cancelAppointmentAsBarber` |
+| `/dashboard/platform/earnings` | Earnings for 7, 30 or 365 days | `myEarnings` |
+| `/dashboard/platform/setup` | First-run setup, then Settings | `setUpMyBusiness`, `updateBarberProfile` |
+| `/dashboard/<list>` | Generic list pages | Keystone CRUD with ownership filters |
+
+Route files are thin wrappers in `app/dashboard/(admin)/platform/`. The sidebar comes from `features/platform/lib/navigation.ts`.
+
+A separate client must keep checkout, refunds and earnings on the server. Call the named mutations; do not write `Payment` rows, which are read-only through the API.

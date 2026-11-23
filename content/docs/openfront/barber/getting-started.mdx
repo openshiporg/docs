@@ -1,0 +1,99 @@
+---
+title: Getting started with Barber
+description: Clone the source, set the database and session secret, run migrations, create your account and set up your business.
+icon: Terminal
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The live site is at [openfront-barber-production.up.railway.app](https://openfront-barber-production.up.railway.app) if you want to look before installing anything.
+
+## Requirements
+
+- Node.js 20 or later and npm.
+- A PostgreSQL database you are allowed to migrate.
+- A Stripe secret key if you want to take deposits online.
+- An SMTP relay if you want password-reset email.
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-barber.git
+cd openfront-barber
+npm install
+```
+
+</Step>
+<Step>
+
+### Configure the environment
+
+Create `.env`:
+
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/openfront_barber
+SESSION_SECRET=a-random-string-of-at-least-32-characters
+# Optional: take deposits by card through Stripe Checkout
+STRIPE_SECRET_KEY=
+```
+
+</Step>
+<Step>
+
+### Run it
+
+```bash
+npm run dev
+```
+
+`npm run dev` builds the Keystone schema, applies migrations (`prisma migrate deploy`) and starts Next.js.
+
+</Step>
+<Step>
+
+### Create your account
+
+Open `/dashboard`. On an empty database `/dashboard/init` creates the first user with an Admin role. Barbers can also create their own account at `/dashboard/signup`; they get the Barber role automatically.
+
+</Step>
+<Step>
+
+### Set up your business
+
+The dashboard opens the setup form until your business exists. Enter your business name, your booking address (2 to 41 lowercase letters, numbers or hyphens), timezone, phone, location and how you work (own space, rent a chair, or mobile). Leave **Start with a typical menu** ticked to add five services with photos and deposits and three retail products you can edit.
+
+Setup also creates your weekly hours (Tuesday to Saturday, 10:00 to 18:00) and two payment providers, **In person** (`pp_manual`) and **Card online** (`pp_stripe`).
+
+</Step>
+<Step>
+
+### Share your page
+
+Your booking page is `/book/<address>`. The home page at `/` shows your services, hours and a Book button.
+
+</Step>
+</Steps>
+
+## Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SESSION_SECRET` | Signs session cookies. Required. |
+| `APP_ORIGIN` | Public origin, for example `https://barber.example.com`. Stripe returns clients here. In production it must be HTTPS. `NEXT_PUBLIC_APP_URL` or Railway's `RAILWAY_PUBLIC_DOMAIN` also work; production refuses to start Stripe Checkout without one of them. |
+| `STRIPE_SECRET_KEY` | Turns on card deposits. Without it, no deposit is asked online and clients pay in person. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password-reset email. `SMTP_STORE_LINK` is the base URL put in the reset link. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Object storage for uploads. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard assistant. Optional. |
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Build the schema, apply migrations, start Next.js |
+| `npm run build` | `keystone build --no-ui && next build` |
+| `npm run migrate` | Apply migrations (`prisma migrate deploy`) |
+| `npm run migrate:gen` | Generate a migration after a schema change |

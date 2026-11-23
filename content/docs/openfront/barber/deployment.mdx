@@ -1,0 +1,32 @@
+---
+title: Deployment
+description: Build and start commands, migrations at start, and the settings production needs.
+icon: Rocket
+---
+
+One Node process serves the booking page, the dashboard and GraphQL. There is no worker or scheduled job. Unpaid holds are released when someone reads open times, books, or opens the booking link.
+
+## Railway
+
+`railway.toml` in the repository:
+
+```toml
+[build]
+buildCommand = "prisma generate && keystone build --no-ui && next build"
+
+[deploy]
+startCommand = "npm run migrate && next start"
+```
+
+Migrations run at start because the build cannot reach a private database.
+
+## Vercel
+
+The README has a Deploy with Vercel button that asks for `DATABASE_URL` and `SESSION_SECRET`. Run `npm run migrate` against the database before the first start.
+
+## Production checklist
+
+- `DATABASE_URL` and a long random `SESSION_SECRET`.
+- `APP_ORIGIN` set to your HTTPS address (or `RAILWAY_PUBLIC_DOMAIN` on Railway). Stripe returns clients to `/booking/<id>` on this origin.
+- `STRIPE_SECRET_KEY` if you take deposits. Deposits are confirmed by reading the Checkout Session back from Stripe, so no webhook is needed.
+- SMTP if you want password-reset email.

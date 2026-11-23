@@ -1,0 +1,39 @@
+---
+title: Settings
+description: First-run setup, then the business details and booking rules the booking page follows.
+icon: Settings
+---
+
+Route: `/dashboard/platform/setup`. Code: `features/platform/setup`.
+
+## First-run setup
+
+Until the signed-in user has a business, the page shows the setup form. `setUpMyBusiness` creates the `BarberProfile`, seven `WeeklyHours` rows (working Tuesday to Saturday, 10:00 to 18:00), the **In person** and **Card online** payment providers, and, with **Start with a typical menu**, these services and products:
+
+| Service | Price | Length | Deposit |
+| --- | --- | --- | --- |
+| Haircut | $35 | 30 min | $10 |
+| Skin fade | $40 | 45 min | $10 |
+| Cut and beard | $55 | 60 min | $15 |
+| Beard trim | $20 | 20 min | none |
+| Hot towel shave | $45 | 45 min | $15 |
+
+Products: Matte clay ($22, 12 in stock), Beard oil ($18, 10), Sea salt spray ($16, 8).
+
+A booking address that is already taken is refused. One user can set up only one business.
+
+## Settings form
+
+After setup the same route edits the profile:
+
+| Field | Rule |
+| --- | --- |
+| Business name, location, phone, email, bio | Business name is required; email must be valid. |
+| Booking open | Clients can book from your page. |
+| Hold unpaid bookings for | 1 to 72 hours (default 6). |
+| Clients can cancel up to | 0 to 720 hours before (default 24). |
+| Shortest notice | 0 to 720 hours (default 2). |
+| Book up to | 1 to 365 days ahead (default 60). |
+| Clean-up time | 0 to 120 minutes after each client (default 10). |
+
+The same limits are enforced again on the `BarberProfile` fields. Slot spacing (`slotMinutes`, default 15), currency, timezone, work style and the no-show fee are edited under **Models → Barber profiles**.

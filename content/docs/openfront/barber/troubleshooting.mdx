@@ -1,0 +1,18 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `Can't reach database server` during build | Migrations ran at build time. Build with `keystone build --no-ui && next build` and start with `npm run migrate && next start`. |
+| The home page offers sign-in instead of a barber | No barber has set up a business with booking open. Finish setup and tick **Booking open**. |
+| Services show no deposit | `STRIPE_SECRET_KEY` is not set, so deposits are not asked online. |
+| "Set APP_ORIGIN (or RAILWAY_PUBLIC_DOMAIN) before starting production." | Set `APP_ORIGIN` to your HTTPS address. Stripe needs it to send the client back. |
+| "That time was just taken. Choose another." | Someone booked the slot first. Pick another time. |
+| "That booking address is taken. Try another." | Another barber on this deployment uses that address. |
+| "Cancellations close 24 hours before the appointment." | The client is inside the cancellation window. The barber can still cancel from Today. |
+| "The deposit was not paid in time, so this time was released." | The unpaid hold ended. The client books again. Change **Hold unpaid bookings for** in Settings. |
+| "This time can't be booked online. Contact your barber." | The client is marked `blocked`. |
+| "Not enough … in stock." at checkout | Product stock is lower than the quantity. Update stock under **Models → Products**. |

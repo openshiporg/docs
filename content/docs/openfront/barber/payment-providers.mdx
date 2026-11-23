@@ -1,0 +1,28 @@
+---
+title: Payment providers
+description: In-person payments, Stripe Checkout deposits, and refunds.
+icon: CreditCard
+---
+
+Setup creates two `PaymentProvider` rows for the barber:
+
+| Name | Code | Adapter | Settlement |
+| --- | --- | --- | --- |
+| In person | `pp_manual` | `manual` | Offline: cash, card reader or Zelle/Venmo/Cash App, recorded at checkout |
+| Card online | `pp_stripe` | `stripe` | Stripe Checkout |
+
+The adapters are registered in code in `features/integrations/payment/index.ts`. A provider row can only choose one of these keys; it can never supply a path, URL or secret.
+
+## Stripe deposits
+
+Set `STRIPE_SECRET_KEY`. Without it the Stripe adapter is unavailable, services show no online deposit, and online bookings are confirmed without one.
+
+1. `payDepositOnline` creates a Checkout Session for the deposit with an idempotency key, records a `PaymentSession`, and sends the client to Stripe. The Checkout page closes when the unpaid hold ends (Stripe allows 30 minutes to 24 hours).
+2. On return to `/booking/<id>`, `confirmDepositOnline` reads the session back from Stripe. Only a captured session for the exact amount counts. It writes a `Payment` of kind `deposit` and sets the appointment to `deposit_paid` and `confirmed`.
+3. A deposit paid after the booking was cancelled is recorded and refunded straight away.
+
+There is no Stripe webhook. Stripe is always asked directly.
+
+## Refunds
+
+A deposit is refunded through Stripe when the client cancels inside the window or the barber cancels. The refund uses the key `refund-<paymentId>`, so a retry cannot refund twice. If Stripe refuses, the payment goes back to `paid`.

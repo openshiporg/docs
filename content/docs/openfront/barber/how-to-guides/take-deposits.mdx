@@ -1,0 +1,38 @@
+---
+title: Take deposits online
+description: Turn on Stripe, set a deposit on a service, and check that a booking is held and then confirmed.
+icon: BadgeDollarSign
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Set the key
+
+Set `STRIPE_SECRET_KEY` and `APP_ORIGIN`, then restart. Setup already created the **Card online** provider (`pp_stripe`).
+
+</Step>
+<Step>
+
+### Set a deposit
+
+Under **Models → Services**, set **Deposit** on each service that should have one. 0 means pay at the chair.
+
+</Step>
+<Step>
+
+### Choose the hold
+
+In **Settings**, set **Hold unpaid bookings for** (1 to 72 hours). An online booking that is not paid in that time is cancelled and its time opens again.
+
+</Step>
+<Step>
+
+### Check it
+
+Book a service from `/book/<address>`. The booking is `requested` and the booking link offers **Pay deposit by card**. After paying, the link shows the deposit as paid and Today shows "deposit paid".
+
+</Step>
+</Steps>

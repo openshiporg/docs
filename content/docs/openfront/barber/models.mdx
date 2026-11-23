@@ -1,0 +1,22 @@
+---
+title: Models
+description: The generic list pages for services, hours, time off, clients, products, chair rentals and payments.
+icon: Table
+---
+
+Everything that has no custom page is edited under **Models** at `/dashboard/<list>`. A barber only sees and edits their own records; the profile is attached on create.
+
+| List | Used for | Permission |
+| --- | --- | --- |
+| Services | Name, description, photo, price, length, deposit, active, order | `canManageBusiness` |
+| Weekly hours | Day, working or not, start and end, an optional break | `canManageBusiness` |
+| Time off | Start, end, reason | `canManageBusiness` |
+| Products | Retail items with price and stock | `canManageBusiness` |
+| Chair rentals | Host shop, contact, rent, weekly or monthly, dates, status, terms | `canManageBusiness` |
+| Clients | Name, phone, email, status (`active`, `vip`, `blocked`), preferences | `canManageClients` |
+| Client notes | Notes on a client, optionally tied to an appointment | `canManageClients` |
+| Appointments | Add phone and walk-in bookings, edit notes | `canManageAppointments` |
+| Product sales | Products sold, usually written by checkout | `canManagePayments` |
+| Payments, payment sessions | Read only | `canManagePayments` or `canViewEarnings` |
+
+A client with status `blocked` cannot book online; the booking page tells them to contact the barber.

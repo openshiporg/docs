@@ -1,0 +1,35 @@
+---
+title: Storefront
+description: The barber's home page, the booking page, and the client's private booking link.
+icon: Store
+---
+
+The storefront lives in `features/storefront`.
+
+| Route | Page |
+| --- | --- |
+| `/` | The first barber with booking open: photo, bio, services, hours, a Book button and a call link. On an empty deployment it offers barber sign-in and sign-up. |
+| `/book/[slug]` | The booking page: services, a date, open times and the client's details |
+| `/booking/[id]?t=<token>` | The client's own booking: status, deposit, pay by card and cancel |
+
+## Open times
+
+`publicSlots(slug, serviceId, date)` builds the times for one service on one day in the barber's timezone, from that day's weekly hours (and break), less appointments, time off, the clean-up buffer, the shortest notice and the furthest-ahead limit. Slots are spaced by `slotMinutes`. An online booking that is past its unpaid hold no longer blocks its time.
+
+If booking is closed, the page says "Online booking is closed right now." with the barber's phone.
+
+## Booking
+
+`bookOnline` needs a name and a phone or an email. It runs in a serializable transaction under a per-barber advisory lock and re-checks the time inside the lock, so two clients can never hold the same slot ("That time was just taken. Choose another."). It finds the client by phone (or email) or creates one, and returns the appointment id and a private token. Only a SHA-256 hash of the token is stored.
+
+- With a deposit to pay, the appointment is `requested` until the deposit is paid.
+- With no deposit, or when Stripe is not set up, it is `confirmed` straight away.
+
+## The booking link
+
+`/booking/<id>?t=<token>` calls `publicBooking`. It shows the time, service, price and deposit and, while the deposit is unpaid, when the hold ends. The client can:
+
+- **Pay deposit by card**: `payDepositOnline` opens Stripe Checkout. On return, `confirmDepositOnline` reads the session back from Stripe.
+- **Cancel booking**: `cancelMyBooking`, allowed until the cancellation window (24 hours by default). A paid deposit is refunded to the card before the booking is cancelled. If Stripe refuses, the booking stays on and the client is told to try again or call.
+
+A deposit paid in a browser that never came back is still found: reading the booking, cancelling, or the hold release check Stripe first.

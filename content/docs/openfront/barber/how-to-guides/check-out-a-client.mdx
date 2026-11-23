@@ -1,0 +1,31 @@
+---
+title: Check out a client
+description: Take the balance, a tip and a product sale in one step from Today.
+icon: Receipt
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### Open Today
+
+Go to `/dashboard/platform/today` and find the appointment.
+
+</Step>
+<Step>
+
+### Fill in checkout
+
+Change the price if the service changed, enter the tip, pick a product and quantity if one was sold, and choose how the client paid: cash, card, or Zelle/Venmo/Cash App.
+
+</Step>
+<Step>
+
+### Save
+
+The appointment becomes `completed` and `paid`. The payment is the price less any deposit already paid, plus the tip and products, and appears in **Earnings**.
+
+</Step>
+</Steps>

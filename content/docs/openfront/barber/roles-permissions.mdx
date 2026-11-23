@@ -1,0 +1,26 @@
+---
+title: Roles and permissions
+description: The Admin and Barber roles and the flags each list checks.
+icon: KeyRound
+---
+
+Access comes from the signed-in user's `Role`. List access and custom mutations check these flags on the server.
+
+| Flag | Allows |
+| --- | --- |
+| `canAccessDashboard` | Signing in to `/dashboard` |
+| `canManageBusiness` | Business profile, services, hours, time off, products, chair rental |
+| `canManageClients` | Clients and client notes |
+| `canManageAppointments` | Appointments, no-shows, cancelling |
+| `canManagePayments` | Checkout, product sales, payment providers |
+| `canViewEarnings` | Earnings |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles` | Other users and roles |
+
+## Built-in roles
+
+- **Admin** is created with the first user at `/dashboard/init` and has every flag.
+- **Barber** is attached to anyone who signs up at `/dashboard/signup`. It has `canAccessDashboard`, `canManageBusiness`, `canManageClients`, `canManageAppointments`, `canManagePayments` and `canViewEarnings`. The caller cannot choose a role.
+
+## Ownership filters
+
+Each business list filters by the signed-in user's own profile, so a Barber sees only their own clients, appointments, payments and settings. `BarberProfile` itself filters by owner and cannot be created through the generic list; only `setUpMyBusiness` creates it.

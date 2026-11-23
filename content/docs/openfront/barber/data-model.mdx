@@ -1,0 +1,38 @@
+---
+title: Data model
+description: The lists, their key fields, and status values.
+icon: Database
+---
+
+Lists live in `features/keystone/models`. Money is stored in cents.
+
+| List | Key fields |
+| --- | --- |
+| `BarberProfile` | `owner`, `businessName`, `slug`, `bio`, `photoPath`, `phone`, `email`, `location`, `timezone`, `currencyCode`, `bookingOpen`, `slotMinutes`, `bufferMinutes`, `minNoticeHours`, `maxAdvanceDays`, `cancellationWindowHours`, `unpaidHoldHours`, `noShowFeeCents`, `workStyle` (`own_space`, `chair_rental`, `mobile`) |
+| `Service` | `name`, `description`, `photoPath`, `priceCents`, `durationMinutes`, `depositCents`, `active`, `sortOrder` |
+| `WeeklyHours` | `dayOfWeek`, `isWorking`, `startMinute`, `endMinute`, `breakStartMinute`, `breakEndMinute` (minutes after midnight) |
+| `TimeOff` | `startsAt`, `endsAt`, `reason` |
+| `Client` | `firstName`, `lastName`, `phone`, `email`, `status` (`active`, `vip`, `blocked`), `preferences`, `lastVisitAt` |
+| `ClientNote` | `client`, `appointment`, `body` |
+| `Appointment` | `client`, `service`, `startsAt`, `endsAt`, `serviceNameSnapshot`, `priceCents`, `depositCents`, `status`, `source`, `paymentStatus`, `clientNotes`, `internalNotes`, `cancellationReason`, `publicAccessTokenHash` |
+| `Product` | `name`, `priceCents`, `stock`, `active` |
+| `ProductSale` | `product`, `client`, `appointment`, `productNameSnapshot`, `quantity`, `unitPriceCents`, `totalCents` |
+| `Payment` | `appointment`, `method`, `kind`, `status`, `amountCents`, `tipCents`, `productsCents`, `providerReference`, `paidAt` |
+| `PaymentProvider` | `name`, `code` (`pp_manual` or `pp_stripe`), `isInstalled`, adapter function keys |
+| `PaymentSession` | `appointment`, `paymentProvider`, `status`, `amountCents`, `currencyCode`, `providerPaymentId`, `expiresAt`, `capturedAt` |
+| `ChairRental` | `hostName`, `hostContact`, `rentCents`, `period` (`weekly`, `monthly`), `startsOn`, `endsOn`, `status` (`active`, `ended`), `terms` |
+| `User`, `Role` | Accounts and permission flags |
+
+## Status values
+
+| Field | Values |
+| --- | --- |
+| `Appointment.status` | `requested`, `confirmed`, `completed`, `cancelled`, `no_show` |
+| `Appointment.source` | `online`, `phone`, `walk_in` |
+| `Appointment.paymentStatus` | `unpaid`, `deposit_paid`, `paid`, `refunded` |
+| `Payment.method` | `cash`, `card`, `transfer`, `stripe` |
+| `Payment.kind` | `deposit`, `service`, `refund`, `no_show_fee` |
+| `Payment.status` | `paid`, `refunded` |
+| `PaymentSession.status` | `pending`, `captured`, `expired`, `cancelled`, `refunded` |
+
+`Payment` and `PaymentSession` cannot be created, changed or deleted through the API; only the server commands write them. `Appointment.paymentStatus` and `depositCents` are also read-only.

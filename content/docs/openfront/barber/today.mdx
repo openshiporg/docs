@@ -1,0 +1,35 @@
+---
+title: Today
+description: Open appointments with client notes and preferences, checkout with tip and product, no-shows and cancelling.
+icon: CalendarDays
+---
+
+Route: `/dashboard/platform/today`. Code: `features/platform/today`.
+
+**Today** lists up to 60 open appointments (`requested` and `confirmed`) in time order, in the barber's timezone. Each row shows the service, price, whether the deposit is paid, the client and phone, what the client wrote when booking, and the client's saved **preferences** ("Remember: …"). A booking still waiting for its deposit says so. The page links to your booking page.
+
+If the business is not set up yet, Today links to the setup form instead.
+
+## Check out
+
+Checkout takes the price (defaults to the booked price), a tip, one product and quantity, and how the client paid:
+
+| Method | Value |
+| --- | --- |
+| Cash | `cash` |
+| Card (reader or app) | `card` |
+| Zelle / Venmo / Cash App | `transfer` |
+
+`checkOutAppointment` runs in one serializable transaction. It takes the stock for the product (and refuses if there is not enough), records a `ProductSale`, writes one `Payment` of kind `service` for the price less any deposit already paid, with the tip and product total on the same row, marks the appointment `completed` and `paid`, and sets the client's `lastVisitAt`. Needs `canManagePayments`.
+
+## No-show
+
+`markAppointmentNoShow` sets the status to `no_show`. A deposit paid online is kept. Nothing else is charged automatically. Needs `canManageAppointments`.
+
+## Cancel
+
+`cancelAppointmentAsBarber` cancels an open appointment. The Today button asks for confirmation; the reason defaults to "Cancelled by barber". If the deposit was paid online, it is refunded through Stripe first. Needs `canManageAppointments`.
+
+## Adding appointments by hand
+
+Phone and walk-in bookings are added under **Models → Appointments**, with source `phone` or `walk_in`.

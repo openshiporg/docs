@@ -1,0 +1,39 @@
+---
+title: API reference
+description: The custom GraphQL queries and mutations, who may call them, and what they return.
+icon: Code
+---
+
+Everything is on `POST /api/graphql`. Custom operations are in `features/keystone/mutations/index.ts`. Except `publicBusiness` and `homeBusiness`, they return `CommandResult { success, error, data }`. When `success` is false, `error` is a sentence to show as it is.
+
+## Public
+
+| Operation | Purpose |
+| --- | --- |
+| `publicBusiness(slug)` | The barber's page: name, bio, photo, phone, location, timezone, booking rules, active services and weekly hours. Deposits read 0 when Stripe is not set up. |
+| `homeBusiness` | The same for the first barber with booking open. |
+| `publicSlots(slug, serviceId, date)` | Open start times for one day (`YYYY-MM-DD`). Releases unpaid holds first. |
+| `bookOnline(slug, serviceId, startsAt, guest)` | Book. `guest` is `{ name, phone, email, notes }`. Returns `appointmentId`, `token` and `depositCents`. |
+| `publicBooking(id, token)` | The client's booking, including `holdEndsAt` and `canPayDeposit`. |
+| `payDepositOnline(id, token)` | Opens Stripe Checkout and returns its `url`. |
+| `confirmDepositOnline(id, token)` | Reads the deposit back from Stripe. Returns `{ paid }`. |
+| `cancelMyBooking(id, token)` | Client cancel inside the window, with a refund of any paid deposit. |
+
+## Signed in
+
+| Operation | Needs | Purpose |
+| --- | --- | --- |
+| `setUpMyBusiness(businessName, slug, timezone, phone, location, workStyle, starterMenu)` | signed in | First-run setup |
+| `checkOutAppointment(appointmentId, method, tipCents, priceCents, products)` | `canManagePayments` | Take payment and complete the visit |
+| `markAppointmentNoShow(appointmentId)` | `canManageAppointments` | Mark a no-show |
+| `cancelAppointmentAsBarber(appointmentId, reason)` | `canManageAppointments` | Cancel and refund an online deposit |
+| `myEarnings(from, to)` | `canViewEarnings` | Earnings for a date range |
+
+The generic Keystone queries and mutations for each list are also available, with the access rules in [Roles and permissions](/docs/openfront/barber/roles-permissions).
+
+## Other routes
+
+| Route | Purpose |
+| --- | --- |
+| `/api/completion` | The dashboard assistant (needs `OPENROUTER_API_KEY`) |
+| `/api/mcp-transport/[transport]` | MCP access with OAuth tokens issued under `/oauth/*` |

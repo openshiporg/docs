@@ -1,0 +1,56 @@
+---
+title: Openfront Barber
+description: Self-hosted booking, deposits, checkout and earnings for a barber who runs their own business.
+icon: Scissors
+---
+
+[Source](https://github.com/openshiporg/openfront-barber) · [Live site](https://openfront-barber-production.up.railway.app)
+
+Openfront Barber is for one barber who works for themselves: in their own space, renting a chair in someone else's shop, or mobile. Clients book from the barber's own page and can pay a deposit by card. The barber keeps services, weekly hours, time off, clients, retail products, tips and chair rent in one dashboard, and sees what they actually keep.
+
+It is a different product from [Openfront Barbershop](/docs/openfront/barbershop). Barbershop is for a shop owner with employee barbers, a walk-in queue and commissions. Barber is for the barber who is the business.
+
+The live site runs one barber, Marcus Reed Cuts, with a booking page at `/book/marcus-reed`. The dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/barber/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Barber profile | The business: name, booking address (`slug`), timezone, currency, booking rules and work style. Created once by the setup form. |
+| Service | Something a client books, with a price, a length and an optional deposit. A deposit of 0 means the client pays at the chair. |
+| Weekly hours and time off | When the barber works. Open times on the booking page come from these, minus existing appointments and the clean-up buffer. |
+| Appointment | A booked visit. Status is `requested`, `confirmed`, `completed`, `cancelled` or `no_show`; payment status is `unpaid`, `deposit_paid`, `paid` or `refunded`. |
+| Unpaid hold | An online booking waiting for its deposit keeps its time for **Hold unpaid bookings for** hours (6 by default). After that it is cancelled and the time opens again. |
+| Payment | A settled amount: a deposit, the service at checkout (with tip and products), a refund or a no-show fee. Written only by the server. |
+| Chair rental | Rent paid to a shop owner, weekly or monthly. Earnings subtract it for the days it ran. |
+
+## Ownership
+
+Every record belongs to one barber profile. Access filters on each list limit a barber to their own records, so several barbers can share one deployment without seeing each other's clients, appointments or money. The home page at `/` shows the first barber who opened booking on that deployment.
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with GraphQL at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS and shadcn/ui. Sign-in uses Keystone password auth with stateless session cookies.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | Thin routes: `/`, `/book/[slug]`, `/booking/[id]`, the dashboard and the API routes. |
+| `features/storefront/` | The home page, booking page, booking flow and the client's booking status page. |
+| `features/platform/` | The dashboard pages: Today, Earnings and Settings (`setup`). |
+| `features/keystone/models/` | The lists. |
+| `features/keystone/mutations/index.ts` | The custom queries and mutations. |
+| `features/keystone/utils/commands.ts` | Booking, slots, deposits, client cancel and refunds. |
+| `features/keystone/utils/staffCommands.ts` | Setup, checkout, no-show, barber cancel and earnings. |
+| `features/integrations/payment/` | The `manual` and `stripe` payment adapters. |
+
+## Main workflows
+
+1. **Set up.** The barber creates an account, then fills in the setup form: business name, booking address, timezone, phone, location and work style. **Start with a typical menu** adds five services and three retail products. See [Settings](/docs/openfront/barber/settings).
+2. **Take bookings.** Clients pick a service and a time on `/book/<address>` and leave a name and a phone or email. See [Storefront](/docs/openfront/barber/storefront).
+3. **Collect deposits.** If Stripe is set up and the service has a deposit, the client pays it through Stripe Checkout. The booking is confirmed when the payment is read back from Stripe. See [Payment providers](/docs/openfront/barber/payment-providers).
+4. **Work the day.** **Today** lists open appointments with what the client asked for and their saved preferences. Check out with price, tip, a product and the payment method, mark a no-show, or cancel. See [Today](/docs/openfront/barber/today).
+5. **See earnings.** Services, tips and products for the last 7, 30 or 365 days, by payment method, less chair rent. See [Earnings](/docs/openfront/barber/earnings).

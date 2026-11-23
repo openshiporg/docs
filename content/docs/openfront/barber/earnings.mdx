@@ -1,0 +1,20 @@
+---
+title: Earnings
+description: Services, tips and products for the last 7, 30 or 365 days, by payment method, less chair rent.
+icon: Wallet
+---
+
+Route: `/dashboard/platform/earnings`. Code: `features/platform/earnings`. Needs `canViewEarnings`.
+
+Choose **Last 7 days**, **Last 30 days** (the default) or **Last 365 days**. The page calls `myEarnings(from, to)`, which reads settled payments (status `paid`) in the range and returns:
+
+| Figure | Source |
+| --- | --- |
+| Services | Sum of `Payment.amountCents` |
+| Tips | Sum of `Payment.tipCents` |
+| Products | Sum of `Payment.productsCents` |
+| Visits | Completed appointments that started in the range |
+| By method | Services, tips and products per payment method |
+| Chair rent | Rent for each chair rental, for the days it ran inside the range |
+
+Rent is counted from a rental's start date (or when it was created) to its end date. A weekly rental is divided by 7 days and a monthly one by 30. An ended rental without an end date is taken to have ended when it was last changed.

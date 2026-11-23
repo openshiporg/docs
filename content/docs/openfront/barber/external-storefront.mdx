@@ -1,0 +1,11 @@
+---
+title: External storefronts
+description: Give an LLM the Barber storefront skill to adapt the built-in booking page or create a separate client.
+icon: AppWindow
+---
+
+To create a custom Barber booking site, copy the skill and give it to your LLM. The skill explains how `features/storefront` implements the home page, the booking page and the booking link, and which public operations they call.
+
+Skill file: [`/skills/openfront-barber-custom-storefront/SKILL.md`](/skills/openfront-barber-custom-storefront/SKILL.md)
+
+The public operations are `publicBusiness`, `homeBusiness`, `publicSlots`, `bookOnline`, `publicBooking`, `payDepositOnline`, `confirmDepositOnline` and `cancelMyBooking`. A separate client must keep the server as the authority for open times, deposits and refunds, and must keep the booking token private to the client who booked.
