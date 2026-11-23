@@ -44,7 +44,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Screens and server
 
 Onboarding is not a route. It is a dialog in the dashboard shell (`features/platform/onboarding`). See [Getting started](/docs/openfront/barbershop/getting-started#onboarding).
 
-Lists without a platform page are edited on the generic `/dashboard/<list-key>` pages from `app/dashboard/(admin)/[listKey]`. Examples are waiver forms, waitlist entries (the "All requests" link), roles, and users. System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `LifecycleOutboxEvent` are read-only.
+Lists without a platform page are edited on the generic `/dashboard/<list-key>` pages from `app/dashboard/(admin)/[listKey]`. Examples are waiver forms, waitlist entries (the "All requests" link), roles, and users. System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `CommandReceipt` are read-only. Command receipts are visible to owners and managers only.
 
 ## Data the pages use
 

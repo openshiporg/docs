@@ -34,6 +34,6 @@ The schema has 49 lists in `features/keystone/models`.
 
 ## Commands and ledgers
 
-Many lists reject generic create and update. They change through named commands that take an idempotency key, write the ledger row, and record a `LifecycleOutboxEvent`. System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `LifecycleOutboxEvent` are read only in the dashboard.
+Many lists reject generic create and update. They change through named commands that take an idempotency key, write the ledger row, and record a `CommandReceipt` (idempotency receipt; a replay returns the stored result). System ledgers such as `GuestBookingCommand`, `PaymentWebhookEvent`, and `CommandReceipt` are read only in the dashboard.
 
 Money is stored in whole cents.

@@ -24,7 +24,11 @@ Routes live under `app/(storefront)`. Each route file is thin and re-exports a s
 | `/book` | `BookingPageServer`, `BookingPage` | Pick a service, barber, and time (`checkBarberAvailability`), enter details, book as a guest (`createOnlineBooking`) or signed in (`createAccountBooking`); pay a deposit when Stripe is set up |
 | `/appointment` | `AppointmentStatusPage` | Visit status (`getPublicAppointment`), cancel or reschedule with a fee preview (`managePublicAppointment`), sign a waiver (`signPublicWaiver`), pay or confirm a deposit |
 | `/queue` | `QueuePage` | Now-serving board, join the walk-in line (`createPublicQueueEntry`), see your ticket (`getPublicQueueEntry`). Shows a closed state when no one is working |
-| `/shop`, `/shop/[id]` | `ShopPage`, `ShopProductPage` | Retail products (`getPublicProducts`). Sold at the counter |
+| `/shop`, `/shop/[id]` | `ShopPage`, `ShopProductPage` | Retail products (`getPublicProducts`). With Stripe set up, a product can be bought online with name and email (`startProductCheckout`) and picked up on the next visit; otherwise it is sold at the counter |
+| `/shop/order` | `ProductOrderPage` | Order return page. Reads the order back from Stripe (`confirmProductOrder`) and records the retail sale once paid |
+| `/gift-cards` | `GiftCardsPage` | Buy a gift card online (`giftCardOptions`, `startGiftCardCheckout`): $25, $50, $75, $100, $150, or $200, for yourself or sent to someone with a message. Without Stripe: "Gift cards are sold at the counter right now." |
+| `/gift-cards/order` | `GiftCardOrderPage` | Gift card return page (`confirmGiftCardOrder`). Shows the code once Stripe confirms payment |
+| `/pay` | `CardPaymentReturnPage` | Return page after a card deposit |
 | `/memberships` | `MembershipsPage` | Membership plans and packages (`getPublicMembershipOffers`). Bought in the shop |
 | `/account` | `AccountPage` | Sign in or create a customer account; visits (`accountBookings`), package and membership balances (`accountBalances`), data export (`exportMyAccountData`) |
 | `/account/reset` | `AccountResetPage` | Password reset (needs SMTP) |

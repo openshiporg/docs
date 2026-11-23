@@ -1,6 +1,6 @@
 ---
 title: Payment providers
-description: Pay-in-person and Stripe Checkout deposits at /dashboard/platform/payments.
+description: Pay-in-person and Stripe Checkout for deposits, gift cards, and retail orders at /dashboard/platform/payments.
 icon: CreditCard
 ---
 
@@ -11,7 +11,7 @@ Two adapters live in `features/integrations/payment`:
 | Code | Adapter | Use |
 |---|---|---|
 | `pp_manual` | `manual` | Pay in person. Default provider |
-| Stripe | `stripe` | Checkout for booking deposits |
+| Stripe | `stripe` | Checkout for booking deposits, online gift cards, and online retail orders |
 
 ## Set up
 
@@ -22,7 +22,7 @@ On `/dashboard/platform/payments`, set up the manual provider (`ensureDefaultPay
 </Step>
 <Step>
 ### Stripe
-Set `STRIPE_SECRET_KEY` in the environment, then choose **Set up Stripe** on the page. The storefront then accepts deposits.
+Set `STRIPE_SECRET_KEY` in the environment, then choose **Set up Stripe** on the page. The storefront then accepts deposits, gift cards, and retail orders.
 </Step>
 </Steps>
 
@@ -43,5 +43,11 @@ A deposit creates a `PaymentSession` tied to an appointment.
 | `reconcilePaymentSession` | Processor check; compares amount and currency |
 
 Pay-in-person sessions have no processor to capture, refund, or reconcile. Record the payment at checkout, and refund cash from the receipt.
+
+## Gift cards
+
+An online gift card stays `pending` until Stripe confirms payment, then becomes `active` with a one-year expiry. Staff redeem it at checkout on `/dashboard/platform/pos` with **Gift card** and its code (`lookupGiftCard`). A gift card checkout can be returned to the card (`returnGiftCardCheckout`). The **Gift cards** section on the payments page lists cards sold, and **Refund** returns an unused card's payment.
+
+Open card payments past their lifetime are checked with Stripe each time the payments page loads, and with **Check all with Stripe** (`expireStalePaymentSessions`), which also settles open gift card and retail orders.
 
 The page also shows takings by tender over 30 days, recent receipts, open card payments, and processor checks. `POST /api/payment-webhooks/[providerCode]` serves providers with a registered webhook handler and answers "Payment webhook signature is invalid." for bad signatures.

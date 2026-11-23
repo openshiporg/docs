@@ -8,7 +8,7 @@ Custom operations are defined in `features/keystone/mutations/index.ts`. Lists t
 
 ## Public and account queries
 
-`getPublicStorefrontSettings`, `getPublicServiceCatalog`, `getPublicBarbers`, `getPublicBarberWeek`, `getPublicProducts`, `getPublicMembershipOffers`, `getPublicBookingEligibility`, `getPublicPaymentOptions`, `checkBarberAvailability`, `getPublicAppointment`, `getPublicQueue`, `getPublicQueueEntry`, `getPublicWalkInStatus`, `accountBookings`, `accountBalances`, `exportMyAccountData`.
+`getPublicStorefrontSettings`, `getPublicServiceCatalog`, `getPublicBarbers`, `getPublicBarberWeek`, `getPublicProducts`, `giftCardOptions`, `getPublicMembershipOffers`, `getPublicBookingEligibility`, `getPublicPaymentOptions`, `checkBarberAvailability`, `getPublicAppointment`, `getPublicQueue`, `getPublicQueueEntry`, `getPublicWalkInStatus`, `accountBookings`, `accountBalances`, `exportMyAccountData`.
 
 ## Public and account mutations
 
@@ -27,6 +27,10 @@ mutation Book($requestKey: String!, $guestProof: String!, $body: String!) {
 | `startDepositCheckout` | `appointmentId`, `accessToken` |
 | `confirmDepositCheckout` | appointment and session |
 | `createPublicQueueEntry` | name, phone, service, barber |
+| `startGiftCardCheckout` | `amount`, `purchaserName`, `purchaserEmail`, `recipientName`, `recipientEmail`, `message` |
+| `confirmGiftCardOrder` | `giftCardId`, `token` |
+| `startProductCheckout` | `productId`, `buyerName`, `buyerEmail` |
+| `confirmProductOrder` | `orderId`, `token` |
 
 ## Dashboard projections
 
