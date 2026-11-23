@@ -1,0 +1,97 @@
+---
+title: Getting started with Tutor
+description: Clone the source, set the database, session secret and public address, run migrations, create the tutor account and run setup.
+icon: Terminal
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The live site is at [openfront-tutor-production.up.railway.app](https://openfront-tutor-production.up.railway.app) if you want to look before installing anything.
+
+## Requirements
+
+- Node.js 20 or later and npm.
+- A PostgreSQL database you are allowed to migrate.
+- A Stripe secret key and webhook secret if you want to take cards.
+- An SMTP relay if you want email. Without it, every message is logged as skipped and its link can be copied from the dashboard.
+
+<Steps>
+<Step>
+
+### Clone and install
+
+```bash
+git clone https://github.com/openshiporg/openfront-tutor.git
+cd openfront-tutor
+npm install
+cp .env.example .env
+```
+
+</Step>
+<Step>
+
+### Configure the environment
+
+Set at least `DATABASE_URL` and `SESSION_SECRET` (`openssl rand -hex 32`). Set `APP_ORIGIN` to the public address; locally that is `http://localhost:3000`.
+
+</Step>
+<Step>
+
+### Run it
+
+```bash
+npm run dev
+```
+
+This builds the Keystone schema, applies migrations and starts Next.js.
+
+</Step>
+<Step>
+
+### Create the tutor account
+
+Open `/dashboard`. On an empty database, `/dashboard/init` creates the first account with the **Tutor** role.
+
+</Step>
+<Step>
+
+### Run setup
+
+The first-run page asks for your name, business name, page address, country, currency, timezone, hourly rate, whether you teach online, in person or both, the subjects you teach and their levels. Leave **Start with a typical setup** ticked to begin with five session types, three packages, weekly hours and a written policy you can edit. See [Settings](/docs/openfront/tutor/settings).
+
+</Step>
+<Step>
+
+### Share your page
+
+Your page is `/book/<address>`. The home page at `/` shows the first tutor with booking open.
+
+</Step>
+</Steps>
+
+## Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string. Required. |
+| `SESSION_SECRET` | Signs sign-in cookies. Required. |
+| `APP_ORIGIN` | Public origin. Stripe returns here, and booking, invite and reset links use it. Railway's `RAILWAY_PUBLIC_DOMAIN` also works. Production refuses to start without one. |
+| `STRIPE_SECRET_KEY` | Turns on card payments. Without it the card buttons are hidden and families pay directly. |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret of the webhook pointed at `/api/payment-webhooks/stripe`. |
+| `PUBLIC_SIGNUPS_ALLOWED` | `true` lets anyone create an account without an invite. They get the Family role. Default `false`. |
+| `JOBS_SECRET` | Bearer token for `POST /api/jobs/run`. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email. Port 465 uses TLS. |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | Storage for homework and resource files. Local disk otherwise. |
+| `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | The dashboard assistant. Optional. |
+| `TEST_DATABASE_URL` | Tests only. The database name must end in `_test`. |
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Build the schema, apply migrations, start Next.js |
+| `npm run migrate` | Apply migrations (`prisma migrate deploy`) |
+| `npm run migrate:gen` | Generate a migration after a schema change |
+| `npm test` | Run the test suite against `TEST_DATABASE_URL` |
+| `npm run verify` | Type check, lint, then test |
+| `npm run seed:practice` | Fill one fictional tutor's practice for a public showcase. Does nothing if the practice already exists. |

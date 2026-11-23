@@ -1,0 +1,46 @@
+---
+title: Deployment
+description: Build and start commands, the Stripe webhook, and the cron that sends reminders.
+icon: Rocket
+---
+
+One Node process serves the public pages, the family account, the dashboard and GraphQL.
+
+## Railway
+
+`railway.toml` in the repository:
+
+```toml
+[build]
+buildCommand = "keystone build --no-ui && next build"
+
+[deploy]
+startCommand = "npm run migrate && next start"
+```
+
+Migrations run at start because the build cannot reach a private database.
+
+## Vercel
+
+The README has a Deploy with Vercel button that asks for `DATABASE_URL` and `SESSION_SECRET`. Set `APP_ORIGIN` as well.
+
+## Stripe webhook
+
+Point a Stripe webhook at `https://your-site/api/payment-webhooks/stripe` and put its signing secret in `STRIPE_WEBHOOK_SECRET`. It settles a payment even if the family closes the tab before returning. Without the secret the route answers 404 and payments are still confirmed when the family returns.
+
+## Jobs
+
+Reminders 24 hours before a lesson need a cron that calls the jobs endpoint:
+
+```bash
+curl -X POST -H "Authorization: Bearer $JOBS_SECRET" https://your-site/api/jobs/run
+```
+
+Each call, for every tutor: releases card holds that ended unpaid, tops up weekly series, expires packages past their date, and sends one reminder for each scheduled session starting in the next 24 hours. It returns `{ success, released, reminders }`. Holds, series and expiry also happen when the dashboard or a booking reads them, so only reminders depend on the cron.
+
+## Production checklist
+
+- `DATABASE_URL`, a long random `SESSION_SECRET` and `APP_ORIGIN` on HTTPS.
+- `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` if you take cards.
+- `JOBS_SECRET` and a cron if you want reminders.
+- SMTP for email, and S3 storage if more than one instance serves files.

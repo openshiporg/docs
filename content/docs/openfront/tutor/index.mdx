@@ -1,0 +1,56 @@
+---
+title: Openfront Tutor
+description: Self-hosted booking, lessons and billing for one tutor teaching one-to-one, online or in person.
+icon: GraduationCap
+---
+
+[Source](https://github.com/openshiporg/openfront-tutor) · [Live site](https://openfront-tutor-production.up.railway.app)
+
+Openfront Tutor is for one person teaching one-to-one, online or in person. Families book from the tutor's own page and pay by card or directly (bank transfer, a payment app, mobile money or cash). The tutor keeps families, students, sessions, notes, homework, packages of hours, invoices and earnings in one dashboard. No marketplace takes a cut.
+
+The live site runs one fictional tutor, Daniel Reyes, who teaches maths and physics for grades 8 to 12, online and in North Austin. His page is `/book/daniel-reyes`. The dashboard is at `/dashboard`.
+
+To install it, see [Getting started](/docs/openfront/tutor/getting-started).
+
+## Concepts
+
+| Concept | Meaning |
+| --- | --- |
+| Tutor profile | The business: page address (`slug`), name, photo, subjects, timezone, currency, booking rules, policies and payment instructions. |
+| Session type | Something a family books: length, price, online, in person or either, and whether new families may book it. |
+| Family and student | One guardian (parent or adult student) and one or more students. A family has a billing mode: pay as you book, monthly invoice, or a flat monthly fee. |
+| Session | One lesson. Its **funding** is `free`, `package`, `card`, `invoice` or `flat`, decided by the server when it is booked. |
+| Package and purchase | A prepaid number of hours (for example 10 hours at 10% off, valid 12 months). A purchase holds the family's balance. |
+| Credit entry | One row in the package ledger: grant, hold, release, debit, reversal, expire, refund or adjustment. A balance is the sum of its rows. |
+| Invoice | A monthly bill drafted from the month's lessons, sent to the family and paid by card or directly. |
+| Reported payment | A family says they paid directly. Nothing changes until the tutor confirms it. |
+
+## Ownership
+
+The first account on a deployment is the tutor and gets the **Tutor** role. Every later account is a **Family** account with no dashboard and no generic list access. Families use the family account at `/account`, which only reaches their own records through named operations.
+
+## Stack
+
+Next.js 16 (App Router) with React 19, Keystone 6 with GraphQL at `/api/graphql`, Prisma with PostgreSQL, Tailwind CSS and shadcn/ui. Node.js 20 or later.
+
+## Source layout
+
+| Path | Contents |
+| --- | --- |
+| `app/(storefront)/` | The tutor's page, booking, booking and invoice links, contact form and the family account. |
+| `app/dashboard/(admin)/platform/` | Thin wrappers for the tutor's dashboard pages. |
+| `features/platform/` | Today, Calendar, Families, Students, Homework, Resources, Billing, Earnings, Inquiries, Reviews and Settings. |
+| `features/storefront/` | The public and family screens. |
+| `features/keystone/models/` | Lists in `business.ts`, `people.ts`, `teaching.ts` and `money.ts`. |
+| `features/keystone/mutations/tutor.ts` | Every custom query and mutation. |
+| `features/keystone/utils/` | Booking, the package ledger, payments, setup and email. |
+| `features/keystone/api/` | The jobs endpoint, Stripe webhook, calendar feeds and file downloads. |
+| `docs/feature-matrix.md` | The contract between the backend and the storefront, row by row. |
+
+## Main workflows
+
+1. **Set up.** Create the first account and fill in the setup form. **Start with a typical setup** adds five session types, three packages, weekly hours and a written policy. See [Settings](/docs/openfront/tutor/settings).
+2. **Take a first booking.** A new family books a free consultation or a first lesson on `/book/<address>`, and gets a private booking link. See [Storefront](/docs/openfront/tutor/storefront).
+3. **Teach.** **Today** lists the day's sessions. Complete one with a note and homework in one form, or mark a no-show. See [Today and Calendar](/docs/openfront/tutor/today-calendar).
+4. **Charge.** Per session by card, prepaid packages, or a monthly invoice. Families can also pay directly and report it. See [Billing](/docs/openfront/tutor/billing).
+5. **Keep the books.** Earnings, expenses and CSV exports of sessions and payments. See [Earnings](/docs/openfront/tutor/earnings).

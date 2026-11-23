@@ -1,0 +1,37 @@
+---
+title: Families and students
+description: The families list, the family page, invites, billing mode, student pages, progress marks, inquiries and reviews.
+icon: Users
+---
+
+## Families
+
+Route: `/dashboard/platform/families`. Operation: `familiesOverview(status, search)`.
+
+Family status is `lead`, `active`, `paused`, `former` or `blocked`. A blocked family cannot book online.
+
+## Family page
+
+Route: `/dashboard/platform/families/[id]`. Operation: `tutorFamily(id)`.
+
+Contacts, students, billing mode, sessions, packages with their ledger, invoices, payments and private notes. From here the tutor can:
+
+- set the billing mode: `pay_as_you_book`, `invoice` (monthly invoice) or `flat_monthly` (with `monthlyFeeCents`);
+- add or edit students (`saveStudentAsTutor`);
+- **invite** the family (`inviteFamily`): a private claim link to `/account/claim`, emailed unless `send` is false and always available to copy. A new link replaces the old one. A family that already has an account is told to use a password link instead;
+- sell a package by hand (`sellPackage`), cancel an unpaid one (`cancelPackagePurchase`), refund unused minutes (`refundPackage`) or adjust minutes with a reason (`adjustMinutes`);
+- record a cash, transfer or mobile money payment (`recordPayment`).
+
+## Student page
+
+Route: `/dashboard/platform/students/[id]`. Operation: `tutorStudent(id)`.
+
+Level, school, goals, needs, a per-student lesson link, subjects, sessions, homework and progress marks. Progress marks (label, date, score out of a total, note) are added and removed here.
+
+## Inquiries
+
+Route: `/dashboard/platform/inquiries`. Messages sent from `/contact/<address>`. Status is `new`, `contacted`, `converted` or `closed`. `convertInquiry` turns one into a family; `setInquiryStatus` changes the status.
+
+## Reviews
+
+Route: `/dashboard/platform/reviews`. Families write a review (1 to 5) from their account. It is `pending` until the tutor publishes or hides it (`moderateReview`). Turn reviews off with `reviewsEnabled` in Settings.

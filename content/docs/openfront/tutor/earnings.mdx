@@ -1,0 +1,23 @@
+---
+title: Earnings
+description: Money in, refunds, hours taught, packages sold, prepaid and outstanding balances, expenses, and CSV exports.
+icon: Wallet
+---
+
+Route: `/dashboard/platform/earnings`. Needs `canViewEarnings`.
+
+`myEarnings(from, to)` reads confirmed payments in the range and returns:
+
+| Figure | Meaning |
+| --- | --- |
+| Money in | Payments less refunds (`inCents`, `refundsCents`) |
+| By method and by month | The same, split by payment method and by month in the tutor's timezone |
+| Sessions and hours taught | Completed sessions that started in the range |
+| Packages sold | Count and value of packages bought in the range |
+| Prepaid | Minutes left on active packages and their unearned value |
+| Outstanding | What sent invoices still owe |
+| Expenses and net | Expenses in the range by category, and money in less expenses |
+
+Expenses are recorded on the same page with a date, category (`travel`, `materials`, `software`, `room`, `other`), amount and note.
+
+`exportCsv(kind, from, to)` exports `sessions.csv` (kind `sessions`) or `payments.csv` (any other kind) for your accountant.

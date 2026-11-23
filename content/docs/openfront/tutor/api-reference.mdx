@@ -1,0 +1,42 @@
+---
+title: API reference
+description: The custom GraphQL operations for visitors, families and the tutor, and the HTTP routes.
+icon: Code
+---
+
+Everything is on `POST /api/graphql`. Custom operations are in `features/keystone/mutations/tutor.ts`. Except `publicTutor` and `homeTutor`, they return `CommandResult { success, error, data }`; when `success` is false, `error` is a sentence to show as it is. The repository's `docs/feature-matrix.md` gives inputs and the shape of `data` for each one.
+
+## Public
+
+`homeTutor`, `publicTutor`, `publicSlots`, `publicOpenDays`, `bookFirstSession`, `publicBooking`, `payForBooking`, `confirmBookingPayment`, `cancelMyBooking`, `rescheduleMyBooking`, `sendInquiry`, `claimFamilyAccount`, `publicInvoice`, `payInvoiceByLink`, `confirmInvoicePayment`.
+
+## Family (signed in)
+
+`myFamily`, `bookSession`, `mySessions`, `mySession`, `cancelSession`, `rescheduleSession`, `payForSession`, `confirmSessionPayment`, `myStudents`, `saveStudent`, `myHomework`, `handInHomework`, `myProgress`, `myPackages`, `buyPackage`, `confirmPackagePayment`, `myInvoices`, `myInvoice`, `payInvoice`, `reportPayment`, `myResources`, `submitReview`, `updateMyContact`, `myCalendarFeedUrl`.
+
+## Tutor
+
+| Area | Operations |
+| --- | --- |
+| Setup | `setUpMyBusiness` |
+| Today and sessions | `today`, `completeSession`, `saveSessionNote`, `markNoShow`, `cancelSessionAsTutor`, `rescheduleSessionAsTutor`, `excuseSession`, `reopenSession`, `tutorSession`, `sessionLink` |
+| Calendar | `calendar`, `createSessionAsTutor`, `saveSeries`, `pauseSeries`, `endSeries`, `clearSkippedWeek` |
+| Families | `familiesOverview`, `tutorFamily`, `inviteFamily`, `saveStudentAsTutor`, `tutorStudent`, `setInquiryStatus`, `convertInquiry`, `moderateReview` |
+| Homework | `homeworkBoard`, `reviewHomework` |
+| Packages | `sellPackage`, `cancelPackagePurchase`, `refundPackage`, `adjustMinutes` |
+| Invoices | `readyToInvoice`, `draftInvoice`, `addInvoiceLine`, `removeInvoiceLine`, `sendInvoice`, `invoiceLink`, `voidInvoice`, `tutorInvoice` |
+| Payments | `confirmPayment`, `rejectPayment`, `recordPayment`, `refundPayment`, `paymentSettings` |
+| Earnings | `myEarnings`, `exportCsv` |
+| Calendar feed | `tutorCalendarFeedUrl` |
+
+The tutor's invoice creation is `draftInvoice` because Keystone already owns `createInvoice`.
+
+## HTTP routes
+
+| Route | Purpose |
+| --- | --- |
+| `POST /api/payment-webhooks/stripe` | Stripe webhook |
+| `POST /api/jobs/run` | Holds, series, package expiry and reminders. Needs `Authorization: Bearer $JOBS_SECRET`. |
+| `GET /api/calendar/[feed]`, `GET /api/calendar/session/[id]` | iCal feed and one session's `.ics` |
+| `GET /api/files/[kind]/[id]` | Homework and resource files |
+| `/api/completion`, `/api/mcp-transport/[transport]` | The dashboard assistant and MCP access with OAuth tokens from `/oauth/*` |

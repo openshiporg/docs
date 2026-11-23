@@ -1,0 +1,42 @@
+---
+title: Storefront
+description: The tutor's page, booking for new families, the private booking and invoice links, and the contact form.
+icon: Store
+---
+
+The storefront lives in `features/storefront` and `app/(storefront)`.
+
+| Route | Page |
+| --- | --- |
+| `/` | The first tutor with booking open (`homeTutor`) |
+| `/t/[slug]` | A tutor's page by address |
+| `/book/[slug]` | Book a session |
+| `/booking/[id]?t=<token>` | The private booking link |
+| `/invoice/[id]?t=<token>` | Pay an invoice by link |
+| `/contact/[slug]` | Ask about tutoring |
+| `/account/*` | The [family account](/docs/openfront/tutor/family-account) |
+
+## The tutor's page
+
+`publicTutor(slug)` returns the profile, subjects, session types, packages, weekly hours, published reviews and the rating. `cardPayments` is true only when Stripe is really usable; otherwise families see `paymentInstructions`.
+
+## Booking as a new family
+
+1. `publicOpenDays` lists days with open times (14 by default, up to 42 at once), and `publicSlots(slug, sessionTypeId, date, timezone)` lists the times for one day. Times are shown in the family's own timezone and named.
+2. `bookFirstSession` takes the guardian's name, an email or phone, the student's name and level, a message and the family's timezone. Only session types marked **open to new families** are accepted.
+3. The slot is re-checked inside a per-tutor lock, so there is no double booking ("That time was just taken. Choose another.").
+4. The answer has the booking id, a private token, whether payment is needed, and when the hold ends.
+
+## The booking link
+
+`/booking/<id>?t=<token>` calls `publicBooking`. The meeting link is hidden while the time is only held. From the link the family can:
+
+- pay by card (`payForBooking`, then `confirmBookingPayment` on return). The countdown is `holdEndsAt`; after it the session is `released`;
+- cancel (`cancelMyBooking`) after reading the terms shown in plain words;
+- reschedule (`rescheduleMyBooking`), up to `reschedulesAllowed` times and not inside the cancellation window;
+- download an `.ics` for the session;
+- create a family account from the booking (`claimFamilyAccount`).
+
+## Contact
+
+`/contact/<address>` sends an inquiry (`sendInquiry`) to the tutor's **Inquiries** page.

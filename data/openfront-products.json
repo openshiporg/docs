@@ -348,5 +348,25 @@
     "href": "/docs/openfront/senior-care",
     "sourceUrl": "https://github.com/openshiporg/openfront-senior-care",
     "catalogUrl": null
+  },
+  {
+    "id": "barber",
+    "repository": "openfront-barber",
+    "name": "Barber",
+    "description": "Independent barber booking page with card deposits, unpaid holds, checkout with tips and retail products, client preferences, chair rent and earnings.",
+    "color": "#b45309",
+    "href": "/docs/openfront/barber",
+    "sourceUrl": "https://github.com/openshiporg/openfront-barber",
+    "catalogUrl": null
+  },
+  {
+    "id": "tutor",
+    "repository": "openfront-tutor",
+    "name": "Tutor",
+    "description": "Independent tutor booking page with family accounts, session notes and homework, weekly series, packages of hours, monthly invoices, card and direct payments, and earnings.",
+    "color": "#7c3aed",
+    "href": "/docs/openfront/tutor",
+    "sourceUrl": "https://github.com/openshiporg/openfront-tutor",
+    "catalogUrl": null
   }
 ]

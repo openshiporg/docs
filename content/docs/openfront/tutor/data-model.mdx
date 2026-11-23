@@ -1,0 +1,52 @@
+---
+title: Data model
+description: The lists by file, their key fields, and status values.
+icon: Database
+---
+
+Lists live in `features/keystone/models`. Money is in minor units (`…Cents`) of the tutor's `currencyCode`.
+
+| File | Lists |
+| --- | --- |
+| `business.ts` | `TutorProfile`, `Subject`, `SessionType`, `WeeklyHours`, `TimeOff`, `Package` |
+| `people.ts` | `Family`, `Student`, `Inquiry`, `Review` |
+| `teaching.ts` | `Session`, `SessionNote`, `Homework`, `ProgressMark`, `Resource`, `RecurringSeries` |
+| `money.ts` | `PackagePurchase`, `CreditEntry`, `Invoice`, `InvoiceLine`, `Payment`, `PaymentProvider`, `PaymentSession`, `PaymentWebhookEvent`, `Expense`, `NotificationLog` |
+| Others | `User`, `Role`, `OAuthApp`, `OAuthToken` |
+
+## Key fields
+
+| List | Key fields |
+| --- | --- |
+| `TutorProfile` | `businessName`, `tutorName`, `slug`, `headline`, `bio`, `qualifications`, `photoUrl`, `heroImageUrl`, `country`, `timezone`, `currencyCode`, `teachesOnline`, `teachesInPerson`, `inPersonArea`, `defaultMeetingUrl`, booking rules, `paymentInstructions`, `policiesText`, `invoiceDueDays`, `reviewsEnabled` |
+| `SessionType` | `name`, `durationMinutes`, `priceCents`, `mode` (`online`, `in_person`, `either`), `openToNewFamilies`, `maxStudents` (1 to 4), `subjects`, `packages` |
+| `Package` | `name`, `minutes`, `priceCents`, `validMonths`, `appliesTo` (empty means any type) |
+| `Family` | `guardianName`, `email`, `phone`, second contact, `status`, `billingMode`, `monthlyFeeCents`, `timezone`, `privateNotes`, `user` |
+| `Student` | `firstName`, `lastName`, `level`, `school`, `birthYear`, `goals`, `needs`, `meetingUrl`, `status`, `subjects` |
+| `Session` | `family`, `students`, `sessionType`, `series`, `startsAt`, `endsAt`, `mode`, `status`, `funding`, `source`, `paymentStatus`, `priceCents`, `chargedCents`, `chargedMinutes`, `holdEndsAt`, `cancelledBy`, `rescheduleCount`, `reminderSentAt` |
+| `SessionNote` | `covered`, `wentWell`, `workOnNext`, `effort`, `privateNote`, `sharedAt` |
+| `PackagePurchase` | `minutesGranted`, `minutesRemaining`, `pricePaidCents`, `refundedCents`, `status`, `expiresAt` |
+| `CreditEntry` | `purchase`, `session`, `kind`, `minutes`, `note` |
+| `Invoice` | `number`, `status`, `issuedAt`, `dueAt`, `periodMonth`, `subtotalCents`, `totalCents`, `paidCents`, `lines` |
+| `Payment` | `kind`, `method`, `status`, `amountCents`, `refundedCents`, `reference`, `providerReference`, `reportedByGuardian` |
+
+## Status values
+
+| Field | Values |
+| --- | --- |
+| `Session.status` | `pending_payment`, `scheduled`, `completed`, `cancelled`, `late_cancelled`, `no_show`, `excused`, `released` |
+| `Session.funding` | `package`, `card`, `invoice`, `flat`, `free` |
+| `Session.paymentStatus` | `not_due`, `unpaid`, `paid`, `refunded`, `part_refunded` |
+| `Session.source` | `online`, `tutor`, `series` |
+| `Family.status` | `lead`, `active`, `paused`, `former`, `blocked` |
+| `Family.billingMode` | `pay_as_you_book`, `invoice`, `flat_monthly` |
+| `Homework.status` | `assigned`, `handed_in`, `reviewed` |
+| `RecurringSeries.status` | `active`, `paused`, `ended` |
+| `PackagePurchase.status` | `awaiting_payment`, `active`, `used_up`, `expired`, `refunded`, `cancelled` |
+| `CreditEntry.kind` | `grant`, `hold`, `release`, `debit`, `reversal`, `expire`, `refund`, `adjustment` |
+| `Invoice.status` | `draft`, `sent`, `paid`, `void` |
+| `Payment.method` | `stripe`, `cash`, `bank_transfer`, `mobile_money`, `other` |
+| `Payment.status` | `reported`, `confirmed`, `rejected`, `refunded`, `partially_refunded` |
+| `NotificationLog.status` | `sent`, `failed`, `skipped` |
+
+Status, money and ledger fields are command-only: the generic list mutations cannot change them.

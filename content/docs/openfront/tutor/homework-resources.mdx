@@ -1,0 +1,21 @@
+---
+title: Homework and resources
+description: Homework set with a session note, handed in by the family and reviewed, and files or links shared with students.
+icon: ClipboardCheck
+---
+
+## Homework
+
+Route: `/dashboard/platform/homework`. Operations: `homeworkBoard`, `reviewHomework`.
+
+Homework is usually set when completing a session. Each item has a title, instructions, a due date, and a link or a file. Status goes `assigned` → `handed_in` (the family hands it in with a comment or a link) → `reviewed` (the tutor leaves feedback).
+
+## Resources
+
+Route: `/dashboard/platform/resources`.
+
+A resource is a file or a link with a note, shared with chosen students or, with none chosen, with every family. Families see them under **Resources** in their account.
+
+## Files
+
+Homework and resource files download from `/api/files/<kind>/<id>` (`homework` or `resource`). Only the tutor who owns the file and the family it was shared with can download it. Files are stored in S3 when `S3_BUCKET_NAME` is set, otherwise on local disk.

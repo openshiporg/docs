@@ -1,0 +1,20 @@
+---
+title: Payment providers
+description: Stripe Checkout with read-back and a signed webhook, and direct payments the tutor confirms.
+icon: CreditCard
+---
+
+The adapters are in `features/integrations/payment` (`manual` and `stripe`). Setup creates the manual provider, and the Stripe provider when `STRIPE_SECRET_KEY` is set.
+
+## Stripe
+
+Set `STRIPE_SECRET_KEY`. Card buttons appear only when Stripe is usable; **Settings → Payments** shows the status read from Stripe.
+
+- Sessions, packages and invoices are paid through Stripe Checkout. Stripe returns to a fixed page with `paid=1` or `paid=0`, and the page calls the matching confirm operation.
+- A payment is confirmed by reading the Checkout Session back from Stripe, never from the browser.
+- The webhook at `/api/payment-webhooks/stripe` verifies the `Stripe-Signature` header with `STRIPE_WEBHOOK_SECRET`, stores each event once in `PaymentWebhookEvent`, and settles `checkout.session.completed`, `checkout.session.async_payment_succeeded` and `checkout.session.expired`. If settling fails, the event is released so Stripe retries it.
+- Refunds go back to the card.
+
+## Direct payments
+
+For bank transfer, Wise, UPI, M-Pesa or cash, write your **payment instructions** in Settings. The family reports a payment (`reportPayment`), and you confirm or reject it (`confirmPayment`, `rejectPayment`). You can also record one yourself (`recordPayment`).

@@ -1,0 +1,18 @@
+---
+title: Email and calendar
+description: SMTP email with a message log, copyable links, reminders, and iCal feeds.
+icon: Mail
+---
+
+## Email
+
+Confirmations, reminders, invoices, invites and shared notes are sent with SMTP. Each message writes a `NotificationLog` row with status `sent`, `failed` or `skipped`. A mail failure never undoes the action that triggered it.
+
+Without `SMTP_HOST`, every message is logged as skipped, and every link it would have carried has a copy button in the dashboard, so you can send it by WhatsApp or text.
+
+Reminders go out 24 hours before a scheduled session when a cron calls `POST /api/jobs/run` with `Authorization: Bearer $JOBS_SECRET`. See [Deployment](/docs/openfront/tutor/deployment).
+
+## Calendar
+
+- `GET /api/calendar/session/<id>?t=<token>` returns one session as `.ics`, for the booking token, the signed-in family, or the tutor.
+- `GET /api/calendar/<feed>` is a private iCal feed. The tutor gets one from Settings (`tutorCalendarFeedUrl`) and each family from its account (`myCalendarFeedUrl`). Asking again replaces the old link.

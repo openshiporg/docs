@@ -1,0 +1,11 @@
+---
+title: External storefronts
+description: Give an LLM the Tutor storefront skill to adapt the built-in public pages and family account or create a separate client.
+icon: AppWindow
+---
+
+To create a custom Tutor site, copy the skill and give it to your LLM. The skill explains how `features/storefront` and `app/(storefront)` implement the tutor's page, booking, the booking and invoice links and the family account.
+
+Skill file: [`/skills/openfront-tutor-custom-storefront/SKILL.md`](/skills/openfront-tutor-custom-storefront/SKILL.md)
+
+The repository's `docs/feature-matrix.md` lists every storefront capability (S1 to S21) with its operation, inputs and the shape of `data`. Stripe always returns to fixed pages built on the server from `APP_ORIGIN`, so a separate client cannot choose a return address. On `paid=1`, call the matching `confirm…Payment` operation once, then read again.

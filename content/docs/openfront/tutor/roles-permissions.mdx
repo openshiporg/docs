@@ -1,0 +1,22 @@
+---
+title: Roles and permissions
+description: The Tutor and Family roles and the flags each page and list checks.
+icon: KeyRound
+---
+
+| Flag | Allows |
+| --- | --- |
+| `canAccessDashboard` | Signing in to `/dashboard` |
+| `canManageBusiness` | Business details, session types, packages, hours, time off |
+| `canManageFamilies` | Families, students, inquiries, reviews, package balances |
+| `canManageSessions` | Sessions, notes, homework, marks, resources, series |
+| `canManagePayments` | Billing, invoices, recording and refunding payments |
+| `canViewEarnings` | Earnings and exports |
+| `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles` | Users and roles |
+
+## Built-in roles
+
+- **Tutor** is created with the first account at `/dashboard/init` and has every flag.
+- **Family** is attached to every later account, whether it was claimed from an invite or a booking (`claimFamilyAccount`) or made through open sign-up. It has every flag off: no dashboard and no generic list access. A family only reaches its own records through the `my…` operations, which resolve the family from the signed-in session.
+
+The caller can never choose a role. Open sign-up is off unless `PUBLIC_SIGNUPS_ALLOWED=true`.

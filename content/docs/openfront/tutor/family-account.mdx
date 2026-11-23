@@ -1,0 +1,33 @@
+---
+title: Family account
+description: Sign-in, booking as a known family, sessions, students, homework, progress, packages, invoices, resources and reviews.
+icon: UserRound
+---
+
+The family account lives under `/account`. Every operation resolves the family from the signed-in session.
+
+| Route | Page | Operations |
+| --- | --- | --- |
+| `/account/signin`, `/account/reset` | Sign in and reset a password | Keystone `authenticateUserWithPassword`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken` |
+| `/account/claim` | Create the account from an invite (`?f=<familyId>&t=<token>`) or a booking | `claimFamilyAccount` |
+| `/account` | Home: upcoming sessions, students, package balance, money owed, homework due, new notes | `myFamily` |
+| `/account/book` | Book as a known family | `publicSlots`, `bookSession` |
+| `/account/sessions`, `/account/sessions/[id]` | Sessions, cancel, reschedule, pay | `mySessions`, `mySession`, `cancelSession`, `rescheduleSession`, `payForSession`, `confirmSessionPayment` |
+| `/account/students` | Students | `myStudents`, `saveStudent` |
+| `/account/homework` | Homework and hand-in | `myHomework`, `handInHomework` |
+| `/account/progress` | Marks, shared notes and homework per student | `myProgress` |
+| `/account/packages` | Package balances and buying | `myPackages`, `buyPackage`, `confirmPackagePayment` |
+| `/account/invoices`, `/account/invoices/[id]` | Invoices and paying | `myInvoices`, `myInvoice`, `payInvoice`, `confirmInvoicePayment` |
+| `/account/resources` | Files and links the tutor shared | `myResources` |
+| `/account/review` | Write a review | `submitReview` |
+| `/account/settings` | Contact details, timezone, calendar feed | `updateMyContact`, `myCalendarFeedUrl` |
+
+A tutor who signs in here is told to use `/dashboard`.
+
+## Booking as a known family
+
+`bookSession` chooses funding on the server: package minutes if a package covers it, otherwise the family's billing mode. If the answer says `needsPayment`, the family pays with `payForSession`.
+
+## Paying directly
+
+When a family may pay directly, the page shows the tutor's `paymentInstructions`. `reportPayment` records what the family sent (cash, bank transfer, mobile money or other, with a reference). Nothing changes until the tutor confirms it.

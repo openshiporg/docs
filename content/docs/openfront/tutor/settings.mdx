@@ -1,0 +1,51 @@
+---
+title: Settings
+description: First-run setup, business details, booking rules and policies, session types, packages, weekly hours, payments and the message log.
+icon: Settings
+---
+
+## First-run setup
+
+Route: `/dashboard/platform/setup`. Operation: `setUpMyBusiness`.
+
+It creates the `TutorProfile`, one `Subject` per subject entered, weekly hours, the manual payment provider and, when `STRIPE_SECRET_KEY` is set, the Stripe provider. A page address that is taken is refused.
+
+With **Start with a typical setup** it also adds, priced from the hourly rate (60 by default):
+
+| Session type | Length | Price | New families |
+| --- | --- | --- | --- |
+| Free 20-minute consultation | 20 min | free | yes |
+| First lesson | 60 min | 1 hour | yes |
+| 60-minute lesson | 60 min | 1 hour | no |
+| 90-minute lesson | 90 min | 1.5 hours | no |
+| Exam review session | 120 min | 2 hours | no |
+
+Packages: 5 hours at 5% off, 10 hours at 10% off and 20 hours at 15% off, each valid 12 months. Weekly hours: Monday to Thursday 15:00 to 20:00 and Saturday 09:00 to 13:00. A written policy (24-hour window, late cancels and no-shows charged in full) and default payment instructions you can edit.
+
+Without the typical setup, hours are Monday to Friday 15:00 to 20:00 and nothing else is added.
+
+## Settings pages
+
+| Route | What it edits |
+| --- | --- |
+| `/dashboard/platform/settings` | Business name, your name, headline, bio, qualifications, photo, page picture, contact, city, country, default lesson link, and the private calendar feed (`tutorCalendarFeedUrl`) |
+| `/dashboard/platform/settings/booking` | Booking open, slot spacing, buffer, shortest notice, furthest ahead, cancellation window, late cancel and no-show percent, unpaid hold, reschedules allowed, policies text, reviews |
+| `/dashboard/platform/settings/services` | Session types and subjects |
+| `/dashboard/platform/settings/packages` | Packages |
+| `/dashboard/platform/settings/hours` | Weekly hours and breaks |
+| `/dashboard/platform/settings/payments` | Stripe status read from Stripe (`paymentSettings`), payment instructions, invoice due days, currency |
+| `/dashboard/platform/settings/messages` | The message log (`NotificationLog`): every email sent, failed or skipped |
+
+## Booking rules
+
+| Field | Default | Range |
+| --- | --- | --- |
+| `slotMinutes` | 30 | 5 to 120 |
+| `bufferMinutes` | 10 | 0 to 120 |
+| `minNoticeHours` | 12 | 0 to 720 |
+| `maxAdvanceDays` | 60 | 1 to 365 |
+| `cancellationWindowHours` | 24 | 0 to 168 |
+| `lateCancelPercent`, `noShowPercent` | 100 | 0 to 100 |
+| `unpaidHoldMinutes` | 60 | 30 to 1440 |
+| `reschedulesAllowed` | 2 | 0 to 10 |
+| `invoiceDueDays` | 7 | 0 to 90 |

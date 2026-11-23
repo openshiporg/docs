@@ -1,0 +1,38 @@
+---
+title: Billing
+description: How a session is funded, packages of hours and their ledger, monthly invoices, card and direct payments, and refunds.
+icon: Receipt
+---
+
+Route: `/dashboard/platform/billing`, with `/billing/invoices/[id]`, `/billing/payments` and `/billing/payments/[id]`. Needs `canManagePayments`.
+
+## How a session is paid
+
+The server decides a session's funding when it is booked:
+
+1. A free session type is `free`.
+2. Otherwise, if the family has a package that covers the type and has enough minutes, it is `package` and the minutes are held.
+3. Otherwise the family's billing mode decides: `invoice` for monthly invoice families, `flat` for a flat monthly fee, else `card`.
+
+A new family booking from the public page always pays per session. When Stripe is set up, a card-funded online booking is held as `pending_payment` for **unpaidHoldMinutes** (60 by default) until it is paid; after that it is `released` and the time opens again. Without Stripe, the session is booked and the family pays the tutor directly.
+
+## Packages
+
+Packages are offered under **Settings → Packages**. A family buys one by card or directly (`buyPackage`), or the tutor sells one by hand. A purchase is `awaiting_payment`, `active`, `used_up`, `expired`, `refunded` or `cancelled`. Every change to its minutes is a `CreditEntry`: a booking holds minutes, completing debits them, cancelling in time releases them. The jobs endpoint and the dashboard expire purchases past their date.
+
+## Invoices
+
+**Ready to invoice** (`readyToInvoice`) lists the month's lessons for invoice families. `draftInvoice` drafts one; lines can be added and removed (`addInvoiceLine`, `removeInvoiceLine`) while it is a draft. `sendInvoice` numbers it and emails it with a private link (`/invoice/<id>?t=<token>`), which `invoiceLink` can also copy. Status is `draft`, `sent`, `paid` or `void` (`voidInvoice`). Due date is `invoiceDueDays` after sending (7 by default).
+
+## Payments
+
+| Method | How it arrives |
+| --- | --- |
+| `stripe` | Stripe Checkout, confirmed by reading the session back from Stripe and by the signed webhook |
+| `cash`, `bank_transfer`, `mobile_money`, `other` | Recorded by the tutor (`recordPayment`), or reported by the family (`reportPayment`) and then confirmed or rejected |
+
+Payment status is `reported`, `confirmed`, `rejected`, `refunded` or `partially_refunded`. `refundPayment` refunds a payment; a card payment goes back to the card. **All payments** lists them with filters.
+
+## Cancellation and no-show charges
+
+Cancelling before the cancellation window (24 hours by default) releases package minutes and refunds card payments. Inside the window, `lateCancelPercent` of the price (100% by default) is charged, and a no-show charges `noShowPercent`. The family sees the exact terms in plain words before confirming. The tutor can excuse any one of them.

@@ -1,0 +1,30 @@
+---
+title: External dashboards
+description: Give an LLM the Tutor dashboard skill to adapt the built-in dashboard or create a separate client.
+icon: LayoutDashboard
+---
+
+To create a custom Tutor dashboard, copy the skill and give it to your LLM. The skill explains how `features/platform` implements each page and which named operations in `features/keystone/mutations/tutor.ts` it calls.
+
+Skill file: [`/skills/openfront-tutor-custom-dashboard/SKILL.md`](/skills/openfront-tutor-custom-dashboard/SKILL.md)
+
+## Built-in routes
+
+| Route | Page |
+| --- | --- |
+| `/dashboard/platform/today` | Today and the attention list |
+| `/dashboard/platform/calendar` | Week calendar, add a session, time off |
+| `/dashboard/platform/calendar/series` | Weekly series |
+| `/dashboard/platform/families`, `/families/[id]` | Families and the family page |
+| `/dashboard/platform/students/[id]` | Student page |
+| `/dashboard/platform/sessions/[id]` | Session page |
+| `/dashboard/platform/homework` | Homework board |
+| `/dashboard/platform/resources` | Resources |
+| `/dashboard/platform/billing`, `/billing/invoices/[id]`, `/billing/payments`, `/billing/payments/[id]` | Billing |
+| `/dashboard/platform/earnings` | Earnings and expenses |
+| `/dashboard/platform/inquiries` | Inquiries |
+| `/dashboard/platform/reviews` | Reviews |
+| `/dashboard/platform/settings` and its sub-pages | Settings |
+| `/dashboard/platform/setup` | First-run setup |
+
+The full page-to-operation map is the "Platform rows" table in `docs/feature-matrix.md` in the repository. A separate client must call these named operations; status, money and ledger fields are closed to the generic list mutations.

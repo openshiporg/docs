@@ -1,0 +1,18 @@
+---
+title: Troubleshooting
+description: Common messages and fixes.
+icon: LifeBuoy
+---
+
+| Message or symptom | Cause and fix |
+| --- | --- |
+| `Can't reach database server` during build | Build with `keystone build --no-ui && next build` and start with `npm run migrate && next start`. |
+| "Set APP_ORIGIN (or RAILWAY_PUBLIC_DOMAIN) before starting production." | Set `APP_ORIGIN` to your HTTPS address. |
+| No card buttons | `STRIPE_SECRET_KEY` is not set or Stripe is not usable. Check **Settings → Payments**. Families see your payment instructions instead. |
+| Webhook returns 404 | `STRIPE_WEBHOOK_SECRET` is not set, or the path is not `/api/payment-webhooks/stripe`. |
+| No reminders | Nothing calls `POST /api/jobs/run`, or `JOBS_SECRET` does not match (401). |
+| Emails never arrive | `SMTP_HOST` is not set, so messages are logged as skipped. Check **Settings → Messages** and copy the link from the dashboard. |
+| "This kind of session is for current families…" | The type is not marked open to new families. |
+| "That time was just taken. Choose another." | Someone booked the slot first. |
+| A booking shows `released` | The card hold ended before payment. The family books again. |
+| Sign-up page is closed | `PUBLIC_SIGNUPS_ALLOWED` is not `true`. Invite the family from their page instead. |

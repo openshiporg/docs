@@ -1,0 +1,32 @@
+---
+title: Today and Calendar
+description: The day's sessions, completing a lesson with a note and homework, no-shows, the week calendar, weekly series and time off.
+icon: CalendarDays
+---
+
+## Today
+
+Route: `/dashboard/platform/today`. Operation: `today`.
+
+Today lists the day's sessions in order, with each student's last "work on next", homework due and the lesson link. Its attention list shows sessions not yet closed, reported payments to confirm or reject (`confirmPayment`, `rejectPayment`), overdue invoices, families low on package minutes, new inquiries, reviews to approve, homework handed in, and series weeks that need a new time. A setup checklist shows whether Stripe, email, booking, hours, session types and a lesson link are in place. Until setup is done, Today links to the setup form.
+
+- **Complete**: `completeSession(sessionId, note, homework[], share)` records the note (what was covered, what went well, what to work on next, effort, and a private note) and any homework in one form. With `share`, the family sees the note. Later edits use `saveSessionNote`.
+- **No-show**: `markNoShow`. A no-show is charged `noShowPercent` of the price (100% by default).
+
+## Session page
+
+Route: `/dashboard/platform/sessions/[id]`. Operations: `tutorSession`, `sessionLink`.
+
+Shows the session, its note and the money trail. From here the tutor can cancel or move it (`cancelSessionAsTutor`, `rescheduleSessionAsTutor`), excuse a late cancel or no-show so nothing is charged (`excuseSession`), or reopen a completed session (`reopenSession`).
+
+## Calendar
+
+Route: `/dashboard/platform/calendar`. Operation: `calendar(from, to)`.
+
+The week with sessions, time off and open hours. **Add a session** books by hand (`createSessionAsTutor`). Time off is added and removed here, with the sessions it affects.
+
+## Weekly series
+
+Route: `/dashboard/platform/calendar/series`. Operations: `saveSeries`, `pauseSeries`, `endSeries`, `clearSkippedWeek`.
+
+A series books the same family, students and session type at the same time each week. Sessions are created ahead and topped up when the calendar is read or the jobs endpoint runs. A week that clashes is skipped and listed so the tutor can clear it.
