@@ -16,12 +16,12 @@ The storefront is not under `app/(storefront)`. Its routes are thin files at the
 
 | Route | Screen | Purpose |
 |---|---|---|
-| `/` | `RiderHomePage` | Browse active ride services, get a quote, and request a ride. |
-| `/book?service=ID` | `RiderHomePage` | Same booking flow with a service preselected. |
-| `/rides/[confirmationCode]` | `TripStatusPage` | Trip status, timeline, fare, payments, and reviews. Signed-in riders can pay by card, rate the ride, get help, report a safety issue, or message the driver. |
-| `/account`, `/account/signin` | `RiderSignInPage` | Rider sign-in. |
-| `/account/signup` | `RiderSignInPage` | Rider signup. Open when `riderAccountOptions.registrationEnabled` is true: any active fleet has rider accounts `open`, or `PUBLIC_SIGNUPS_ALLOWED` is `true`. Signup calls the generic `createUser` mutation. |
-| `/account/rides` | `RiderAccountPage` | Request status and trip history for the signed-in rider. |
+| `/` | `RiderApp` | Browse active ride services, get a quote, and request a ride. |
+| `/book?service=ID` | `RiderApp` | Same booking flow with a service preselected. |
+| `/rides/[confirmationCode]` | `RiderApp` (opened on the ride) | Codes must look like `TRIP-…`; anything else is a 404. Trip status, timeline, fare, payments, and reviews. Signed-in riders can pay by card, rate the ride, get help, report a safety issue, or message the driver. |
+| `/account`, `/account/signin` | `RiderAccount` | Rider sign-in. |
+| `/account/signup` | `RiderAccount` (`register`) | Rider signup. Open when `riderAccountOptions.registrationEnabled` is true: any active fleet has rider accounts `open`, or `PUBLIC_SIGNUPS_ALLOWED` is `true`. Signup calls the generic `createUser` mutation. |
+| `/account/rides` | `RiderRides` | Request status and trip history for the signed-in rider. |
 
 ## Rider journey and GraphQL calls
 

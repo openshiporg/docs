@@ -12,7 +12,7 @@ Use this skill to adapt the built-in Rideshare rider storefront or create a sepa
 Before asking implementation questions, briefly tell the user where the current behavior lives:
 
 - Source repository: `https://github.com/openshiporg/openfront-rideshare`. Confirm the exact checkout path and revision the user wants to target.
-- Built-in rider experience, screens, components, and browser storage: `features/storefront` (`screens/RiderHomePage.tsx`, `TripStatusPage.tsx`, `RiderSignInPage.tsx`, `RiderAccountPage.tsx`; `components/**`; `domain/quoteBinding.ts`, `quoteResponse.ts`, `riderReceiptStorage.ts`).
+- Built-in rider experience, screens, components, and browser storage: `features/storefront` (`screens/RiderApp.tsx`, `RiderAccount.tsx`, `RiderRides.tsx`; `components/**`; `domain/quoteBinding.ts`, `quoteResponse.ts`, `riderReceiptStorage.ts`).
 - Thin rider route entry points at the app root, not under `app/(storefront)`: `app/page.tsx`, `app/book/page.tsx`, `app/rides/[confirmationCode]/page.tsx`, and `app/account/**` (`signin`, `signup`, `rides`). `proxy.ts` redirects every route to `/dashboard/init` while no users exist.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/domain/**`, `features/keystone/mutations/**` (especially `marketplaceRideshare.ts`, `riderReceipts.ts`, `riderTripHistory.ts`, `rideLifecycle.ts`, `tripOperations.ts`), and `schema.graphql`.
 - Provider boundaries: inspect `features/integrations/**` (manual route estimate, manual payment, console notifications) and the exact GraphQL calls made by the built-in client.
