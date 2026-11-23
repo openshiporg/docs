@@ -18,7 +18,7 @@ Financing is intake and record keeping. Lender decisions, compliance checks, con
 |---|---|
 | `features/keystone/models` | 71 registered lists (`models/index.ts`) |
 | `features/keystone/mutations` | Custom GraphQL queries and commands (`mutations/index.ts`) |
-| `features/keystone/lifecycle` | State machines, pricing, and the audit/outbox writer |
+| `features/keystone/lifecycle` | State machines, pricing, and the audit writer |
 | `features/platform` | Dealership operator desks under `/dashboard/platform` |
 | `features/dashboard` | Shared Keystone admin shell, sign-in, and generic list pages |
 | `features/storefront` | Public site and customer account |
@@ -31,7 +31,7 @@ Financing is intake and record keeping. Lender decisions, compliance checks, con
 - Some permissions are role-only: people, users, roles, settings, onboarding, API keys, and payments.
 - Leads, deals, approvals, and trade-ins are limited to the assigned salesperson unless the user has `canViewAllLeads` across all rooftops. Dealer cost needs inventory or financing management across all rooftops.
 - API keys (`ApiKey`) are owned by a user and limited to scopes: `read_inventory`, `write_inventory`, `write_leads`, `write_deals`, `write_service`, `read_reports`.
-- Most operational lists are command-only. Their Keystone create and update are denied, so writes go through named mutations. Each command writes a `DomainAuditEvent` and a `DomainOutboxEvent` in the same transaction, keyed by an idempotency key.
+- Most operational lists are command-only. Their Keystone create and update are denied, so writes go through named mutations. Each command writes a `DomainAuditEvent` in the same transaction, keyed by an idempotency key.
 
 ## Data model
 
@@ -44,7 +44,7 @@ Financing is intake and record keeping. Lender decisions, compliance checks, con
 | Delivery | DeliveryCase, WeOweItem |
 | Service and parts | ServiceAppointment, ServiceOrder, RepairOrderLineItem, ServiceLaborOperation, ServicePackage, PartsInventory, PartsMovement, PartsPurchaseOrder |
 | Payments and accounting | PaymentProvider, PaymentTransaction, PaymentRefund, PaymentProviderEvent, AccountingMapping, AccountingBatch, AccountingProviderResponse |
-| Reporting and system | SavedReport, ReportRun, RetentionPolicy, DomainAuditEvent, DomainOutboxEvent |
+| Reporting and system | SavedReport, ReportRun, RetentionPolicy, DomainAuditEvent |
 
 A CRM `Customer` is separate from the login `User`. Public submissions find or create a Customer per rooftop by email or phone. A storefront account is linked to Customers only after it confirms its email with `confirmCustomerEmailVerification`.
 

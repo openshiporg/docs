@@ -4,7 +4,7 @@ description: Custom GraphQL operations.
 icon: Code
 ---
 
-Declared in `features/keystone/mutations/index.ts`, served at `/api/graphql`. Commands take an `idempotencyKey`, write a `DomainAuditEvent` and a `DomainOutboxEvent` in the same transaction, and fail on key reuse with different data ("Lead edit idempotency key was reused with different details").
+Declared in `features/keystone/mutations/index.ts`, served at `/api/graphql`. Commands take an `idempotencyKey`, write a `DomainAuditEvent` in the same transaction, and fail on key reuse with different data ("Lead edit idempotency key was reused with different details").
 
 | Group | Operations |
 |---|---|

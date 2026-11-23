@@ -53,7 +53,7 @@ Route files are thin wrappers at `app/dashboard/(admin)/platform/<route>/page.ts
 | `/dashboard/platform/users` | `users` | Staff accounts (shoppers are excluded) | Generic `User` CRUD |
 | `/dashboard/platform/organization` | `organization` | Tabs: dealer group, rooftops, access (memberships and their audit log), roles, retention | `changeDealerMembership`, `configureRetentionPolicy`, generic `DealerGroup`, `Rooftop`, `Role`, `User` CRUD |
 | `/dashboard/platform/catalog` | `catalog` | Makes and models, service packages, lead routing rules | `configureLeadRoutingRule`, generic `Make`, `Model`, `ServicePackage` CRUD |
-| `/dashboard/platform/reports` | `reports` | Tabs: saved reports, runs (with download), audit search, outbox health | `saveOperationalReport`, `runSavedReport`, `queueDueSavedReports`, `auditSearch`, `DomainOutboxEvent` reads |
+| `/dashboard/platform/reports` | `reports` | Tabs: saved reports, runs (with download), audit search | `saveOperationalReport`, `runSavedReport`, `queueDueSavedReports`, `auditSearch` |
 | `/dashboard/platform/api-keys` | `api-keys` | Create, scope, limit by IP, and revoke your own API keys | Generic `ApiKey` CRUD |
 
 Onboarding is a dialog in the dashboard layout, not a route. Every list is also reachable on the generic `/dashboard/<list-key>` pages, subject to its access rules. Command-only lists are read-only there.

@@ -1,12 +1,12 @@
 ---
 title: Reports and audit
-description: Saved reports, runs, audit search, and outbox health.
+description: Saved reports, runs, and audit search.
 icon: ChartColumn
 ---
 
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-`/dashboard/platform/reports` tabs: saved reports, runs, audit, outbox.
+`/dashboard/platform/reports` tabs: saved reports, runs, audit.
 
 <Steps>
 <Step>
@@ -20,9 +20,5 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 <Step>
 ### Search the audit trail
 `auditSearch` reads `DomainAuditEvent`. "An audit reason is required".
-</Step>
-<Step>
-### Check the outbox
-`DomainOutboxEvent` rows are written in the same transaction as each command.
 </Step>
 </Steps>

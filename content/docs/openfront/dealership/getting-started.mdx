@@ -59,7 +59,7 @@ SESSION_SECRET=replace-with-output-of-openssl-rand-hex-32
 
 Generate the secret with `openssl rand -hex 32`. `.env` files are ignored by git. Never commit real keys.
 
-`.env.example` also lists `NEXT_PUBLIC_STRIPE_KEY`. Current source does not read it.
+`.env.example` also lists `NEXT_PUBLIC_STRIPE_KEY`; the app does not read it.
 
 ## Apply migrations
 
