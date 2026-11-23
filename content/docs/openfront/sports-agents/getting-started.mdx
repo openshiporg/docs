@@ -13,7 +13,7 @@ The source is public at [openshiporg/openfront-sports-agents](https://github.com
 - Node.js 20 or later (`package.json` sets `"node": ">=20.0.0"`).
 - npm.
 - A PostgreSQL database you can migrate.
-- A Stripe account in test mode if you want to try invoice card payments.
+- A Stripe account if you want invoice card payments.
 
 ## Clone and install
 
@@ -49,7 +49,7 @@ Variables the code reads:
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email |
 | `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_ENDPOINT` | The NKS image storage setting. No list in this product uses it |
 
-Use Stripe test keys (`pk_test_`, `sk_test_`). Never commit `.env`.
+Use the publishable and secret keys from your Stripe account. Never commit `.env`.
 
 ## Migrations
 
