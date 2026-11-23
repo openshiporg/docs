@@ -66,17 +66,11 @@ Outside production, missing values fall back to local defaults, including a loca
 | `PUBLIC_SIGNUPS_ALLOWED` | `true` opens `/dashboard/signup`. Shopper registration at `/account/register` is separate. |
 | `TRUSTED_PROXY` | `true` reads the client address from `X-Real-IP`. Only safe behind an edge that overwrites that header. |
 | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe checkout. Off unless `STRIPE_ENABLED=true` and all three keys are set. |
-| `STRIPE_ALLOW_TEST_MODE` | Allows test keys in production. |
-| `STRIPE_USE_ENVIRONMENT_PROVIDER` | With `STRIPE_ALLOW_TEST_MODE`, treats the seeded Stripe record as installed without a database write. |
 | `PAYMENT_ADAPTER_ALLOWED_ORIGINS` | Comma-separated HTTPS origins allowed for custom remote payment adapters. |
 | `PAYMENT_PROVIDER_ADMIN_USER_IDS` | Comma-separated user ids allowed to change payment provider records. Without it, provider settings are read-only in the app. |
 | `GUEST_ORDER_TOKEN_MAX_AGE_SECONDS` | Lifetime of the signed guest order link. |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_SECURE` | Email for password resets and customer messages. |
-| `GROCERY_EVENT_WORKER_USER_ID`, `GROCERY_EVENT_WORKER_ID` | Event worker actor (needs `canManageOnboarding`) and worker id. |
-| `GROCERY_EVENT_WEBHOOK_URL`, `GROCERY_EVENT_WEBHOOK_SECRET` | Optional signed HTTPS endpoint for outbound events. |
-| `GROCERY_SUBSCRIPTION_OPERATOR_ID`, `GROCERY_SUBSCRIPTION_BATCH_SIZE` | Recurring-basket worker actor and batch size. |
-| `REFUND_RECONCILIATION_USER_ID`, `REFUND_RECONCILIATION_STORE_ID`, `REFUND_RECONCILIATION_WORKER_ID`, `REFUND_RECONCILIATION_INTERVAL_MS`, `REFUND_RECONCILIATION_PROVIDER_TIMEOUT_MS`, `REFUND_RECONCILE_LIMIT` | Refund reconciliation worker. |
-| `GROCERY_PAYMENT_TEST_SECRET` | Local test payment adapter. Refused in production. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email for password resets. |
+| `REFUND_RECONCILIATION_PROVIDER_TIMEOUT_MS` | Provider timeout for **Check refund status**. |
 | `MCP_ENABLED` | `true` enables `/api/mcp-transport`. |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | AI chat at `/api/completion`. |
 | `SHADOW_DATABASE_URL` | Used only by `npm run migrate:gen`. |
@@ -102,7 +96,6 @@ npm run dev
 - Storefront: `/`
 - Dashboard: `/dashboard`
 - GraphQL: `/api/graphql` (playground is on outside production)
-- Health check: `/api/health`
 
 ## Create the first user
 
@@ -132,13 +125,11 @@ For a full deployment:
 
 1. Provision PostgreSQL and back it up before migrating.
 2. Set the production variables above, plus SMTP and Stripe if you use them.
-3. Register the Stripe webhook at `/api/payments/webhooks/pp_stripe_default`.
-4. Run `npm run worker:events`, `npm run worker:subscriptions`, and `npm run worker:refund-reconcile` as separate supervised processes. Create staff users for them and set their ids in the worker variables.
-5. Set `TRUSTED_PROXY=true` only behind an edge that overwrites `X-Real-IP`.
+3. Register the Stripe webhook at `/api/payment-webhooks/pp_stripe_default`.
+4. Set `TRUSTED_PROXY=true` only behind an edge that overwrites `X-Real-IP`.
 
 ## Other commands
 
 - `npm run lint` runs ESLint.
-- `npm run worker:refund-reconcile:once` runs one refund reconciliation pass.
 
 There is no `test` or `typecheck` script in `package.json`.

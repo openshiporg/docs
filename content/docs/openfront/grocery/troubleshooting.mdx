@@ -60,4 +60,4 @@ icon: LifeBuoy
 
 ## Background work
 
-Emails, recurring baskets, outbound events, and refund checks run in the three worker processes. If queued messages stay pending, confirm the workers are running and SMTP is set. See [Deployment](/docs/openfront/grocery/deployment).
+There are no workers. Recurring baskets and refund checks run when staff press **Prepare due baskets** (Subscriptions) or **Check refund status** (Payments). If password reset emails do not arrive, check the SMTP variables.

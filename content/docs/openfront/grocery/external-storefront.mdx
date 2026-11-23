@@ -25,7 +25,7 @@ Routes live under `app/(storefront)/` with no country or region segment. Each ro
 | `/cart` | Basket: quantities, per-item substitution preference, clear | `groceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `updateGrocerySubstitutionPreference` |
 | `/checkout` | Choose delivery or pickup and a time, address and contact, coupon code, Stripe payment, place order | `publicGroceryAvailability`, `activeCartPaymentProviders`, `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout` |
 | `/order/[id]` | Order progress, picked items, substitution decisions, approve a higher final total, curbside check-in when ready | `order` or `guestGroceryOrder`, `customerOrderSubstitutions`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn` |
-| `/order-access` | Guests request a secure order link by order number and email; the link opens the order | `requestGuestOrderAccess`, `guestGroceryOrder` |
+| `/order-access` | Opens a guest order from its signed link (`orderId`, `sessionId`, `token`) and remembers it in this browser. Without a link it points guests to sign in or the Help page | `guestGroceryOrder` |
 | `/account/sign-in`, `/account/register`, `/account/reset` | Shopper sign-in, registration, password reset. The guest basket merges on sign-in | `registerGroceryCustomer`, `mergeGuestGroceryCart` |
 | `/account` | Account overview: recent orders and saved addresses | `authenticatedItem`, `orders`, `addresses` |
 | `/account/orders` | Order history; shop a past order again | `orders`, `reorderGroceryOrder` |

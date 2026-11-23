@@ -11,7 +11,6 @@ The adapter registry is in `features/integrations/payment`.
 | Adapter | Code | Use |
 | --- | --- | --- |
 | Stripe | `pp_stripe_default` | Public checkout |
-| Local adapter | `pp_test_default` | Local development only. Not public and refused in production |
 
 ## Set up Stripe
 
@@ -22,7 +21,7 @@ The adapter registry is in `features/integrations/payment`.
 </Step>
 <Step>
 ### Register the webhook
-Point Stripe at `/api/payments/webhooks/pp_stripe_default`.
+Point Stripe at `/api/payment-webhooks/pp_stripe_default`.
 </Step>
 <Step>
 ### Run onboarding
@@ -34,7 +33,7 @@ Payment is authorized at checkout with manual capture and captured when staff fi
 
 ## Webhooks
 
-`POST /api/payments/webhooks/[providerCode]` reads a size-limited raw body, verifies the signature, throttles invalid signatures per sender, and stores a `PaymentWebhookEvent`. Replay stored events from [Payments](/docs/openfront/grocery/payments).
+`POST /api/payment-webhooks/[providerCode]` reads a size-limited raw body, verifies the signature, throttles invalid signatures per sender, and stores a `PaymentWebhookEvent`. Replay stored events from [Payments](/docs/openfront/grocery/payments).
 
 ## Custom remote adapters
 

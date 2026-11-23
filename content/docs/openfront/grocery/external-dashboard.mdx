@@ -32,7 +32,6 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file on
 | `/dashboard/platform/settings` | `canManageOnboarding` | Store profile, address, contact, hours, delivery policy and postal prefixes, tax rate, logo, brand hue | `groceryPlatformSettings`, `updateGroceryStoreProfile`, `updateGroceryDeliveryPolicy`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue` |
 | `/dashboard/platform/reports` | `canManagePayments` | Close a trading period, import a settlement statement CSV, review matches, export a close | `groceryFinancialCloses`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch`, `groceryFinancialCloseExport` |
 | `/dashboard/platform/messages` | `canManageOrders` | Customer inbox for Help-page messages, with status and internal notes | Generated `contactMessages`, `updateContactMessage` |
-| `/dashboard/platform/communications` | `canManageOnboarding` | Queued customer emails and outbox event health; send now, replay, or reconcile | `groceryOutboxStatus`, `deliverGroceryOutboxNow`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery` |
 
 Onboarding is not a route. It is a dialog and cards in the dashboard layout (`features/platform/onboarding`) that call `runGroceryOnboarding`.
 

@@ -23,7 +23,7 @@ The app serves one store per deployment. A migration creates the Store row `stor
 | Delivery coordinator | Delivery | Slots, routes, stop outcomes |
 | Inventory and buying | Inventory, suppliers, purchasing | Lots, counts, recalls, purchase orders, receiving |
 | Finance | Payments, reports | Refunds, voids, close, statement import |
-| Admin | Settings, staff, communications | Store profile, delivery policy, invitations |
+| Admin | Settings, staff | Store profile, delivery policy, invitations |
 
 ## Customer and operator surfaces
 
@@ -54,7 +54,7 @@ The model registry in `features/keystone/models/index.ts` defines 66 lists:
 | Pickup and delivery | `PickupSlot`, `DeliverySlot`, `ParkingSpot`, `DeliveryRoute` |
 | Payments and finance | `PaymentProvider`, `PaymentSession`, `Payment`, `PaymentRefund`, `OrderLineRefund`, `PaymentWebhookEvent`, `SettlementMatch`, `FinancialClose` |
 | Customers and retention | `Address`, `ShoppingList`, `ShoppingListItem`, `FavoriteProduct`, `Subscription`, `SubscriptionRun`, `LoyaltyProgram`, `LoyaltyTransaction`, `LoyaltyRedemption`, `BackInStockAlert`, `PriceAlert`, `NotificationPreference` |
-| Messages and privacy | `ContactMessage`, `CustomerMessage`, `CustomerPrivacyRequest`, `CustomerBatchRequest`, `GroceryOutboxEvent` |
+| Messages and privacy | `ContactMessage`, `CustomerPrivacyRequest`, `CustomerBatchRequest` |
 
 Order `status` values are `pending`, `picking`, `packed`, `out_for_delivery`, `delivered`, `delivery_failed`, `delivery_refused`, `returned`, and `cancelled`. Pickup readiness is tracked in order metadata, not as its own status value.
 
@@ -67,7 +67,7 @@ Order `status` values are `pending`, `picking`, `packed`, `out_for_delivery`, `d
 - **Purchasing.** Purchase orders move `draft` → `sent` → `confirmed`, and any of these can be cancelled. Receiving creates lots with lot number, expiry, and condition. Supplier invoices, claims, debits, and settlement are recorded through `manageSupplierSettlement`.
 - **Refunds and reports.** Staff refund by order line or by amount, void an authorization, and replay stored webhook events. Reports close a trading period, import a settlement statement CSV, review matches, and export the close.
 - **Recurring baskets and rewards.** Customers create, pause, resume, skip, and cancel recurring baskets. Due runs prepare a basket for the customer to check out; they do not place an order on their own. Staff can configure one loyalty program; customers redeem points.
-- **Messages and privacy.** The Help page creates `ContactMessage` records for the staff inbox. Customer emails are queued as outbox events. Customers request data export or erasure; staff review erasure requests.
+- **Messages and privacy.** The Help page creates `ContactMessage` records for the staff inbox. Customers request data export or erasure; staff review erasure requests.
 
 ## Named GraphQL operations
 
@@ -80,10 +80,10 @@ These are custom roots added in `features/keystone/mutations/index.ts` (also in 
 - Basket: `addItemToGroceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `mergeGuestGroceryCart`, `updateGrocerySubstitutionPreference`, `reorderGroceryOrder`.
 - Lists and favorites: `createCustomerShoppingList`, `deleteCustomerShoppingList`, `addToShoppingList`, `removeFromShoppingList`, `updateShoppingListItemQuantity`, `toggleShoppingListItemChecked`, `addShoppingListToCart`, `saveFavoriteProduct`.
 - Alerts: `requestGroceryBackInStockAlert`, `requestGroceryPriceAlert`.
-- Checkout and orders: `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `requestGuestOrderAccess`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot`.
+- Checkout and orders: `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot`.
 - Account: `registerGroceryCustomer`, `updateActiveUser`, `updateActiveUserPassword`, `updateGroceryNotificationPreferences`, `manageGrocerySubscription`, `redeemGroceryLoyalty`, `requestGroceryCustomerPrivacy`, `exportGroceryCustomerData`, `acceptGroceryStaffInvitation`, `submitGroceryContactMessage`.
 
-**Operator projections:** `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`, `groceryOutboxStatus`.
+**Operator projections:** `groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`.
 
 **Operator commands:**
 
@@ -94,7 +94,6 @@ These are custom roots added in `features/keystone/mutations/index.ts` (also in 
 - Payments and finance: `refundPayment`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `recoverGroceryPaymentCreation`, `recoverRevisedAuthorization`, `reconcilePaymentRefunds`, `replayPaymentWebhookEvent`, `handlePaymentProviderWebhook`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch`.
 - Customers, staff, and retention: `provisionGroceryCustomer`, `inviteGroceryStaff`, `revokeGroceryStaffInvitation`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty`.
 - Store and onboarding: `runGroceryOnboarding`, `updateGroceryStoreProfile`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue`.
-- Outbox: `claimGroceryOutboxEvents`, `completeGroceryOutboxEvent`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery`, `deliverGroceryOutboxNow`.
 
 Some storefront and dashboard pages also use generated Keystone queries and mutations, for example `departments`, `orders`, `addresses`, `favoriteProducts`, `shoppingLists`, `subscriptions`, `createProduct`, `updateProduct`, `createDepartment`, `updateCoupon`, and `updateContactMessage`. List and field access rules apply to them.
 
@@ -112,12 +111,11 @@ If the Store already has a settings row, running onboarding again does not resee
 
 ## Payments and integrations
 
-- **Payments.** The adapter registry in `features/integrations/payment` has two entries: Stripe (`pp_stripe_default`, public checkout) and a local adapter (`pp_test_default`, not public, refused in production). A `manual.ts` file exists but is not registered, and the selector `manual` is rejected. Stripe is off unless `STRIPE_ENABLED=true` and all three Stripe keys are set. Production requires live keys unless `STRIPE_ALLOW_TEST_MODE=true`. Custom remote adapters must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.
-- **Webhooks.** `POST /api/payments/webhooks/[providerCode]` reads a size-limited raw body, verifies the provider signature, throttles invalid signatures per sender, and records a `PaymentWebhookEvent`.
-- **Email.** Customer messages and password resets use SMTP (`SMTP_HOST`, `SMTP_FROM`, and related settings). Without SMTP, queued messages stay pending and reset links cannot be sent.
-- **Outbound events.** If `GROCERY_EVENT_WEBHOOK_URL` is set, the event worker posts outbox events to that HTTPS URL, signed with HMAC-SHA256 using `GROCERY_EVENT_WEBHOOK_SECRET` (at least 32 characters).
+- **Payments.** The adapter registry in `features/integrations/payment` has one entry: Stripe (`pp_stripe_default`, public checkout). A `manual.ts` file exists but is not registered, and the selector `manual` is rejected. Stripe is off unless `STRIPE_ENABLED=true` and all three Stripe keys are set. The mode follows the keys: a `sk_live_` secret key runs live, and the publishable key must be from the same pair. Custom remote adapters must use an HTTPS origin listed in `PAYMENT_ADAPTER_ALLOWED_ORIGINS`. Changing provider records needs a user id listed in `PAYMENT_PROVIDER_ADMIN_USER_IDS`.
+- **Webhooks.** `POST /api/payment-webhooks/[providerCode]` reads a size-limited raw body, verifies the provider signature, throttles invalid signatures per sender, and records a `PaymentWebhookEvent`.
+- **Email.** Password resets use SMTP (`SMTP_HOST`, `SMTP_FROM`, and related settings). Without SMTP, reset links cannot be sent.
 - **Storage.** Product images use an S3-compatible bucket (`S3_*` variables).
 - **AI and MCP.** `/api/mcp-transport/[transport]` exposes generic Keystone tools (`listModels`, `queryData`, `createData`, `updateData`, `deleteData`, and others) that run GraphQL as the signed-in user. It returns 404 unless `MCP_ENABLED=true`. `/api/completion` needs a dashboard user plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
-- **Other routes.** `/api/health` checks the database. `/api/store-icon` serves the store logo as an icon.
+- **Health.** The `groceryHealth` GraphQL query returns `status` and `database` and runs a real SQL check. The store icon is served as a data URI, not a route.
 
-Background workers run as separate processes: `npm run worker:events` (emails, stock and price alerts, outbound events), `npm run worker:subscriptions` (prepares due recurring baskets), and `npm run worker:refund-reconcile` (checks pending refunds with the provider). Each needs a staff user id from the store with the right capability; see `.env.example`.
+There are no background workers. Staff press **Prepare due baskets** on Subscriptions (`processDueGrocerySubscriptions`) and **Check refund status** on Payments (`reconcilePaymentRefunds`).

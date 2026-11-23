@@ -21,12 +21,12 @@ Dashboard and storefront sessions use the Keystone session cookie. Guest carts a
 | Basket | `addItemToGroceryCart`, `updateGroceryCartItem`, `removeItemFromGroceryCart`, `clearGroceryCart`, `mergeGuestGroceryCart`, `updateGrocerySubstitutionPreference`, `reorderGroceryOrder` |
 | Lists | `createCustomerShoppingList`, `deleteCustomerShoppingList`, `addToShoppingList`, `removeFromShoppingList`, `updateShoppingListItemQuantity`, `toggleShoppingListItemChecked`, `addShoppingListToCart`, `saveFavoriteProduct` |
 | Alerts | `requestGroceryBackInStockAlert`, `requestGroceryPriceAlert` |
-| Checkout | `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `requestGuestOrderAccess`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot` |
+| Checkout | `initiatePaymentSession`, `submitGroceryOrder`, `resumeGroceryCheckout`, `restartGroceryCheckout`, `respondToOrderLineSubstitution`, `authorizeOrderAdjustment`, `customerCheckIn`, `guestCustomerCheckIn`, `releaseParkingSpot` |
 | Account | `registerGroceryCustomer`, `updateActiveUser`, `updateActiveUserPassword`, `updateGroceryNotificationPreferences`, `manageGrocerySubscription`, `redeemGroceryLoyalty`, `requestGroceryCustomerPrivacy`, `exportGroceryCustomerData`, `acceptGroceryStaffInvitation`, `submitGroceryContactMessage` |
 
 ## Operator projections
 
-`groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`, `groceryOutboxStatus`.
+`groceryPlatformOrders`, `groceryPlatformFulfillment`, `groceryPlatformDelivery`, `groceryPlatformPickup`, `groceryPlatformInventory`, `groceryPlatformSuppliers`, `groceryPlatformPurchasing`, `groceryPurchasingOptions`, `groceryPlatformMerchandising`, `groceryPlatformCustomers`, `groceryPlatformCustomer`, `groceryPlatformPayments`, `groceryPlatformSettings`, `groceryDeliveryRescheduleSlots`, `groceryRecurringOverview`, `groceryPaymentWebhookRecovery`, `groceryStaffDirectory`, `getGroceryOrderRefundLines`, `groceryFinancialCloses`, `groceryFinancialCloseExport`.
 
 ## Operator commands
 
@@ -39,7 +39,6 @@ Dashboard and storefront sessions use the Keystone session cookie. Guest carts a
 | Payments | `refundPayment`, `refundGroceryOrderLines`, `voidGroceryPaymentAuthorization`, `recoverGroceryPaymentCreation`, `recoverRevisedAuthorization`, `reconcilePaymentRefunds`, `replayPaymentWebhookEvent`, `handlePaymentProviderWebhook`, `createGroceryFinancialClose`, `importGrocerySettlementStatement`, `resolveGrocerySettlementMatch` |
 | People | `provisionGroceryCustomer`, `inviteGroceryStaff`, `revokeGroceryStaffInvitation`, `updateGroceryStaffAccess`, `reviewGroceryCustomerErasure`, `processDueGrocerySubscriptions`, `configureGroceryLoyalty` |
 | Store | `runGroceryOnboarding`, `updateGroceryStoreProfile`, `updateGroceryStoreLogo`, `updateGroceryStorefrontBrandHue` |
-| Outbox | `claimGroceryOutboxEvents`, `completeGroceryOutboxEvent`, `replayGroceryOutboxEvent`, `reconcileGroceryCustomerDelivery`, `deliverGroceryOutboxNow` |
 
 ## Examples
 
@@ -70,4 +69,4 @@ Generated CRUD stays for lists such as `departments`, `orders`, `addresses`, `fa
 
 ## Other routes
 
-`POST /api/payments/webhooks/[providerCode]`, `/api/health`, `/api/store-icon`, `/api/completion`, and `/api/mcp-transport/[transport]` (404 unless `MCP_ENABLED=true`).
+`POST /api/payment-webhooks/[providerCode]`, `/api/completion`, and `/api/mcp-transport/[transport]` (404 unless `MCP_ENABLED=true`).
