@@ -1,0 +1,23 @@
+---
+title: Gift cards
+description: Gift cards bought online with Stripe, spent at the counter, and refunded while unused.
+icon: Ticket
+---
+
+## Buying a card
+
+The storefront page `/gift-cards` sells gift cards by card through Stripe's hosted checkout (`startCafeGiftCardCheckout`). The amounts are fixed at $15, $25, $50, $75 and $100 (`getCafeGiftCardOptions`). The buyer enters their name and email, and can name someone else as the recipient with a note. When online payment is not ready, the page says gift cards are sold at the counter.
+
+After payment, Stripe returns the buyer to `/gift-cards` with a signed token. `confirmCafeGiftCardOrder` reads the payment back from Stripe, activates the card, and shows the code once with "Copy this code now and keep it safe". When SMTP is configured the code is also emailed. A card is good for five years from purchase.
+
+## Spending a card
+
+On the [Orders](/docs/openfront/coffee-shop/orders) payment actions, staff choose **Gift card**, look up the code (`lookupCafeGiftCard`), and take the payment with `recordCafePayment` and method `gift_card`. The amount comes off the balance and any balance stays on the card. A card without enough balance is refused with how much is left. A refunded gift card payment goes back on the same card.
+
+Every purchase, redemption, refund and cancellation is a row in the card's ledger.
+
+## Dashboard
+
+`/dashboard/platform/gift-cards` lists active, used and cancelled cards with their balance, plus the total outstanding balance and active count (`getCafeGiftCards`, needs `canReadPayments`). **Find a gift card** searches the list. The recipient email shows only to `canManagePayments`.
+
+**Refund** (`refundCafeGiftCard`, needs `canManagePayments`) refunds the full purchase to the buyer's card through Stripe and cancels the card. Only a card that has not been spent at all can be refunded. If Stripe does not confirm the refund, nothing changes.

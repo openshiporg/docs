@@ -1,6 +1,6 @@
 ---
 title: Openfront Coffee Shop
-description: Menu, pickup ordering, POS, KDS, register, inventory, recipes, rewards, catering, subscriptions, and reporting for one cafe.
+description: Menu, pickup ordering, POS, KDS, register, inventory, recipes, rewards, gift cards, catering, subscriptions, and reporting for one cafe.
 icon: Coffee
 ---
 
@@ -35,7 +35,7 @@ One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primar
 | Stock | `InventoryItem`, `InventoryLot`, `StockMovement` (ledger), `Supplier`, `PurchaseOrder` (one item per PO), `WasteLog` |
 | Production | `Recipe`, `Ingredient`, `PrepBatch`, `PrepBatchConsumption` |
 | People | `User`, `Role`, `StaffShift` |
-| Retention | `LoyaltyAccount`, `LoyaltyEvent`, `Subscription` (a plan record), `CateringOrder` |
+| Retention | `LoyaltyAccount`, `LoyaltyEvent`, `GiftCard` (balance and ledger), `Subscription` (a plan record), `CateringOrder` |
 | System | `CoffeeCommandReceipt` (idempotency ledger written in the same transaction as each change, hidden and system-only) |
 
 `Role` has read and manage flags for orders, payments, products, inventory, and loyalty, plus `canAccessDashboard`, `canManagePeople`, `canManageRoles`, `canManageSettings`, `canManageOnboarding`, `canSeeOtherPeople`, and `canEditOtherPeople`.

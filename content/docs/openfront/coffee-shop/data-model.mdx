@@ -20,6 +20,7 @@ Everything hangs off the `StoreSettings` singleton (`singletonKey="primary"`). M
 | `Recipe`, `Ingredient` | status, yieldQuantity, quantity, unit |
 | `PrepBatch`, `PrepBatchConsumption`, `WasteLog` | quantityMade, quantityRemaining, expiresAt, reason |
 | `StaffShift` | staff, role, startsAt, clockInAt |
+| `GiftCard` | code, status (pending, active, redeemed, cancelled), initialValue, balance, expiresAt, ledger |
 | `LoyaltyAccount`, `LoyaltyEvent` | pointsBalance, drinkCredits, tier |
 | `Subscription` | planName, billingInterval, priceCents |
 | `CateringOrder` | eventAt, guestCount, subtotalCents |

@@ -20,6 +20,7 @@ The home page is `app/page.tsx`. Other routes live under `app/(storefront)/`. Lo
 | `/menu/[id]` | Item detail with modifiers, then add to cart | `StorefrontMenuItem` (`getCoffeeMenu` with `menuItemId`) |
 | `/checkout` | Order ahead for pickup: name, email, phone, pickup time, and notes. Pay at pickup by default; pay online by card when Stripe is enabled | `QuoteCafeOrder`, `CreateCafePickupOrder`, `InitiateCafePaymentSession`, `CheckoutCustomer` |
 | `/order-confirmed?id=...&key=...` | Receipt and live status, handoff code, pay online if still unpaid, and "Add to rewards" | `ConfirmedCafeOrder` (`getCafeOrder`), `LookupCafeLoyalty`, `ApplyCafeLoyalty`, `InitiateCafePaymentSession` |
+| `/gift-cards` | Buy a gift card ($15 to $100) through Stripe, for yourself or someone else; the code shows once after payment | `getCafeGiftCardOptions`, `startCafeGiftCardCheckout`, `confirmCafeGiftCardOrder` |
 | `/catering` | Catering inquiry: event time, guest count, address, notes | `RequestCafeCatering` |
 | `/account` | Sign in or sign up; once signed in, orders, rewards balance, catering requests, and profile | `CustomerSignIn`, `RegisterCoffeeCustomer`, `CustomerSignOut`, `CustomerIdentity`, `CustomerOrders`, `CustomerCatering`, `UpdateCoffeeCustomerProfile` |
 | `/account/reset` | Request a reset email, or set a new password with `?token=` | Keystone password reset link and token redemption |

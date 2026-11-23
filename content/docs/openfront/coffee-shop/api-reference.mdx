@@ -21,6 +21,7 @@ Most commands take an `idempotencyKey` of 16 to 128 characters (letters, numbers
 | Customers | `registerCoffeeCustomer(name, email, password)`, `updateCoffeeCustomerProfile(name, phone)` |
 | Orders | `createCafePickupOrder`, `acceptCafePickupOrder`, `updateCafeOrderStatus(orderId, status)`, `updatePosOrderStatus`, `updateCafeOrderItemStatus(orderItemId, status, expectedStatus, idempotencyKey)` |
 | Payments | `initiateCafePaymentSession`, `recordCafePayment`, `refundCafePayment`, `handleCafePaymentWebhook` |
+| Gift cards | `startCafeGiftCardCheckout`, `confirmCafeGiftCardOrder`, `refundCafeGiftCard(giftCardId, reason)`; queries `getCafeGiftCardOptions`, `getCafeGiftCards`, `lookupCafeGiftCard` |
 | Rewards | `applyCafeLoyalty`, `adjustCoffeeLoyaltyAccount(accountId, pointsDelta, drinkCreditsDelta, status, tier, note, idempotencyKey)` |
 | Catering | `requestCafeCatering`, `updateCateringOrderStatus` |
 | Subscriptions | `updateSubscriptionStatus(subscriptionId, status)` |
