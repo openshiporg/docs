@@ -9,9 +9,8 @@ Adapters live in `features/integrations/payment`.
 | Code | Use |
 | --- | --- |
 | `pp_system_default` | Manual. A host records money already received and attests manual refunds |
-| `pp_stripe_stripe` | Stripe card payments. Enabled with `STRIPE_ENABLED=true`, `sk_test_` and `pk_test_` keys, and `STRIPE_WEBHOOK_SECRET`. Card checkout is offered for test bookings |
-| `pp_signed_test` | Webhook-only provider using `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET`. It cannot create payments or refunds |
+| `pp_stripe_stripe` | Stripe card payments. Enabled when `STRIPE_ENABLED=true`, the keys start with `sk_` and `pk_` (test or live; mode follows the keys), and `STRIPE_WEBHOOK_SECRET` starts with `whsec_`. Once set up, every confirmed stay can be paid by card from the trip page |
 
 Webhooks arrive at `/api/payment-webhooks/[providerCode]`. The route limits body size and read time before verifying the signature. Events are stored as `PaymentWebhookEvent`.
 
-Guests see "Card payment is currently unavailable" when no card provider is enabled, and "Card payment is only available for test bookings" otherwise; they arrange payment with the host.
+Guests see "Card payment is currently unavailable." when Stripe is not configured, and "Card payment isn't set up for this host" when the host has no installed Stripe provider; they arrange payment with the host.

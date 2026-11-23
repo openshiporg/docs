@@ -22,13 +22,13 @@ Add an `ical` connection and map each listing.
 <Step>
 
 ### Import
-Paste calendar text into `importListingCalendar`. Imported dates become calendar blocks.
+Paste calendar text into `importListingCalendar`, or save the channel's `https://` calendar link on the mapping. Imported dates become calendar blocks. Linked calendars are re-read as a full snapshot when the Channels page loads (if over an hour stale) and when staff press **Refresh calendar links** (`refreshCalendarSubscriptions`).
 
 </Step>
 <Step>
 
 ### Export
-Fetch `exportListingCalendar` output and give it to the other calendar.
+Fetch `exportListingCalendar` output, or give the other channel the listing's feed URL `/api/calendar/[listingId]/[feed].ics`. The feed key is secret per listing; a wrong key is a 404.
 
 </Step>
 </Steps>

@@ -51,12 +51,11 @@ Optional variables:
 | Purpose | Variables |
 |---|---|
 | Mail (password reset, guest mail) | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` |
-| Stripe test-mode cards | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` |
-| Signed test webhooks | `PAYMENT_WEBHOOK_SIGNED_TEST_SECRET` |
+| Stripe card payments | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | Dashboard AI assistant | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` |
 | Dashboard field order | `NEXT_PUBLIC_VIEW_ORDER` |
 
-Stripe keys must be test keys (`sk_test_`, `pk_test_`). Live keys are not accepted.
+Stripe test keys and live keys run the same path; the key decides the mode.
 
 ## Migrations and dev server
 
@@ -99,7 +98,6 @@ Items are created one at a time and reused if they already exist. Review propert
 | `npm run release:migrate` | Same as `migrate`, for a release step. |
 | `npm run lint` | Runs ESLint. |
 | `npm run seed:runtime` | Seeds a local `runtime_rental` database only. |
-| `npm run outbox:deliver` | Runs the outbox worker. Reports `no_dispatcher` until you register one. |
 
 ## Deploy
 

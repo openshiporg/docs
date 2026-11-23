@@ -23,7 +23,7 @@ Route files live directly under `app/` (the home page is `app/(home)/page.tsx`).
 | `/compare` | Compare up to three homes side by side | `compare/ComparePage` |
 | `/checkout/[quoteToken]` | Review the quote, enter guest details, accept terms, and reserve | `checkout/StayCheckoutPage` |
 | `/trips` | Open a trip from a saved link, or recover one by confirmation code and email | `trips/TripEntryPage` |
-| `/trips/[token]` | Private trip page: stay details, ledger, card payment (test mode), messages, change or cancellation request, review, and claim to account | `trips/TripPage` |
+| `/trips/[token]` | Private trip page: stay details, ledger, card payment, messages, change or cancellation request, review, and claim to account | `trips/TripPage` |
 | `/agreements/[token]` | Read and sign the stay agreement | `agreements/StayAgreementPage` |
 | `/messages/[token]` | Private guest conversation thread; reply to the host | `messages/GuestThreadPage` |
 | `/account` | Guest account: profile, password, trips, open a trip by confirmation code, sign out | `account/AccountPage` |
@@ -55,4 +55,4 @@ Guest sign-in uses the same Keystone session cookie (`keystonejs-session`) as th
 
 `features/storefront/middleware.ts` is a no-op hook for the shared proxy. The storefront has no region, cart cookie, or redirect handling of its own.
 
-Card payment on the trip page uses Stripe for test bookings. Currency, locale, and timezone come from store settings; routes have no locale prefix.
+Card payment on the trip page uses Stripe for every confirmed stay once the host's Stripe provider is set up. Currency, locale, and timezone come from store settings; routes have no locale prefix.
