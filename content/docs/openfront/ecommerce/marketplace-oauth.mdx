@@ -44,4 +44,3 @@ Deliveries are signed with HMAC-SHA256 using the endpoint secret, in the `X-Open
 
 - Scopes only add permissions. They do not narrow a token below its owner's role; test each operation you expose with the exact key.
 - There is no scheduled retry for webhooks.
-- The `MARKETPLACE_TOKEN_SECRET` entry in `.env.example` is not read by the current code.

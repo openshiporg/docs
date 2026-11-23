@@ -41,7 +41,7 @@ Optional settings read by the code:
 |---|---|
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Transactional email and links in emails |
 | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe payment adapter |
-| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `NEXT_PUBLIC_PAYPAL_SANDBOX` | PayPal payment adapter |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | PayPal payment adapter. Optional `PAYPAL_API_BASE` overrides the API host, which defaults to `https://api-m.paypal.com` |
 | `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `AUTHORIZENET_ENV`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY` | Authorize.net payment adapter (`AUTHORIZENET_ENV=production` for live) |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
 | `NEXT_PUBLIC_DEFAULT_REGION` | Default storefront country code |

@@ -15,7 +15,7 @@ Adapters are registered in `features/integrations/payment/index.ts`. A `PaymentP
 | Adapter | Behavior |
 |---|---|
 | `stripe` | Creates, captures, refunds, and reads PaymentIntents with `STRIPE_SECRET_KEY`. Verifies webhooks with `STRIPE_WEBHOOK_SECRET`. The storefront card step needs `NEXT_PUBLIC_STRIPE_KEY` |
-| `paypal` | Server-side order create, capture, refund, status, and webhook verification with `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, and `NEXT_PUBLIC_PAYPAL_SANDBOX` |
+| `paypal` | Server-side order create, capture, refund, status, and webhook verification with `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and `PAYPAL_WEBHOOK_ID` |
 | `manual` | Pay at pickup. No money moves online and the payment is collected at handoff. Rejects webhooks |
 
 Onboarding creates "Pay at pickup" (installed) and, with Complete Setup, "Stripe" (not installed).
