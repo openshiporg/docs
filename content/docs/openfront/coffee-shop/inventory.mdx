@@ -10,7 +10,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 ## Inventory items
 
-`InventoryItem`: `name`, `category` (coffee, milk, syrup, tea, bakery, retail, packaging), `unit` (each, lb, oz, g, gal, l), `currentStock`, `reorderPoint`, `parLevel`, `costPerUnit`, `supplierName`, `sku`. Create and edit with `createCoffeeInventoryItem` and `updateCoffeeInventoryItem`. Low stock means at or below the reorder point.
+`InventoryItem`: `name`, `category` (coffee, milk, syrup, tea, bakery, retail, packaging), `unit` (each, lb, oz, g, gal, l), `currentStock`, `reorderPoint`, `parLevel`, `costPerUnit`, `supplierName`, `sku`. Create and edit with the generated `createInventoryItem` and `updateInventoryItem`. Low stock means at or below the reorder point.
 
 The unit cannot change once an item has stock, lots, purchase orders, or recipe ingredients. Create a new item instead.
 
