@@ -24,6 +24,6 @@ Everything hangs off the `StoreSettings` singleton (`singletonKey="primary"`). M
 | `Subscription` | planName, billingInterval, priceCents |
 | `CateringOrder` | eventAt, guestCount, subtotalCents |
 | `User`, `Role` | customers and staff |
-| `CoffeeDomainEvent`, `CoffeeOutboxDelivery` | system |
+| `CoffeeCommandReceipt` | system (idempotency ledger) |
 
 Status values are listed on each dashboard page. Stock, payment, and order status fields reject generic updates; use the commands in the [API reference](/docs/openfront/coffee-shop/api-reference).

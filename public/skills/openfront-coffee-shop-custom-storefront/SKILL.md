@@ -17,7 +17,7 @@ Before asking implementation questions, briefly tell the user where the current 
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (wired in `mutations/index.ts`), `schema.graphql`, and `docs/schema-map.md`.
 - Customer-facing operations: `getCoffeeStore`, `getCoffeeMenu`, `quoteCafeOrder`, `createCafePickupOrder`, `getCafeOrder` (order `secretKey` or owning session), `getCafeLoyaltyAccount`, `applyCafeLoyalty`, `requestCafeCatering`, `getCoffeeCustomerCatering`, `getCoffeeCustomerOrders`, `registerCoffeeCustomer`, `updateCoffeeCustomerProfile`, `initiateCafePaymentSession`, plus Keystone `authenticateUserWithPassword`, `endSession`, and password reset.
 - Main models behind them: `StoreSetting` (singleton, one store per deployment, USD only), `MenuCategory`, `MenuItem`, `MenuItemModifier`, `CafeOrder`, `OrderItem`, `Payment`, `LoyaltyAccount`, `LoyaltyEvent`, `CateringOrder`, `User`.
-- Provider boundaries: `features/integrations/payment/**` (Stripe, PayPal, manual adapters) and the webhook route `app/api/payment-providers/[providerCode]/webhook`.
+- Provider boundaries: `features/integrations/payment/**` (Stripe, PayPal, manual adapters) and the webhook route `app/api/payment-webhooks/[providerId]`.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 

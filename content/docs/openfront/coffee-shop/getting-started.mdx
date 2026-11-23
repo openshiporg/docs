@@ -47,7 +47,7 @@ Other settings the code reads:
 | `PUBLIC_SIGNUPS_ALLOWED` | `true` opens the dashboard sign-up page and public user creation. Storefront customer sign-up uses its own command and does not need this |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset emails |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Online card payment through Stripe Checkout, and online refunds. Both must be set before the Store Settings switch has any effect |
-| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENVIRONMENT` | PayPal adapter credentials. Set `PAYPAL_ENVIRONMENT` to `live` for real payments |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID` | PayPal adapter credentials. The adapter talks to the live PayPal API |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
 
 Keep `.env` out of source control.
@@ -67,7 +67,6 @@ Once running:
 - Storefront: `/`
 - Operator dashboard: `/dashboard`
 - GraphQL API: `/api/graphql`
-- Health check: `/api/health`
 
 ## First operator and onboarding
 
@@ -75,5 +74,5 @@ Once running:
 2. The dashboard sidebar shows an onboarding card until you complete or dismiss it. Open the dialog from it and pick **Starter cafe**, **Full neighborhood cafe**, or **Custom setup** (paste your own JSON). Onboarding creates the store, menu, modifiers, inventory items with opening stock, recipes, and payment providers. Only Manual / Cash is enabled. Running it again skips records that already exist.
 3. Open `/dashboard/platform/store-settings`. Set the store name, contact email, address, timezone, weekly hours, pickup lead time, window, and orders per window, sales tax, and logo.
 4. Review prices, modifiers, and their inventory mapping on `/dashboard/platform/menu`, and count real stock on `/dashboard/platform/coffee-operations` or `/dashboard/platform/inventory`.
-5. To take card payments online, set the Stripe variables, point a Stripe webhook at `/api/payment-providers/pp_stripe_stripe/webhook`, and turn on online payment in Store Settings.
+5. To take card payments online, set the Stripe variables, point a Stripe webhook at `/api/payment-webhooks/pp_stripe_stripe`, and turn on online payment in Store Settings.
 

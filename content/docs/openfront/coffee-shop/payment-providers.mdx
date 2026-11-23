@@ -21,7 +21,7 @@ Counter and pay-at-pickup payments are recorded by staff (`recordCafePayment`, P
 </Step>
 <Step>
 ### Point the webhook
-Stripe sends events to `/api/payment-providers/pp_stripe_stripe/webhook`.
+Stripe sends events to `/api/payment-webhooks/pp_stripe_stripe`.
 </Step>
 <Step>
 ### Enable the provider and the switch
@@ -37,4 +37,4 @@ The storefront calls `initiateCafePaymentSession`, redirects to Stripe, and Stri
 
 ## PayPal
 
-The adapter reads `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, `PAYPAL_ENVIRONMENT` and accepts webhooks at `/api/payment-providers/pp_paypal_paypal/webhook`.
+The adapter reads `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`, always talks to the live PayPal API, and accepts webhooks at `/api/payment-webhooks/pp_paypal_paypal`.

@@ -1,6 +1,6 @@
 ---
 title: Integrations
-description: Payments, storage, email, AI chat, and the health endpoint.
+description: Payments, storage, email, AI chat, and command receipts.
 icon: Plug
 ---
 
@@ -13,10 +13,6 @@ icon: Plug
 | PayPal | `PAYPAL_*` | Adapter and webhook |
 | OpenRouter | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat at `/api/completion` |
 
-## Health
+## Command receipts
 
-`GET /api/health` returns the runtime health as JSON: 200 when ok, 503 otherwise, never cached. Use it for load balancer checks.
-
-## Domain events
-
-State changes write `CoffeeDomainEvent` records and `CoffeeOutboxDelivery` rows. Both lists are hidden and system only.
+Commands write a `CoffeeCommandReceipt` in the same transaction as the change. Its unique `eventKey` stops a retried command from running twice. The list is hidden and system only, and nothing is delivered outside the app.

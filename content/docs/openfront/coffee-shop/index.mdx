@@ -36,7 +36,7 @@ One store per deployment. `StoreSetting` is a singleton (`singletonKey = "primar
 | Production | `Recipe`, `Ingredient`, `PrepBatch`, `PrepBatchConsumption` |
 | People | `User`, `Role`, `StaffShift` |
 | Retention | `LoyaltyAccount`, `LoyaltyEvent`, `Subscription` (a plan record), `CateringOrder` |
-| System | `CoffeeDomainEvent`, `CoffeeOutboxDelivery` (transactional outbox, hidden and system-only) |
+| System | `CoffeeCommandReceipt` (idempotency ledger written in the same transaction as each change, hidden and system-only) |
 
 `Role` has read and manage flags for orders, payments, products, inventory, and loyalty, plus `canAccessDashboard`, `canManagePeople`, `canManageRoles`, `canManageSettings`, `canManageOnboarding`, `canSeeOtherPeople`, and `canEditOtherPeople`.
 
@@ -97,8 +97,7 @@ Both templates create the store "Neighborhood Roast" and three payment providers
 
 ## Integrations
 
-- **Payments.** `features/integrations/payment` has Stripe, PayPal, and manual adapters. Webhooks arrive at `/api/payment-providers/[providerCode]/webhook` and only accept `pp_stripe_stripe` or `pp_paypal_paypal`. Stripe Checkout powers online payment and online refunds.
+- **Payments.** `features/integrations/payment` has Stripe, PayPal, and manual adapters. Webhooks arrive at `/api/payment-webhooks/[providerId]` and only accept `pp_stripe_stripe` or `pp_paypal_paypal`; any other code returns 404. Stripe Checkout powers online payment and online refunds.
 - **Email.** SMTP sends password reset emails.
 - **Storage.** Menu images use S3-compatible storage.
 - **Dashboard AI chat.** `/api/completion` uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS`) and the MCP transport at `/api/mcp-transport/[transport]`.
-- **Health.** `/api/health` checks the database and returns 200 or 503.
