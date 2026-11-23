@@ -42,3 +42,7 @@ The user who records manual payment evidence cannot approve it. Onboarding launc
 ## Manage people
 
 `/dashboard/users` (Operator access) edits `User` and `Role`. Create roles from the initial administrator's permission set and assign them to staff such as agents with payment rights, station staff, and network planners.
+
+## Invite staff
+
+`/dashboard/platform/staff` (Settings, **Staff**) lists the team and their roles. A user with `canManageUsers` or `canManageCarriers` can **Invite someone** with an email and a role (`inviteStaffMember`). The role can have no more access than the inviter's own. The invitee gets an email with a link to `/dashboard/join`, where they choose a name and password (`acceptStaffInvite`). The link works once, for seven days; only its SHA-256 hash is stored as a `StaffInvite`. A new invite to the same address replaces an open one. **Invites waiting** lists open invites (`pendingStaffInvites`), and each can be revoked (`revokeStaffInvite`). If the email cannot be sent, nothing is saved, so the invite needs working SMTP settings.

@@ -34,6 +34,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. The older desks (b
 | `/dashboard/platform/manifests`, `/[id]` | Command log of audit events and audit detail | read only |
 | `/dashboard/platform/stations` | Grant users station access at an airport with check-in, bag, and boarding flags; suspend or revoke | `CreateStationAssignment`, `UpdateStationAssignment`, `SetStationAssignmentStatus` |
 | `/dashboard/platform/store-settings` | Carrier name, legal name, brand colour, homepage title and description, customer service email, phone, and hours, with a preview | `updateCarrierStorefrontSettings` |
+| `/dashboard/platform/staff` | Team list, invite someone by email and role, revoke waiting invites | `inviteStaffMember`, `revokeStaffInvite` |
 | `/dashboard/platform/settings`, `/[id]` | Direct-sales state and provider connections with last success and last attempt | read only |
 
 Other dashboard routes:

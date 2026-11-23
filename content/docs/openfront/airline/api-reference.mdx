@@ -51,6 +51,7 @@ Most commands return `AirlineOperationResult` with `resourceType`, `resourceId`,
 | Ticketing | `issueBookingTickets(bookingId)` |
 | Airport service | `departureManifest`, `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger(bookingPassengerId, bookingSegmentId, seatId)`, `acceptCheckedBag(bookingPassengerId, flightInstanceId, weightGrams)`, `boardBookingPassenger(boardingPassId)`, `offloadBookingPassenger(boardingPassId, reason)`, `recordBagEvent(bagId, action, airportCode, note)` |
 | Recovery | `publishFlightDisruption(flightInstanceId, type, publicSummary)`, `reaccommodateBooking(disruptionId, bookingId, replacementFlightInstanceId, replacementInventoryBucketId)`, `refreshAirlineClocks` |
+| Staff | `pendingStaffInvites`, `inviteStaffMember(email, roleId)`, `revokeStaffInvite(id)`, `staffInvitePreview(token)`, `acceptStaffInvite(token, name, password)` |
 | Setup | `completeCarrierOnboarding`, `dismissCarrierOnboarding`, `updateCarrierStorefrontSettings`, `issueMachineCredential`, `revokeMachineCredential`, `machineCredentialSummaries` |
 
 ## Errors
