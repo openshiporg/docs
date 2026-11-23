@@ -16,7 +16,7 @@ Stripe Checkout and the manual provider. See [Payment providers](/docs/openfront
 
 ## Notifications
 
-The notification adapter in `features/integrations/notifications` is a console adapter for development; it throws when `NODE_ENV` is `production`. `Notification` rows (`email`, `sms`, `push`, `webhook`; `queued` to `dead_letter`) hold trip notification intents.
+Email goes out over SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`). The rider gets a "request received" email (`features/keystone/lib/request-mail.ts`) and a receipt when the trip completes (`features/keystone/lib/trip-receipt.ts`). Each receipt is one `Notification` row with template `trip_receipt` and a per-trip idempotency key, so it is sent once; its status records `sent` or `failed` with the error.
 
 ## File storage
 

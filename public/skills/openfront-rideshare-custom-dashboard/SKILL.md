@@ -43,7 +43,7 @@ Before proposing code:
 3. Enumerate GraphQL documents and operation names used by those call sites.
 4. Read `schema.graphql`, list access in `features/keystone/access.ts` (`membershipRoles`, fleet-scoped and locked access, closed generic create/delete), field access (immutable tenant relationships, locked driver and vehicle status fields), and the custom query/mutation resolvers.
 5. Record actor, fleet capability (operations, drivers, finance, safety, fleetAdmin), inputs, outputs, state transition, `idempotencyKey`, expected-state arguments (`expectedActorId`, `expectedAcceptedOfferId`, `expectedUpdatedAt`), and error states for each required operation.
-6. Inspect provider adapters (`features/integrations/payment`, `features/integrations/mapping`, `features/integrations/notifications`), `ProviderConnection` records, the MCP route (`app/api/mcp-transport`), the assistant route (`app/api/completion`), sessions, and runtime configuration touched by the requested flow.
+6. Inspect provider adapters (`features/integrations/payment`, `features/integrations/mapping`, SMTP mail in `features/keystone/lib/{request-mail,trip-receipt}.ts`), `ProviderConnection` records, the MCP route (`app/api/mcp-transport`), the assistant route (`app/api/completion`), sessions, and runtime configuration touched by the requested flow.
 7. Produce a capability matrix: verified, presentation-only, needs backend contract, blocked, or absent.
 
 Do not claim the skill already knows a deployed contract. It knows where and how to discover the exact calls. Generated CRUD or a schema-valid document is not proof of safe access.
