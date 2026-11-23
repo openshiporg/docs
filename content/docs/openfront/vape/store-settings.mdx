@@ -4,7 +4,7 @@ description: Business details, the five required policies, and regions.
 icon: Settings
 ---
 
-Route: `/dashboard/platform/store`. Needs `canManageStore`-level access.
+Route: `/dashboard/platform/store`. Saving needs `canManageSalesChannels`, the permission that guards the `Store` list.
 
 `Store.metadata.business`: legal name, email, phone, address, and licence lines. `Store.metadata.policies`: shipping, returns, age verification, privacy, and terms. The storefront serves the five policies at `/policies/[slug]`. The release gate blocks sales until the legal name, one licence line, and all five policies exist (`STORE_POLICIES_REQUIRED`). Required regulatory warning copy is yours to supply.
 
