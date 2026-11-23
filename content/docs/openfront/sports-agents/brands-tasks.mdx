@@ -1,6 +1,6 @@
 ---
 title: Brands, tasks, and settings
-description: Brands and contacts, reminders, certifications, payment providers, and agency settings.
+description: Brands and contacts, reminders, the calendar, agent workload, certifications, payment providers, and agency settings.
 icon: ListChecks
 ---
 
@@ -22,6 +22,25 @@ These screens are mostly read-only lists. Edit records through the generic list 
 - scheduled or late payments past their due date.
 
 Each task has a unique `autoKey` such as `cert:<id>`, so running it again adds nothing new. Reminders are made on demand, not on a timer. Public inquiries also create a task.
+
+## Calendar
+
+`/dashboard/platform/calendar` puts endorsement deliverables and scheduled payments (contract years, incentives, and endorsement deals) on a month grid, by UTC day.
+
+- **Month** shows one month with **Previous** and next. **Overdue** lists everything overdue across all months: deliverables still `scheduled` or `missed`, and payments still `scheduled` or `late` with no invoice.
+- Filter by **Athlete** or **Agent** (the athlete's lead agent), and **Show** deliverables, payments, or both. The athlete filter wins over the agent filter.
+
+## Workload
+
+`/dashboard/platform/workload` shows one card per lead agent, sorted by clients plus prospects:
+
+- clients and prospects led,
+- open tasks, with how many are overdue,
+- contacts in the last 30 days (interactions other than notes),
+- the recruiting pipeline by stage (identified, contacted, meeting, pitched, verbal),
+- the active certification's expiry, flagged when expired or within 60 days.
+
+**Open calendar** opens the calendar filtered to that agent. The page warns when athletes have no lead agent.
 
 ## Certifications
 

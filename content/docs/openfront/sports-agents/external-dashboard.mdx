@@ -30,7 +30,10 @@ Route files live in `app/dashboard/(admin)/platform/**`. Each one imports a scre
 | `/dashboard/platform/payment-providers` | payment-providers | Provider list |
 | `/dashboard/platform/tasks` | tasks | Open tasks and reminder generation |
 | `/dashboard/platform/certifications` | certifications | Agent certifications by expiry |
+| `/dashboard/platform/calendar` | calendar | Deliverables and payment dates by month, overdue view |
+| `/dashboard/platform/workload` | workload | Clients, pipeline, tasks, contacts and certification per agent |
 | `/dashboard/platform/settings` | settings | Agency record (read-only) |
+| `/dashboard/platform/store` | store-settings | Logo icon, color, and custom SVG |
 
 Sidebar entries come from `features/platform/lib/navigation.ts`. The shared shell routes are `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only when `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic list screens `/dashboard/[listKey]`, `/dashboard/[listKey]/create`, and `/dashboard/[listKey]/[id]`. The generic screens are the starter's list pages and work for any list the user can access.
 

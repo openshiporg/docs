@@ -27,6 +27,7 @@ Route files live in `app/dashboard/(admin)/platform/**` and are thin: each one e
 | `/dashboard/platform/suppliers` | `SupplierListPage` | Suppliers (read-only) |
 | `/dashboard/platform/payment-providers` | `PaymentProviderListPage` | Providers and key status (read-only) |
 | `/dashboard/platform/settings` | `SettingsPage` | Agency settings (read-only) |
+| `/dashboard/platform/store` | `StoreSettingsPage` | Logo icon, color, and custom SVG |
 
 These screens are server components that read with a bounded GraphQL document through `features/platform/lib/data.ts`. Client components call server actions in `features/platform/actions`: `runOperator` (an allow-listed set of agency mutations, each with a fresh idempotency key), `requestApproval`, and `decideApproval`.
 
