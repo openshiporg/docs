@@ -1,12 +1,12 @@
 ---
 title: Deployment
-description: Build and start commands, required services, secrets, the Stripe webhook and the hold sweeper.
+description: Build and start commands, required services, secrets, the Stripe webhook and hold expiry.
 icon: Rocket
 ---
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/openfront-comedy-club)
 
-The Railway template deploys the app from GitHub with PostgreSQL and a private bucket named `Storage`. It generates `SESSION_SECRET` and `CRON_SECRET` and points the app URLs at the service's public domain. Stripe and SMTP variables are left blank.
+The Railway template deploys the app from GitHub with PostgreSQL and a private bucket named `Storage`. It generates `SESSION_SECRET` and points the app URLs at the service's public domain. Stripe and SMTP variables are left blank.
 
 ## Processes
 
@@ -14,15 +14,15 @@ The Railway template deploys the app from GitHub with PostgreSQL and a private b
 | --- | --- | --- |
 | Build | `keystone build --no-ui && next build` | Generates the schema and builds Next.js |
 | Web | `npm run migrate && next start` | Applies migrations, then serves the storefront, dashboard and GraphQL |
-| Hold sweeper | `POST /api/cron/expire-holds` every minute | Releases expired holds and settles pending payments |
 
 `railway.toml` in the repository sets the build and start commands. Migrations run at start, not at build, because the database is usually reachable only from the running service.
+
+There is no scheduler to run. Expired holds are released whenever the storefront lists shows (`showsOnSale`) or opens one (`showAvailability`), and the same request settles pending payments whose hold ran out more than five minutes ago, asking Stripe for the outcome first.
 
 ## Checklist
 
 1. Provision PostgreSQL. Set `DATABASE_URL` and a `SESSION_SECRET` of 48 or more characters.
 2. Set `NODE_ENV=production`, `PUBLIC_SIGNUPS_ALLOWED=false`, and `STOREFRONT_URL` to the public origin.
 3. Add Stripe keys. In the Stripe dashboard, create a webhook endpoint at `https://your-host/api/integrations/payment/pp_stripe/webhook` for `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded` and `refund.updated`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
-4. Set `CRON_SECRET` and schedule the hold sweeper.
-5. Deploy, open `/dashboard/init`, create the first admin, and run setup.
-6. Buy a ticket with a test card and refund it before switching to live keys.
+4. Deploy, open `/dashboard/init`, create the first admin, and run setup.
+5. Buy a ticket and refund it from **Orders** to confirm payments and the webhook.

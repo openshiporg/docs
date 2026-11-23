@@ -15,7 +15,7 @@ Before asking implementation questions, briefly tell the user where the current 
 - Built-in Comedy Club customer experience: `features/storefront` (`components` such as `HoldForm`, `CheckoutForm`, `Confirmation`, `LookupForm`, `OpenMicForm`, `WaitlistForm`, `WaitlistClaim`, `SlotResponse`, `TransferTicket`, `TicketQr`, `screens`, and `lib` loaders/actions).
 - Thin customer-facing route entry points: `app/(storefront)/**`.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (custom operations merged in `mutations/index.ts`), and `schema.graphql`. The raw lists are not public; the storefront calls only named operations.
-- Provider boundaries: `features/integrations/payment` (`stripe.ts`, `manual.ts`), the Stripe webhook at `/api/integrations/payment/pp_stripe/webhook`, and the hold sweeper at `/api/cron/expire-holds`.
+- Provider boundaries: `features/integrations/payment` (`stripe.ts`, `manual.ts`), the Stripe webhook at `/api/integrations/payment/pp_stripe/webhook`. Hold expiry runs on storefront reads (`showsOnSale`, `showAvailability`); there is no cron route.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, guest proofs, and provider handoffs. It should guide what is preserved or changed.
 

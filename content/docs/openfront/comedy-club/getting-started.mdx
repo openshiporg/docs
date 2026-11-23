@@ -13,7 +13,7 @@ The hosted app is at [comedy-club.openship.org](https://comedy-club.openship.org
 - Node.js 20 or later.
 - npm.
 - A PostgreSQL database you are allowed to migrate.
-- Stripe test keys if you want to take card payments.
+- Stripe API keys if you want to take card payments.
 - An SMTP relay if you want password-reset email.
 
 <Steps>
@@ -36,11 +36,10 @@ npm install
 DATABASE_URL=postgresql://user:password@localhost:5432/openfront_comedy_club
 SESSION_SECRET=replace-with-48-or-more-random-characters
 PUBLIC_SIGNUPS_ALLOWED=false
-CRON_SECRET=another-random-value
 
-# Card payments (test keys for development)
-NEXT_PUBLIC_STRIPE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
+# Card payments
+NEXT_PUBLIC_STRIPE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Optional
@@ -57,7 +56,6 @@ OPENROUTER_API_KEY=
 | Variable | Notes |
 |---|---|
 | `DATABASE_URL`, `SESSION_SECRET` | Required. Generate the secret with `openssl rand -hex 32`. |
-| `CRON_SECRET` | Bearer token for `POST /api/cron/expire-holds`. |
 | `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe card payments and the signed webhook. |
 | `PUBLIC_SIGNUPS_ALLOWED` | The dashboard sign-up page is open only when this is `true`. |
 | `SMTP_*`, `SMTP_STORE_LINK` | Password-reset email and links. |
@@ -96,20 +94,16 @@ Setup is onboarding only. It records what it saved; review prices, fees and role
 </Step>
 <Step>
 
-### Take a test payment
+### Sell a ticket
 
-Open the storefront at `/`, choose a show, hold tickets, and pay with Stripe's test card `4242 4242 4242 4242`. The confirmation page shows the order number and ticket codes. Refund it from **Orders** in the dashboard.
+Open the storefront at `/`, choose a show, hold tickets, and pay by card. The confirmation page shows the order number and ticket codes. Refund it from **Orders** in the dashboard.
 
 </Step>
 </Steps>
 
-## Hold sweeper
+## Hold expiry
 
-Call this every minute in production. It releases expired holds and settles pending payments the provider has since confirmed or failed.
-
-```bash
-curl -X POST https://your-host/api/cron/expire-holds -H "Authorization: Bearer $CRON_SECRET"
-```
+No cron job is needed. Listing or opening a show releases its expired holds, then settles pending payments whose hold ran out more than five minutes ago. Stripe decides the outcome: a confirmed payment becomes tickets, a failed or cancelled one frees the seats. The `expireHolds(showId)` mutation runs the same release on demand.
 
 ## Tests
 

@@ -9,7 +9,7 @@ icon: LifeBuoy
 | `Can't reach database server` during build | Migrations ran at build time. Use `keystone build --no-ui && next build` to build and `npm run migrate && next start` to start. |
 | The storefront shows no shows | Setup has not been run, or no show is published. Run setup from the sidebar card or publish a draft show. |
 | Payment form never appears | `NEXT_PUBLIC_STRIPE_KEY` is missing or the Stripe provider is not active. |
-| Order stays `pending_payment` | The browser did not return and the webhook is not reaching the app. Check `STRIPE_WEBHOOK_SECRET` and the endpoint URL, then call the hold sweeper. |
-| Seats stay held after checkout is abandoned | The hold sweeper is not scheduled. Call `POST /api/cron/expire-holds` with `CRON_SECRET` every minute. |
+| Order stays `pending_payment` | The browser did not return and the webhook is not reaching the app. Check `STRIPE_WEBHOOK_SECRET` and the endpoint URL, then open the show on the storefront; that read settles the order with Stripe once the hold is five minutes past expiry. |
+| Seats stay held after checkout is abandoned | Holds are released when someone lists or opens the show. Open the show page, or call `expireHolds` with the show id. |
 | Refund asks for approval | It is above `approvalThresholdCents`. A different user approves it in **Approvals**. |
 | Sign-up page is closed | `PUBLIC_SIGNUPS_ALLOWED` is not `true`. Staff are added by an admin. |

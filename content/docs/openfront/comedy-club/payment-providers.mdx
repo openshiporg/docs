@@ -1,6 +1,6 @@
 ---
 title: Payment providers
-description: The Stripe and manual adapters, the webhook, and test payments.
+description: The Stripe and manual adapters, the webhook, and refunds.
 icon: CreditCard
 ---
 
@@ -16,4 +16,4 @@ Setup creates two providers: **Stripe** (`pp_stripe`) for cards and **Manual** f
 
 The webhook verifies the signature, stores each event once in `PaymentWebhookEvent`, and completes or fails the matching checkout. Refunds go back through the provider that took the payment, with a stable idempotency key.
 
-Use test keys and the card `4242 4242 4242 4242` until a test purchase and refund both work.
+The webhook refuses events whose mode differs from the configured key: a `sk_live_` key accepts only live events. Buy one ticket and refund it from **Orders** to confirm the setup.
