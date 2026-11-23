@@ -37,13 +37,6 @@ Set `DATABASE_URL` and `SESSION_SECRET` (32+ characters). Optional: `PUBLIC_SIGN
 Open `/dashboard/init` to create the owner, the starting brokerage, and the `Admin` role.
 
 </Step>
-<Step>
-
-### Dispatch the outbox
-
-Source-import and saved-search alert commands write `DomainOutboxEvent` rows. Process them from your own job and use `replayDomainOutboxEvent` to retry a failed one.
-
-</Step>
 </Steps>
 
 See [Getting started](/docs/openfront/real-estate/getting-started) for each variable.

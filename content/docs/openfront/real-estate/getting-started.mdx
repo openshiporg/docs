@@ -61,6 +61,7 @@ Generate the session secret with `openssl rand -hex 32`. Never commit `.env`.
 | `S3_ENDPOINT` | `next.config.ts` | Its host is added to the allowed remote image hosts for `next/image`. |
 | `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Not read by current code | Reserved. Listing media is stored as URLs, not uploaded. |
 | `PUBLIC_SIGNUPS_ALLOWED` | `features/dashboard/lib/authFlow.ts` | Opens `/dashboard/signup` only when set to `true`. Storefront customer sign-up at `/account` does not use this switch. |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | `features/integrations/payment/stripe.ts` | Server Stripe keys, used when a Stripe provider is saved without its own keys. `PUBLIC_APP_URL` (or `SMTP_STORE_LINK`) sets the origin for checkout return links. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | `features/keystone/lib/mail.ts` | Password reset email. Without `SMTP_HOST` the reset screens tell the user that email is not set up. `SMTP_STORE_LINK` is the base URL used in reset links. |
 | `MAIL_USER` | `features/keystone/lib/mail.ts` | Only checked to log an Ethereal preview URL outside production. |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | `app/api/completion/route.ts` | Shared dashboard AI chat. Disabled unless the key and model are set. `OPENROUTER_MAX_TOKENS` defaults to 4000. |

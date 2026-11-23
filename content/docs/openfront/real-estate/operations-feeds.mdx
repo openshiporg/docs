@@ -1,6 +1,6 @@
 ---
 title: Operations, feeds, and alerts
-description: Comparables, valuations, syndication, import feeds, saved search alerts, and the outbox.
+description: Comparables, valuations, syndication, import feeds, and saved search alerts.
 icon: Workflow
 ---
 
@@ -12,9 +12,8 @@ Route: `/dashboard/platform/operations` (`platformOperations`).
 | Syndication | `ListingSyndication` | `transitionListingSyndicationCommand` |
 | Import feeds | `SourceFeed` | `queueSourceImportCommand` |
 | Saved search alerts | `SavedSearchAlert` | `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand` |
-| Outbox | `DomainOutboxEvent` | `replayDomainOutboxEvent` |
 
-Queue commands write outbox events (`pending`, `processing`, `dispatched`, `failed`). Replay resets a `failed` or `dispatched` event to `pending`. `domainOutboxEventStatus` reads status.
+Queue commands record the request as a `CommandReceipt` (the idempotency ledger) and a `DomainAuditEvent`. Nothing is sent: no feed importer or alert mailer is installed.
 
 The page also lists offers, deals, commissions, disclosures, inspections, open houses, jobs, licenses and agreements, document history, retention policies, and file activity.
 

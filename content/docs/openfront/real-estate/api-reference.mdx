@@ -10,13 +10,13 @@ GraphQL is served at `/api/graphql`.
 
 | Queries | Mutations |
 | --- | --- |
-| `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `customerShowingHistory`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes` | `submitListingInquiry`, `requestPropertyShowing`, `registerRealEstateCustomer`, `cancelCustomerShowing`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser` |
+| `publicBrokerageIdentity`, `publicRealEstateListings`, `publicRealEstateListing`, `customerShowingHistory`, `customerInquiryHistory`, `customerSavedProperties`, `customerSavedHomes`, `paymentByToken` | `submitListingInquiry`, `submitSellerInquiry`, `startApplicationFeeCheckout`, `beginPaymentCheckout`, `reconcilePaymentByToken`, `requestPropertyShowing`, `registerRealEstateCustomer`, `cancelCustomerShowing`, `savePropertyForCurrentUser`, `removeSavedPropertyForCurrentUser`, `saveSearchForCurrentUser`, `deleteSavedSearchForCurrentUser` |
 
 Customer sign-up needs a password of at least 12 characters.
 
 ## Operator queries
 
-`platformContacts`, `platformLeadDetail`, `platformShowingRequestViewer`, `platformListings`, `platformShowings`, `platformShowingDetail`, `scheduledShowingReceipt`, `platformPipeline`, `platformPeople`, `platformReports`, `platformOperations`, `platformStorefrontSettings`, `domainOutboxEventStatus`.
+`platformContacts`, `platformLeadDetail`, `platformShowingRequestViewer`, `platformListings`, `platformShowings`, `platformShowingDetail`, `scheduledShowingReceipt`, `platformPipeline`, `platformPeople`, `platformReports`, `platformOperations`, `platformStorefrontSettings`.
 
 ## Transitions
 
@@ -31,8 +31,9 @@ Customer sign-up needs a password of at least 12 characters.
 | Authority | `recordPractitionerLicenseAuthorityCommand`, `recordListingEngagementAuthorityCommand`, `recordListingPublicationAuthorityCommand`, `recordRepresentationAuthorityCommand`, `appendDocumentEvidenceEventCommand` |
 | Commission | `proposeCommissionAllocationCommand`, `approveCommissionAllocationCommand`, `recordCommissionReceiptCommand`, `reverseCommissionLedgerEntryCommand`, `reconcileCommissionLedgerCommand` |
 | Records | `recordRetentionPolicyCommand`, `assignTransactionFileRetentionCommand`, `recordTransactionLegalHoldCommand`, `createTransactionExportManifestCommand` |
-| Feeds | `queueSourceImportCommand`, `transitionListingSyndicationCommand`, `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand`, `replayDomainOutboxEvent` |
+| Feeds | `queueSourceImportCommand`, `transitionListingSyndicationCommand`, `queueSavedSearchAlertCommand`, `updateSavedSearchAlertCommand` |
 | People | `inviteBrokerageMemberCommand`, `suspendBrokerageMemberCommand`, `transitionAgentTaskCommand` |
+| Payments | `requestPaymentCommand`, `reconcilePaymentCommand`, `refundPaymentCommand` |
 | Setup | `runRealEstateOnboarding`, `dismissRealEstateOnboarding`, `updatePlatformStorefrontSettings` |
 
 A reused idempotency key with different input is rejected. Generated CRUD handles listings, leads, media, open houses, deals, tasks, routing rules, inspections, escrow, title orders, mortgage applications, and commissions under list access and tenant hooks.

@@ -1,0 +1,59 @@
+---
+title: Payments
+description: Rental application fees, holding deposits and rent through Stripe Checkout, plus the payment providers page.
+icon: CreditCard
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+The brokerage takes four kinds of `Payment`: `application_fee`, `holding_deposit`, `rent`, and `agent_fee`. Payments run through Stripe Checkout. Rent is collected by bank transfer (ACH, `us_bank_account`); everything else by card. Amounts are in USD.
+
+Statuses: `pending`, `authorized`, `captured`, `refunded`, `failed`, `unknown`.
+
+## Payment providers
+
+`/dashboard/platform/payment-providers` lists providers and their webhook URL. Add one with **Add provider**:
+
+- **Stripe (cards, and ACH for rent)**. Paste a Stripe secret key and webhook signing secret, or leave them blank to use `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` from the server. Keys are stored on the server and never shown again.
+- **Pay at the office (cheque, wire, cash)**. A manual provider. It cannot host a checkout.
+
+Point the Stripe webhook at `/api/payment-webhooks/[providerId]`, as shown on the page. It handles `checkout.session.completed`, `checkout.session.async_payment_succeeded`, and `checkout.session.async_payment_failed`. Without a signing secret, deliveries are acknowledged and ignored. Each server process also runs a one-minute sweep (`instrumentation.ts`) that settles open payments with Stripe.
+
+## Rental application fees
+
+A rent listing with an application fee (`applicationFeeMinor`, set on the listing form) shows an **Apply** tab on the storefront. Applying records the inquiry and lead, creates an `application_fee` payment, and sends the applicant to Stripe Checkout (`startApplicationFeeCheckout`). An applicant who already paid is told so instead of paying twice.
+
+## Request a payment
+
+<Steps>
+<Step>
+
+### Open the lead or deal
+
+**Request payment** is on the lead detail and deal detail pages. It needs a provider that can host a checkout ("Add and configure a payment provider before requesting payments.").
+
+</Step>
+<Step>
+
+### Choose what it is for
+
+Pick **Holding deposit** or **Rent (bank transfer)** and enter an amount from $0.01 to $50,000. **Create payment link** runs `requestPaymentCommand`.
+
+</Step>
+<Step>
+
+### Share the link
+
+The pay link (`/pay/[token]`) is shown once. Copy it and send it to the payer. The page shows what the payment is for and its status, and starts checkout (`beginPaymentCheckout`).
+
+</Step>
+</Steps>
+
+## Payments page
+
+`/dashboard/platform/payments` lists application fees and requested payments (staff with `canManageLeads`, `canManageDeals`, or `canManagePeople`).
+
+- **Check status** asks Stripe again (`reconcilePaymentCommand`).
+- **Refund** returns the full paid amount (`refundPaymentCommand`). Only paid payments can be refunded.
+
+Payers see "We could not confirm this payment yet" for an `unknown` payment; check its status before acting.

@@ -16,7 +16,9 @@ Routes live in `app/(storefront)` and re-export screens from `features/storefron
 |---|---|
 | `/` | Home: search form, featured listings, and areas grouped by neighborhood or city |
 | `/listings` | Search results. Query parameters: `q`, `city`, `type`, `propertyType`, `beds`, `baths`, `minPrice`, `maxPrice`, `sort` (`newest`, `price_asc`, `price_desc`) |
-| `/listings/[slug]` | Listing detail: photos, facts, rental terms, open houses, agent, tour form, question form, save button |
+| `/listings/[slug]` | Listing detail: photos, facts, rental terms, open houses, agent, tour form, question form, save button, and an Apply tab with the application fee on rent listings that charge one |
+| `/sell` | Ask the brokerage to list a home: name, email or phone, address, timeline, message (`submitSellerInquiry`). Creates or reuses a `sell` lead routed by the sell routing rule |
+| `/pay/[token]` | A payment link: what it is for, status, and Stripe Checkout |
 | `/account` | Sign-in and sign-up when signed out; "My showings" when signed in |
 | `/account/showings/[id]` | One showing, with cancel and "Add to calendar" |
 | `/account/questions` | The customer's own questions and their status |
@@ -62,4 +64,4 @@ The storefront calls these documents from `features/storefront/lib/data`:
 
 ## Scope
 
-The storefront is for browsing, asking, touring, and saving. Deals and closing records stay in the dashboard. Saved search alerts are queued as outbox events.
+The storefront is for browsing, asking, touring, and saving. Deals and closing records stay in the dashboard. Saved search alerts are recorded; no alert mailer is installed.

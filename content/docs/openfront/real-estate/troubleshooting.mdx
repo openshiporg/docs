@@ -21,4 +21,4 @@ icon: LifeBuoy
 | Cannot create the first account: an owner membership already exists. | `/dashboard/init` only works on an empty database |
 | Listing does not show on the site | Status is not `active` or `coming_soon`, or authority is missing, or photos are not under `/images/real-estate/` |
 | Password reset says email is not set up | Set `SMTP_HOST` |
-| Outbox events stay `pending` | Run your dispatcher, or replay failed events |
+| A queued import or alert never runs | Nothing dispatches them; queue commands only record the request |
