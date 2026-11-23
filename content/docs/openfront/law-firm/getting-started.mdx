@@ -150,13 +150,7 @@ npm start
 
 The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. Either way, you still need to provision PostgreSQL, the bucket, SMTP, and the other secrets yourself.
 
-Outbound webhooks and email deliveries are sent by a separate worker, not by the web server. Run it on a schedule next to the app:
-
-```bash
-npx tsx features/keystone/webhooks/run.ts
-```
-
-It prints counts only. There is no HTTP or GraphQL entry point for it.
+The app runs no background workers or timers. Outbound webhooks are sent on the request that causes them, and staff retry failed deliveries from the Integrations desk.
 
 ## Local database scripts
 

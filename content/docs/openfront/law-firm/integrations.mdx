@@ -12,7 +12,7 @@ Route: `/dashboard/platform/integrations`. Needs `canManageIntegrations`.
 
 ## Webhooks
 
-`WebhookSubscription` rows define destinations. `enqueueWebhookDelivery` queues an event and `rotateWebhookSigningSecret` rotates the secret. The worker sends each delivery with an `x-openfront-signature` header to hosts in `WEBHOOK_ALLOWED_HOSTS`, recording `WebhookDeliveryAttempt` rows.
+`WebhookSubscription` rows define destinations. `enqueueWebhookDelivery` sends the event on the same request, with an `x-openfront-signature` header, only to hosts in `WEBHOOK_ALLOWED_HOSTS`, and records `WebhookDeliveryAttempt` rows. A delivery gets up to 8 attempts. Staff resend a `failed`, `dead_letter`, or interrupted `processing` delivery with **Retry delivery** (`retryWebhookDelivery`) on the Integrations desk. `rotateWebhookSigningSecret` rotates the secret.
 
 ## API keys and OAuth
 

@@ -42,6 +42,6 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 1. Create a thread and add recipients with `addCommunicationParticipant` (remove with `removeCommunicationParticipant`).
 2. Write a draft `CommunicationMessage`.
-3. `prepareCommunicationDeliveries` creates email deliveries.
-4. `queueCommunicationMessage` queues them. The outbox worker sends through SMTP with up to 5 attempts.
-5. `transitionCommunicationDelivery` updates delivery state.
+3. Record the message's direction (inbound, outbound, internal), channel, and status.
+
+Messages written here are kept on the matter or intake. They are not emailed or texted to the client.

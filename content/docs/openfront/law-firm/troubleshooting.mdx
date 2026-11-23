@@ -21,5 +21,5 @@ icon: LifeBuoy
 | Booking and account sign-up closed | Publish the privacy and first-contact notices and enable the switches |
 | Public site is blank | Exactly one active firm is needed |
 | Uploads fail | A value among the five `S3_*` is missing |
-| Emails and webhooks never leave | Run the worker; set `SMTP_*` and `WEBHOOK_ALLOWED_HOSTS` |
+| Emails or webhooks never leave | Set `SMTP_*` for sign-in and invitation email; list webhook hosts in `WEBHOOK_ALLOWED_HOSTS`, then use **Retry delivery** |
 | Stored credentials unreadable | `INTEGRATION_CREDENTIAL_KEY` or `MACHINE_CREDENTIAL_PEPPER` changed |

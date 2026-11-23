@@ -68,7 +68,7 @@ A firm administrator does not silently pass an ethical wall.
 | Conflicts | ConflictCheck, ConflictSearchTerm, ConflictMatch, ConflictDisposition |
 | Matters | PracticeArea, Matter, MatterParty, MatterTeamMember, EthicalWall, EthicalWallMember, MatterStatusEvent |
 | Calendar | Court, Docket, DocketEntry, Deadline, LegalTask |
-| Communications | CommunicationThread, CommunicationParticipant, CommunicationMessage, CommunicationDelivery |
+| Communications | CommunicationThread, CommunicationParticipant, CommunicationMessage |
 | Documents | Document, DocumentVersion, SignatureRequest, DocumentSigner, SignatureEvent |
 | Billing | RateCard, RateRule, TimeEntry, Expense, RetainerAgreement, Invoice, InvoiceLine |
 | Payments | Payment, PaymentAllocation, Refund |
@@ -98,7 +98,7 @@ Key lifecycles:
 5. **Matter administration.** `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `changeMatterConfidentiality`, `transitionMatter`.
 6. **Courts and deadlines.** Courts and dockets, `recordDocketEntry`, `verifyDocketEntry`, deadlines (`reviseDraftDeadline`, `transitionDeadline`), and tasks (`transitionLegalTask`).
 7. **Documents.** `ingestDocumentVersion` uploads to the S3 bucket, `setDocumentCurrentVersion`, then `prepareSignatureRequest` and `addDocumentSigner`.
-8. **Messages.** Threads, `addCommunicationParticipant`, a draft message, `prepareCommunicationDeliveries` (email only), then `queueCommunicationMessage`. The outbox worker sends email through SMTP.
+8. **Messages.** Threads, `addCommunicationParticipant`, and messages kept on the matter or intake. Messages are a record; they are not emailed or texted to the client.
 9. **Time to cash.** Rate cards and rules, time entries and expenses (`transitionTimeEntry`, `transitionExpense`), `assembleDraftInvoice`, `transitionInvoice`, `recordManualPayment`, `allocatePayment`, `reversePaymentAllocation`, `requestRefund`, `reviewRefund`. Retainers use `prepareRetainerAgreement` and `transitionRetainerAgreement`.
 10. **Trust.** Trust accounts and client or matter ledgers, `postTrustTransaction` (balanced, idempotent, serializable), and three-way reconciliation with `prepareTrustReconciliation`, `reviseTrustReconciliation`, `transitionTrustReconciliation`.
 11. **Client portal.** `recordPortalDiscoveryPolicy`, `invitePortalAccount`, `acceptPortalInvitation`, `executePortalGrant`, `sharePortalResource` (document, invoice, or thread), `revokePortalGrant`.
@@ -125,7 +125,7 @@ Custom mutations, grouped:
 | Intake and conflicts | `startClientIntake`, `addIntakeParticipant`, `changeIntakeParticipant`, `transitionIntake`, `scheduleConsultation`, `transitionConsultation`, `requestConflictCheck`, `addConflictSearchTerm`, `addConflictMatch`, `transitionConflictCheck`, `recordConflictDisposition`, `finalizeConflictCheck`, `convertIntakeToMatter` |
 | Matters and calendar | `transitionMatter`, `changeMatterConfidentiality`, `setMatterTeamAccess`, `addMatterParty`, `changeMatterParty`, `transitionEthicalWall`, `setEthicalWallMember`, `recordDocketEntry`, `reviseDocketEntry`, `verifyDocketEntry`, `reviseDraftDeadline`, `transitionDeadline`, `transitionLegalTask` |
 | Documents and signatures | `ingestDocumentVersion`, `setDocumentCurrentVersion`, `transitionDocument`, `prepareSignatureRequest`, `addDocumentSigner`, `transitionDocumentSigner`, `transitionSignatureRequest` |
-| Communications | `addCommunicationParticipant`, `removeCommunicationParticipant`, `prepareCommunicationDeliveries`, `queueCommunicationMessage`, `transitionCommunicationDelivery` |
+| Communications | `addCommunicationParticipant`, `removeCommunicationParticipant` |
 | Billing | `transitionTimeEntry`, `transitionExpense`, `assembleDraftInvoice`, `transitionInvoice`, `transitionPayment`, `recordManualPayment`, `allocatePayment`, `reversePaymentAllocation`, `requestRefund`, `reviewRefund`, `recordRefundProviderOutcome`, `prepareRetainerAgreement`, `transitionRetainerAgreement` |
 | Trust | `setTrustAccountBankIdentity`, `transitionTrustAccount`, `transitionTrustLedgerAccount`, `postTrustTransaction`, `prepareTrustReconciliation`, `reviseTrustReconciliation`, `transitionTrustReconciliation` |
 | Portal | `recordPortalDiscoveryPolicy`, `executePortalGrant`, `invitePortalAccount`, `acceptPortalInvitation`, `grantPortalMatterAccess`, `sharePortalResource`, `revokePortalGrant` |
@@ -144,8 +144,8 @@ The dashboard calls these through named documents in `features/platform` (for ex
 | Area | What the code does |
 |---|---|
 | Document storage | Uploads go to the configured S3-compatible bucket. Downloads use signed links that expire after 5 minutes. |
-| Email | Password reset, portal sign-in, and portal invitation emails use SMTP. Message deliveries are sent by the outbox worker (`features/keystone/webhooks/run.ts`) through the same SMTP settings, with up to 5 attempts. Only email deliveries can be prepared; portal and SMS delivery are not configured. |
-| Webhooks | Subscriptions, signed deliveries (`x-openfront-signature` header), and attempts. The worker only contacts hosts listed in `WEBHOOK_ALLOWED_HOSTS`. |
+| Email | Password reset, portal sign-in, and portal invitation emails use SMTP. Matter messages are not emailed. |
+| Webhooks | Subscriptions, signed deliveries (`x-openfront-signature` header), and attempts. Sent on the request to hosts listed in `WEBHOOK_ALLOWED_HOSTS`; staff use **Retry delivery** for failures. |
 | Provider connections | `IntegrationConnection` records for email, calendar, document storage, signature, payment, court, accounting, or other. Credentials are stored encrypted with `INTEGRATION_CREDENTIAL_KEY`. A connection record stores the credential; it does not by itself add an adapter. |
 | API keys and OAuth | `issueApiKey` shows the secret once. OAuth uses `/api/oauth/authorize` and `/api/oauth/token` with authorization code plus S256 PKCE and refresh token rotation. |
 | Agents | Agent principals, credentials, and grants scoped to one firm and optionally one matter. `requestAgentAction` → `reviewAgentAction` → `executeAgentAction` for a fixed set of action types (for example `task.draft`, `matter.transition`, `invoice.issue`, `trust.post`, `communication.send`). Agents are managed in the generic Models pages, not a platform page. |

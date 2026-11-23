@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Build, migrate, the outbox worker, and production secrets.
+description: Build, migrate, and production secrets.
 icon: Rocket
 ---
 
@@ -11,7 +11,6 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 | Process | Command | Purpose |
 | --- | --- | --- |
 | Web | `npm run migrate && next start` | Site, dashboard, portal, GraphQL |
-| Outbox worker | `npx tsx features/keystone/webhooks/run.ts` | Sends email deliveries and signed webhooks. Run it on a schedule. It prints counts and has no HTTP entry point |
 
 `railway.toml` builds with `keystone build --no-ui && next build` and migrates in the start command.
 
@@ -41,7 +40,7 @@ All five `S3_*` values for documents. `SMTP_*` and `SMTP_STORE_LINK` for reset, 
 
 ### Webhooks
 
-List destination hosts in `WEBHOOK_ALLOWED_HOSTS`. The worker contacts no other host.
+List destination hosts in `WEBHOOK_ALLOWED_HOSTS`. Webhooks are sent on the request that causes them and go to no other host. There are no background workers or timers.
 
 </Step>
 <Step>
