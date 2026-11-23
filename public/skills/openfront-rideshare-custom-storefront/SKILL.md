@@ -15,7 +15,7 @@ Before asking implementation questions, briefly tell the user where the current 
 - Built-in rider experience, screens, components, and browser storage: `features/storefront` (`screens/RiderApp.tsx`, `RiderAccount.tsx`, `RiderRides.tsx`; `components/**`; `domain/quoteBinding.ts`, `quoteResponse.ts`, `riderReceiptStorage.ts`).
 - Thin rider route entry points at the app root, not under `app/(storefront)`: `app/page.tsx`, `app/book/page.tsx`, `app/rides/[confirmationCode]/page.tsx`, and `app/account/**` (`signin`, `signup`, `rides`). `proxy.ts` redirects every route to `/dashboard/init` while no users exist.
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/domain/**`, `features/keystone/mutations/**` (especially `marketplaceRideshare.ts`, `riderReceipts.ts`, `riderTripHistory.ts`, `rideLifecycle.ts`, `tripOperations.ts`), and `schema.graphql`.
-- Provider boundaries: inspect `features/integrations/**` (manual route estimate, manual payment, console notifications) and the exact GraphQL calls made by the built-in client.
+- Provider boundaries: inspect `features/integrations/**` (manual route estimate, manual and Stripe payment) and SMTP mail in `features/keystone/lib` and the exact GraphQL calls made by the built-in client.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, request proofs, trip tokens, and browser-stored receipts. It should guide what is preserved or changed.
 
