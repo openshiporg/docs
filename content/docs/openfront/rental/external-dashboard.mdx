@@ -21,7 +21,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file on
 | `/dashboard/platform/listings`, `/create`, `/[id]`, `/[id]/edit` | Public listing pages, media, amenities, house rules, readiness | `workspaces/screens/HostWorkspaces`, `ListingCreatePage`, `ListingEditPage`, `HostWorkspaceDetails` | `canReadListings` |
 | `/dashboard/platform/calendar` | Reservation, owner, preparation, and channel blocks; create and release blocks | `calendar/screens/HostCalendarPage` | `canReadCalendar` |
 | `/dashboard/platform/tasks` | Housekeeping, inspections, maintenance; run task rules | `tasks/screens/OperationsTasksPage` | `canReadProperties` |
-| `/dashboard/platform/reservations`, `/[id]` | Stay list and detail; confirm, check in, complete, cancel, amend, reassign, record payments, deposits, claims, refunds | `reservations/screens/ReservationWorkspacePage`, `ReservationDetailPage` | `canReadReservations` |
+| `/dashboard/platform/reservations`, `/[id]`, `/new` | Stay list and detail; confirm, check in, complete, cancel, amend, reassign, record payments, deposits, claims, refunds | `reservations/screens/ReservationWorkspacePage`, `ReservationDetailPage` | `canReadReservations` |
 | `/dashboard/platform/agreements`, `/[id]` | Versioned terms and signature evidence; void or reissue | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadReservations` |
 | `/dashboard/platform/guests`, `/[id]` | Guest profiles, parties, and stay history | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadGuests` |
 | `/dashboard/platform/inbox`, `/[id]` | Guest conversations; reply, change status, revoke or reissue links | `workspaces/screens/HostWorkspaces`, `HostWorkspaceDetails` | `canReadMessages` |
