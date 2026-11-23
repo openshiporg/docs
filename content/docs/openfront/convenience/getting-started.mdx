@@ -48,9 +48,6 @@ Optional settings read by the code:
 | `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open `/dashboard/signup`; closed otherwise |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Password reset email and the link inside it |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard assistant (`/api/completion`) |
-| `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN` | Outbox and alert workers: GraphQL URL and a machine API key |
-| `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, `OUTBOX_SIGNING_VALUE`, `OUTBOX_WORKER_ID` | Outbox worker target and HMAC signing |
-| `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, `ALERT_EXPIRY_WINDOW_DAYS`, `ALERT_WORKER_ID` | Alert worker thresholds |
 | `RUNTIME_ADMIN_EMAIL`, `RUNTIME_ADMIN_PASSWORD`, `ALLOW_DISPOSABLE_RUNTIME_SEED` | `npm run seed:runtime`, a local seed for a database named `runtime_convenience` |
 
 Any `env://NAME` credential reference you set on a payment provider also needs `NAME` in the environment, with a value of at least 32 characters. Keep `.env` out of source control.
@@ -71,7 +68,6 @@ Once running:
 - Operator dashboard: `/dashboard`
 - Operator pages: `/dashboard/platform`
 - GraphQL API: `/api/graphql`
-- Health check: `/api/health/live`
 
 ## First user and onboarding
 
@@ -94,7 +90,5 @@ Once running:
 | `npm run migrate:gen` | Generate a new migration against a disposable database |
 | `npm start` | `next start` |
 | `npm run lint` / `npm run typecheck` | ESLint / `tsc --noEmit` |
-| `npm run worker:outbox` | Outbox delivery worker |
-| `npm run worker:alerts` | Operational alert worker |
 | `npm run seed:runtime` | Local seed for a dedicated runtime database |
 | `npm run backup` / `npm run backup:verify` | PostgreSQL backup and backup check scripts |

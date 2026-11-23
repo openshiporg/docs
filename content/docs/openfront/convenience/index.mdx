@@ -25,7 +25,7 @@ Start with [Getting started](/docs/openfront/convenience/getting-started).
 | `features/dashboard` | Shared Keystone admin shell, sign-in, generic list and item pages |
 | `features/storefront` | Public site screens, data loaders, and server actions |
 | `features/integrations/payment` | Payment adapters (`manual_external`, `hmac_json_v1`) |
-| `features/keystone/scripts` | Outbox worker, alert worker, runtime seed |
+| `features/keystone/scripts` | Runtime seed |
 | `docs/schema-map.md` | A table of every list, its states, and the page that shows it |
 
 ## Tenancy and permissions
@@ -59,7 +59,7 @@ Money is stored as integer cents. Fuel prices use mills per gallon. Rates use ba
 - **Payments:** `PaymentProvider`, `PaymentReconciliation`, `PaymentReconciliationLine`, `WebhookEvent`.
 - **Accounting exports:** `ExportDestination`, `ExportBatch`, `ExportLine`.
 - **Offline registers:** `OfflineDevice`, `OfflineOperationBatch`, `OfflineOperation`.
-- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `OutboxEvent`, `OutboxAttempt`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
+- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
 
 Most operational lists have generic create and update turned off. They change only through a named mutation. Sales, sale lines, tenders, refunds, ledger entries, cash movements, readings, audit events, and idempotency keys are written only by the system. `docs/schema-map.md` in the source repo marks each list as op-only, immutable, or CRUD.
 
@@ -78,8 +78,8 @@ These are the main paths the code supports. Each step is a named mutation. Each 
 9. **Lottery.** `configureLotteryGame`, `receiveLotteryPack`, `activateLotteryPack`, `recordLotteryPackSale`, `closeLotteryPack`, `generateLotterySettlement`, `approveLotterySettlement`.
 10. **Money services.** `configureMoneyServiceProvider`, `recordExternalMoneyServiceTransaction`, `voidExternalMoneyServiceTransaction`, `generateMoneyServiceSettlement`, `approveMoneyServiceSettlement`.
 11. **Loyalty.** `configureLoyaltyProgram`, `enrollLoyaltyAccount`, `adjustLoyaltyPoints`, `expireLoyaltyPoints`.
-12. **Payments.** `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation`. Signed provider webhooks arrive at `/api/webhooks/payment/[providerId]`.
-13. **Alerts and recovery.** `evaluateOperationalAlerts` and `transitionOperationalAlert` for cash, fuel, stock, expiry, and settlement variances. `registerOfflineDevice`, `transitionOfflineDevice`, and `recordOfflineReplayBatch` replay offline register work. `claimOutboxEvents`, `completeOutboxEvent`, and `replayOutboxEvent` drive the outbox. `createBusinessApiKey` and `revokeBusinessApiKey` manage machine keys.
+12. **Payments.** `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation`. Signed provider webhooks arrive at `/api/payment-webhooks/[providerId]`.
+13. **Alerts and recovery.** `evaluateOperationalAlerts` and `transitionOperationalAlert` for cash, fuel, stock, expiry, and settlement variances. `registerOfflineDevice`, `transitionOfflineDevice`, and `recordOfflineReplayBatch` replay offline register work. `createBusinessApiKey` and `revokeBusinessApiKey` manage machine keys.
 
 ## Named GraphQL operations
 
@@ -108,7 +108,7 @@ All custom operations are declared in `features/keystone/mutations/index.ts`. Gr
 | Lottery | `configureLotteryGame`, `receiveLotteryPack`, `activateLotteryPack`, `recordLotteryPackSale`, `closeLotteryPack`, `generateLotterySettlement`, `approveLotterySettlement` |
 | Money services | `configureMoneyServiceProvider`, `recordExternalMoneyServiceTransaction`, `voidExternalMoneyServiceTransaction`, `generateMoneyServiceSettlement`, `approveMoneyServiceSettlement` |
 | Payments | `configurePaymentProvider`, `generatePaymentReconciliation`, `approvePaymentReconciliation` |
-| Offline and outbox | `registerOfflineDevice`, `transitionOfflineDevice`, `recordOfflineReplayBatch`, `claimOutboxEvents`, `completeOutboxEvent`, `replayOutboxEvent` |
+| Offline | `registerOfflineDevice`, `transitionOfflineDevice`, `recordOfflineReplayBatch` |
 | API keys | `createBusinessApiKey`, `revokeBusinessApiKey` |
 | Storefront | `updateStorefrontBasket` |
 
@@ -137,7 +137,7 @@ The run sets the user's onboarding status to completed. A replay with the same i
 **Payments.** Two adapters are registered:
 
 - `manual_external` records a card or wallet payment that a separate terminal already took. It accepts no webhooks.
-- `hmac_json_v1` also accepts signed webhooks at `/api/webhooks/payment/[providerId]`. The request needs `x-openfront-timestamp` and `x-openfront-signature: v1=<hex>`, an HMAC-SHA256 over `timestamp.body`, within five minutes. It handles `payment.captured`, `payment.failed`, `refund.completed`, and `refund.failed`. Duplicate event IDs are replayed, not re-applied.
+- `hmac_json_v1` also accepts signed webhooks at `/api/payment-webhooks/[providerId]`. The request needs `x-openfront-timestamp` and `x-openfront-signature: v1=<hex>`, an HMAC-SHA256 over `timestamp.body`, within five minutes. It handles `payment.captured`, `payment.failed`, `refund.completed`, and `refund.failed`. Duplicate event IDs are replayed, not re-applied.
 
 Both adapters require a short-lived signed authority proof for each non-cash tender and refund. The signing key is read from an `env://NAME` credential reference, and the value must be at least 32 characters. The adapters verify proofs and webhooks; the card network call itself happens in your terminal or processor.
 
@@ -145,9 +145,7 @@ Both adapters require a short-lived signed authority proof for each non-cash ten
 
 **Fuel, lottery, money services, exports.** These record what an operator or an outside system confirms. Accounting exports produce a CSV artifact (up to 5 MiB) that staff download from the Exports page. Staff mark delivery to a destination with `transitionExportBatch`.
 
-**Outbox worker.** `npm run worker:outbox` claims outbox events with a machine key and posts them, HMAC-signed, to an HTTPS sink. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, `OUTBOX_BUSINESS_ID`, `OUTBOX_SINK_URL`, and `OUTBOX_SIGNING_VALUE` (32+ characters).
-
-**Alert worker.** `npm run worker:alerts` calls `evaluateOperationalAlerts`. It reads `OPENFRONT_GRAPHQL_URL`, `OPENFRONT_API_TOKEN`, and optional thresholds `ALERT_CASH_VARIANCE_THRESHOLD_CENTS`, `ALERT_FUEL_VARIANCE_THRESHOLD_GALLONS`, and `ALERT_EXPIRY_WINDOW_DAYS`.
+**Alerts.** Staff run `evaluateOperationalAlerts` with **Evaluate now** on the Exceptions page. Nothing runs on a schedule.
 
 **Email.** Password reset email uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_STORE_LINK`. 
 

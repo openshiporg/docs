@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Build, migrate, run workers, and prepare a production Convenience install.
+description: Build, migrate, and prepare a production Convenience install.
 icon: Rocket
 ---
 
@@ -13,7 +13,7 @@ npm run migrate
 npm start
 ```
 
-`railway.toml` does the same on Railway: it builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. `railway.outbox.json` and `railway.alerts.json` describe separate services for the two workers. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to provide the S3 values and run migrations yourself.
+`railway.toml` does the same on Railway: it builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel deploy button that asks for `DATABASE_URL` and `SESSION_SECRET`. You still need to provide the S3 values and run migrations yourself.
 
 Production checklist:
 
@@ -21,6 +21,5 @@ Production checklist:
 - use a fixed, long `SESSION_SECRET`;
 - put the app behind a proxy that sets `Host` and `X-Forwarded-*` headers to fixed values, because the app builds its own base URL from them;
 - keep `PUBLIC_SIGNUPS_ALLOWED` off unless you want open dashboard sign-up;
-- run the outbox and alert workers if you use those features, each with its own machine API key;
 - replace the starter records created by onboarding with your own catalog;
 - test backups and restores.

@@ -1,6 +1,6 @@
 ---
 title: Recovery
-description: Offline devices, replay batches, outbox, and machine keys.
+description: Offline devices, replay batches, and machine keys.
 icon: LifeBuoy
 ---
 
@@ -12,10 +12,6 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 `registerOfflineDevice`, `transitionOfflineDevice` (active, suspended, revoked). Replay with `recordOfflineReplayBatch`. "Offline sequence may appear only once per batch".
 
-## Outbox
-
-`OutboxEvent` rows are claimed by a worker (`claimOutboxEvents`, `completeOutboxEvent`). `replayOutboxEvent` retries dead-lettered events. "Outbox event is not leased by this worker".
-
 ## Machine keys
 
 <Steps>
@@ -25,7 +21,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 </Step>
 <Step>
 ### Use
-Set `OPENFRONT_API_TOKEN` for `worker:outbox` and `worker:alerts`.
+Send the token as a bearer key to `/api/graphql`. Its scopes and stores limit what it can do.
 </Step>
 <Step>
 ### Revoke

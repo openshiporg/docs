@@ -11,7 +11,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 | Adapter | Behavior |
 |---|---|
 | `manual_external` | Records a card or wallet payment an outside terminal already took. No webhooks |
-| `hmac_json_v1` | Also accepts signed webhooks at `/api/webhooks/payment/[providerId]` |
+| `hmac_json_v1` | Also accepts signed webhooks at `/api/payment-webhooks/[providerId]` |
 
 Both require a short-lived signed authority proof for each non-cash tender and refund. The signing key is an `env://NAME` credential reference whose value is 32+ characters.
 

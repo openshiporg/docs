@@ -35,6 +35,6 @@ Money is stored as integer cents. Fuel prices use mills per gallon. Rates use ba
 - **Payments:** `PaymentProvider`, `PaymentReconciliation`, `PaymentReconciliationLine`, `WebhookEvent`.
 - **Accounting exports:** `ExportDestination`, `ExportBatch`, `ExportLine`.
 - **Offline registers:** `OfflineDevice`, `OfflineOperationBatch`, `OfflineOperation`.
-- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `OutboxEvent`, `OutboxAttempt`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
+- **Operations and system:** `OperationalAlert`, `AlertEvaluation`, `OperationalHeartbeat`, `IdempotencyKey`, `AuditEvent`, `AuthenticationThrottle`, `ApiKey`.
 
 Most operational lists have generic create and update turned off. They change only through a named mutation. Sales, sale lines, tenders, refunds, ledger entries, cash movements, readings, audit events, and idempotency keys are written only by the system. `docs/schema-map.md` in the source repo marks each list as op-only, immutable, or CRUD.
