@@ -1,25 +1,50 @@
 ---
-title: Reconciliation
-description: The state-reporting outbox, inbound events, integrations and reconciliation runs.
+title: State reporting
+description: Manual state-system files for sales and package adjustments, integrations, inbound events and reconciliation runs.
 icon: Scale
 ---
 
-`/dashboard/platform/reconciliation` has four areas.
+`/dashboard/platform/reconciliation` is **State reporting** in the sidebar. Read access needs `canViewReports`.
 
-## State-reporting outbox
+## Status
 
-Every state-reported command writes an `OutboxEvent` with topic, aggregate, status, attempts and errors. A queued event means the action is recorded locally. `retryStateOutboxEvent` requeues events that are `rejected`, `retryable` or `dead_letter`. It needs `canManageIntegrations`.
+The page shows whether the store's traceability integration is active (**Connected**) or not (**Manual upload**), how many sales the state has not yet confirmed, and when the last sales file and the last adjustments file were downloaded, by whom, for which dates, and how many rows.
+
+## Report by upload
+
+When the store is not connected, staff download CSV files in the column order of the state track-and-trace import (Metrc) and upload them in the state system.
+
+<Steps>
+<Step>
+
+### Choose a file and dates
+
+Pick **Sales receipts** (one row per package sold; voided sales are left out) or **Package adjustments** (count corrections, waste and destruction). Pick a start and end date, up to 92 days and 5,000 rows per file.
+
+</Step>
+<Step>
+
+### Download
+
+The file comes from `/dashboard/platform/reconciliation/export?kind=sales|adjustments&from=&to=`, backed by the `cannabisStateReportExport` query (needs `canViewReports` or `canManageSales`). Dates use the premises timezone.
+
+</Step>
+<Step>
+
+### Check and upload
+
+Adjustment reasons map to Scale Variance, Entry Error and Waste. States keep their own reason lists, so check each one before you upload. Every download writes a `state_report.<kind>_exported` audit event, which is what the page shows as the last file.
+
+</Step>
+</Steps>
 
 ## Integrations
 
-`IntegrationInstallation` shows the traceability provider (`providerCode`, `providerType`, `status`, `capabilities`). Onboarding creates it as `unconfigured`. `activateIntegrationInstallation` is closed by runtime capability until a code-owned adapter verifies the provider.
+`IntegrationInstallation` shows the traceability provider (`providerCode`, `providerType`, `status`, `capabilities`). Onboarding creates it as `unconfigured`, shown as **Not connected**. `activateIntegrationInstallation` is closed by runtime capability until a code-owned adapter verifies the provider.
 
-## Inbound state events
+## Inbound state events and runs
 
-`StateEventInbox` holds regulator events (`providerCode`, `providerEventId`, status received, verified, processed, rejected). `recordStateInboxEvent` is closed by runtime capability until signatures can be verified.
+These sections only appear when rows exist, which needs a live state-system connection.
 
-## Reconciliation runs
-
-`ReconciliationRun` records inventory, sales, cash or outbox runs with discrepancies. `recordReconciliationRun` and `approveReconciliationRun` are closed by runtime capability.
-
-Read access needs `canViewReports`.
+- `StateEventInbox` holds regulator events (`providerCode`, `providerEventId`, status received, verified, processed, rejected). `recordStateInboxEvent` is closed by runtime capability until signatures can be verified.
+- `ReconciliationRun` records inventory, sales or cash runs with discrepancies. `recordReconciliationRun` and `approveReconciliationRun` are closed by runtime capability.

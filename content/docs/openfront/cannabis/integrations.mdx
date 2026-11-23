@@ -6,7 +6,7 @@ icon: Unplug
 
 ## State traceability
 
-An `IntegrationInstallation` with `providerType: "traceability"` is created at onboarding with the provider code you supply. Outbox events record each reportable action. See [Reconciliation](/docs/openfront/cannabis/reconciliation).
+An `IntegrationInstallation` with `providerType: "traceability"` is created at onboarding with the provider code you supply. Until it is connected, stores report by uploading CSV files. See [State reporting](/docs/openfront/cannabis/reconciliation).
 
 ## Payments
 
@@ -26,4 +26,4 @@ S3-compatible storage through `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`,
 
 ## Adding a provider
 
-Write a code-owned adapter, keep credentials out of GraphQL, logs, audit metadata and outbox payloads, authenticate inbound traffic, make retries idempotent, then register the capability in `features/keystone/domain/runtimeCapabilities.ts`.
+Write a code-owned adapter, keep credentials out of GraphQL, logs, and audit metadata, authenticate inbound traffic, make retries idempotent, then register the capability in `features/keystone/domain/runtimeCapabilities.ts`.

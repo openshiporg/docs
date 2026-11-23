@@ -11,14 +11,14 @@ Openfront Cannabis is a self-hosted dispensary application. It pairs a public, a
 ## What the codebase contains
 
 - **Architecture:** Next.js 16 (App Router, React 19), Keystone 6 with a GraphQL API at `/api/graphql`, Prisma, and PostgreSQL. Keystone file storage uses S3-compatible object storage.
-- **Schema:** Keystone lists grouped into authority (organization, premises, licenses, staff credentials, rule packs, customers, eligibility evidence), inventory (products, packages, holds, manifests, inventory events, recalls), commerce (registers, shifts, cash events, tenders, carts, sales, refunds), and operations (audit, idempotency, outbox, inbox, integrations, reconciliation, incidents).
+- **Schema:** Keystone lists grouped into authority (organization, premises, licenses, staff credentials, rule packs, customers, eligibility evidence), inventory (products, packages, holds, manifests, inventory events, recalls), commerce (registers, shifts, cash events, tenders, carts, sales, refunds), and operations (audit, idempotency, inbox, integrations, reconciliation, incidents).
 - **Operator surfaces:** `/dashboard/platform/*` pages for the control room, authority, staff, compliance, customers, recalls, inventory, receiving, menu, store settings, POS, sales, cash, reconciliation, incidents, and audit log, mounted in the shared Keystone dashboard shell.
 - **Storefront:** a public menu at `/`, product detail at `/menu/[id]`, and visit details at `/visit`. Purchases happen in store at the POS.
 - **Onboarding:** a setup dialog that installs an owner-supplied authority pack through `runCannabisOnboarding`, with an optional starter store.
 
 ## Writes go through commands
 
-Every Keystone list uses immutable access: generic GraphQL create, update, and delete operations are denied. All writes go through named mutations. Most of them run through a controlled-operation helper that re-reads the actor and requires a current role permission, a staff credential covering the activity, a current license for the premises, and an idempotency key. Each command writes an `AuditEvent`, and state-reported actions also queue an `OutboxEvent`.
+Every Keystone list uses immutable access: generic GraphQL create, update, and delete operations are denied. All writes go through named mutations. Most of them run through a controlled-operation helper that re-reads the actor and requires a current role permission, a staff credential covering the activity, a current license for the premises, and an idempotency key. Each command writes an `AuditEvent`. Stores without a live state connection report sales and adjustments by CSV upload from State reporting.
 
 Some commands exist but are switched off in source by a runtime-capability list. In-store selling is on; online intake, pickup carts, generic inventory events, and provider adapters are off. See [Data model](/docs/openfront/cannabis/data-model).
 

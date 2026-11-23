@@ -21,7 +21,7 @@ Before asking implementation questions, briefly tell the user where the current 
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is licenses and staff credentials, jurisdiction rule packs, staff and roles, package receiving and custody (lab results, release, holds), recall cases, counter ID check-in and customers, POS carts and order preparation, sale finalization, second-approver refunds, register shifts and blind-count cash close, state-reporting outbox, incidents, and the audit log. Platform routes live under `/dashboard/platform`: control room, authority, staff, compliance, customers, recalls, inventory, receiving, menu, store-settings, pos, sales, cash, reconciliation, incidents, and audit. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is licenses and staff credentials, jurisdiction rule packs, staff and roles, package receiving and custody (lab results, release, holds), recall cases, counter ID check-in and customers, POS carts and order preparation, sale finalization, second-approver refunds, register shifts and blind-count cash close, state reporting (CSV export), incidents, and the audit log. Platform routes live under `/dashboard/platform`: control room, authority, staff, compliance, customers, recalls, inventory, receiving, menu, store-settings, pos, sales, cash, reconciliation, incidents, and audit. This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
@@ -45,7 +45,7 @@ Before proposing code:
 3. Enumerate GraphQL documents and operation names used by those call sites.
 4. Read `schema.graphql`, model access, field access, and custom query/mutation resolvers.
 5. Record actor, tenant/store/organization scope, inputs, outputs, lifecycle authority, idempotency, and error states for each required operation.
-6. Inspect provider adapters, webhooks, workers, uploads, cookies/tokens, and runtime configuration touched by the requested flow.
+6. Inspect provider adapters, webhooks, uploads, cookies/tokens, and runtime configuration touched by the requested flow.
 7. Produce a capability matrix: verified, presentation-only, needs backend contract, blocked, or absent.
 
 Do not claim the skill already knows a deployed contract. It knows where and how to discover the exact calls. Generated CRUD or a schema-valid document is not proof of safe access.
@@ -69,9 +69,9 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around licenses, credentials, rule packs, package custody, recalls, counter eligibility, POS, sales, cash, refunds, outbox state, incidents, and audit. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
+Design around licenses, credentials, rule packs, package custody, recalls, counter eligibility, POS, sales, cash, refunds, state reporting, incidents, and audit. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
-For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. In this codebase that usually means `runControlledOperation` (role permission, active staff credential covering the activity, current premises license, idempotency key, audit event, optional outbox event) and, for hold release, shift close, refunds, and recall close, the second-approver check in `mutations/approval.ts`. If it does not exist, request the backend contract and show the feature as unavailable.
+For consequential actions, require one bounded server projection or command that validates actor, scope, related-record ownership, state transition, transaction/concurrency, idempotency, provider behavior, and audit evidence. In this codebase that usually means `runControlledOperation` (role permission, active staff credential covering the activity, current premises license, idempotency key, audit event) and, for hold release, shift close, refunds, and recall close, the second-approver check in `mutations/approval.ts`. If it does not exist, request the backend contract and show the feature as unavailable.
 
 ## Handoff
 
