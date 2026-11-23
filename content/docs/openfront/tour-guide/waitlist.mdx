@@ -1,0 +1,23 @@
+---
+title: Waitlist
+description: Guests waiting for a full departure, held offers when seats free up, and phone callers.
+icon: Hourglass
+---
+
+`/dashboard/platform/waitlist` lists guests waiting for full departures and the offers held for them (`waitlistBoard`, needs `canManageBookings`).
+
+## How a guest joins
+
+On the storefront tour page, a party that does not fit a departure can **Join the waitlist** (`joinWaitlist`). The guest gets a private link to `/waitlist`. It shows their place and lets them book when seats are held. The proof travels in the URL fragment.
+
+Staff add a phone caller with **Add a phone caller** (`addToWaitlist`): guest name, email, phone, party size, and participants (one per line). Give the guest the private link it returns.
+
+## Offers
+
+When seats free up (a cancel, a move away, a resize, or an expired hold), offers go to the oldest entry first. Each offer is a real seat hold for the party until the offer window ends, so a new arrival cannot take the seats. The window is **Waitlist offer window (hours)** on [Settings](/docs/openfront/tour-guide/settings), 12 hours by default. After that the seats go to the next guest.
+
+- The guest books the held seats through the normal checkout (`claimWaitlistOffer`).
+- Staff take cash for an open offer with **Book for cash** (`bookWaitlistOffer`).
+- The guest can leave from their link (`leaveWaitlist`). Staff remove an entry with `withdrawWaitlistEntry`.
+
+**Run daily check** on [Today](/docs/openfront/tour-guide/today) also makes due waitlist offers.

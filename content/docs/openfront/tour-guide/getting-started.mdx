@@ -13,7 +13,7 @@ The source is public at [openshiporg/openfront-tour-guide](https://github.com/op
 - Node.js 20 or later.
 - npm.
 - A PostgreSQL database you can migrate.
-- A Stripe account in test mode for card payments.
+- A Stripe account for card payments.
 
 ## Clone and install
 
@@ -32,8 +32,8 @@ DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_tour_guide
 SHADOW_DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_tour_guide_shadow
 SESSION_SECRET=replace-with-at-least-48-random-characters
 PUBLIC_SIGNUPS_ALLOWED=false
-NEXT_PUBLIC_STRIPE_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 

@@ -1,14 +1,10 @@
 ---
 title: Payment providers
-description: The Stripe and manual adapters, test-mode checkout, the webhook, and refunds.
+description: The Stripe and manual adapters, card checkout with gift cards, the webhook, and refunds.
 icon: Plug
 ---
 
 Adapters live in `features/integrations/payment`. They are the same pattern as Openfront Restaurant. A `PaymentProvider` record names an adapter for each operation: create, capture, refund, status, link, and webhook.
-
-## Status
-
-Payments run against Stripe in test mode while the app is in development. Use the Stripe test card `4242 4242 4242 4242`. No live-mode flow has been exercised.
 
 ## Adapters
 
@@ -20,7 +16,7 @@ Checkout looks up the provider with the code `pp_stripe` that is installed. If t
 ## How a card payment flows
 
 1. `startBookingCheckout` creates a booking in `pending_payment`, a payment collection, and a payment session. It extends the hold to 15 minutes.
-2. The server creates a Stripe payment intent for the booking total, card only, with an idempotency key built from the hold.
+2. A gift card code, if given, pays first. The server creates a Stripe payment intent for the rest, card only, with an idempotency key built from the hold.
 3. The storefront confirms the card with Stripe.
 4. `completeBookingCheckout` reads the intent back from Stripe. It requires status `succeeded` and an amount and currency that match the booking.
 5. In one transaction the server takes the departure lock, converts the hold, confirms the booking, records the payment, and commits any promo redemption.
@@ -37,7 +33,7 @@ Register this URL in Stripe:
 /api/webhooks/payment/pp_stripe
 ```
 
-The route checks the signature with `STRIPE_WEBHOOK_SECRET` and logs each event once in `PaymentWebhookEvent`. It acts on `payment_intent.succeeded`: it finds the booking from the payment intent and confirms it if the page did not. Other event types are logged and ignored. Refund and dispute events are not handled.
+The route checks the signature with `STRIPE_WEBHOOK_SECRET` and logs each event once in `PaymentWebhookEvent`. It acts on `payment_intent.succeeded`: it finds the booking from the payment intent and confirms it if the page did not. A party change's difference is a second payment intent, applied from the webhook too. A failure answers 500 so Stripe retries. Other event types are logged and ignored. Refund and dispute events are not handled.
 
 ## Refunds
 

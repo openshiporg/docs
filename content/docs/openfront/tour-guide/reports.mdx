@@ -1,0 +1,14 @@
+---
+title: Sales report
+description: Sales by tour, channel and source, occupancy, a weekly trend, and a CSV export.
+icon: ChartColumn
+---
+
+`/dashboard/platform/reports` builds a sales report for a date range (`salesReport`). It needs `canReadPayments`. The range is 400 days or less.
+
+- Choose **Date booked** or **Departure date**, then **Run report**.
+- **Totals** come grouped by tour, channel, and source.
+- **Occupancy** is seats sold against capacity for running departures that start in this range.
+- **Weekly trend** shows the same totals by week.
+
+The CSV export (`exportSalesCsv`) is built on the server. Each export is audited with who ran it, the range, the row count, and the totals.

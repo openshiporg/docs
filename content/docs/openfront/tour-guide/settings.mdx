@@ -1,10 +1,10 @@
 ---
 title: Settings
-description: Operator name, time zone, currency, tax rate, and the refund approval threshold.
+description: Operator name, time zone, address, tax rate, the refund approval threshold, and the waitlist offer window.
 icon: Settings
 ---
 
-`/dashboard/platform/settings` is a generic Keystone list screen for `StoreSettings`. The list is named `StoreSettings` in the schema and exposed in GraphQL as `StoreSettingsItems`. Its list access is tied to the `canManageOnboarding` flag, not to `canManageSettings`.
+`/dashboard/platform/settings` edits the one `StoreSettings` row (`updateStoreSettings`, needs `canManageSettings`). The form has **Operator name**, **Timezone**, **Address**, **Tax rate (%)**, the refund amount that needs a second manager, and **Waitlist offer window (hours)**. A role without access sees "No operator settings are available to your role." Logo icon, color and SVG are on `/dashboard/platform/store`.
 
 ## Fields
 
@@ -12,7 +12,8 @@ icon: Settings
 - `timezone`, `address`, `currencyCode` (default `USD`).
 - `taxBps`: tax in basis points, applied to the amount after discount.
 - `refundApprovalThresholdCents`: a refund above this amount needs a manager approval. Default 10000.
+- `waitlistOfferHours`: how long a waitlist offer holds seats. Default 12, from 1 to 168.
 
 There is one settings row. Onboarding creates it.
 
-The dashboard pages Today, Calendar, and Check-in use the America/New_York time zone directly. They do not read the `timezone` setting. A tour's own `timezone` decides its start times.
+Staff screens show times and days in this time zone. A tour's own `timezone` decides its start times.

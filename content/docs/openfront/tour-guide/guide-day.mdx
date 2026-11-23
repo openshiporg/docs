@@ -1,0 +1,16 @@
+---
+title: My departures and pickup sheets
+description: A guide's accepted departures, and printable pickup sheets for one departure or a whole day.
+icon: Bus
+---
+
+## My departures
+
+`/dashboard/platform/my-departures` shows the signed-in guide's own departures for the next 14 days, only where their assignment is accepted or worked (`myDepartures`). The guide comes from the signed-in user, never from an argument. Offers and declines are handled on [Guides](/docs/openfront/tour-guide/guides).
+
+## Pickup sheets
+
+- `/dashboard/platform/pickup?departure=<id>` is the **Pickup sheet** for one departure (`pickupSheet`).
+- `/dashboard/platform/pickup-day` is the **Pickup sheet for the day**, every departure starting that day in the operator's time zone, with **Previous day** (`dayPickupSheet`).
+
+A sheet lists where, when, who, party size and notes, with **Print sheet**. It has no amounts. Operations staff can open any departure. A guide sees only their own. Open a sheet from My departures or the check-in list.

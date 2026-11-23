@@ -4,7 +4,7 @@ description: Departures for the current day with seats, guides, waiver gaps, and
 icon: CalendarClock
 ---
 
-`/dashboard/platform/today` lists each departure that starts today in the operator's time zone (America/New_York). It needs `canCheckIn` because it reads the departure list that guides use.
+`/dashboard/platform/today` lists each departure that starts today in the operator's time zone from [Settings](/docs/openfront/tour-guide/settings). It needs `canCheckIn` because it reads the departure list that guides use.
 
 ## What a card shows
 
@@ -18,8 +18,14 @@ Guides needed is the booked seats divided by the tour's guests-per-guide ratio, 
 ## Actions
 
 - **Manifest** opens the [check-in](/docs/openfront/tour-guide/check-in) page for that departure.
-- **Cancel departure** opens a popover with two choices: **Weather cancel** and **Operator cancel**. Both call `cancelDeparture`, which needs `canManageDepartures`. See [Cancel a departure](/docs/openfront/tour-guide/how-to-guides/cancel-a-departure).
+- **Set capacity** (`resizeDeparture`). Capacity cannot go below booked and held seats or above the tour maximum.
+- **Complete departure** (`closeDeparture`) for every ended departure the server can complete. Draft guide payouts are created.
+- **Cancel departure** opens a popover with two choices. **Weather cancel** takes a weather reason and calls `weatherCancelDeparture`; see [Weather cancellations](/docs/openfront/tour-guide/weather). **Operator cancel** calls `cancelDeparture`. Both need `canManageDepartures`. See [Cancel a departure](/docs/openfront/tour-guide/how-to-guides/cancel-a-departure).
+
+## Run daily check
+
+**Run daily check** runs `sweepDepartures`. It raises minimum alerts for short departures, closes departures past the cutoff, releases lapsed holds, and makes due waitlist offers. It reports each count. There is no scheduler, so press it once a day.
 
 ## Notes
 
-The page reads `departuresInRange`. That query allows at most 31 days. It does not offer the "offer credit" choice that `cancelDeparture` supports. Use GraphQL for that.
+The page reads `departuresInRange`. That query allows at most 31 days.

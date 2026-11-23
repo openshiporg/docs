@@ -1,0 +1,21 @@
+---
+title: Gift cards
+description: Sell gift cards for cash or issue complimentary vouchers, redeem them at checkout, and track balances.
+icon: Gift
+---
+
+`/dashboard/platform/gift-cards` lists gift cards, newest first, with their ledger and the outstanding balance (`giftCardBoard`). It needs `canManagePayments`. **Find a gift card** searches by the last four characters, recipient, or full code.
+
+## Issue a gift card
+
+**Issue a gift card** (`issueGiftCard`) takes an amount from 1.00 to 2,000.00, an expiry, recipient name and email, and a note. **Funded by** is **Sold for cash** or **Complimentary voucher**. The page shows the code once: "Give the guest this code. They enter it at checkout". **Show code** (`revealGiftCardCode`) shows it again for a guest who lost it, and the reveal is audited.
+
+The database keeps only a hash of the code. Every balance change is a `GiftCardEntry`.
+
+## Redeem
+
+At storefront checkout the guest opens **Have a gift card?** and enters the code. `giftCardBalance` shows what it is worth, and gives the same answer for a wrong code and a void one. The card pays first and the bank card pays the rest. A refund of the gift card part goes back on the card, never out as cash.
+
+## Void
+
+`voidGiftCard` voids a lost card or one sold in error. The remaining balance is written off in the ledger.

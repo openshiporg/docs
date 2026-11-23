@@ -20,7 +20,14 @@ The manifest lists bookings in `confirmed`, `checked_in`, `completed`, `no_show`
 ## Actions
 
 - **Check in** (`checkInParticipant`) is available when the booking is `confirmed` or `checked_in`. A missing waiver warns but does not block. When every participant is checked in, the booking moves to `checked_in`.
-- **No show** (`markNoShow`) applies to a `confirmed` booking. It also marks its pending participants as no-show.
+- **No show** (`markNoShow`) applies to a `confirmed` booking. It also marks its pending participants as no-show. **Undo no show** (`undoNoShow`) reverses a mistake while the departure has not completed.
+- **Sign waiver** captures a missing waiver on site: the guest types their full name (`captureWaiverOnSite`).
+
+## Offline
+
+Taps made without a connection are queued in the browser and survive a reload. When the device is back online they are sent with `syncOfflineCheckIns` and applied in tap order against the booking as it is then. Taps that cannot apply are listed under "Taps that did not apply".
+
+Guides see only the departures they have accepted. The manifest links to the [pickup sheets](/docs/openfront/tour-guide/guide-day).
 
 ## Audit
 

@@ -1,0 +1,18 @@
+---
+title: Seasonal pricing
+description: Price changes by season, weekday and ticket type, applied when a guest gets a quote.
+icon: SunMedium
+---
+
+`/dashboard/platform/pricing` edits pricing rules (`savePricingRule`, `removePricingRule`, needs `canManageTours`). Without rules, guests pay the listed ticket prices.
+
+## A rule
+
+**Add a rule** with:
+
+- **Rule name** and **Applies to**, a tour and either **Every ticket type** or one ticket type.
+- **First day** and a last day.
+- **Weekdays (none picked means every day)**.
+- **Change type**, either **Percent up or down** (`adjustBps`) or **Fixed price per ticket** (`overridePriceCents`).
+
+Rules are applied at quote time, on the storefront and for staff bookings. Every booking keeps its own price snapshot, so saving or removing a rule never changes a booking that already exists. Each change is audited with before and after.

@@ -8,7 +8,10 @@ Cancelling needs `canManageDepartures`. Refunds and credits then run for every l
 
 ## From the Today page
 
-Open the departure's **Cancel departure** popover and choose **Weather cancel** or **Operator cancel**. Both refund every booking in full.
+Open the departure's **Cancel departure** popover.
+
+- **Weather cancel** needs a weather reason (`weatherCancelDeparture`). No booking is refunded yet. Each one then waits on [Weather cancellations](/docs/openfront/tour-guide/weather) for a rebook onto another departure of the same tour or a full refund.
+- **Operator cancel** (`cancelDeparture` with reason `operator`) refunds every booking in full.
 
 ## From GraphQL
 

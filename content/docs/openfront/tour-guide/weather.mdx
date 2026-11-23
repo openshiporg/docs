@@ -1,0 +1,14 @@
+---
+title: Weather cancellations
+description: Cancel a departure for weather, then rebook or refund each guest.
+icon: CloudLightning
+---
+
+**Weather cancel** on [Today](/docs/openfront/tour-guide/today) cancels a departure with a required reason (`weatherCancelDeparture`, needs `canManageDepartures`). No guest is notified by the app.
+
+`/dashboard/platform/weather` then lists every weather-cancelled departure and waits for a choice on each booking:
+
+- **Rebook** onto another departure of the same tour (`rebookWeatherBooking`, needs `canManageBookings`). What the guest paid is the credit. The new booking is priced from the same tickets and add-ons and must cost exactly that.
+- **Full refund**, through the normal refund. A refund above the approval threshold still needs a second manager.
+
+A reseller booking says "Reseller booking: refund, or re-plan with the reseller." When every guest is handled, the departure shows "Every guest on this departure has been rebooked or refunded."

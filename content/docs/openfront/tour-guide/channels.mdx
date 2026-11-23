@@ -4,7 +4,7 @@ description: Reseller channels with commission and seat allocation, and the stat
 icon: Handshake
 ---
 
-`/dashboard/platform/channels` is a generic Keystone list screen for `Channel`. It needs `canManageChannels`.
+`/dashboard/platform/channels` lists channels with their statements and the guide payouts. It needs `canManageChannels`. Channels themselves are created in the generic `Channel` list.
 
 A channel models a reseller. There is no live connection to a marketplace. You enter the terms.
 
@@ -25,4 +25,4 @@ Unsold channel allocation counts as reserved for other buyers until 24 hours bef
 
 ## Statements
 
-`generateChannelStatement` (needs `canManageChannels`) takes a channel and a date range. It collects the channel's bookings in that range that have no statement yet, and writes a `ChannelStatement` with gross, commission, and net due. For a `channel_collects` channel net due is gross minus commission. For `we_collect` it is the negative of the commission. The statement status starts as `open`. No operation moves it to `invoiced` or `paid`. There is no statement screen. Read it from the generic `channelStatements` list.
+`generateChannelStatement` (needs `canManageChannels`) takes a channel and a date range. It collects the channel's bookings in that range that have no statement yet, and writes a `ChannelStatement` with gross, commission, and net due. For a `channel_collects` channel net due is gross minus commission. For `we_collect` it is the negative of the commission. **Generate statement** takes a channel and a statement month (UTC). The statement status starts as `open`. **Mark invoiced**, then **Record paid** with a payment reference, move it on (`transitionChannelStatement`, needs `canManageChannels` and `canManagePayments`). The page notes "Manual payment recording only. No funds are transferred."

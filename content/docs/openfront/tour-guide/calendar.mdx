@@ -10,4 +10,4 @@ Each day lists its departures with the tour name, start time, booked seats over 
 
 Use **Previous**, **This week**, and **Next** to move by week. The `?week=` query value is the offset, limited to 8 weeks back and 12 weeks ahead.
 
-The calendar is read-only. It has no drawer and no resize or cancel buttons. To resize a departure or assign guides and vehicles, use the GraphQL operations `resizeDeparture`, `assignGuide`, and `assignResource`. See the [GraphQL API](/docs/openfront/tour-guide/api-reference).
+**Put next 60 days on sale** runs `generateDepartures`. It creates the scheduled departures for the next 60 days and reports how many are new. Resize and cancel from [Today](/docs/openfront/tour-guide/today). Assign guides on [Guides](/docs/openfront/tour-guide/guides) and vehicles on [Resources](/docs/openfront/tour-guide/resources).

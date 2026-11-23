@@ -19,11 +19,11 @@ A refund above `refundApprovalThresholdCents` in settings (10000, or $100, by de
 <Steps>
 <Step>
 ### Request
-The person refunding calls `requestRefundApproval(bookingId, reason, amount)`. It returns an approval id.
+On Bookings, **Request approval** does this. The person refunding calls `requestRefundApproval(bookingId, reason, amount)`. It returns an approval id. The threshold counts refunds already made on the booking.
 </Step>
 <Step>
 ### Approve
-A different user with `canIssueRefunds` calls `approveRefund(approvalId)`. The same user cannot approve their own request. It expires after 15 minutes.
+A different user with `canIssueRefunds` uses **Approve refund** under **Refund approvals**, which calls `approveRefund(approvalId)`. The same user cannot approve their own request. It expires after 15 minutes.
 </Step>
 <Step>
 ### Refund

@@ -14,21 +14,28 @@ Route files live in `app/dashboard/(admin)/platform/**` and stay thin. Each impo
 
 | Route | Kind | What it does |
 | --- | --- | --- |
-| `/dashboard/platform/today` | Purpose-built | Today's departures, staffing and waiver alerts, cancel |
-| `/dashboard/platform/calendar` | Purpose-built, read-only | Week grid of departures |
-| `/dashboard/platform/bookings` | Purpose-built | Status tabs, refunds |
-| `/dashboard/platform/check-in` | Purpose-built | Mobile manifest, check-in, no-show |
-| `/dashboard/platform/guides` | Purpose-built, read-only | Roster, certifications, assignments |
+| `/dashboard/platform/today` | Purpose-built | Today's departures, staffing and waiver alerts, capacity, complete, cancel, Run daily check |
+| `/dashboard/platform/calendar` | Purpose-built | Week grid of departures, Put next 60 days on sale |
+| `/dashboard/platform/bookings` | Purpose-built | Status tabs, phone and walk-up booking, move, change party, reset guest link, refunds and approvals |
+| `/dashboard/platform/waitlist` | Purpose-built | Waiting guests and held offers, phone callers, book for cash |
+| `/dashboard/platform/my-departures` | Purpose-built | The signed-in guide's accepted departures |
+| `/dashboard/platform/check-in` | Purpose-built | Mobile manifest, check-in (queued offline), no-show and undo, on-site waiver |
+| `/dashboard/platform/pickup`, `/dashboard/platform/pickup-day` | Purpose-built | Printable pickup sheets |
+| `/dashboard/platform/pricing` | Purpose-built | Seasonal pricing rules |
+| `/dashboard/platform/gift-cards` | Purpose-built | Issue, find, reveal and void gift cards |
+| `/dashboard/platform/guides` | Purpose-built | Roster, certifications, offer assignment, accept or decline |
+| `/dashboard/platform/weather` | Purpose-built | Weather-cancelled departures: rebook or refund each guest |
+| `/dashboard/platform/reports` | Purpose-built | Sales report and CSV export |
 | `/dashboard/platform/tours` | Generic list | `Tour` |
 | `/dashboard/platform/waivers` | Generic list | `WaiverTemplate` |
 | `/dashboard/platform/promo-codes` | Generic list | `PromoCode` |
-| `/dashboard/platform/resources` | Generic list | `Resource` |
-| `/dashboard/platform/channels` | Generic list | `Channel` |
-| `/dashboard/platform/customers` | Generic list | `User` |
-| `/dashboard/platform/payment-providers` | Generic list | `PaymentProvider` |
-| `/dashboard/platform/settings` | Generic list | `StoreSettings` |
+| `/dashboard/platform/resources` | Generic list plus assignment | `Resource`, and assigning vehicles, boats and equipment to upcoming departures |
+| `/dashboard/platform/channels` | Purpose-built | Resellers, Generate statement, Record paid |
+| `/dashboard/platform/customers` | Purpose-built, read-only | Guests from the latest 500 bookings |
+| `/dashboard/platform/settings` | Purpose-built | Operator name, timezone, address, tax, refund approval threshold, waitlist offer window |
+| `/dashboard/platform/store` | Purpose-built | Store logo icon, color and SVG |
 
-Sidebar entries come from `features/platform/lib/navigation.ts`. Other routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only with `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic `/dashboard/[listKey]` screens.
+Sidebar entries come from `features/platform/lib/navigation.ts`. Other routes are the shared shell: `/dashboard/init`, `/dashboard/signin`, `/dashboard/signup` (only with `PUBLIC_SIGNUPS_ALLOWED=true`), `/dashboard/reset`, `/dashboard/no-access`, and the generic `/dashboard/[listKey]` screens, such as `/dashboard/payment-providers` for `PaymentProvider`.
 
 ## Named operations
 
@@ -36,11 +43,18 @@ Operator screens call GraphQL through server actions in each slice's `actions` f
 
 | Slice | Operations |
 | --- | --- |
-| today | `departuresInRange`, `cancelDeparture` |
-| calendar | `departuresInRange` |
-| bookings | `bookings` (generated list), `refundBooking` |
-| check-in | `departureManifest`, `departuresInRange`, `checkInParticipant`, `markNoShow` |
-| guides | `guides` (generated list) |
+| today | `departuresInRange`, `resizeDeparture`, `closeDeparture`, `cancelDeparture`, `weatherCancelDeparture`, `sweepDepartures` |
+| calendar | `departuresInRange`, `generateDepartures` |
+| bookings | `bookings` (generated list), `createChannelBooking`, `operatorBookingByKey`, `bookingMoveOptions`, `moveBooking`, `bookingParty`, `bookingPartyQuote`, `changeBookingParty`, `resetGuestLink`, `requestRefundApproval`, `approveRefund`, `refundBooking` |
+| waitlist | `waitlistBoard`, `addToWaitlist`, `bookWaitlistOffer`, `withdrawWaitlistEntry` |
+| check-in | `departureManifest`, `departuresInRange`, `checkInParticipant`, `markNoShow`, `undoNoShow`, `syncOfflineCheckIns`, `participantWaiver`, `captureWaiverOnSite` |
+| guide-day | `myDepartures`, `pickupSheet`, `dayPickupSheet` |
+| guides | `guides` (generated list), `assignGuide`, `respondToAssignment` |
+| pricing | `savePricingRule`, `removePricingRule` |
+| gift-cards | `giftCardBoard`, `issueGiftCard`, `revealGiftCardCode`, `voidGiftCard` |
+| weather | `rebookWeatherBooking`, `refundBooking` |
+| reports | `salesReport`, `exportSalesCsv` |
+| settings | `updateStoreSettings` |
 | onboarding | `ensureTourOnboardingRecord`, `seedTourActivity`, `updateActiveUser` |
 
 The sidebar brand and setup card read `operatorName` and `tourTotal`.

@@ -18,8 +18,14 @@ Each row shows the guest, booking code, tour, date, total, refunded amount, seat
 
 Rows in `confirmed`, `checked_in`, `completed`, `no_show`, or `partially_refunded` have a **Refund** button. Enter an amount in dollars (it defaults to the full remaining amount) and a reason, then choose **Refund** or **Refund and cancel**. The page calls `refundBooking`, which needs `canIssueRefunds`.
 
-A refund above the approval threshold needs a manager approval from a different user. The page has no approval form. Request and approve it with `requestRefundApproval` and `approveRefund`, then pass the approval id to `refundBooking`. See [Refund a booking](/docs/openfront/tour-guide/how-to-guides/refund-a-booking).
+A refund above the approval threshold needs a manager approval from a different user. The threshold counts the refunds already made on the booking, so splitting a large refund still needs approval. Choose **Request approval**; the row shows "Waiting for another manager" until a different manager uses **Approve refund** under **Refund approvals**. A refund the card processor doesn't confirm is reported as not done and retried on the next press, never duplicated. See [Refund a booking](/docs/openfront/tour-guide/how-to-guides/refund-a-booking).
+
+## Move, change party, guest link
+
+- **Move** (`moveBooking`) moves a booking to another departure of the same tour at the same price. The booking code, payment and guest link stay.
+- **Change party** (`changeBookingParty`) adds or removes people. People already booked keep the price they paid.
+- **Reset guest link** (`resetGuestLink`) stops the old manage link working and shows a new one to give the guest.
 
 ## Phone and walk-up sales
 
-There is no booking form in the dashboard. Staff sales go through `createChannelBooking`, which takes a source of `phone`, `walk_up`, or `reseller`. See [Take a phone booking](/docs/openfront/tour-guide/how-to-guides/take-a-phone-booking).
+**Phone / walk-up booking** takes departures, lead name, email and phone, and participants (one per line, with ages). It calls `createChannelBooking`, which takes a source of `phone`, `walk_up`, or `reseller`. If the request times out, `operatorBookingByKey` checks whether it went through. See [Take a phone booking](/docs/openfront/tour-guide/how-to-guides/take-a-phone-booking).

@@ -30,6 +30,22 @@ Guests have no session. The guest operations use proof:
 | `departuresInRange` | `from`, `to` | `canCheckIn` | Departures with booked and held seats, guides, waiver gaps, staffing. At most 31 days |
 | `departureManifest` | `departureId` | `canCheckIn` | Bookings and participants for a departure |
 | `redirectToInit` | none | Public | True while there are no users |
+| `bookingRefExists` | `bookingRef` | Public | Whether a code exists (no guest details), so an unknown booking page is a 404 |
+| `manageBooking` | `bookingRef`, `token` | Manage link | The booking, what can change, move targets, refund if cancelled now |
+| `partyChangeQuote` | `bookingRef`, `token`, `input` | Manage link | Price of a party change and the difference to pay or refund |
+| `waitlistStatus` | `entryId`, `token` | Waitlist link | Place in line and any held offer |
+| `giftCardBalance` | `code` | Public | What a code is worth. Same answer for a wrong and a void code |
+| `isGuide` | none | Signed in | Whether the user is a guide |
+| `bookingMoveOptions` | `bookingId` | `canManageBookings` | Departures a booking can move to (same tour, same price, room) |
+| `bookingParty`, `bookingPartyQuote` | `bookingId`, `input` | `canManageBookings` | The current party, and the price of a change |
+| `operatorBookingByKey` | `idempotencyKey` | `canManageBookings` | Whether a timed-out staff booking committed |
+| `waitlistBoard` | `status` | `canManageBookings` | Open waitlist entries and offers, or all |
+| `participantWaiver` | `participantId` | `canCheckIn` | Waiver text for on-site signing |
+| `myDepartures` | `days` | `canCheckIn`, as a guide | The signed-in guide's accepted departures |
+| `pickupSheet`, `dayPickupSheet` | `departureId` or `day` | `canCheckIn` | Printable pickup sheet. Guides see only their own departures |
+| `pricingRuleBoard` | none | `canManageTours` | Pricing rules with their tours and ticket types |
+| `giftCardBoard` | `search` | `canManagePayments` | Gift cards, ledger, outstanding balance |
+| `salesReport` | `from`, `to`, `basis` | `canReadPayments` | Sales totals, occupancy, weekly trend. At most 400 days |
 
 ## Mutations
 
@@ -61,6 +77,32 @@ Every mutation that changes data takes an `idempotencyKey` of up to 200 characte
 | `ensureTourOnboardingRecord(entity, data)` | `canManageOnboarding` | Setup helper, allow-listed entities only |
 | `seedTourActivity(template, seed)` | `canManageOnboarding` | Setup helper for departures and bookings |
 | `updateActiveUser(data)` | Signed in | Updates the user's name or onboarding status only |
+| `cancelManagedBooking(bookingRef, token, idempotencyKey)` | Manage link | Cancels under the booking's policy snapshot and refunds |
+| `rescheduleManagedBooking(bookingRef, token, departureId, idempotencyKey)` | Manage link | Moves the same booking to another departure of the same tour |
+| `changeParty(bookingRef, token, input, idempotencyKey)` | Manage link | Changes the party. Starts a card payment for a difference |
+| `completePartyChange(bookingRef, token, changeId, idempotencyKey)` | Manage link | Applies a paid party change. Safe to repeat |
+| `joinWaitlist(input, idempotencyKey)` | Public | Joins the waitlist and returns the private link |
+| `claimWaitlistOffer(entryId, token, cartToken)` | Waitlist link | Takes a held offer into checkout |
+| `leaveWaitlist(entryId, token, idempotencyKey)` | Waitlist link | Leaves the waitlist or turns down an offer |
+| `moveBooking(input, idempotencyKey)` | `canManageBookings` | Moves a booking until its departure starts |
+| `changeBookingParty(input, idempotencyKey)` | `canManageBookings` (refund part needs `canIssueRefunds`) | Staff party change |
+| `resetGuestLink(input, idempotencyKey)` | `canManageBookings` | Invalidates the old manage link and returns a new one |
+| `addToWaitlist(input, idempotencyKey)` | `canManageBookings` | Adds a phone caller to the waitlist |
+| `bookWaitlistOffer(input, idempotencyKey)` | `canManageBookings` | Books an open offer for cash at the held quote |
+| `withdrawWaitlistEntry(input, idempotencyKey)` | `canManageBookings` | Removes a waitlist entry |
+| `rebookWeatherBooking(input, idempotencyKey)` | `canManageBookings` | Moves a weather-cancelled booking to another departure at the paid amount |
+| `weatherCancelDeparture(input, idempotencyKey)` | `canManageDepartures` | Cancels for weather with a required reason. Each booking then waits for a rebook or refund |
+| `unassignResource(input, idempotencyKey)` | `canManageResources` | Removes a resource from a departure |
+| `undoNoShow(input, idempotencyKey)` | `canCheckIn` | Reverses a no-show before the departure completes |
+| `syncOfflineCheckIns(input, idempotencyKey)` | `canCheckIn` | Applies queued offline taps in order, one audit row per tap |
+| `captureWaiverOnSite(input, idempotencyKey)` | `canCheckIn` | Records a waiver signed on the guide's device |
+| `savePricingRule(input, idempotencyKey)`, `removePricingRule(input, idempotencyKey)` | `canManageTours` | Edits seasonal pricing rules |
+| `issueGiftCard(input, idempotencyKey)` | `canManagePayments` | Sells a card for cash or issues a voucher. Returns the code |
+| `revealGiftCardCode(id)` | `canManagePayments` | Shows a code again. Audited |
+| `voidGiftCard(input, idempotencyKey)` | `canManagePayments` | Voids a card and writes off its balance |
+| `transitionGuidePayout(input, idempotencyKey)` | `canManageGuides` and `canManagePayments` | Records a guide payout state. No money moves |
+| `transitionChannelStatement(input, idempotencyKey)` | `canManageChannels` and `canManagePayments` | Records a reseller statement as paid. No money moves |
+| `exportSalesCsv(input)` | `canReadPayments` | Builds the sales CSV. Each export is audited |
 
 ## Input shapes
 

@@ -1,12 +1,12 @@
 ---
 title: External storefronts
-description: Give an LLM the Tour Guide storefront skill to adapt the built-in placeholder or create a separate client.
+description: Give an LLM the Tour Guide storefront skill to adapt the built-in storefront or create a separate client.
 icon: AppWindow
 ---
 
 To create a custom Tour Guide storefront, copy the skill and give it to your LLM. The skill explains how `features/storefront` and the customer routes implement the current booking loop.
 
-The built-in storefront is a plain placeholder. It uses the starter's default styling and makes the loop work end to end. A designed storefront is still to come, so treat the current screens as a behavior reference, not a design.
+The built-in storefront has a home page with a harbor photo, trip cards with each tour's own photo, what is included, the cancellation policy, and the price for the chosen date. Treat its screens as the behavior reference for a separate client.
 
 ## Current storefront routes
 
@@ -17,8 +17,10 @@ Route files live in `app/(storefront)/**`. Screens are in `features/storefront/s
 | `/` | `HomeScreen` | Tours on sale with duration and the lowest price |
 | `/tours/[slug]` | `TourScreen` | Tour details, date picker, departure times with seats left, ticket and add-on quantities, promo code |
 | `/checkout/[holdId]` | `CheckoutScreen` | Hold timer, lead booker, one entry per guest, Stripe card form |
-| `/bookings/[ref]` | `ConfirmationScreen` | Booking code, meeting point, waiver links, cancel |
+| `/bookings/[ref]` | `ConfirmationScreen` | Booking code, meeting point, waiver links, refund if cancelled now, cancel. An unknown code is a 404 (`bookingRefExists`) |
 | `/lookup` | `LookupScreen` | Find a booking by code and email |
+| `/manage` | `ManageScreen` | Manage link (`/manage#<bookingRef>.<token>`): cancel under the policy, move to another departure of the same tour at the same price, or change who is coming and pay the difference |
+| `/waitlist` | `WaitlistScreen` | A waitlist link: place in line, book held seats, or leave |
 | `/waiver/[token]` | `WaiverScreen` | Read and sign a waiver |
 
 The header shows the operator name from settings, with "Openfront Tour Guide" as the fallback.
@@ -32,7 +34,10 @@ All calls are in `features/storefront/lib/data.ts` and go through the server, no
 | Browse | `toursOnSale`, `tourAvailability`, `operatorName` |
 | Hold | `createDepartureHold` |
 | Checkout | `checkoutHold`, `startBookingCheckout`, `completeBookingCheckout` |
-| Booking page | `lookupBooking`, `cancelMyBooking` |
+| Booking page | `lookupBooking`, `cancelMyBooking`, `bookingRefExists` |
+| Manage link | `manageBooking`, `cancelManagedBooking`, `rescheduleManagedBooking`, `partyChangeQuote`, `changeParty`, `completePartyChange` |
+| Waitlist | `joinWaitlist`, `waitlistStatus`, `claimWaitlistOffer`, `leaveWaitlist` |
+| Gift card | `giftCardBalance` |
 | Waiver | `waiverForToken`, `signWaiver` |
 
 `rebookWithCredit` exists in the API but has no storefront page.
@@ -41,6 +46,7 @@ All calls are in `features/storefront/lib/data.ts` and go through the server, no
 
 - There is no guest sign-in. A random token is kept in an http-only cookie. Only its SHA-256 hash is stored with the hold. Every later step must present the same token.
 - The booking page asks for the email used to book. The browser keeps it in session storage so a refresh works. Lookup needs the booking code and the email together.
+- The manage and waitlist links are derived on the server and carry their proof in the URL fragment, so it never reaches a server log. Staff can **Reset guest link** to stop an old manage link working.
 - A waiver link is derived from the participant on the server. Anyone with the link can sign for that participant only.
 - Money amounts, seat counts, and prices come from the server's quote. The page sends choices, never prices.
 

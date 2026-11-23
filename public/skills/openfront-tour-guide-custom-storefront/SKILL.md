@@ -17,17 +17,17 @@ Before asking implementation questions, briefly tell the user where the current 
 - Server contract: `features/keystone/models/**`, `features/keystone/access.ts`, `features/keystone/mutations/**` (registered in `mutations/index.ts`, typed as `JSON`), and `schema.graphql`.
 - Provider boundaries: `features/integrations/payment/**`, the Stripe card form in `features/storefront/components/CheckoutForm.tsx`, and the webhook `app/api/webhooks/payment/[provider]`.
 
-The built-in storefront is a plain placeholder with the starter's default styling. It makes the booking loop work end to end. A designed storefront is still to come, so the built-in screens are a behavior reference, not a design to copy.
+The built-in storefront is designed (home hero photo, trip cards, tour photos, inclusions, policy). Its screens are the behavior reference for routes and states.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies, and the payment handoff.
 
-Current routes: `/` (tours), `/tours/[slug]` (date picker, departure times, tickets, add-ons, promo code), `/checkout/[holdId]` (hold timer, guests, card payment), `/bookings/[ref]` (confirmation, meeting point, waiver links, cancel), `/lookup` (code and email), `/waiver/[token]`.
+Current routes: `/` (tours), `/tours/[slug]` (date picker, departure times, tickets, add-ons, promo code), `/checkout/[holdId]` (hold timer, guests, card payment), `/bookings/[ref]` (confirmation, meeting point, waiver links, cancel), `/lookup` (code and email), `/manage` (manage link: move, change party, cancel), `/waitlist` (waitlist link), `/waiver/[token]`.
 
-Key operations: queries `toursOnSale`, `tourAvailability`, `checkoutHold`, `lookupBooking`, `waiverForToken`, `operatorName`; mutations `createDepartureHold`, `startBookingCheckout`, `completeBookingCheckout`, `cancelMyBooking`, `signWaiver`. `rebookWithCredit` exists but has no storefront page.
+Key operations: queries `toursOnSale`, `tourAvailability`, `checkoutHold`, `lookupBooking`, `waiverForToken`, `operatorName`; `bookingRefExists`, `manageBooking`, `partyChangeQuote`, `waitlistStatus`, `giftCardBalance`; mutations `createDepartureHold`, `startBookingCheckout` (optional `giftCardCode`), `completeBookingCheckout`, `cancelMyBooking`, `cancelManagedBooking`, `rescheduleManagedBooking`, `changeParty`, `completePartyChange`, `joinWaitlist`, `claimWaitlistOffer`, `leaveWaitlist`, `signWaiver`. `rebookWithCredit` exists but has no storefront page.
 
 Key models: `Tour`, `TicketType`, `AddOn`, `MeetingPoint`, `CancellationPolicy`, `Departure`, `InventoryHold`, `Booking`, `BookingLine`, `Participant`, `WaiverTemplate`, `WaiverSignature`, `PromoCode`, `PaymentSession`, `Payment`.
 
-Rules to preserve: guests have no account. A random token in an http-only cookie proves a hold, and only its SHA-256 hash is stored. Lookup and cancel need the booking code and the booking email together. Waiver and rebook links are derived on the server. Prices, seat counts, and refund amounts come from the server quote, so the page sends choices only. A hold lasts 10 minutes and checkout extends it to 15. Payments use Stripe test mode in development, and the webhook confirms the booking if the guest closes the tab after paying. One operator per deployment, no tenant scope.
+Rules to preserve: guests have no account. A random token in an http-only cookie proves a hold, and only its SHA-256 hash is stored. Lookup and cancel need the booking code and the booking email together. Waiver, rebook, manage and waitlist links are derived on the server; manage and waitlist proof stays in the URL fragment. Prices, seat counts, and refund amounts come from the server quote, so the page sends choices only. A hold lasts 10 minutes and checkout extends it to 15. Payments use Stripe test mode in development, and the webhook confirms the booking if the guest closes the tab after paying. One operator per deployment, no tenant scope.
 
 This list is orientation, not proof that every flow is safe or complete.
 
@@ -77,7 +77,7 @@ Do not claim the skill already knows a deployed contract. It knows where and how
 
 ## Product-specific boundary
 
-Design around tours, departures and seats left, ticket types and add-ons, the seat hold, guest details, card payment, the booking code, waivers, and cancellation by policy. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
+Design around tours, departures and seats left, ticket types and add-ons, the seat hold, guest details, card payment, gift card redemption, the booking code, waivers, the manage link (move, change party, cancel by policy), and the waitlist link. Preserve the product's real workflow nouns and authority boundaries. Never rename E-commerce products/orders into this vertical or borrow E-commerce GraphQL roots without validating that they exist and are authorized here.
 
 Never recompute price, seats left, or refund amounts in the browser. Keep the hold token out of URLs and local storage. For consequential actions, require one bounded server command that validates proof, state transition, concurrency, idempotency, and provider behavior. If it does not exist, request the backend contract and show the feature as unavailable.
 

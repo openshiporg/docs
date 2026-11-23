@@ -13,23 +13,22 @@ It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQ
 ## Status
 
 - The source is public under the MIT license. The live site at [tour-guide.openship.org](https://tour-guide.openship.org) runs the full onboarding seed.
-- Payments use Stripe in test mode, including on the live site.
-- The storefront is a plain placeholder for the booking loop. It has no designed look yet.
-- Some dashboard pages are generic list screens, not purpose-built screens. [External dashboards](/docs/openfront/tour-guide/external-dashboard) says which.
+- Card payments use Stripe.
+- Tours, waivers, promo codes and resources are generic list screens; the other dashboard pages are purpose-built. [External dashboards](/docs/openfront/tour-guide/external-dashboard) says which.
 
 ## Who uses what
 
 | User | Surface | Typical jobs |
 | --- | --- | --- |
-| Guest | Storefront | Pick a tour and date, hold seats, pay, find a booking, sign waivers, cancel |
-| Reservations staff | Bookings, Today | Phone and walk-up sales, refunds |
-| Operations manager | Calendar, Guides, Resources | Generate departures, staff them, cancel for weather |
-| Guide | Check-in | Open the manifest and check guests in |
-| Finance | Bookings, Channels | Refunds, reseller statements |
+| Guest | Storefront | Pick a tour and date, hold seats, pay (card and gift card), find a booking, sign waivers, move, change the party or cancel from the manage link, join a waitlist |
+| Reservations staff | Bookings, Waitlist, Today | Phone and walk-up sales, moves, party changes, waitlist, refunds |
+| Operations manager | Calendar, Guides, Resources, Weather | Put departures on sale, staff them, cancel for weather and rebook |
+| Guide | My departures, Check-in, Pickup sheets | See their own departures, check guests in (also offline), print pickup sheets |
+| Finance | Bookings, Gift cards, Channels, Sales report | Refunds, gift cards, reseller statements, sales |
 
 ## Surfaces
 
-- **Storefront** at `/`: tours, a tour page, checkout, booking page, lookup, and waiver. See [External storefronts](/docs/openfront/tour-guide/external-storefront).
+- **Storefront** at `/`: tours, a tour page, checkout, booking page, lookup, manage link, waitlist, and waiver. See [External storefronts](/docs/openfront/tour-guide/external-storefront).
 - **Dashboard** at `/dashboard`: operator pages under `/dashboard/platform/*` plus the generic Keystone list screens at `/dashboard/[listKey]`. See [External dashboards](/docs/openfront/tour-guide/external-dashboard).
 - **GraphQL** at `/api/graphql`.
 - **Payment webhook** at `/api/webhooks/payment/[provider]`.
@@ -37,16 +36,17 @@ It is built on Next.js 16, React 19, Keystone 6 (GraphQL), Prisma, and PostgreSQ
 
 ## Models
 
-The schema has 41 lists in `features/keystone/models`. See [Data model](/docs/openfront/tour-guide/data-model).
+The schema has 45 lists in `features/keystone/models`. See [Data model](/docs/openfront/tour-guide/data-model).
 
 | Area | Lists |
 | --- | --- |
 | Identity | `User`, `Role`, `OAuthApp`, `OAuthToken` |
 | Catalog | `Tour`, `TicketType`, `AddOn`, `MeetingPoint`, `CancellationPolicy`, `PricingRule`, `Schedule` |
 | Capacity and staffing | `Departure`, `Guide`, `GuideCertification`, `GuideAvailability`, `GuideAssignment`, `Resource`, `ResourceAssignment`, `GuidePayout` |
-| Booking | `Booking`, `BookingLine`, `InventoryHold`, `Participant`, `WaiverTemplate`, `WaiverSignature`, `PromoCode`, `PromoRedemption` |
-| Operations | `Channel`, `ChannelStatement`, `OperationalTask`, `NotificationPreference`, `StoreSettings`, `AuditEvent`, `ManagerApproval` |
+| Booking | `Booking`, `BookingLine`, `InventoryHold`, `PartyChange`, `Participant`, `WaiverTemplate`, `WaiverSignature`, `PromoCode`, `PromoRedemption` |
+| Operations | `Channel`, `ChannelStatement`, `OperationalTask`, `NotificationPreference`, `WaitlistEntry`, `StoreSettings`, `AuditEvent`, `ManagerApproval` |
 | Payments | `PaymentProvider`, `PaymentCollection`, `PaymentSession`, `Payment`, `Refund`, `PaymentWebhookEvent`, `IdempotencyKey` |
+| Gift cards | `GiftCard`, `GiftCardEntry` |
 
 Bookings, holds, departures, participants, assignments, payouts, and audit events cannot be created or edited through generated GraphQL. They change only through custom operations.
 
@@ -57,13 +57,13 @@ There is one operator per deployment. There is no organization or tenant list. A
 ## Main workflow
 
 1. Set up the operator: settings, payment provider, meeting points, cancellation policies, waiver, guides, fleet, and tours with ticket types and a schedule.
-2. Generate departures from the schedules, 60 days ahead.
+2. Put the next 60 days of scheduled departures on sale from the Calendar.
 3. Offer guides to departures and assign a vehicle or boat. The vehicle sets the seat limit.
-4. Guests hold seats for 10 minutes, then pay. Staff can also book by phone or walk-up, or for a reseller.
+4. Guests hold seats for 10 minutes, then pay by card or gift card. Seasonal pricing rules apply to the quote. Staff can also book by phone or walk-up, or for a reseller. A full departure takes a waitlist.
 5. Each guest signs a waiver through a link.
 6. On the day, guides check guests in from the manifest.
 7. Close the finished departure. Draft guide payouts are created.
-8. Refund or cancel by policy. Weather cancellations refund in full or offer a rebook credit.
+8. Refund or cancel by policy. Guests can move or cancel from their manage link. Weather cancellations wait for a rebook or a full refund per booking.
 9. Generate reseller statements.
 
 ## Onboarding
@@ -73,6 +73,7 @@ The sidebar shows a setup card to a user with `canManageOnboarding` while there 
 ## What the code does not do
 
 - No live connection to resale marketplaces. Resellers are channels with a commission rate you enter.
-- No gift certificates, SMS, dynamic pricing, or multi-day lodging.
+- No SMS, demand-based pricing, or multi-day lodging.
 - No automatic move of a departure to `in_progress`. The status exists but no operation sets it.
-- No email is sent for bookings. Password reset email needs SMTP settings.
+- No email is sent for bookings, waitlist offers or weather cancellations. Password reset email needs SMTP settings.
+- No scheduler. **Run daily check** on Today does the departure check.

@@ -69,8 +69,8 @@ Some values have no operation that sets them: a departure never becomes `in_prog
 
 ## Holds
 
-A hold lasts 10 minutes. Starting checkout extends it to 15 minutes. Expired holds free their seats at once, because the seat count ignores them. They are marked `expired` the next time a hold is placed on that departure.
+A hold lasts 10 minutes. Starting checkout extends it to 15 minutes. Expired holds free their seats at once, because the seat count ignores them. They are marked `expired` the next time a hold is placed on that departure, or by **Run daily check**.
 
 ## Lists with no behavior yet
 
-`PricingRule`, `NotificationPreference`, and the `GuideAvailability.weeklyRules` field are stored and editable, but no operation reads them.
+`NotificationPreference` and the `GuideAvailability.weeklyRules` field are stored and editable, but no operation reads them. `PricingRule` is applied at quote time.

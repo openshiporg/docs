@@ -40,10 +40,10 @@ Register `/api/webhooks/payment/pp_stripe`. See [Payment providers](/docs/openfr
 </Step>
 </Steps>
 
-All app processes must share the same database and `SESSION_SECRET`. Waiver and rebook links and checkout proof depend on that secret, so changing it invalidates links already sent.
+All app processes must share the same database and `SESSION_SECRET`. Waiver, manage, waitlist and rebook links, gift card codes, and checkout proof depend on that secret, so changing it invalidates links already sent.
 
 ## What is not set up
 
-- There is no scheduled job. `generateDepartures` and `sweepDepartures` are operations you call yourself. Run them from a scheduler if you want them daily.
-- Holds expire by time but are released only when the next hold for that departure is placed or when a departure is cancelled.
+- There is no scheduled job. Staff press **Put next 60 days on sale** (`generateDepartures`) on the Calendar and **Run daily check** (`sweepDepartures`) on Today.
+- Holds expire by time and are released when the next hold for that departure is placed, by **Run daily check**, or when a departure is cancelled.
 - No email is sent for bookings.

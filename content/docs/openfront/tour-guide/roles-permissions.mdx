@@ -14,7 +14,7 @@ There is no manager override flag. Each flag stands alone, so an Admin role must
 | --- | --- |
 | `canAccessDashboard` | Sign in to the dashboard |
 | `canSeeOtherPeople`, `canEditOtherPeople`, `canManagePeople`, `canManageRoles` | Users and roles |
-| `canManageOnboarding` | Setup operations and the settings list |
+| `canManageOnboarding` | Setup operations |
 | `canManageTours` | Tours, ticket types, add-ons, meeting points, cancellation policies, pricing rules |
 | `canManageDepartures` | Schedules, `generateDepartures`, `resizeDeparture`, `cancelDeparture`, `closeDeparture`, `sweepDepartures`, tasks |
 | `canManageBookings` | The Bookings screen, `createChannelBooking`, notification preferences |
@@ -29,7 +29,7 @@ There is no manager override flag. Each flag stands alone, so an Admin role must
 | `canIssueRefunds` | `refundBooking`, `requestRefundApproval`, `approveRefund`, and the approval list |
 | `canReadAudit` | The audit event list |
 
-`canManageSettings` and `canManageCustomers` exist on `Role`, but no screen or operation reads them. Do not rely on them.
+`canManageSettings` edits operator settings. `canManageCustomers` lets a role read users who are customers; editing them still needs `canEditOtherPeople`.
 
 ## Onboarding roles
 
@@ -37,17 +37,17 @@ Setup creates three roles:
 
 | Role | Flags |
 | --- | --- |
-| Operations Manager | `canAccessDashboard`, `canManageTours`, `canManageDepartures`, `canManageBookings`, `canManageGuides`, `canManageResources`, `canManageChannels`, `canManagePromos`, `canManageWaivers`, `canManageCustomers`, `canCheckIn`, `canReadMedicalNotes`, `canReadPayments`, `canReadAudit` |
+| Operations Manager | `canAccessDashboard`, `canManageTours`, `canManageDepartures`, `canManageBookings`, `canManageGuides`, `canManageResources`, `canManageChannels`, `canManagePromos`, `canManageWaivers`, `canManageCustomers`, `canManageSettings`, `canCheckIn`, `canReadMedicalNotes`, `canReadPayments`, `canIssueRefunds`, `canReadAudit` |
 | Guide | `canAccessDashboard`, `canCheckIn`, `canReadMedicalNotes` |
 | Customer | none |
 
-Refund rights, payment setup, and role management are not in the manager role. Add `canIssueRefunds` and `canManagePayments` to the role of anyone who handles money.
+Payment setup, gift cards, payout and statement settlement, and role management are not in the manager role. Add `canManagePayments` to the role of anyone who handles that money. A refund above the threshold still needs a second manager with `canIssueRefunds`.
 
 ## Checks run on the server
 
-Every custom operation that changes data checks the flag in the resolver. The dashboard requires `canAccessDashboard` to sign in. Beyond that, route files have no extra per-page role guard, so a user without a flag gets empty data or an error from the server rather than a redirect.
+Every custom operation that changes data checks the flag in the resolver. The dashboard requires `canAccessDashboard` to sign in. Each platform page is gated: when the list behind it is hidden for the session, the page returns 404, the same rule the sidebar uses.
 
-Public operations (`toursOnSale`, `tourAvailability`, `createDepartureHold`, `startBookingCheckout`, `completeBookingCheckout`, `lookupBooking`, `cancelMyBooking`, `signWaiver`, `waiverForToken`, `checkoutHold`, `rebookWithCredit`, `operatorName`) need no sign-in. They are protected by proof, described in the [GraphQL API](/docs/openfront/tour-guide/api-reference).
+Public operations (`toursOnSale`, `tourAvailability`, `createDepartureHold`, `startBookingCheckout`, `completeBookingCheckout`, `lookupBooking`, `cancelMyBooking`, `signWaiver`, `waiverForToken`, `checkoutHold`, `rebookWithCredit`, `operatorName`, `bookingRefExists`, `giftCardBalance`, `joinWaitlist`, and the manage-link and waitlist-link operations) need no sign-in. They are protected by proof, described in the [GraphQL API](/docs/openfront/tour-guide/api-reference).
 
 ## Refund approval
 
