@@ -7,14 +7,19 @@ icon: Store
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-Openfront Restaurant includes a customer-facing menu and ordering app. Current routes cover the menu, item pages, checkout, order confirmation, sign-in, profile, addresses, and order history.
+Openfront Restaurant includes a customer-facing menu and ordering app. Current routes cover the menu, item pages, checkout, order confirmation, order lookup, table reservations, gift cards, locations, sign-in, profile, addresses, and order history.
 
 ## Current routes
 
 - `/` for the menu, popular items, house picks, and cart entry
+- `/menu` for the full menu
 - `/menu/[id]` for an item page with modifier selection
 - `/checkout` for contact, pickup or delivery, tip, payment, and review
 - `/order/confirmed/[id]` for confirmation
+- `/find-order` to look up an order by number and email
+- `/reservations` to book a table
+- `/gift-cards` to buy a gift card or check a balance
+- `/locations` for address and hours
 - `/account`, `/account/profile`, `/account/addresses`, `/account/orders`, and `/account/orders/details/[id]`
 
 The storefront lives under `app/(storefront)` and `features/storefront`. Keystone models and custom GraphQL operations are the backend contract. See [External storefronts](/docs/openfront/restaurant/external-storefront) for the full route and operation list.

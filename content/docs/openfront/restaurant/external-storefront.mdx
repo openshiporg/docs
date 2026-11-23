@@ -10,15 +10,20 @@ After that source orientation, it will ask what you dislike, what should stay, w
 
 ## Current storefront routes
 
-Route files live under `app/(storefront)`. Each one re-exports a screen from `features/storefront/screens`.
+Route files live under `app/(storefront)`. Most re-export a page from `features/storefront/orbit`; sign-in and order detail come from `features/storefront/screens`.
 
-| Route | Screen | Purpose |
+| Route | Page | Purpose |
 |---|---|---|
-| `/` | `HomePage` | Hero, popular items, house picks, menu by category |
-| `/menu/[id]` | `MenuItemPage` | Item page with modifier selection and add to cart |
-| `/checkout` | `CheckoutPage` | Contact, pickup or delivery, tip, payment, review |
-| `/order/confirmed/[id]` | `OrderConfirmedPage` | Confirmation. Guests pass `?secretKey=` to read their order |
-| `/account` | `AccountPageLayout` | Sign-in when signed out (`@login` slot), overview when signed in |
+| `/` | `orbit/HomePage` | Hero, popular items, house picks, menu by category |
+| `/menu` | `orbit/MenuPage` | The full menu |
+| `/menu/[id]` | `orbit/ItemPage` | Item page with modifier selection and add to cart |
+| `/checkout` | `OrbitCheckoutPage` | Contact, pickup or delivery, tip, payment, review |
+| `/order/confirmed/[id]` | `OrbitOrderConfirmedPage` | Confirmation. Guests pass `?secretKey=` to read their order |
+| `/find-order` | `OrbitFindOrderPage` | Find an order by order number and checkout email (`lookupGuestOrder`) |
+| `/reservations` | `OrbitReservationsPage` | Book a table up to 60 days ahead (`reservationAvailability`, `createGuestReservation`). Needs a timezone and hours in store settings |
+| `/gift-cards` | `OrbitGiftCardsPage` | Buy a gift card by card (`startGiftCardPurchase`, `completeGiftCardPurchase`) and check a balance (`lookupGiftCardBalance`) |
+| `/locations` | `OrbitLocationsPage` | Address, map link, open status and weekly hours |
+| `/account` | `account/layout.tsx` | Sign-in (`LoginPage` in the `@login` slot) when signed out, overview when signed in |
 | `/account/profile` | | Name, email, phone, password, billing address |
 | `/account/addresses` | | Address book |
 | `/account/orders` | | Order history |
@@ -28,7 +33,7 @@ Every account page also shows a privacy panel. It calls `exportMyRestaurantData`
 
 `GET /api/store-config` returns store settings, the public payment config, and the current user as JSON.
 
-There are no customer routes for reservations, the waitlist, or buying gift cards.
+There is no customer route for the waitlist.
 
 ## Named GraphQL operations used by the storefront
 
