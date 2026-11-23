@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-description: Messages from bookings, folios, refunds, and workers.
+description: Messages from bookings, folios, refunds, and email.
 icon: LifeBuoy
 ---
 
@@ -20,7 +20,8 @@ icon: LifeBuoy
 | A legal hold prevents anonymization | Release the hold |
 | Booking hold disappears | It expired after 30 minutes. Start again |
 | Guest queries fail from a custom client | Forward the `hotel-guest-access` cookie |
-| Guest emails stay pending | SMTP or the HTTP dispatcher is not fully configured |
+| Confirmation emails are not sent | SMTP is not fully configured. All five `SMTP_*` variables are required |
+| A hold or refund looks stuck | Press **Refresh** on Front Desk or the Refund queue |
 | Production refuses to start | A secret is missing, short, or a placeholder |
 | Channel does nothing | It is not in `live` mode |
 | Room images fail to upload | One of the five `S3_*` variables is missing |

@@ -36,7 +36,7 @@ A `GroupBlock` has `blockCode`, `arrivalDate`, `departureDate`, `releaseDate`, c
 
 ### Pickup
 
-`pickupHotelGroupBlock` records rooms picked up. A worker releases unused rooms after `releaseDate`.
+`pickupHotelGroupBlock` records rooms picked up. Unused rooms are released after `releaseDate` on the next request that touches the block, or on **Refresh**.
 
 </Step>
 <Step>

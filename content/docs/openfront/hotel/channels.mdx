@@ -19,8 +19,8 @@ Every attempt is a `ChannelSyncEvent`. Imported reservations are `ChannelReserva
 
 ## Inbound webhook
 
-`POST /api/webhooks/channel/[channelId]` needs live mode, an HMAC signature header, and a signed event id used for replay protection.
+`POST /api/payment-webhooks/channel-[channelId]` needs live mode, an HMAC signature header, and a signed event id used for replay protection.
 
-## Automatic sync
+## Manual sync
 
-Workers push inventory every 15 minutes and pull reservations every 5 for live channels, with retries every 2 minutes.
+Nothing syncs on a timer. On the Channels page, staff press **Push inventory**, **Pull reservations**, or **Retry failures** for a live channel.

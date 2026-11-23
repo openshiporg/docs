@@ -33,7 +33,7 @@ All pages need `canManagePayments`.
 
 ### Execute
 
-The refund worker sends it to the provider. Status goes `pending` → `processing` → `succeeded`, or `failed` and `dead_letter`.
+The refund is sent to the provider on the request that queues it, and retried on **Refresh** in the Refund queue. Status goes `pending` → `processing` → `succeeded`, or `failed` and `dead_letter`.
 
 </Step>
 <Step>

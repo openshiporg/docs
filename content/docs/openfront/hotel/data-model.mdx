@@ -4,7 +4,7 @@ description: The 40 lists, relationships, and status values.
 icon: Database
 ---
 
-One database holds one property. The property key `the-alder-house` labels audit, outbox, business-date, and night-audit rows.
+One database holds one property. The property key `the-alder-house` labels audit, business-date, and night-audit rows.
 
 | Area | Lists |
 | --- | --- |
@@ -17,7 +17,7 @@ One database holds one property. The property key `the-alder-house` labels audit
 | Folios | `Folio`, `FolioEntry` |
 | Operations | `HousekeepingTask`, `MaintenanceRequest`, `GroupBlock`, `GroupBlockAllocation` |
 | Channels | `Channel`, `ChannelReservation`, `ChannelSyncEvent` |
-| Evidence and runtime | `HotelAuditEvent`, `HotelOutboxEvent`, `HotelOutboxAttempt`, `HotelOutboxReceipt`, `HotelSeedRecord`, `HotelAbuseBucket`, `HotelWorkerLease` |
+| Evidence and runtime | `HotelAuditEvent`, `HotelContactMessage`, `HotelSeedRecord`, `HotelAbuseBucket`, `HotelWorkerLease` |
 
 Cashier shifts, receivable accounts and invoices, approvals, stay services, outages, relocations, the stay register, and governance requests are stored as `HotelAuditEvent` rows with an `aggregateType` and read through named queries.
 

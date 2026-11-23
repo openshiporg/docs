@@ -63,7 +63,7 @@ Other variables the code reads:
 
 | Variable | Used for |
 |---|---|
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Guest and password-reset email. All five must be set. |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Booking confirmation and password-reset email. All five must be set. |
 | `NEXTAUTH_URL` | Alias for `NEXT_PUBLIC_SITE_URL`; if both are set they must match |
 | `PASSWORD_RESET_ORIGIN`, `PASSWORD_RESET_TOKEN_TTL_MINUTES` | Password reset links (TTL default 10 minutes, max 1440) |
 | `RESET_ACTION_SECRET` | Optional. When unset, a reset secret is derived from `SESSION_SECRET`. When set in production it must pass the same strength check. |
@@ -71,12 +71,9 @@ Other variables the code reads:
 | `PUBLIC_SIGNUPS_ALLOWED` | `true` opens dashboard sign-up; default closed |
 | `TRUSTED_PROXY_IPS` | Comma-separated proxy addresses whose `X-Forwarded-For` is trusted for rate limits |
 | `STRIPE_ENABLED`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | Fallback Stripe credentials when the Stripe provider record has none stored. Prefer the dashboard. |
-| `HOTEL_OUTBOX_DISPATCH_URL`, `HOTEL_OUTBOX_DISPATCH_SECRET`, `HOTEL_OUTBOX_DISPATCH_CREDENTIAL_KEY_ID` | Optional HTTP outbox delivery. Set all three or none; a partial set fails. |
-| `HOTEL_OUTBOX_RECEIVER_SECRET`, `HOTEL_OUTBOX_RECEIVER_CREDENTIAL_KEY_ID` | Enables `/api/hotel/outbox/receiver` |
-| `HOTEL_OUTBOX_WORKER_ID`, `HOTEL_OUTBOX_INTERVAL_MS`, `HOTEL_REFUND_WORKER_ID`, `HOTEL_REFUND_INTERVAL_MS` | Worker identity and poll interval (default 5000 ms) |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat |
 
-`.env.example` also lists `INTERNAL_APP_URL`, `GRAPHQL_INTERNAL_URL`, `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, and `CHANNEL_SYNC_WORKER_ID`. The current application code does not read them, so setting them has no effect.
+`.env.example` also lists `NEXT_PUBLIC_GRAPHQL_ENDPOINT`. The current application code does not read it.
 
 Payment-provider credentials and channel settings belong in the dashboard, not in environment variables. Never commit `.env`.
 
@@ -133,6 +130,6 @@ npm start
 
 The included `railway.toml` builds with `keystone build --no-ui && next build` and starts with `npm run migrate && next start`. The README also has a Vercel import button.
 
-Workers (channel sync, outbox, refunds, hold expiry) start inside the Next.js Node process through `instrumentation.ts`. They need a long-running process. A serverless deploy will not run them reliably. Every process must share the same database, `SESSION_SECRET`, `HOTEL_DATA_ENCRYPTION_KEY`, and `HOTEL_QUOTE_SECRET`. Workers use database leases, so several app instances will not run the same job at once.
+There are no background workers. Time-based state advances on requests and on the staff **Refresh** buttons. Every process must share the same database, `SESSION_SECRET`, `HOTEL_DATA_ENCRYPTION_KEY`, and `HOTEL_QUOTE_SECRET`.
 
-Use `/api/health` for liveness and `/api/ready` for readiness.
+Use the public `hotelReadiness` GraphQL query for readiness.

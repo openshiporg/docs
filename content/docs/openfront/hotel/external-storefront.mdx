@@ -27,7 +27,7 @@ Routes live under `app/(storefront)/`. There is no country or region segment. Sc
 | `/account/reset` | Set a new password from an emailed token | `redeemHotelPasswordResetToken` |
 | `/amenities`, `/gallery` | Property and room amenities and photos | `storefrontRoomTypes`, `publicHotelSettings` |
 | `/location`, `/policies` | Address, stay times, and policies from settings | `publicHotelSettings` |
-| `/contact` | Contact form; queues a message for staff | `submitHotelContactMessage` |
+| `/contact` | Contact form; stores a message for staff | `submitHotelContactMessage` |
 | `/[...missing]` | Not found | none |
 
 Named documents in `lib/queries.ts`: `GetRoomTypes`, `GetAvailableRooms`, `GetStayCalendar`, `GetStorefrontQuote`, `GetRoomType`, `GetRatePlans`, `CreateStorefrontBooking`, `GetBookingPaymentProviders`, `InitiateBookingPaymentSession`, `GetActiveBookingPaymentSession`, `CompleteBookingPayment`, `CancelBooking`, `VerifyGuestBooking`, `GetGuestBooking`, `GetBookingsByEmail`. Other screens use inline documents such as `PublicHotelSettings`, `GuestCancellationQuote`, `RequestBookingModification`, `SubmitHotelContactMessage`, `GuestAccountStatus`, and `GuestAccountBookings`.
@@ -35,10 +35,10 @@ Named documents in `lib/queries.ts`: `GetRoomTypes`, `GetAvailableRooms`, `GetSt
 ## Booking rules
 
 - Every booking needs a signed quote token from `storefrontQuote`. Do not compute prices in the client.
-- `createStorefrontBooking` creates a `pending` hold that a worker cancels after 30 minutes if it is not paid or confirmed.
+- `createStorefrontBooking` creates a `pending` hold that lapses after 30 minutes if it is not paid or confirmed. It is released the next time anyone looks at it.
 - Guest access is an HMAC-signed `hotel-guest-access` cookie set by the API after `verifyGuestBooking`, booking creation, or account sign-in. A separate client must forward that cookie to `/api/graphql`; guest queries fail without it.
 - Only Stripe (`pp_stripe_stripe`) and PayPal (`pp_paypal_paypal`) are offered at checkout, and only when enabled with complete credentials. If neither is enabled, the built-in page tells the guest that online payment is unavailable.
 - Return URLs passed to `initiateBookingPaymentSession` point back to `/stripe/return` or `/paypal/return` on the storefront origin.
-- Contact messages and booking emails are queued in the outbox. They are only sent when SMTP or an HTTP dispatcher is configured.
+- Contact messages are stored for staff to read. With SMTP configured, the guest gets one confirmation email when payment confirms the reservation.
 - Guests request modifications. Staff resolve them; the guest cannot change dates directly.
 - The storefront middleware passes all requests through. Access is enforced by the GraphQL API, not by route guards.

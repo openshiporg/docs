@@ -22,5 +22,5 @@ Public values are read by the storefront through `publicHotelSettings`.
 ## Other pages
 
 - `/dashboard/platform/analytics`: occupancy, ADR, RevPAR, posted revenue, tax, payments, refunds, and folio exposure for a date range (`hotelAnalyticsOperations`). Needs `canManageBookings`.
-- `/dashboard/platform/outbox`: guest message and refund delivery status, with replay (`replayHotelOutboxEvent`). Needs `canManageAudit`.
+- `/dashboard/platform/refund-queue`: provider refunds in flight, with replay (`replayRefundIntent`) and **Refresh**. Needs `canManageAudit`.
 - `/dashboard/platform/security`: TOTP second factor and recovery codes for your own account.

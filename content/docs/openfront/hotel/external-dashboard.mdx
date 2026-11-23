@@ -37,7 +37,7 @@ Routes are `app/dashboard/(admin)/platform/<route>/page.tsx`. Each route file on
 | `/dashboard/platform/groups` | `canManageBookings` | Group blocks, status, rooming lists, pickup, detach, master folio close. | `hotelGroupWorkspace`, `createHotelGroupBlock`, `updateHotelGroupBlockStatus`, `createHotelGroupRoomingList`, `detachHotelGroupBooking`, `closeHotelGroupMasterFolio` |
 | `/dashboard/platform/maintenance` | `canManageRooms` | Room issues from report to repair to return-to-service check, with cost details. | `hotelMaintenanceOperations`, `updateMaintenanceRequestStatus`, `hotelMaintenanceCommercial`, `updateHotelMaintenanceCommercial` |
 | `/dashboard/platform/payment-providers` | `canManagePayments` (saving also needs `canManageIntegrations`) | Enable Stripe or PayPal and enter credentials. Secrets are encrypted and not shown again. | `hotelPaymentProviderOperations`, `configureHotelPaymentProvider` |
-| `/dashboard/platform/outbox` | `canManageAudit` | Guest message and refund delivery status; replay failures. | `hotelOutboxOperations`, `replayHotelOutboxEvent`, `replayRefundIntent` |
+| `/dashboard/platform/refund-queue` | `canManageAudit` | Provider refunds in flight; replay a failed refund; Refresh | `replayRefundIntent`, `refreshHotelOperations` |
 | `/dashboard/platform/security` | `canAccessDashboard` | Set up your own TOTP second factor and recovery codes. | `hotelMfaStatus`, `manageHotelMfa`, `verifyHotelMfa` |
 
 Shortcut routes outside `/platform` render the same screens: `/dashboard/reservations`, `/dashboard/housekeeping`, and `/dashboard/guests/[id]`.

@@ -10,7 +10,7 @@ Openfront Hotel is a self-hostable hotel property-management and direct-booking 
 
 It is built with Next.js 16, React 19, Keystone 6, Prisma, and PostgreSQL. Start with [Getting started](/docs/openfront/hotel/getting-started).
 
-One database holds one property. There is no Organization, Property, or Location model. `HotelSettings` is a singleton row, roles are global, and the property key `the-alder-house` is a fixed constant used to label audit, outbox, business-date, and night-audit records. There are no native Booking.com or Expedia adapters.
+One database holds one property. There is no Organization, Property, or Location model. `HotelSettings` is a singleton row, roles are global, and the property key `the-alder-house` is a fixed constant used to label audit, business-date, and night-audit records. There are no native Booking.com or Expedia adapters.
 
 
 ## Concepts
@@ -32,12 +32,11 @@ One database holds one property. There is no Organization, Property, or Location
 |---|---|
 | `app/(storefront)/**` | Guest route entry points |
 | `app/dashboard/(admin)/platform/**` | Staff workspace route entry points |
-| `app/api/**` | GraphQL, payment and channel webhooks, outbox receiver, health, readiness, dashboard AI |
+| `app/api/**` | Payment and channel webhooks, dashboard AI |
 | `features/keystone/models/**` | 40 Keystone lists |
 | `features/keystone/mutations/index.ts` | Custom GraphQL schema: named queries and mutations |
 | `features/keystone/queries/**` | Storefront and guest query resolvers, plus `hotelOperations.ts` for staff workspace projections |
 | `features/keystone/{bookings,cashier,channels,communications,finance,folios,groups,guest-governance,inventory,loyalty,operations,payments,rates,receivables,refunds,reporting,security,workforce}` | Business commands behind those operations |
-| `features/keystone/jobs/**` | In-process workers started from `instrumentation.ts` |
 | `features/platform/**` | Staff workspaces and onboarding |
 | `features/storefront/**` | Guest screens, components, server actions |
 | `features/integrations/payment/**` | Stripe and PayPal adapters |
@@ -57,7 +56,7 @@ The registry in `features/keystone/models/index.ts` has these lists:
 | Folios | `Folio`, `FolioEntry` |
 | Operations | `HousekeepingTask`, `MaintenanceRequest`, `GroupBlock`, `GroupBlockAllocation` |
 | Channels | `Channel`, `ChannelReservation`, `ChannelSyncEvent` |
-| Evidence and runtime | `HotelAuditEvent`, `HotelOutboxEvent`, `HotelOutboxAttempt`, `HotelOutboxReceipt`, `HotelSeedRecord`, `HotelAbuseBucket`, `HotelWorkerLease` |
+| Evidence and runtime | `HotelAuditEvent`, `HotelContactMessage`, `HotelSeedRecord`, `HotelAbuseBucket`, `HotelWorkerLease` |
 
 Some features have no list of their own. Cashier shifts, receivable accounts and invoices, approvals, stay services, room outages, relocations, the stay register, and guest-governance requests are stored as `HotelAuditEvent` rows with an `aggregateType`, and read back through named queries.
 
@@ -92,7 +91,7 @@ All are defined in `features/keystone/mutations/index.ts` or merged into it.
 | Groups | `createHotelGroupBlock`, `updateHotelGroupBlockStatus`, `pickupHotelGroupBlock`, `createHotelGroupRoomingList`, `detachHotelGroupBooking`, `closeHotelGroupMasterFolio` |
 | Property and setup | `runHotelOnboarding`, `updateHotelPropertySettings`, `runHotelNightAudit`, `configureHotelPaymentProvider` |
 | Governance and security | `updateHotelGuestGovernance`, `updateHotelApproval`, `verifyHotelMfa`, `manageHotelMfa` |
-| Channels and outbox | `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs`, `replayHotelOutboxEvent` |
+| Channels and upkeep | `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs`, `refreshHotelOperations` |
 
 Most staff mutations take an `idempotencyKey`. Refunds, write-offs, cash variances, and rate publication can require an approval from a second user with `canApproveHotelExceptions`, depending on thresholds in property settings.
 
@@ -100,7 +99,7 @@ Most staff mutations take an `idempotencyKey`. Refunds, write-offs, cash varianc
 
 A guest proves access with confirmation number and email (`verifyGuestBooking`) or by signing in to a guest account. Access is kept in an HMAC-signed `hotel-guest-access` cookie that lasts 30 days and holds at most 20 bookings. It is signed with `GUEST_ACCESS_SECRET`, falling back to `SESSION_SECRET` and then `NEXTAUTH_SECRET`. Guest queries recheck the cookie on every call.
 
-A storefront booking starts as a `pending` hold that expires after 30 minutes. A worker cancels expired holds. The booking needs a signed quote from `storefrontQuote` (signed with `HOTEL_QUOTE_SECRET`).
+A storefront booking starts as a `pending` hold that expires after 30 minutes. A lapsed hold is released the next time the guest or staff look at it, or on **Refresh**. The booking needs a signed quote from `storefrontQuote` (signed with `HOTEL_QUOTE_SECRET`).
 
 ## Onboarding
 
@@ -116,27 +115,20 @@ For `full` and `minimal`, seed dates are moved relative to the property business
 
 Two payment adapters are registered: Stripe (`pp_stripe_stripe`) and PayPal (`pp_paypal_paypal`). Configure them at `/dashboard/platform/payment-providers` (needs `canManagePayments` and `canManageIntegrations`). Credentials are encrypted with `HOTEL_DATA_ENCRYPTION_KEY` and are not shown again. A Stripe record with no stored credentials can fall back to `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET` when `STRIPE_ENABLED=true`.
 
-Provider webhooks enter at `/api/payment-providers/[providerCode]/webhook`. Staff can record offline payments on a folio with `recordBookingPayment`. Stripe disputes are tracked at `/dashboard/platform/disputes`; evidence is submitted in the Stripe dashboard, not from this app.
+Provider webhooks enter at `/api/payment-webhooks/[providerId]`, where the id is the provider code (`pp_stripe_stripe` or `pp_paypal_paypal`). The old `/api/payment-providers/[providerCode]/webhook` path rewrites there. Staff can record offline payments on a folio with `recordBookingPayment`. Stripe disputes are tracked at `/dashboard/platform/disputes`; evidence is submitted in the Stripe dashboard, not from this app.
 
 ## Channels
 
-Channel support is a generic HTTP bridge, not an OTA integration. Each `Channel` stores a `mode` in its credentials: `disabled` or `live` (or a non-sending mode). Only `live` channels send requests. A live channel needs HTTPS endpoints whose origins are listed in `allowedOrigins`. Inbound reservations arrive at `/api/webhooks/channel/[channelId]`, which requires live mode, an HMAC signature header, and a signed event id used for replay protection. Channel sync pushes inventory and pulls reservations. The dashboard Channels page says channels are off by default.
+Channel support is a generic HTTP bridge, not an OTA integration. Each `Channel` stores a `mode` in its credentials: `disabled` or `live` (or a non-sending mode). Only `live` channels send requests. A live channel needs HTTPS endpoints whose origins are listed in `allowedOrigins`. Inbound reservations arrive at `/api/payment-webhooks/channel-[channelId]` (the old `/api/webhooks/channel/[channelId]` rewrites there), which requires live mode, an HMAC signature header, and a signed event id used for replay protection. Staff push inventory and pull reservations with buttons on the Channels page; nothing syncs on a timer. The dashboard Channels page says channels are off by default.
 
-## Workers and outbox
+## Time-based work and email
 
-`instrumentation.ts` starts four in-process workers in the Node.js runtime (not during build or tests):
+There are no background workers or timers. Lapsed holds, due group cut-offs, queued refunds, and payment-attempt retirements advance on the request that touches them, or when staff press **Refresh** on Front Desk or the Refund queue (`refreshHotelOperations`). Night audit and channel sync are staff buttons.
 
-- channel sync: inventory push every 15 minutes, reservation pull every 5 minutes, retries every 2 minutes, live channels only;
-- outbox delivery: starts only when SMTP is fully configured or `HOTEL_OUTBOX_DISPATCH_URL`, `HOTEL_OUTBOX_DISPATCH_SECRET`, and `HOTEL_OUTBOX_DISPATCH_CREDENTIAL_KEY_ID` are all set;
-- refund intents;
-- expiry of booking holds and group block release dates.
-
-Workers take database leases (`HotelWorkerLease`), so only one process runs each job at a time. Guest emails (confirmation, update, cancellation, refund, no-show, pre-arrival, modification response, contact receipt) are queued as outbox events. Without SMTP or an HTTP dispatcher, they stay pending.
+With SMTP configured, the guest gets one confirmation email when their payment confirms the reservation (confirmation number, room, dates, guests, balance, and total), and staff and guests get password reset links. Contact form messages are stored as `HotelContactMessage` for staff to read.
 
 ## Other endpoints
 
-- `/api/health` returns a static OK. `/api/ready` checks settings, business date, providers, and worker progress.
-- `/api/hotel/outbox/receiver` accepts HMAC-signed events only when `HOTEL_OUTBOX_RECEIVER_SECRET` and `HOTEL_OUTBOX_RECEIVER_CREDENTIAL_KEY_ID` are set.
+- The public `hotelReadiness` GraphQL query returns `{ status, checks }`: database, property details, business date, sellable inventory, channels off, group billing, front desk, stuck holds or dead-lettered refunds, mail, and payments.
 - `/api/completion` is the dashboard AI chat. It needs a signed-in user with `canAccessDashboard` plus `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
 - `/api/mcp-transport/[transport]` returns HTTP 410. MCP machine access is disabled until scoped machine authentication exists, so the dashboard AI chat has no tools to call.
-- `/api/create-payment-intent` and `/api/send-booking-confirmation` return HTTP 410. Use the booking payment session and outbox paths instead.

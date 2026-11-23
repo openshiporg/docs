@@ -35,10 +35,10 @@ A guest proves access with `verifyGuestBooking` (confirmation number and email) 
 | Groups | `createHotelGroupBlock`, `updateHotelGroupBlockStatus`, `pickupHotelGroupBlock`, `createHotelGroupRoomingList`, `detachHotelGroupBooking`, `closeHotelGroupMasterFolio` |
 | Property | `runHotelOnboarding`, `updateHotelPropertySettings`, `runHotelNightAudit`, `configureHotelPaymentProvider` |
 | Governance | `updateHotelGuestGovernance`, `updateHotelApproval`, `verifyHotelMfa`, `manageHotelMfa` |
-| Channels | `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs`, `replayHotelOutboxEvent` |
+| Channels | `saveHotelChannelDraft`, `pushInventoryToChannel`, `pullReservationsFromChannel`, `retryFailedChannelSyncs`, `refreshHotelOperations` |
 
 Most staff mutations take an `idempotencyKey`.
 
 ## Other routes
 
-`/api/health`, `/api/ready`, `/api/payment-providers/[providerCode]/webhook`, `/api/webhooks/channel/[channelId]`, `/api/hotel/outbox/receiver`, `/api/completion`. `/api/mcp-transport/[transport]`, `/api/create-payment-intent`, and `/api/send-booking-confirmation` return HTTP 410.
+`/api/payment-webhooks/[providerId]` (payment provider codes, and `channel-[channelId]` for channels), `/api/completion`. `/api/mcp-transport/[transport]` returns HTTP 410. Readiness is the public `hotelReadiness` query.
