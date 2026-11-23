@@ -22,11 +22,12 @@ Needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Point the webhook at:
 
 The route accepts only an installed Stripe provider, verifies the signature, logs each event once in `PaymentWebhookEvent`, rejects amount or currency mismatches, and handles:
 
-- `payment_intent.succeeded`
-- `payment_intent.payment_failed`
-- `payment_intent.canceled`
-- `charge.refunded`
-- `refund.updated`
+- `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` (card pages for deposits, desk card, gift cards and memberships)
+- `invoice.paid` (membership renewals)
+- `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`
+- `charge.refunded`, `refund.updated`
+
+The integrations page lists these events and the webhook URL to register.
 
 ## Set up
 
@@ -37,7 +38,7 @@ It creates the manual provider (installed, default) and a Stripe record.
 </Step>
 <Step>
 ### Set environment variables
-Add the Stripe keys, then set `isInstalled` on the Stripe provider record in your seed or database. The webhook route only accepts an installed Stripe provider.
+Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. On `/dashboard/platform/integrations`, press **Set up Stripe**. It switches the Stripe provider on (`isInstalled`), creating the `pp_stripe` row if onboarding never ran. The page shows which variables are set, never their values. The webhook route only accepts an installed Stripe provider.
 </Step>
 <Step>
 ### Register the webhook
@@ -47,7 +48,7 @@ Use the URL above and the signing secret as `STRIPE_WEBHOOK_SECRET`.
 
 ## Integrations page
 
-`/dashboard/platform/integrations` needs `canManageIntegrations`. It shows providers, recent webhook events, and `DomainEvent` rows still `pending` or in `dead_letter`.
+`/dashboard/platform/integrations` needs `canManageIntegrations`. It shows payment providers and whether each is installed, the Stripe setup guide, and recent webhook events.
 
 ## Email
 

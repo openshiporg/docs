@@ -44,7 +44,7 @@ The schema has 58 lists in `features/keystone/models`. Most business lists block
 | Booking | `Appointment`, `AppointmentLineItem`, `AppointmentScheduleRevision`, `AppointmentSegment`, `SegmentTransition`, `WaitlistEntry` |
 | Money | `SalonTransaction`, `SalonTransactionLineItem`, `Payment`, `PaymentProvider`, `PaymentSession`, `PaymentWebhookEvent`, `TransactionReversal`, `TransactionReversalLine`, `Commission`, `CommissionAdjustment`, `GratuityLedgerEntry`, `DepositAdjustment` |
 | Benefits and loyalty | `Membership`, `ClientMembership`, `ServicePackage`, `ClientPackage`, `ClientPackageUsage`, `ClientPackageAdjustment`, `GiftCard`, `GiftCardTransaction`, `LoyaltyProgram`, `ClientPoints`, `Referral` |
-| Messages and system | `MessageTemplate`, `MessageLog`, `DomainEvent`, `WidgetConfiguration` |
+| Messages and system | `MessageTemplate`, `MessageLog`, `WidgetConfiguration` |
 
 Revisions, transitions, consultation reviews, ledger entries, reversals, and adjustments are append-only. A correction is a new row. The source repo keeps a fuller map in `docs/schema-map.md`.
 
