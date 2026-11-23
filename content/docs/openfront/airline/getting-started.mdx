@@ -54,17 +54,14 @@ Other variables the code reads:
 | Variable | Purpose |
 |---|---|
 | `APP_BASE_URL` | Trusted public origin used for internal GraphQL calls. No path, credentials, query, or fragment. |
-| `PUBLIC_APP_URL` | Public origin. In production it must match `APP_BASE_URL` and `SMTP_STORE_LINK`. |
 | `STOREFRONT_CARRIER_CODE` | Two- or three-character carrier code the storefront sells for. If unset, the first carrier is used. |
 | `TRAVEL_DOCUMENT_TOKENIZATION_KEY` | HMAC key (32+ characters) for travel-document tokens. Falls back to a key derived from `SESSION_SECRET` outside production. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Outgoing mail. Booking access recovery is off unless `SMTP_HOST` and `SMTP_FROM` are set. |
 | `SMTP_STORE_LINK` | Public storefront URL used in emails and Stripe return links. |
 | `PUBLIC_SIGNUPS_ALLOWED` | Set to `true` to open `/dashboard/signup`. Off by default. |
 | `TRUSTED_PROXY_IPS` | Comma-separated proxy addresses trusted for client IPs in rate limiting. |
-| `OUTBOUND_WEBHOOK_HOSTS` | Comma-separated hosts allowed for outbound webhook endpoints. |
-| `ALERT_WEBHOOK_URL` | Where the worker posts alerts when dead-lettered outbox events appear. |
-| `REQUIRED_WORKER_ID`, `OUTBOX_WORKER_ID` | Worker identity. `/api/health` reports whether this worker's heartbeat is fresh. |
-| `BACKUP_RETENTION_DAYS`, `BACKUP_POLICY_VERIFICATION_ID` | Required by the production runtime check. Retention must be at least 30. |
+| `OUTBOUND_WEBHOOK_HOSTS` | Comma-separated hosts allowed on `WebhookEndpoint` URLs. |
+| `DRAIN_FILE` | When this file exists, `/api/health` answers 503 (default `/tmp/openfront-airline-draining`). |
 | `ALLOW_INCOMPLETE_LAUNCH_SETUP` | In production, `true` keeps public sales commands closed while you finish setup. |
 | `AI_ASSISTANT_ENABLED`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Optional dashboard AI chat and MCP endpoint. MCP returns 404 in production unless enabled. |
 | `INITIAL_CARRIER_NAME`, `INITIAL_CARRIER_LEGAL_NAME`, `INITIAL_CARRIER_CODE`, `INITIAL_CURRENCY_CODE`, `INITIAL_TIMEZONE` | Optional values for the carrier created with the first user. Defaults: Avante Air, `AV`, USD, America/New_York. |

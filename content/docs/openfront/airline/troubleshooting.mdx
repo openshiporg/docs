@@ -56,12 +56,7 @@ Messages below are returned by the commands as written.
 ## Startup
 
 - "SESSION_SECRET must contain at least 32 characters."
-- "Missing production configuration: ..." lists the env variables the worker needs.
-- "STOREFRONT_CARRIER_CODE must identify an active direct-sales carrier."
-- "The storefront carrier requires an active evidence-only manual payment provider."
-- "The storefront carrier requires an active settlement-import machine credential."
-- "Initial operator setup requires ALLOW_INCOMPLETE_LAUNCH_SETUP=true..." during first-run in production.
 
 ## Health
 
-`GET /api/health` returning `worker: "stale"` means the worker heartbeat is older than 60 seconds. Restart `npm run worker` and check `REQUIRED_WORKER_ID`.
+`GET /api/health` returning 503 means the database is unreachable or the drain file exists. Held seats or unpaid bookings that look stuck clear on **Refresh** in the Bookings desk Held offers section.

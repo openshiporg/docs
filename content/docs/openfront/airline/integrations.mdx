@@ -1,6 +1,6 @@
 ---
 title: Integrations
-description: Stripe, settlement import, outbound webhooks, SMTP, the background worker, and the MCP endpoint.
+description: Stripe, settlement import, inbound connection webhooks, SMTP, timed expiry, and the MCP endpoint.
 icon: Plug
 ---
 
@@ -8,24 +8,26 @@ icon: Plug
 
 Two adapters live in `features/integrations/payment`: `manual` and `stripe`. See [Payment providers](/docs/openfront/airline/payment-providers) for setup.
 
-- `POST /api/payments/webhooks/[providerKey]` verifies the Stripe signature, stores a `WebhookEvent`, and the worker applies `checkout.session.completed` events. The secret is read from `AIRLINE_WEBHOOK_SECRET_<NAME>`.
+- `POST /api/payments/webhooks/[providerKey]` verifies the Stripe signature, stores a `WebhookEvent`, and applies `checkout.session.completed` on the same request. A failure is recorded on the event and answered with 500 so Stripe redelivers. Events for other sites' sessions on a shared Stripe account are acknowledged and ignored. The secret is read from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>`, set in the provider's `webhookSecretEnv` configuration. Without it the route answers 200 and ignores the delivery, and the app's one-minute Checkout reconcile records the payment instead.
 - `POST /api/integrations/settlements/[connectionKey]` accepts settlement evidence from an outside ledger with a machine credential (audience `settlement-import`, scope `settlements:write`).
 
-## Outbound webhooks
+## Connection webhooks
 
-The worker posts `OutboxEvent` records to active `WebhookEndpoint` records whose `eventTypes` include the topic. Endpoint hosts must be listed in `OUTBOUND_WEBHOOK_HOSTS`. Fields on an endpoint: `url`, `eventTypes`, `status`, `secret`, `failureCount`, `lastAttemptedAt`.
+`POST /api/integrations/webhooks/[connectionKey]` verifies an `x-openfront-signature` for an active `ProviderConnection`, using the `AIRLINE_WEBHOOK_SECRET_<NAME>` named in its `webhookSecretEnv` configuration. No event handler is installed yet, so a verified event is refused with 501 and nothing is accepted.
 
-Outbox statuses end in `dead_lettered` after repeated failures. `requeueDeadLetteredOutboxEvent` (`outboxEventId`, `expectedAttemptCount`, `reason` of 8 to 500 characters, `idempotencyKey`) puts one back in the queue. The worker posts to `ALERT_WEBHOOK_URL` when new dead letters appear, at most once a minute.
+`WebhookEndpoint` records (`url`, `eventTypes`, `status`, `secret`) are edited at `/dashboard/webhook-endpoints`. URLs must be HTTPS and their host listed in `OUTBOUND_WEBHOOK_HOSTS`; the app does not deliver events to them.
 
 ## Email
 
 SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) sends password resets and booking access recovery. Without `SMTP_HOST` and `SMTP_FROM`, the recovery form is hidden and `recoverCustomerBookingAccess` answers "Access codes can't be emailed right now. Contact the airline." Recovery is limited to 5 requests per client per hour.
 
-## Background worker
+## Timed expiry
 
-`npm run worker` runs `scripts/runtime-worker.ts`. Every 30 seconds it expires inventory holds, expires unpaid storefront bookings after their 24-hour window, and prunes rate-limit buckets. It delivers outbox events continuously and writes a heartbeat every 10 seconds under `REQUIRED_WORKER_ID` or `OUTBOX_WORKER_ID`.
+There is no worker. An unpaid storefront booking past its 24-hour payment window is expired by the next request that touches it. On the Bookings desk, **Refresh** in the Held offers section (`refreshAirlineClocks`) releases expired holds and cancels unpaid bookings past their deadline.
 
-`GET /api/health` returns `{ status: "ok", worker: "fresh" | "stale" | "not_configured" | "unknown" }`, or 503 when the database is unreachable or the process is draining. The worker is fresh if its heartbeat is under 60 seconds old.
+Each web process starts a one-minute Stripe Checkout reconcile (`instrumentation.ts`) that records paid Checkout sessions whose traveler closed the tab.
+
+`GET /api/health` returns `{ status: "ok" }`, or 503 when the database is unreachable or the process is draining (`DRAIN_FILE`).
 
 ## AI assistant and MCP
 

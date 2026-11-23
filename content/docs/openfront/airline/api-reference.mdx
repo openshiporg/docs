@@ -50,7 +50,7 @@ Most commands return `AirlineOperationResult` with `resourceType`, `resourceId`,
 | Payments | `recordReceivedPayment(bookingId, purpose, method, externalReference, amount, receivedAt)`, `submitManualPaymentEvidence`, `approveManualPaymentEvidence(evidenceId)`, `rejectManualPaymentEvidence(evidenceId, reason)`, `captureBookingPayment(bookingId, providerReference, instrumentBrand, instrumentLast4)`, `processBookingRefund(bookingId, amount, reason, providerReference)` |
 | Ticketing | `issueBookingTickets(bookingId)` |
 | Airport service | `departureManifest`, `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger(bookingPassengerId, bookingSegmentId, seatId)`, `acceptCheckedBag(bookingPassengerId, flightInstanceId, weightGrams)`, `boardBookingPassenger(boardingPassId)`, `offloadBookingPassenger(boardingPassId, reason)`, `recordBagEvent(bagId, action, airportCode, note)` |
-| Recovery | `publishFlightDisruption(flightInstanceId, type, publicSummary)`, `reaccommodateBooking(disruptionId, bookingId, replacementFlightInstanceId, replacementInventoryBucketId)`, `requeueDeadLetteredOutboxEvent` |
+| Recovery | `publishFlightDisruption(flightInstanceId, type, publicSummary)`, `reaccommodateBooking(disruptionId, bookingId, replacementFlightInstanceId, replacementInventoryBucketId)`, `refreshAirlineClocks` |
 | Setup | `completeCarrierOnboarding`, `dismissCarrierOnboarding`, `updateCarrierStorefrontSettings`, `issueMachineCredential`, `revokeMachineCredential`, `machineCredentialSummaries` |
 
 ## Errors

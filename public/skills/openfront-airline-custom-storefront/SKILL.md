@@ -15,7 +15,7 @@ Before asking implementation questions, briefly tell the user where the current 
 - Built-in Airline traveler experience: `features/storefront`. `components/FlightShop.tsx` runs search, hold, booking, manage-booking, payment, seats, and check-in in `book`, `manage`, and `check-in` modes. `FlightStatusSearch.tsx`, `Timetable.tsx`, `StorefrontChrome.tsx`, and `PublicPageShell.tsx` cover status, timetable, and layout. `lib/carrier.ts`, `lib/network.ts`, `lib/booking-intent.ts`, `lib/branding.ts`, and `lib/theme.ts` load carrier identity, routes, booking documents, and brand palette.
 - Thin traveler route entry points are top-level under `app/` (no route group): `/` (book), `/destinations`, `/status`, `/manage-booking`, `/check-in`, `/manage` (redirect), `/help`, `/contact`.
 - Server contract: `features/keystone/mutations/storefront.ts`, `storefrontAccess.ts`, `storefrontPayments.ts`, `features/keystone/models/**`, `features/keystone/access.ts`, and `schema.graphql`. Public operations: `publicCarrierIdentity`, `publicAirlineFlightOptions`, `publicFlightStatuses`, `customerBooking`, `createCustomerOffer`, `createCustomerBooking`, `startCustomerCheckout`, `completeCustomerCheckout`, `assignCustomerSeat`, `checkInCustomerBooking`, `cancelCustomerBooking`, `rotateCustomerBookingAccessToken`, `recoverCustomerBookingAccess`.
-- Provider boundaries: `features/integrations/payment` (Stripe Checkout and manual settlement), `pages/api/payments/webhooks/[providerKey].ts`, the worker's hold and unpaid-booking expiry, and SMTP mail for access recovery.
+- Provider boundaries: `features/integrations/payment` (Stripe Checkout and manual settlement), `pages/api/payments/webhooks/[providerKey].ts`, on-request hold and unpaid-booking expiry, and SMTP mail for access recovery.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, booking access tokens (stored per record locator in `localStorage`, hashed on the server), shopping session tokens, and the Stripe redirect. It should guide what is preserved or changed. Every public call is pinned to one carrier (`STOREFRONT_CARRIER_CODE` or the first carrier), and selling also needs storefront branding and direct sales.
 
@@ -43,7 +43,7 @@ Before proposing code:
 3. Enumerate GraphQL documents and operation names used by those call sites.
 4. Read `schema.graphql`, model access, field access, and custom query/mutation resolvers.
 5. Record actor, tenant/store/organization scope, inputs, outputs, lifecycle authority, idempotency, and error states for each required operation.
-6. Inspect provider adapters, webhooks, workers, uploads, cookies/tokens, and runtime configuration touched by the requested flow.
+6. Inspect provider adapters, webhooks, uploads, cookies/tokens, and runtime configuration touched by the requested flow.
 7. Produce a capability matrix: verified, presentation-only, needs backend contract, blocked, or absent.
 
 Do not claim the skill already knows a deployed contract. It knows where and how to discover the exact calls. Generated CRUD or a schema-valid document is not proof of safe access.

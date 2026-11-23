@@ -33,6 +33,6 @@ Routes are top-level files under `app/` (there is no route group). Most of the l
 - **One carrier.** Every public operation takes a `carrierCode`. It must match `STOREFRONT_CARRIER_CODE`, or the first carrier if that is unset.
 - **Holds expire.** A held offer lasts 15 minutes. Booking needs the same shopping session token used to create the offer.
 - **Access codes.** `createCustomerBooking` returns a one-time access token. The browser stores it in `localStorage` per record locator. A custom client must show it to the traveler and keep it safe; the server stores only a hash.
-- **Payment.** Without an active Stripe provider, bookings are pay-the-airline: an operator records payment in the dashboard. Unpaid storefront bookings expire after 24 hours when the worker runs.
+- **Payment.** Without an active Stripe provider, bookings are pay-the-airline: an operator records payment in the dashboard. Unpaid storefront bookings expire after 24 hours, on the next request that touches them or when staff press Refresh.
 - **Stripe return.** Stripe returns to `/manage-booking?ref=<locator>&checkout=<session id>`. The page then calls `completeCustomerCheckout`, which checks the session with Stripe before recording payment and issuing tickets.
 - **Rate limits.** Offer, booking, manage-booking, and checkout calls are rate limited per shopping session or client.

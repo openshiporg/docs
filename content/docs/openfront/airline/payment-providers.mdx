@@ -38,7 +38,7 @@ Choose **Connect Stripe** and paste an `sk_test_` or `sk_live_` key (restricted 
 </Step>
 <Step>
 ### Add the webhook
-Create a Stripe webhook that posts to `/api/payments/webhooks/<providerKey>`, and set the signing secret in an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>`, referenced from the provider's `webhookSecretEnv` configuration. The worker applies `checkout.session.completed` events.
+Create a Stripe webhook that posts to `/api/payments/webhooks/<providerKey>`, and set the signing secret in an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>`, referenced from the provider's `webhookSecretEnv` configuration. `checkout.session.completed` is applied on receipt. Without a webhook, the one-minute Checkout reconcile records paid sessions, and staff returning from a desk card payment record it at once (`settleBookingCheckout`).
 </Step>
 </Steps>
 

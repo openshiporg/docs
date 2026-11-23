@@ -32,6 +32,6 @@ The registry in `features/keystone/models/index.ts` registers 59 lists. Money is
 
 ## System lists
 
-`AuditEvent` (action, actor, source, correlation id, before and after summaries), `IdempotencyKey`, `RateLimitBucket`, `WorkerHeartbeat`, `OutboxEvent`, `WebhookEvent`, `WebhookEndpoint`, `IntegrationProvider`, `ProviderConnection`, `MachineCredential`.
+`AuditEvent` (action, actor, source, correlation id, before and after summaries), `IdempotencyKey`, `RateLimitBucket`, `WebhookEvent`, `WebhookEndpoint`, `IntegrationProvider`, `ProviderConnection`, `MachineCredential`.
 
-Lists without a dedicated desk (`User`, `Role`, `ApprovedAgent`, `ServiceRequest`, `WebhookEndpoint`, `OutboxEvent`, `ElectronicMiscDocument`, `Exchange`) are edited at `/dashboard/<list-key>`. Command-only lists reject direct writes there.
+Lists without a dedicated desk (`User`, `Role`, `ApprovedAgent`, `ServiceRequest`, `WebhookEndpoint`, `ElectronicMiscDocument`, `Exchange`) are edited at `/dashboard/<list-key>`. Command-only lists reject direct writes there.

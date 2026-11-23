@@ -36,7 +36,7 @@ The model registry in `features/keystone/models/index.ts` registers 59 lists.
 | Payments | `PaymentProvider`, `PaymentSession`, `Payment`, `ManualPaymentEvidence`, `Refund`, `SettlementLedgerEntry` |
 | Airport service | `TravelDocument`, `DocumentVerification`, `SeatAssignment`, `CheckIn`, `BoardingPass`, `Bag`, `BagEvent` |
 | Irregular operations | `Disruption`, `Reaccommodation` |
-| Integrations and system | `IntegrationProvider`, `ProviderConnection`, `WebhookEndpoint`, `WebhookEvent`, `OutboxEvent`, `AuditEvent`, `IdempotencyKey`, `RateLimitBucket`, `WorkerHeartbeat` |
+| Integrations and system | `IntegrationProvider`, `ProviderConnection`, `WebhookEndpoint`, `WebhookEvent`, `AuditEvent`, `IdempotencyKey`, `RateLimitBucket` |
 
 Money is stored as integer minor units with an explicit currency. Offers, booking lines, segments, and tickets keep snapshots of the commercial facts at the time they were created. A `Booking` has separate `status`, `paymentStatus`, and `ticketingStatus` fields.
 
@@ -70,7 +70,7 @@ Main lifecycles:
 
 **Refunds and cancellation.** `cancelBooking` (operator) or `cancelCustomerBooking` (traveler) cancels and releases seats. `processBookingRefund` records a refund against a captured payment, with approved refund evidence.
 
-**Background worker.** `npm run worker` runs `scripts/runtime-worker.ts`. It expires inventory holds, expires unpaid storefront bookings after their 24-hour payment window, prunes rate-limit buckets, delivers outbox events to webhook endpoints, and writes a heartbeat that `/api/health` checks.
+**No worker.** Unpaid storefront bookings expire on the request that touches them, staff press **Refresh** on the Bookings desk to release expired holds, and each web process runs a one-minute Stripe Checkout reconcile.
 
 ## Named GraphQL operations
 
@@ -84,23 +84,22 @@ Custom operations live in `features/keystone/mutations/index.ts`.
 | Offers and bookings | `operatorBookingReceipt` | `createOfferFromShopping`, `createBookingFromOffer`, `cancelBooking`, `reissueBookingAccessCode` |
 | Payments and ticketing | | `recordReceivedPayment`, `submitManualPaymentEvidence`, `approveManualPaymentEvidence`, `rejectManualPaymentEvidence`, `captureBookingPayment`, `issueBookingTickets`, `processBookingRefund` |
 | Airport service | `departureManifest` | `registerPassengerTravelDocument`, `verifyPassengerTravelDocument`, `checkInBookingPassenger`, `boardBookingPassenger`, `offloadBookingPassenger`, `acceptCheckedBag`, `recordBagEvent` |
-| Recovery and system | | `publishFlightDisruption`, `reaccommodateBooking`, `requeueDeadLetteredOutboxEvent` |
+| Recovery and system | | `publishFlightDisruption`, `reaccommodateBooking`, `refreshAirlineClocks` |
 
 `redirectToInit` is also exposed for the first-run redirect. Lists without a command (routes, schedules, cabins, fares, ancillaries, station assignments, payment providers) are written with normal Keystone create and update mutations, subject to carrier access.
 
 ## Integrations
 
 - **Payments.** Two adapters are installed in `features/integrations/payment`: `manual` (evidence only, needs independent approval) and `stripe` (Checkout sessions over the Stripe REST API). The Stripe secret key is entered on the Payment providers page and stored in write-only credentials. No environment variable holds it.
-- **Stripe webhooks.** `POST /api/payments/webhooks/[providerKey]` verifies a signature, stores the event, and the worker applies `checkout.session.completed` events. The secret comes from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>` set in the provider's `webhookSecretEnv` configuration. Set it in the environment alongside the provider.
+- **Stripe webhooks.** `POST /api/payments/webhooks/[providerKey]` verifies a signature, stores the event, and applies `checkout.session.completed` on the same request. The secret comes from an env variable named `AIRLINE_WEBHOOK_SECRET_<NAME>` set in the provider's `webhookSecretEnv` configuration. Without it, the one-minute Checkout reconcile records payments.
 - **Settlement import.** `POST /api/integrations/settlements/[connectionKey]` accepts settlement evidence from an outside ledger. It needs a machine credential with audience `settlement-import` and scope `settlements:write`.
-- **Outbound webhooks.** The worker posts outbox events to active `WebhookEndpoint` records that subscribe to the topic. Hosts must be listed in `OUTBOUND_WEBHOOK_HOSTS`.
 - **Email.** SMTP sends password resets and booking access recovery. Without `SMTP_HOST` and `SMTP_FROM`, access recovery is turned off on the storefront.
 - **AI assistant and MCP.** The dashboard chat uses OpenRouter (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`). `/api/mcp-transport` offers generic tools (`listModels`, `queryData`, `searchModels`, `getFieldsForType`, `lookupInputType`, `createData`, `updateData`, `deleteData`, `modelSpecificSearch`) that run as the signed-in user. In production it returns 404 unless `AI_ASSISTANT_ENABLED=true`.
 
 ## Where to go next
 
 - [Getting started](/docs/openfront/airline/getting-started): install, configure, migrate, first user, onboarding.
-- [Deployment](/docs/openfront/airline/deployment): build, migrate, worker, production checks.
+- [Deployment](/docs/openfront/airline/deployment): build, migrate, start, health.
 - [Carrier operations](/docs/openfront/airline/operations): the dashboard home and every desk.
 - [How-to guides](/docs/openfront/airline/how-to-guides/launch-a-carrier): launch a carrier, take a booking, run a departure.
 - [API reference](/docs/openfront/airline/api-reference): every named GraphQL operation.

@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Build, migrate, run the web app and the background worker, and meet the production runtime checks for Openfront Airline.
+description: Build, migrate, run the web app, and check health for Openfront Airline.
 icon: Rocket
 ---
 
@@ -15,14 +15,10 @@ npm start
 
 `npm run build` does not apply migrations. Back up existing data before migrating.
 
-Run the worker as its own process:
+There is no worker process. Each web process runs the one-minute Stripe Checkout reconcile, and timed expiry happens on requests and the Bookings desk **Refresh** button.
 
-```bash
-npm run worker
-```
+The repository includes `railway.toml` (build, then migrate and `next start`). The README has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. You still need `S3_ENDPOINT` and the rest of the production configuration.
 
-The repository includes `railway.toml` (web: migrate then `next start`) and `railway.worker.toml` (worker). The README has a Vercel deploy button that asks for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. You still need `S3_ENDPOINT` and the rest of the production configuration.
+In production `DATABASE_URL` and the five `S3_*` variables must be set (Keystone refuses to start otherwise), `SESSION_SECRET` must be 32+ characters, and `ALLOW_INCOMPLETE_LAUNCH_SETUP=true` keeps public sales closed while you finish setup.
 
-In production the worker runs a runtime check before starting. It requires the full list of production variables above, HTTPS for the public URLs, and a storefront carrier that has finished onboarding with two payment operators, an evidence-only manual provider, and a settlement-import credential and connection. Set `ALLOW_INCOMPLETE_LAUNCH_SETUP=true` to relax the carrier checks while you set up. Public sales stay closed while it is on.
-
-The runtime check also requires every active payment provider to use the `manual` adapter, so production runs with evidence-only settlement providers active.
+`GET /api/health` returns `{ status: "ok" }`, or 503 when the database is unreachable or `DRAIN_FILE` exists.
