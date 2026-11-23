@@ -23,4 +23,5 @@ icon: LifeBuoy
 | Reset links never arrive | `SMTP_HOST` is unset |
 | Every page redirects to `/dashboard/init` | No user exists yet |
 | Production fails to start | An `S3_*` variable is missing |
-| Integration events stay pending | The outbox worker is not running or `OUTBOX_WORKER_SECRET` does not match |
+| A card payment stays `pending` | The webhook did not reach the app. Check `STRIPE_WEBHOOK_SECRET` and the provider id in the URL, then press **Refresh holds, requests and payments** to ask Stripe |
+| Bed holds or unconfirmed requests do not lapse | They advance on the next request that touches them, or when staff press **Refresh holds, requests and payments** |

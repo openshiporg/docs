@@ -22,10 +22,13 @@ Current public routes:
 - `/` home, `/care` care services, `/providers` and `/providers/[id]` clinicians, `/locations` facilities.
 - `/book` visit types and `/book/[slug]` slot selection and appointment request.
 - `/intake#accessCode=…` one-time intake; the code is read from the URL fragment.
+- `/visit` look up or cancel a visit (request number and date of birth, or a signed `#access=` link).
+- `/account` patient sign in and sign up, then visits matched by the confirmed email; `/account/confirm` email confirmation.
+- `/pay` bill payment: `PAY-` number and date of birth, then Stripe Checkout.
 
-Named public operations: `HospitalBranding`, `BookableAppointmentTypes`, `BookableProviders`, `AvailableAppointmentSlots`, `RequestAppointment`, `IntakeFormByAccessCode`, `SubmitIntakeForm` (roots `hospitalBranding`, `bookableAppointmentTypes`, `bookableProviders`, `availableAppointmentSlots`, `requestAppointment`, `intakeFormByAccessCode`, `submitIntakeForm`). Models behind them: `HospitalProfile`, `Facility`, `Provider`, `Clinician`, `AppointmentType`, `ProviderScheduleBlock`, `Patient`, `Appointment`, `IntakeForm`, `PatientConsent`. Consent statement keys and policy versions live in `features/storefront/lib/workflowConsent.ts`.
+Named public operations: `HospitalBranding`, `BookableAppointmentTypes`, `BookableProviders`, `AvailableAppointmentSlots`, `RequestAppointment`, `IntakeFormByAccessCode`, `SubmitIntakeForm`, `PatientVisit`, `CancelPatientVisit`, `MyAppointments`, `LookupPatientBill`, `BeginBillPayment`, `ConfirmBillPayment` (roots `hospitalBranding`, `bookableAppointmentTypes`, `bookableProviders`, `availableAppointmentSlots`, `requestAppointment`, `intakeFormByAccessCode`, `submitIntakeForm`, `patientVisit`, `cancelPatientVisit`, `myPatientAppointments`, `lookupPatientBill`, `initiatePatientBillPayment`, `confirmPatientBillPayment`; account roots `registerPatientAccount`, `confirmPatientAccountEmail`, `resendPatientAccountConfirmation`, `authenticateUserWithPassword`). Models behind them: `HospitalProfile`, `Facility`, `Provider`, `Clinician`, `AppointmentType`, `ProviderScheduleBlock`, `Patient`, `Appointment`, `IntakeForm`, `PatientConsent`. Consent statement keys and policy versions live in `features/storefront/lib/workflowConsent.ts`.
 
-There are no patient accounts, carts, or payments. `PatientPortalAccess` exists but has no invite or sign-in workflow. Prices display as "Estimate provided by clinic". `requestAppointment` is anonymous and rate limited; intake codes are hashed at rest and expire after 7 days.
+There is no cart. Patient accounts carry no staff role and see visits only after confirming their email. Only `pending` `card_online` bills at a facility with card payments turned on can be paid at `/pay`. Prices display as "Estimate provided by clinic". `requestAppointment` is anonymous and rate limited; intake codes are hashed at rest and expire after 7 days.
 
 Explain that `features/storefront` is the behavioral reference for routes, states, GraphQL calls, cookies/tokens, and provider handoffs. It should guide what is preserved or changed.
 

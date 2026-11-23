@@ -24,10 +24,11 @@ GraphQL is served at `/api/graphql`. `schema.graphql` is the reference. Workflow
 | Patients | `registerPatient`, `recordConsentDecision`, `issueIntakeForm`, `transitionIntakeReview` |
 | Inpatient | `reserveBed`, `releaseBedReservation`, `admitPatient`, `transitionAdmission`, `transitionBedReadiness` |
 | Clinical | `placeMedicalOrder`, `collectSpecimen`, `recordLabResult`, `correctLabResult`, `recordPrescription`, `scheduleProcedure`, `establishCarePlan`, `draftClinicalDocument`, `amendClinicalDocument`, `recordVitalSign` and their `transition…` pairs |
-| Billing | `recordPatientCoverage`, `prepareInsuranceClaim`, `recordPatientPayment`, `requestPatientRefund` and `transition…` pairs |
+| Billing | `recordPatientCoverage`, `prepareInsuranceClaim`, `recordPatientPayment`, `requestPatientRefund` and `transition…` pairs; `enableFacilityCardPayments`; `refreshTimedStates` |
+| Patients | `registerPatientAccount`, `confirmPatientAccountEmail`, `resendPatientAccountConfirmation`, `myPatientAppointments`, `patientVisit`, `cancelPatientVisit`, `lookupPatientBill`, `initiatePatientBillPayment`, `confirmPatientBillPayment` |
 | Communications | `sendSecurePatientMessage`, `transitionPatientMessage`, `registerCommunicationTemplate`, `reviseCommunicationTemplate`, `setCommunicationPreference` |
 | Supplies | `registerInventoryItem`, `moveInventory`, `previewInventoryImport`, `applyInventoryImport`, `rollbackInventoryImport` |
-| Platform | `installIntegration`, `issueMachineCredential`, `dispatchIntegrationOutbox`, `dispatchClinicalOutbox`, `linkExternalIdentity`, `establishRetentionPolicy`, `placeRecordHold`, `recordRetentionDisposition`, `requestExportJob`, `processExportJob` |
+| Platform | `installIntegration`, `issueMachineCredential`, `linkExternalIdentity`, `establishRetentionPolicy`, `placeRecordHold`, `recordRetentionDisposition`, `requestExportJob`, `processExportJob` |
 | Accounts | `bootstrapHospital`, `sendUserPasswordResetLink`, `redeemUserPasswordResetToken`, `updateActiveUser`, `applyHospitalOnboarding` |
 
 ## Helper queries
@@ -49,4 +50,4 @@ mutation Confirm($id: ID!, $v: Int!) {
 
 ## Other routes
 
-`/api/health`, `/api/exports/{jobId}`, `/api/integrations/{installationKey}/webhook`, `/api/internal/outbox/dispatch`, `/api/payment-webhooks/[providerId]`, and `/api/mcp-transport/[transport]` (returns 404 here).
+`/api/health`, `/api/exports/{jobId}`, `/api/integrations/{installationKey}/webhook`, `/api/payment-webhooks/[providerId]`, and `/api/mcp-transport/[transport]` (returns 404 here).

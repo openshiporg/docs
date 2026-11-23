@@ -12,7 +12,7 @@ Skill file: [`/skills/openfront-hospital-custom-storefront/SKILL.md`](/skills/op
 
 ## Current storefront routes
 
-Routes live under `app/(storefront)/`. Screens live in `features/storefront/screens`, data loaders in `features/storefront/lib/data`, and server actions in `features/storefront/actions`. There are no patient accounts, carts, or payments.
+Routes live under `app/(storefront)/`. Screens live in `features/storefront/screens`, data loaders in `features/storefront/lib/data`, and server actions in `features/storefront/actions`. There is no cart. Patients can keep an account, look up or cancel a visit, and pay a bill online.
 
 | Route | Visitor journey |
 |---|---|
@@ -24,6 +24,10 @@ Routes live under `app/(storefront)/`. Screens live in `features/storefront/scre
 | `/book` | Request a visit: list of bookable visit types |
 | `/book/[slug]` | Pick a clinician, place, and open time, then send the request with name, contact, optional date of birth, reason, and consent. The confirmation shows the appointment reference and an intake link |
 | `/intake#accessCode=…` | One-time pre-visit intake. The code is read from the URL fragment, so it is not sent in the page request. Submits responses, contact updates, and consent |
+| `/visit` | Your visit: look a visit up by request number and date of birth, or open it from a signed `#access=` link. A `requested` or `confirmed` visit that has not started can be cancelled, which frees the slot |
+| `/account` | Patient sign in and sign up (password of 10+ characters). After the email is confirmed, lists upcoming and past visits requested with that email, each linking to `/visit` |
+| `/account/confirm` | Confirms the account email from the emailed link |
+| `/pay` | Pay a bill: payment number (`PAY-…`) and date of birth, then Stripe Checkout. Stripe returns here with the session id and the page confirms the payment |
 
 Unknown paths render the storefront not-found page. When no user exists yet, every route redirects to `/dashboard/init`.
 
@@ -38,9 +42,14 @@ Unknown paths render the storefront not-found page. When no user exists yet, eve
 | `RequestAppointment` (`requestAppointment`) | `/book/[slug]` | Anonymous. Rate limited per network and globally. Creates a `requested` appointment, patient match, consent, and intake form, and returns a one-time intake code |
 | `IntakeFormByAccessCode` (`intakeFormByAccessCode`) | `/intake` | Bounded projection of one intake form. Codes are hashed at rest and expire after 7 days |
 | `SubmitIntakeForm` (`submitIntakeForm`) | `/intake` | Saves responses and consent; staff review it in the dashboard |
+| `PatientVisit` (`patientVisit`), `CancelPatientVisit` (`cancelPatientVisit`) | `/visit`, `/account` | Lookup is rate limited; cancelling is audited the same way as a staff cancellation |
+| `registerPatientAccount`, `authenticateUserWithPassword`, `endSession` | `/account` | Sign-up answers the same way whether or not the email exists. An account has no staff role |
+| `confirmPatientAccountEmail`, `resendPatientAccountConfirmation` | `/account/confirm`, `/account` | Resend is limited to 3 an hour |
+| `MyAppointments` (`myPatientAppointments`) | `/account` | Visits matched by the confirmed email |
+| `LookupPatientBill` (`lookupPatientBill`), `initiatePatientBillPayment`, `confirmPatientBillPayment` | `/pay` | Only `pending` `card_online` payments at a facility with card payments turned on. Stripe decides whether a return counts as paid |
 
 The consent statements and policy versions sent with booking and intake are defined in `features/storefront/lib/workflowConsent.ts`.
 
 ## From request to booking
 
-A request is not a confirmed booking. It lands as a `requested` appointment and staff confirm it in the dashboard. Visitors do not sign in, so the confirmation screen and the one-time intake link are the patient's record of the request. Visit prices are shown as "Estimate provided by clinic", and payment is taken at the practice.
+A request is not a confirmed booking. It lands as a `requested` appointment and staff confirm it in the dashboard. Visitors do not need an account. The confirmation screen, the intake link, and `/visit` are their record of the request. Visit prices are shown as "Estimate provided by clinic". Bills the practice records as online card payments can be paid at `/pay`.

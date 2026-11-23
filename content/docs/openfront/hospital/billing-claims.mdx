@@ -1,8 +1,10 @@
 ---
 title: Coverage, claims, and payments
-description: Insurance coverage, claims with versions, manual payments, and refunds.
+description: Insurance coverage, claims with versions, payments, online card bills, and refunds.
 icon: Receipt
 ---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 Needs `canManageBilling`.
 
@@ -22,7 +24,26 @@ These are on the billing tab of `/dashboard/platform/operational-fabric`.
 
 | Record | Methods and states |
 | --- | --- |
-| `PatientPayment` | Methods `cash`, `check`, `card_external`, `bank_external`. `pending` → `succeeded`, `failed`, `cancelled` |
+| `PatientPayment` | Methods `cash`, `check`, `card_external`, `bank_external`, `card_online`. `pending` → `succeeded`, `failed`, `cancelled`; a payment refunded in full becomes `refunded` |
 | `PatientRefund` | `pending` → `succeeded`, `failed`, `cancelled`. Tracks `refundedAmountCents` on the payment |
 
-Payments are recorded against money received outside the app. Add an `externalReference` when you mark one succeeded.
+Cash, check, and external payments record money received outside the app. Add an `externalReference` when you mark one succeeded. External methods need an active `payment` integration.
+
+## Online card bills
+
+<Steps>
+<Step>
+### Turn on card payments
+On the billing tab, press **Turn on card payments** for the facility. It needs the Stripe keys on the server.
+</Step>
+<Step>
+### Record the bill
+Record a payment with method `card_online`. The app shows its payment number (`PAY-…`).
+</Step>
+<Step>
+### The patient pays
+The patient opens `/pay`, enters the payment number and date of birth, and pays through Stripe Checkout. The webhook or the return page marks it `succeeded`.
+</Step>
+</Steps>
+
+If a payment stays `pending`, press **Refresh holds, requests and payments** (`refreshTimedStates`). It asks Stripe about unconfirmed card payments and frees a bill whose Checkout Session expired.

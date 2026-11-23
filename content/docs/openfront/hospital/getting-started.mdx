@@ -58,15 +58,15 @@ These fall back to `SESSION_SECRET` when unset. Set separate values in productio
 | `EXPORT_ENCRYPTION_KEY` | A different 32-byte hex key. Encrypts export files |
 | `INTEGRATION_HOST_ALLOWLIST` | Comma-separated exact hostnames that outbound integrations may call |
 | `ALLOW_LOCAL_INTEGRATION_ENDPOINTS` | `1` allows HTTP and private-address endpoints outside production, for local testing |
-| `OUTBOX_WORKER_SECRET` | Bearer secret for `/api/internal/outbox/dispatch`. At least 48 characters |
-| `OUTBOX_WORKER_URL` | Worker only. Must point at `/api/internal/outbox/dispatch`, HTTPS in production |
-| `OUTBOX_WORKER_INTERVAL_SECONDS` | Worker only. 15 to 300, default 60 |
+| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_KEY`, `STRIPE_WEBHOOK_SECRET` | Online card payments for patient bills. The mode follows the key |
+| `PUBLIC_APP_URL` | Public origin Stripe Checkout returns patients to (`/pay`) |
+| `VISIT_ACCESS_SIGNING_KEY` | Signs manage-visit links. Falls back to `SESSION_SECRET` |
 
 ### Email, network, and optional features
 
 | Variable | Use |
 |---|---|
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Staff password reset email. Without `SMTP_HOST`, reset links cannot be sent |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Staff password reset and patient account confirmation email. Without `SMTP_HOST`, those links cannot be sent |
 | `SMTP_STORE_LINK` | Public HTTPS origin used in emailed links |
 | `TRUST_PROXY`, `TRUST_PROXY_HOPS` | Set `TRUST_PROXY=1` behind a reverse proxy so rate limits use the forwarded client address. On Railway, `RAILWAY_ENVIRONMENT` is detected automatically |
 | `PUBLIC_SIGNUPS_ALLOWED` | `true` opens `/dashboard/signup`. Leave unset |
@@ -129,8 +129,7 @@ This runs the onboarding seed check, a GraphQL smoke check, the security unit te
    ```
 
    The build applies migrations, so it needs database access. The included `railway.toml` builds without migrating and runs `npm run migrate && next start` at startup instead.
-4. For integrations, run a second service with `npm run worker:outbox`. `railway.worker.toml` defines that service. Give it `OUTBOX_WORKER_URL`, `OUTBOX_WORKER_SECRET`, and optionally `OUTBOX_WORKER_INTERVAL_SECONDS`.
-5. Behind a proxy that is not Railway, set `TRUST_PROXY=1` and the right `TRUST_PROXY_HOPS`.
-6. Point monitoring at `/api/health`.
+4. Behind a proxy that is not Railway, set `TRUST_PROXY=1` and the right `TRUST_PROXY_HOPS`.
+5. Point monitoring at `/api/health`.
 
 The README also has a Vercel deploy button that prompts for `DATABASE_URL`, `SESSION_SECRET`, and four `S3_*` variables. Add `S3_ENDPOINT` and the security secrets yourself.

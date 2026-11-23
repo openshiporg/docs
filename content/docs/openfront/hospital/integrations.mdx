@@ -1,6 +1,6 @@
 ---
 title: Integrations
-description: Signed webhooks, machine credentials, and the outbox worker.
+description: Stripe card payments, signed inbound webhooks, and machine credentials.
 icon: Cable
 ---
 
@@ -12,9 +12,15 @@ Needs `canManageIntegrations`. Managed on the integrations tab of `/dashboard/pl
 
 Endpoints must resolve to public addresses. `INTEGRATION_HOST_ALLOWLIST` restricts hosts.
 
-## Outbound events
+## Stripe card payments
 
-Workflow events are written to `ClinicalOutboxEvent`. The worker calls `POST /api/internal/outbox/dispatch` with `OUTBOX_WORKER_SECRET`; each event is POSTed as JSON with an `x-openfront-signature` HMAC header. Failures retry, then `dead_letter`. `IntegrationDeliveryAttempt` records each try. You can also run `dispatchIntegrationOutbox` or `dispatchClinicalOutbox` by hand.
+With `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_KEY` set, billing staff press **Turn on card payments** for a facility on the billing tab (`enableFacilityCardPayments`). That installs the facility's `pp_stripe_hospital` provider. A payment recorded with method `card_online` can then be paid by the patient at `/pay` through Stripe Checkout.
+
+`POST /api/payment-webhooks/[providerId]` verifies the `stripe-signature` header with `STRIPE_WEBHOOK_SECRET`, stores each event once as a `PaymentWebhookReceipt`, and settles the payment on `checkout.session.completed` when it is paid. Other events are recorded as ignored.
+
+## No outbound delivery
+
+The app does not push events to installations. Nothing is queued for delivery and no worker runs.
 
 ## Inbound events
 
@@ -23,7 +29,6 @@ Workflow events are written to `ClinicalOutboxEvent`. The worker calls `POST /ap
 | Kind | Events |
 | --- | --- |
 | payment | `payment.succeeded`, `payment.failed`, `refund.succeeded`, `refund.failed` |
-| communications | `message.sent`, `message.delivered`, `message.failed` |
 | claims | `claim.acknowledged`, `claim.rejected` |
 
 Requests outside a 5-minute window, or replayed, are rejected. Each is stored as an `IntegrationWebhookReceipt`.
