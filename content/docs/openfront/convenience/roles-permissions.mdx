@@ -16,6 +16,10 @@ icon: Shield
 | Verticals | `canReadPreparedFood`, `canReadFuel`, `canReadLottery`, `canReadMoneyServices` (each with a Manage flag) |
 | Operations | `canReadReporting`, `canReadExports`, `canReadAlerts`, `canReadOfflineOperations`, `canReadIntegrations` (each with Manage), `canManageApiKeys`, `canReadAudit` |
 
+## Roles screen
+
+`/dashboard/platform/staff/roles` lists the business's roles and who has each one. It needs `canManageRoles`; others see "Only someone allowed to manage roles can see and change them." **Create role** takes a name and what it's for. A new role starts with dashboard sign-in only. On `/dashboard/platform/staff/roles/[id]`, **What this role can do** shows the permissions by area, each as View or Can change. **Save role** stores the change. **Delete role** appears only when nobody has the role.
+
 Onboarding creates an `Owner` role with every permission. "Access denied for this store" means the employee is not assigned to that store.
 
 API keys (`ApiKey`) belong to one business, carry scopes, are limited to stores, and cannot open the dashboard. See [Recovery](/docs/openfront/convenience/recovery).
