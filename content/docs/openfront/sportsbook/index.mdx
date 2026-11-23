@@ -19,9 +19,9 @@ The customer storefront opens for a tenant once it has an active licence, an act
 ## Product surfaces
 
 - **Operator dashboard:** the shared Openfront shell in `features/dashboard`, with Sportsbook workspaces in `features/platform` mounted at `/dashboard/platform/*`: Control room, Catalog, Trading, Wagers, Risk, Results, Grading, Settlement, Customers, Compliance, Responsible gaming, Closures, Support, Notifications, Finance, Reconciliation, Tax, Promotions, Providers, Integrations, Recovery, Incidents, Reports, Configuration, Jurisdictions, Settings, Roles, Operator security, Approvals, Audit, and Onboarding.
-- **Storefront:** root routes `/`, `/sports/**`, `/events/[event]`, `/betslip`, `/promotions`, and `/account/*` in `features/storefront`. Customer data flows through REST routes under `/api/sandbox/sportsbook/*`, not through GraphQL.
+- **Storefront:** root routes `/`, `/sports/**`, `/events/[event]`, `/betslip`, `/promotions`, and `/account/*` in `features/storefront`. Customer data flows through REST routes under `/api/sportsbook/*`, not through GraphQL.
 - **GraphQL:** `/api/graphql` (Keystone with custom operations from `features/keystone/mutations`). Most lists are read-only through GraphQL; changes go through named mutations.
-- **Worker:** `npm run worker` runs `features/sportsbook/workers/main.ts`, a separate process that drains the outbox, inbox, and scheduled jobs and writes worker heartbeats.
+- **No worker:** there is one web process. Inbound provider events are normalized on receipt, approving a result grades and settles straight wagers on that request, and audit anchoring advances when `/api/ready` is read.
 - **Operations endpoints:** `/api/health`, `/api/ready`, and `/api/metrics`.
 
 ## Architecture
@@ -38,9 +38,9 @@ The storefront resolves a single operator brand: the brand matching the public o
 
 <Cards>
   <Card title="Getting started" href="/docs/openfront/sportsbook/getting-started" description="Environment, migrations, first operator, MFA, onboarding." />
-  <Card title="Deployment" href="/docs/openfront/sportsbook/deployment" description="Web process, worker, and health endpoints." />
+  <Card title="Deployment" href="/docs/openfront/sportsbook/deployment" description="Web process and health endpoints." />
   <Card title="Dashboard overview" href="/docs/openfront/sportsbook/overview" description="Workspaces and dual control." />
   <Card title="Licences and payments" href="/docs/openfront/sportsbook/payment-providers" description="Licences, Authorize.net, withdrawals." />
-  <Card title="Integrations" href="/docs/openfront/sportsbook/integrations" description="Adapters, webhooks, worker, MCP." />
+  <Card title="Integrations" href="/docs/openfront/sportsbook/integrations" description="Adapters, webhooks, payments, MCP." />
   <Card title="API reference" href="/docs/openfront/sportsbook/api-reference" description="GraphQL mutations and customer REST routes." />
 </Cards>

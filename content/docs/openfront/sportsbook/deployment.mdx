@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Build, migrate, run the web process and the worker, and check readiness.
+description: Build, migrate, run the web process, and check readiness.
 icon: Rocket
 ---
 
@@ -9,29 +9,26 @@ icon: Rocket
 | `npm run build` | `keystone build --no-ui && next build`; does not migrate |
 | `npm run migrate` | `prisma migrate deploy` (creates row-level security policies, so the database role must be one you control) |
 | `npm start` | `next start` |
-| `npm run worker` | Runs `validate:env`, then the background worker |
-| `npm run validate:env` | Checks required environment |
+| `npm run validate:env` | Checks `DATABASE_URL` and a 32+ character `SESSION_SECRET` |
 | `npm run verify:audit`, `verify:migrations`, `verify:retained-upgrade` | Audit-chain and migration checks; migration checks need disposable databases (`MIGRATION_SHADOW_DATABASE_URL`) |
 
 ```bash
 npm run build
 npm run migrate     # against a backed-up database
 npm start
-npm run worker      # separate long-running process
 ```
 
-Settlement, webhook delivery, recovery, scheduled jobs, and audit anchoring depend on the worker. If it is not running those queues do not drain.
+There is no worker process. Settlement runs when a result is approved, inbound events are processed on receipt, and audit anchoring advances on `/api/ready`.
 
 ## Production environment
 
-Set `DATABASE_URL`, `SESSION_SECRET` (32+ characters), `CUSTOMER_IDENTITY_SECRET` (32+), `PII_ENCRYPTION_KEY`, `OUTBOUND_WEBHOOK_SECRET` and `WEBHOOK_EGRESS_HOSTS` for outbound webhooks, `AUDIT_ANCHOR_DIR` and `AUDIT_ANCHOR_SECRET` for anchoring, `METRICS_BEARER_TOKEN` for probes, SMTP for recovery emails, and the Authorize.net variables for payments.
+Set `DATABASE_URL`, `SESSION_SECRET` (32+ characters), `PUBLIC_APP_URL` (the storefront origin), `CUSTOMER_IDENTITY_SECRET` (32+; derived from `SESSION_SECRET` when unset), `PII_ENCRYPTION_KEY`, `PROVIDER_WEBHOOK_SECRET` for inbound provider events, `OUTBOUND_WEBHOOK_SECRET` and `WEBHOOK_EGRESS_HOSTS` for outbound webhooks, `AUDIT_ANCHOR_DIR` (or a Railway volume) and `AUDIT_ANCHOR_SECRET` for anchoring, `METRICS_BEARER_TOKEN` for probes, SMTP for recovery emails, and the Stripe or Authorize.net variables for card deposits.
 
 ## Health
 
 - `/api/health` returns `ok` with the service name and time.
-- `/api/ready` checks migrations, stale worker leases, degraded providers, oldest pending queue age, worker heartbeats, row-level security coverage, exposure consistency, audit anchoring, and privileged operators without MFA. Detail needs `METRICS_BEARER_TOKEN` in production.
-- `/api/metrics` returns Prometheus text (wagers, queues, providers, dead letters, incidents, markets, journal imbalance) and 404s without the bearer token in production.
-- Set `OTEL_EXPORTER_OTLP_ENDPOINT` for OpenTelemetry from the app and worker.
+- `/api/ready` checks the database, shipped migrations, row-level security coverage, audit anchoring lag, and privileged operators without MFA, and advances anchoring when it is configured. Detail needs `METRICS_BEARER_TOKEN` in production.
+- `/api/metrics` returns Prometheus text (wagers, provider connections, incidents, markets, journal imbalance) and 404s without the bearer token in production.
 
 ## After deploy
 

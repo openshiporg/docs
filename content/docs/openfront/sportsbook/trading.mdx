@@ -7,7 +7,7 @@ icon: Radio
 Needs `canTrade`. Routes: `/dashboard/platform/trading`, `/trading/[marketId]`, `/markets/[marketId]`.
 
 - `Market.status`: `OPEN`, `SUSPENDED`, `CLOSED`, `GRADED`; period `PREMATCH` or `LIVE`.
-- **Prices:** `setMarketPrices` writes append-only `PriceSnapshot` rows. `ingestSandboxPrice` stores a raw envelope and a snapshot from the price feed adapter.
+- **Prices:** `setMarketPrices` writes append-only `PriceSnapshot` rows. Traders set prices through the `house-sports` connection; a contracted feed would arrive through `/api/webhooks/providers/sports`.
 - **Open or close:** `setMarketStatus` checks the reviewed market version. `suspendMarket` suspends quickly. Each change writes `TradingStatusChange`.
 - **Event state:** `setEventTradingState` moves an event through live, ended, and other states.
 - **Trader overrides:** `requestTraderOverride` and `applyTraderOverride` under dual control.

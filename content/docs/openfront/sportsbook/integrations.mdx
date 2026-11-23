@@ -1,30 +1,41 @@
 ---
 title: Integrations
-description: Provider connections, adapter contract, webhooks, worker, email, MCP, and AI chat.
+description: Provider connections, the house adapter, webhooks, card processors, email, MCP, and AI chat.
 icon: Unplug
 ---
 
 ## Provider connections
 
-`/dashboard/platform/providers` shows health, certification runs, trading replays, and operational state (`runAdapterCertification`, `runTradingReplay`, `setProviderOperationalState`, `mapProviderEntity`). `/dashboard/platform/integrations` (with `/[connectionId]`, `/inbox`, `/webhooks`, `/dlq`) lists connections, inbound messages, webhook endpoints and deliveries, and dead letters, with replay.
+`/dashboard/platform/providers` shows health, certification runs, trading replays, and operational state (`runAdapterCertification`, `runTradingReplay`, `setProviderOperationalState`, `mapProviderEntity`). `/dashboard/platform/integrations` (with `/[connectionId]`, `/inbox`, `/webhooks`) lists connections, inbound messages, and webhook endpoints with their recorded deliveries.
 
-`ProviderConnection.certificationStatus`: `SANDBOX`, `PENDING`, `CERTIFIED`, `SUSPENDED`. Kinds: `sports`, `results`, `kyc`, `aml`, `geo`, `payments`, `messaging`, `analytics`, `tax`, `reporting`, `integrity`, `affiliates`, `pam`. Onboarding creates a connection per kind.
+`ProviderConnection.certificationStatus`: `INTERNAL`, `PENDING`, `CERTIFIED`, `SUSPENDED`. Kinds: `sports`, `results`, `kyc`, `aml`, `geo`, `payments`, `messaging`, `analytics`, `tax`, `reporting`, `integrity`, `affiliates`, `pam`. Onboarding creates a `house-<kind>` connection per kind, with `INTERNAL` certification and config `house:<kind>`.
 
 ## Adapter contract
 
-`features/sportsbook/adapters/contracts.ts` defines `ProviderAdapter`: `manifest`, `capabilities`, `validateConfig`, `execute` (with idempotency key), `query`, `verifyWebhook`, `normalize`, `health`, `reconcile`. The bundled `SandboxAdapter` implements it for all kinds and handles verification, location, AML, prices, and results. Payment adapters live in `features/integrations/payment` (`authorizenet`, `manual`).
+`features/sportsbook/adapters/contracts.ts` defines `ProviderAdapter`: `manifest`, `capabilities`, `validateConfig`, `execute` (with idempotency key), `query`, `verifyWebhook`, `normalize`, `health`, `reconcile`. The bundled `HouseAdapter` (`features/sportsbook/adapters/internal.ts`) implements it for every kind. The operator's own traders, results staff, and compliance staff are the source; it never claims third-party certification. A contracted provider replaces it by installing that provider's adapter. Payment adapters live in `features/integrations/payment` (`stripe`, `authorizenet`, `manual`).
 
 ## Inbound webhooks
 
-`/api/sandbox/webhooks/[kind]` accepts the thirteen kinds, caps the body, requires `x-sandbox-timestamp` within five minutes, verifies an HMAC with `SANDBOX_WEBHOOK_SECRET`, rate-limits by client, and records replay protection in `WebhookReplay`. Accepted messages land in `RawEnvelope` and `InboxMessage`.
+`/api/webhooks/providers/[kind]` accepts the thirteen kinds, caps the body, and requires `x-openfront-timestamp` within five minutes, `x-openfront-tenant-id`, `x-openfront-connection-id`, and an `x-openfront-signature` HMAC under `PROVIDER_WEBHOOK_SECRET` (32+ characters; otherwise derived from `SESSION_SECRET`). The connection must be the tenant's active `house-<kind>` installation. It rate-limits, records replay protection in `WebhookReplay`, stores the message in `RawEnvelope` and `InboxMessage`, and normalizes it in the same transaction.
 
 ## Outbound webhooks
 
-`requestWebhookEndpoint` and `applyWebhookEndpoint` (dual control) create `WebhookEndpoint` rows; `testWebhookEndpoint` sends a test. The worker delivers `WebhookDelivery` rows: HTTPS only on port 443, host in `WEBHOOK_EGRESS_HOSTS` and public, signed with HMAC-SHA256 using `OUTBOUND_WEBHOOK_SECRET`. Headers: `openfront-delivery-id`, `openfront-event-type`, `openfront-event-version`, `openfront-timestamp`, `openfront-key-id`, `openfront-signature`. Attempts are stored in `IntegrationDeliveryAttempt`; failures retry then dead-letter.
+`requestWebhookEndpoint` and `applyWebhookEndpoint` (dual control) create `WebhookEndpoint` rows. Destinations must be HTTPS on port 443, public, and listed in `WEBHOOK_EGRESS_HOSTS`. Signed deliveries use HMAC-SHA256 with `OUTBOUND_WEBHOOK_SECRET` and the headers `openfront-delivery-id`, `openfront-event-type`, `openfront-event-version`, `openfront-timestamp`, `openfront-key-id`, and `openfront-signature`. `/dashboard/platform/integrations/webhooks` shows each `WebhookDelivery` with its `IntegrationDeliveryAttempt` history.
 
-## Worker
+## Card processors
 
-`npm run worker` writes a `WorkerHeartbeat`, then drains `OutboxMessage`, `InboxMessage`, and `ScheduledJob` rows with leases. Events include `settlement.requested`, `recovery.requested`, `report.generate`, `reconciliation.run`, `provider.delivery`, `ingestion.replay`, wager, cash-out, payment, promotion, result, dispute, and export events, and `audit.anchor`. Tuning: `WORKER_POLL_MS`, `WORKER_LEASE_MS`, `WORKER_BATCH_SIZE`.
+Customer card deposits go to the first `ACTIVE` `stripe` or `authorizenet` connection (by failover priority) whose secret variable is set. The wallet card form tokenizes for that processor: Stripe Elements with `NEXT_PUBLIC_STRIPE_KEY` (or `STRIPE_PUBLISHABLE_KEY`), or Authorize.net Accept.js. The server confirms a Stripe PaymentIntent with `STRIPE_SECRET_KEY` under the attempt's idempotency key, so a retry never charges twice.
+
+An `ACTIVE` `manual` connection turns on cage cash deposits and manual bank payouts.
+
+## No background work
+
+There is no worker, outbox, or scheduled job. Work that used to wait in a queue now runs on a request:
+
+- Inbound events are normalized on receipt.
+- Approving a result grades and settles straight wagers.
+- Payments the provider has not answered stay `UNKNOWN` with funds held until staff press **Check status** on the Payments page.
+- Audit anchoring advances when `/api/ready` is read.
 
 ## Email
 

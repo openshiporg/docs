@@ -43,7 +43,7 @@ Before proposing code:
 3. Enumerate GraphQL documents and operation names used by those call sites.
 4. Read `schema.graphql`, list access (`scopedAccess` with a capability, `currentTenantScope`, denied create/update/delete, omitted customer lists), field access, and custom query/mutation resolvers.
 5. Record actor, capability flag, MFA assurance (`operatorSessionAssured`), tenant, inputs, outputs, expected version or state checks, dual-control approval (`ApprovalRequest`, payload hash, expiry, `DUAL_CONTROL_REQUIRED`), idempotency key, audit event, and refusal codes for each required operation.
-6. Inspect provider adapters (`features/sportsbook/adapters/**`, `features/keystone/utils/paymentProviderAdapter.ts`), webhooks, the worker (`features/sportsbook/workers/**`), sessions, and runtime configuration touched by the requested flow.
+6. Inspect provider adapters (`features/sportsbook/adapters/**`, `features/keystone/utils/paymentProviderAdapter.ts`), webhooks (`/api/webhooks/providers/[kind]`), card processors (`features/integrations/payment`), sessions, and runtime configuration touched by the requested flow.
 7. Produce a capability matrix: verified, presentation-only, needs backend contract, blocked, or absent.
 
 Do not claim the skill already knows a deployed contract. It knows where and how to discover the exact calls. Generated CRUD or a schema-valid document is not proof of safe access.
@@ -85,6 +85,6 @@ Report:
 - capability matrix and backend blockers;
 - implemented files and tests;
 - responsive/accessibility evidence;
-- auth, MFA, dual-control, tenant, secret, provider, worker, migration, deployment, and rollback notes.
+- auth, MFA, dual-control, tenant, secret, provider, migration, deployment, and rollback notes.
 
 Never present a source path, generated schema, HTTP 200, or attractive empty state as proof that the operator dashboard workflow is operational.

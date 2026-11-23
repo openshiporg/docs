@@ -12,7 +12,7 @@ Skill file: [`/skills/openfront-sportsbook-custom-storefront/SKILL.md`](/skills/
 
 ## Current storefront routes
 
-Routes live at the app root; logic lives in `features/storefront` (`sportsbook/screens`, `customer/*/screens`, `lib/data`). Pages render server-side, then call the customer API under `/api/sandbox/sportsbook/*`. Until the tenant is ready (licence, payment connection, active policy) pages show "Betting closed".
+Routes live at the app root; logic lives in `features/storefront` (`sportsbook/screens`, `customer/*/screens`, `lib/data`). Pages render server-side, then call the customer API under `/api/sportsbook/*`. Until the tenant is ready (licence, payment connection, active policy) pages show "Betting closed".
 
 | Route | Customer journey |
 |---|---|
@@ -36,7 +36,7 @@ Routes live at the app root; logic lives in `features/storefront` (`sportsbook/s
 
 | Route | Methods |
 |---|---|
-| `/api/sandbox/sportsbook/session` | `GET`, `DELETE` |
+| `/api/sportsbook/session` | `GET`, `DELETE` |
 | `/auth/register`, `/auth/login`, `/auth/recovery`, `/auth/devices` | `GET`/`POST`, `POST`, `POST`/`PUT`, `GET`/`DELETE` |
 | `/catalog`, `/favorites` | `GET`; `GET`/`PUT` |
 | `/quote`, `/quote-combination`, `/wager`, `/wager-combination` | `POST` |
@@ -46,6 +46,7 @@ Routes live at the app root; logic lives in `features/storefront` (`sportsbook/s
 | `/profile`, `/verification`, `/privacy`, `/privacy/export` | `GET`/`PUT`, `POST`, `GET`/`POST`, `GET` |
 | `/promotions`, `/disputes` | `GET`/`POST`; `GET`/`POST`/`PUT` |
 | `/register` | `POST` |
+| `/cage-deposit` | `POST` |
 
 ## Journey notes
 

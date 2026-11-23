@@ -12,11 +12,15 @@ Record `licenceNumber`, `regulator`, `expiresAt`, `permittedRegions` (comma-sepa
 
 ## Payment providers
 
-Adapters: `authorizenet`, `manual`, and the connection ids `paysafe` and `aeropay` for providers you attach. Add a `ProviderConnection` with `adapterId`, `adapterVersion`, `configReference` and `secretReference` (names of environment variables), and status `ACTIVE`, `DISABLED`, or `DEGRADED`. The page shows whether the referenced variables are set. Customer commands need at least one active payment connection (`PAYMENTS_NOT_CONFIGURED` otherwise).
+Adapters: `stripe`, `authorizenet`, `manual`, and the connection ids `paysafe` and `aeropay` for providers you attach. The page form saves `authorizenet`, `paysafe`, `aeropay`, and `manual`. Add a `ProviderConnection` with `adapterId`, `adapterVersion`, `configReference` and `secretReference` (names of environment variables), and status `ACTIVE`, `DISABLED`, or `DEGRADED`. The page shows whether the referenced variables are set. Customer commands need at least one active payment connection (`PAYMENTS_NOT_CONFIGURED` otherwise).
 
-- Deposits use the active `authorizenet` connection. Set `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY`, and `AUTHORIZENET_ENV=production` for live (otherwise the test endpoint is used).
-- Withdrawals use the active `manual` connection. The funds are held at request.
+- Card deposits use the first active `stripe` or `authorizenet` connection whose secret variable is set. For Stripe set `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_KEY`. For Authorize.net set `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY`, and `AUTHORIZENET_ENV=production`.
+- The active `manual` connection (Cage cash and bank transfer) runs withdrawals and cage deposits. Withdrawal funds are held at request.
+
+## Cage cash deposits
+
+A player requests an amount online and gets a reference code. The deposit stays `PENDING` until staff confirm the cash was received (`confirmCageDeposit`), which credits the wallet, or reject it (`rejectCageDeposit`). Age, location, exclusion, and deposit-limit checks run first.
 
 ## Withdrawal queue
 
-Pending, processing, and unknown withdrawals are listed oldest first. Press Mark paid with a bank reference, or Reject (`settleOperatorWithdrawal`). A paid withdrawal captures the hold and posts the journal; a rejected one releases it. A resolved intent is not changed twice. Reconcile unknown deposits with `reconcileUnknownPayment`.
+Pending, processing, and unknown withdrawals are listed oldest first. Press Mark paid with a bank reference, or Reject (`settleOperatorWithdrawal`). A paid withdrawal captures the hold and posts the journal; a rejected one releases it. A resolved intent is not changed twice. For an unknown payment press **Check status**; it asks the provider again and never re-sends. A succeeded card deposit can be refunded from its finance detail page (`refundDeposit`).

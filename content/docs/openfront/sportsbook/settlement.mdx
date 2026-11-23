@@ -11,4 +11,4 @@ Routes: `/dashboard/platform/settlements`, `/settlements/[wagerId]`.
 - **Resettle:** `requestResettlementApproval` then `resettleWager`, or `requestCombinationResettlement` then `resettleCombinationWager`.
 - **Cash-out corrections:** `requestCashOutCorrection` then `correctCashOut`.
 
-Settlement runs are `SettlementRun` rows, started by `settlement.requested` events that the worker drains.
+When an independent approver approves a result, the same request grades every selection of the event and settles each open full straight wager. A failure there is logged and leaves the wagers for the Settle button. `voidWager` voids an accepted wager and returns the stake to the wallet.

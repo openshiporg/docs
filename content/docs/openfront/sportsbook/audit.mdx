@@ -6,4 +6,4 @@ icon: ScrollText
 
 Needs `canReadAudit`. Routes: `/dashboard/platform/audit`, `/audit/[auditId]`.
 
-Every custom mutation appends an `AuditEvent` linked by hash. The page shows events, runs a chain check, and lists `AuditAnchor` rows. The worker anchors the chain head to signed files in `AUDIT_ANCHOR_DIR` using `AUDIT_ANCHOR_SECRET`; without both, anchoring is skipped and `/api/ready` reports it. `npm run verify:audit` checks the chain from the command line.
+Every custom mutation appends an `AuditEvent` linked by hash. The page shows events, runs a chain check, and lists `AuditAnchor` rows. Each read of `/api/ready` anchors the chain head to signed files in `AUDIT_ANCHOR_DIR` (or the Railway volume) using `AUDIT_ANCHOR_SECRET`. Without both, anchoring is skipped and `/api/ready` reports it. `npm run verify:audit` checks the chain from the command line.

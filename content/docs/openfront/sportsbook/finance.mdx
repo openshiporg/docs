@@ -8,7 +8,7 @@ Needs `canManageFinance`. Routes: `/dashboard/platform/finance`, `/finance/recon
 
 Money is integer minor units stored as text (`stakeMinor`, `amountMinor`) with a currency code. Every movement posts a balanced `JournalTransaction` of `JournalEntry` rows against `LedgerAccount` rows; `BalanceProjection` tracks balances and `Hold` reserves funds.
 
-- **Payments:** `PaymentIntent` and `PaymentAttempt`. `sandboxPayment` posts an operator deposit or withdrawal; `openChargeback` opens a chargeback.
+- **Payments:** `PaymentIntent` and `PaymentAttempt`. `refundDeposit` refunds a succeeded card deposit (wallet debited, processor refunded); `confirmCageDeposit` and `rejectCageDeposit` settle cage cash deposits; `openChargeback` opens a chargeback.
 - **Adjustments:** `requestLedgerAdjustment` and `applyLedgerAdjustment` under dual control.
 - **Reconciliation:** `runReconciliation` and `runSafeguardingReconciliation` create `ReconciliationRun` and `ReconciliationItem` rows comparing ledger, provider, and safeguarded funds (`SafeguardingAccount`).
 - **Tax:** `requestTaxRule`, `applyTaxRule`, and `assessSettlementTax` produce `TaxAssessment` rows on settled wagers.

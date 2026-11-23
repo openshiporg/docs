@@ -1,6 +1,6 @@
 ---
 title: Getting started with Sportsbook
-description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first operator, enrol two-factor, run onboarding, start the worker, and deploy.
+description: Clone the source, configure PostgreSQL and secrets, apply migrations, create the first operator, enrol two-factor, run onboarding, and deploy.
 icon: Terminal
 ---
 
@@ -23,7 +23,7 @@ The repository has no `.env.example`. Create `.env` yourself.
 
 ## Environment
 
-`features/keystone/index.ts` refuses to start without `DATABASE_URL` and a `SESSION_SECRET` of at least 32 characters. `npm run validate:env` (`features/sportsbook/operations/validate-env.ts`) checks the same values, requires `CUSTOMER_IDENTITY_SECRET` (32+ characters) when `NODE_ENV=production`, and enforces the isolated test-deployment rules below.
+`features/keystone/index.ts` refuses to start without `DATABASE_URL` and a `SESSION_SECRET` of at least 32 characters. `npm run validate:env` (`features/sportsbook/operations/validate-env.ts`) checks the same values, and nothing else. Integrations fail closed where they are used, and `/api/ready` reports production gaps.
 
 ```bash
 DATABASE_URL=postgresql://user:password@127.0.0.1:5432/openfront_sportsbook
@@ -35,23 +35,21 @@ Other settings read by the code:
 
 | Variable | Used for |
 |---|---|
-| `SPORTSBOOK_SANDBOX` | `true` marks an isolated test deployment; `validate:env` then applies the three rules below in production |
-| `SPORTSBOOK_DEPLOYMENT_MODE` | Must be `sandbox` when `SPORTSBOOK_SANDBOX=true` in production; also makes outbound webhooks local-only |
-| `SANDBOX_PUBLIC_ORIGIN` | Storefront origin. Customer commands are refused when the request `Origin` differs. With `SPORTSBOOK_SANDBOX=true` in production it must be `https://*.local` |
-| `SANDBOX_TENANT_SLUG` | Pins the storefront to one tenant instead of matching the brand domain |
-| `SANDBOX_WEBHOOK_SECRET`, `ENABLE_SANDBOX_WEBHOOKS` | HMAC secret for `/api/sandbox/webhooks/[kind]`; `ENABLE_SANDBOX_WEBHOOKS=true` in production requires `SPORTSBOOK_SANDBOX=true` |
-| `SANDBOX_MAX_LIABILITY_MINOR`, `MAX_PRICE_AGE_MS` | Liability cap and maximum price age (default 30 seconds) used by wager acceptance |
-| `CUSTOMER_IDENTITY_SECRET` | Customer credential and identity hashing; a local fallback is used outside production |
+| `PUBLIC_APP_URL` | Storefront origin. Its host picks the brand (and tenant) the storefront serves |
+| `STOREFRONT_TENANT_SLUG` | Pins the storefront to one tenant instead of matching the brand domain |
+| `PROVIDER_WEBHOOK_SECRET` | HMAC secret for `/api/webhooks/providers/[kind]` (32+ characters; otherwise derived from `SESSION_SECRET`) |
+| `MAX_LIABILITY_MINOR`, `MAX_PRICE_AGE_MS`, `MAX_PREMATCH_PRICE_AGE_MS` | Liability cap (default 100,000,000 minor units) and maximum live (30 seconds) and pre-match (24 hours) price age used by wager acceptance |
+| `CUSTOMER_IDENTITY_SECRET` | Customer credential and identity hashing; derived from `SESSION_SECRET` when unset |
+| `GEO_DEV_REGION` | Outside production, the region used when no geo header is present |
 | `PII_ENCRYPTION_KEY`, `PII_ENCRYPTION_KEY_REFERENCE` | Encrypting customer identity payloads and operator TOTP secrets (falls back to other secrets) |
 | `PUBLIC_SIGNUPS_ALLOWED` | `true` opens the operator sign-up page; off by default |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STORE_LINK` | Operator password reset and customer recovery email |
-| `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `AUTHORIZENET_ENV`, `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY` | Authorize.net payments (`AUTHORIZENET_ENV=production` for live; otherwise the test endpoint) |
+| `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_KEY` (or `STRIPE_PUBLISHABLE_KEY`), `STRIPE_WEBHOOK_SECRET` | Stripe card deposits and refunds |
+| `AUTHORIZENET_API_LOGIN_ID`, `AUTHORIZENET_TRANSACTION_KEY`, `AUTHORIZENET_SIGNATURE_KEY`, `AUTHORIZENET_ENV`, `AUTHORIZENET_CLIENT_KEY` (or `NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY`) | Authorize.net card deposits (`AUTHORIZENET_ENV=production` selects the live endpoint) |
 | `OUTBOUND_WEBHOOK_SECRET`, `WEBHOOK_EGRESS_HOSTS` | Signing outbound webhooks (32+ characters) and the host allowlist they may reach |
-| `AUDIT_ANCHOR_DIR`, `AUDIT_ANCHOR_SECRET` | Worker audit-chain anchoring; `/api/ready` reports when it is not configured |
+| `AUDIT_ANCHOR_DIR` (falls back to `RAILWAY_VOLUME_MOUNT_PATH`), `AUDIT_ANCHOR_SECRET` | Audit-chain anchoring, advanced on `/api/ready`; it reports when anchoring is not configured |
 | `METRICS_BEARER_TOKEN` | Bearer token for `/api/metrics` and detailed `/api/ready` output in production |
-| `WORKER_POLL_MS`, `WORKER_LEASE_MS`, `WORKER_BATCH_SIZE` | Worker loop tuning |
-| `TRUSTED_PROXY_HOPS` | Number of trusted `x-forwarded-for` hops (0 to 5) for rate limiting |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | OpenTelemetry export for the app and worker |
+| `TRUST_PROXY`, `TRUSTED_PROXY_HOPS` | Trust `x-forwarded-for` for rate limiting (`TRUST_PROXY=1`, hops 0 to 5) |
 | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `OPENROUTER_MAX_TOKENS` | Dashboard AI chat (`/api/completion`) |
 | `MIGRATION_SHADOW_DATABASE_URL` | Shadow database for `npm run verify:migrations` |
 
@@ -79,8 +77,8 @@ The storefront shows "Betting closed" until the tenant is ready for customers. S
 
 1. Visit `/dashboard/init` on an empty database. `createInitialUser` delegates to `bootstrapOperatorAdmin`, which requires a password of at least 12 characters and creates an `Admin` role with every operator flag except `canApproveSensitiveActions`.
 2. Enrol two-factor at `/dashboard/platform/security` and verify a code. Operator sessions are treated as assured for 12 hours after verification.
-3. Open `/dashboard/platform/onboarding`. It previews and then applies the setup (`previewSportsbookOnboarding`, `applySportsbookOnboarding`). The bundled seed uses an operator called Northline Gaming with USD, a `SANDBOX` jurisdiction, and the `America/New_York` timezone; the form lets you change these values.
-4. Onboarding creates the tenant, brand, `en-US` brand locale, a pending legal entity, a pending operator jurisdiction and draft policy, a `sandbox-web` channel, tenant currency, config values (maximum stake and payout, live delay 3 seconds, minimum age 18, price-change consent options), house rules, three feature flags, provider connections, market definitions (match result, moneyline, spread, total), a default limit profile, a safeguarding account, retention policies, scheduled jobs, promotions, and a starter catalog: four sports (Football, Soccer, Basketball, Tennis), one competition each, and three events per competition with opening prices.
+3. Open `/dashboard/platform/onboarding`. It previews and then applies the setup (`previewSportsbookOnboarding`, `applySportsbookOnboarding`). The bundled seed uses an operator called Northline Gaming with USD, the `US-NJ` jurisdiction, the brand domain `sportsbook.openship.org`, and the `America/New_York` timezone; the form lets you change these values.
+4. Onboarding creates the tenant, brand, `en-US` brand locale, a pending legal entity, a pending operator jurisdiction and draft policy, a `web` channel, tenant currency, config values (maximum stake and payout, live delay 3 seconds, minimum age 18, price-change consent options), house rules, three feature flags, `house-<kind>` provider connections for all thirteen kinds, market definitions (match result, moneyline, spread, total), a default limit profile, a safeguarding account, retention policies, promotions, and a starter catalog: four sports (Football, Soccer, Basketball, Tennis), one competition each, and three events per competition with opening prices.
 5. Stages `OPERATOR` through `OPERATIONS` are marked complete. `LICENSING` and `CERTIFICATION` are always recorded as `BLOCKED` external gates.
 6. Create the independent approver from `/dashboard/platform/roles` (`bootstrapIndependentApprover`). The first admin cannot approve its own requests.
 

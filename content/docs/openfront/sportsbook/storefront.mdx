@@ -4,7 +4,7 @@ description: "The customer site: board, bet slip, wallet, limits, promotions, an
 icon: Store
 ---
 
-Routes are on [External storefronts](/docs/openfront/sportsbook/external-storefront). Customer data flows through REST routes under `/api/sandbox/sportsbook/*`, not GraphQL. Commands carry an idempotency key recorded in `CustomerCommand`, and requests must come from `SANDBOX_PUBLIC_ORIGIN` when it is set.
+Routes are on [External storefronts](/docs/openfront/sportsbook/external-storefront). Customer data flows through REST routes under `/api/sportsbook/*`, not GraphQL. Commands carry an idempotency key recorded in `CustomerCommand`, and cross-site requests (`sec-fetch-site` other than `same-origin`) are refused.
 
 ## Customer journey
 
