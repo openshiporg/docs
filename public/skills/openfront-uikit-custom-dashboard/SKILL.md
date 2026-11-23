@@ -23,7 +23,7 @@ Before asking implementation questions, briefly tell the user where the current 
 
 Explain that `features/dashboard` is the reusable Keystone administration layer and `features/platform` is the product-specific operator experience. These directories show how the dashboard works and which server operations it calls.
 
-The current product focus is orders, store identity, catalog/design systems/components, studio, releases, quality, entitlements, payments/refunds, payment providers, API keys, and the audit log. Draft validation runs only on macOS hosts (`sandbox-exec` plus a Playwright Chromium shell), and no outbox worker delivers `OutboxEvent` rows. This list is orientation, not proof that every flow is safe or complete.
+The current product focus is orders, store identity, catalog/design systems/components, studio, releases, quality, entitlements, payments/refunds, payment providers, API keys, and the audit log. Draft validation runs only on macOS hosts (`sandbox-exec` plus a Playwright Chromium shell). This list is orientation, not proof that every flow is safe or complete.
 
 ## Then interview the user
 
